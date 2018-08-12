@@ -1,6 +1,12 @@
-#include <QtCore>
 #include <iostream>
+#include <QApplication>
 
-int main() {
-    std::cout << "Qt version: " << qVersion() << std::endl;
+#include "widgets/qutejudo.hpp"
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    Qutejudo window;
+    window.show();
+
+    return app.exec();
 }
