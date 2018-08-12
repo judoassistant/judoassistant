@@ -3,10 +3,10 @@
 #include <QMainWindow>
 #include <QString>
 
-class Qutejudo : public QMainWindow {
+class CategoriesWidget : public QWidget {
     Q_OBJECT
 
 public:
-    Qutejudo();
+    CategoriesWidget();
 };
 

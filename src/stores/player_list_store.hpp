@@ -2,17 +2,17 @@
 
 #include <QObject>
 #include <vector>
-#include "stores/player.hpp"
+#include "stores/player_store.hpp"
 
-class PlayerList : public QObject {
+class PlayerListStore : public QObject {
     Q_OBJECT
 public:
-    PlayerList();
+    PlayerListStore();
 public slots:
     // void setValue(int value);
 signals:
     // void valueChanged(int value);
 private:
-    std::vector<Player> m_players;
+    std::vector<PlayerStore> m_players;
 };
 

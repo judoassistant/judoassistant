@@ -3,10 +3,10 @@
 #include <QObject>
 #include <QString>
 
-class Player : public QObject {
+class PlayerStore : public QObject {
     Q_OBJECT
 public:
-    Player();
+    PlayerStore();
 public slots:
     // void setValue(int value);
 signals:
