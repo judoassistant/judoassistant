@@ -1,2 +1,4 @@
+add_sources(category_store.cpp)
 add_sources(player_store.cpp)
-add_sources(player_list_store.cpp)
+add_sources(tournament_store.cpp)
+
