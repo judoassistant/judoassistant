@@ -17,19 +17,23 @@ endmacro()
 
 project(qutejudo)
 
-# Find includes in corresponding build directories
+# Setup cereal
+find_package(cereal REQUIRED)
+
+# Setup qt
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Instruct CMake to run moc automatically when needed
 set(CMAKE_AUTOMOC ON)
-# Create code from a list of Qt designer ui files
 set(CMAKE_AUTOUIC ON)
 
-# Find the QtWidgets library
 find_package(Qt5Widgets CONFIG REQUIRED)
 
-include_directories(src)
+# Setup boost
+find_package(Boost COMPONENTS system REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
 # Add subdirectories
+include_directories(src)
+
 add_subdirectory(src)
 add_subdirectory(src/actions)
 add_subdirectory(src/applications)
@@ -43,4 +47,4 @@ add_executable(qutejudo ${qutejudo_SOURCES})
 set_property(TARGET qutejudo PROPERTY CXX_STANDARD 17)
 set_property(TARGET qutejudo PROPERTY CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(qutejudo Qt5::Widgets Qt5::Core)
+target_link_libraries(qutejudo Qt5::Widgets Qt5::Core ${Boost_LIBRARIES})

@@ -1,14 +1,20 @@
 #pragma once
 
+#include <string>
+
+#include "actions/action.hpp"
+#include "stores/tournament_store.hpp"
+#include "stores/player_store.hpp"
+
 class CreatePlayerAction : public Action {
 public:
-    CreatePlayerAction(const std::string & firstName, const std::string & lastName, uint8_t age);
-    virtual void redo() const;
-    virtual void undo() const;
+    CreatePlayerAction(TournamentStore * store, const std::string & firstName, const std::string & lastName, uint8_t age);
+    virtual bool operator()(TournamentStore * store) const;
+    virtual void getInverse(Action *ptr) const;
 
 private:
     std::string mFirstName;
     std::string mLastName;
     uint8_t mAge;
-    PlayerStore::Id id;
-}
+    Id mId;
+};

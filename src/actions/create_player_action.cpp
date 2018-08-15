@@ -1,18 +1,20 @@
 #include "actions/create_player_action.hpp"
 #include "stores/tournament_store.hpp"
 
-CreatePlayerAction::CreatePlayerAction(TournamentStore * store, std::string firstName, std::string lastName, uint8_t age) 
+CreatePlayerAction::CreatePlayerAction(TournamentStore * store, const std::string & firstName, const std::string & lastName, uint8_t age)
     : mFirstName(firstName)
     , mLastName(lastName)
     , mAge(age)
-    , mId(store->mNextPlayerId++)
+    , mId(store->generateNextPlayerId())
 {
 }
 
-virtual void CreatePlayerAction::redo(TournamentStore * store) {
-    // TODO
+bool CreatePlayerAction::operator()(TournamentStore * store) const {
+    auto player = std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge);
+    store->addPlayer(std::move(player));
+    return true;
 }
 
-virtual void CreatePlayerAction::undo(TournamentStore * store) {
+void CreatePlayerAction::getInverse(Action *ptr) const {
     // TODO
 }
