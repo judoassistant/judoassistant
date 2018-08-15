@@ -13,10 +13,10 @@ public:
     TournamentStore();
 
     template<typename Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-        ar & mName;
-        ar & mPlayers;
-        ar & mCategories;
+    void serialize(Archive& ar, uint32_t const version) {
+        ar("name", mName);
+        ar("players", mPlayers);
+        ar("categories", mCategories);
     }
 
     const std::string & getName() const;
