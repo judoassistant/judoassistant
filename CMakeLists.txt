@@ -37,6 +37,7 @@ include_directories(src)
 add_subdirectory(src)
 add_subdirectory(src/actions)
 add_subdirectory(src/applications)
+add_subdirectory(src/draw_strategies)
 add_subdirectory(src/stores)
 add_subdirectory(src/widgets)
 
