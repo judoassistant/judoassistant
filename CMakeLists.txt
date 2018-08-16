@@ -16,6 +16,9 @@ macro (add_sources)
 endmacro()
 
 project(qutejudo)
+set (qutejudo_VERSION_MAJOR 0)
+set (qutejudo_VERSION_MINOR 1)
+set (qutejudo_VERSION_PATCH 0)
 
 # Setup cereal
 find_package(cereal REQUIRED)
@@ -31,8 +34,12 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+# Setup version header
+configure_file ("${PROJECT_SOURCE_DIR}/src/version.hpp.in" "${PROJECT_BINARY_DIR}/version.hpp")
+
 # Add subdirectories
 include_directories(src)
+include_directories("${PROJECT_BINARY_DIR}")
 
 add_subdirectory(src)
 add_subdirectory(src/actions)
