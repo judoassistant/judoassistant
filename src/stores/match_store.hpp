@@ -6,15 +6,14 @@
 
 class MatchStore {
 public:
-    MatchStore(Id id, Id category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
+    MatchStore(Id id, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
 
-    const Id & getId() const;
-    const Id & getCategory() const;
-    const std::optional<Id> & getWhitePlayer() const;
-    const std::optional<Id> & getBluePlayer() const;
+    Id getId() const;
+    std::optional<Id> getWhitePlayer() const;
+    std::optional<Id> getBluePlayer() const;
+    bool isFinished() const;
 private:
     Id mId;
-    Id mCategory;
     std::optional<Id> mWhitePlayer;
     std::optional<Id> mBluePlayer;
 };

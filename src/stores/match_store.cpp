@@ -1,19 +1,24 @@
 #include "stores/match_store.hpp"
 
-const Id & MatchStore::getId() const {
+MatchStore::MatchStore(Id id, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
+    : mId(id)
+    , mWhitePlayer(whitePlayer)
+    , mBluePlayer(bluePlayer)
+{}
+
+Id MatchStore::getId() const {
     return mId;
 }
 
-const Id & MatchStore::getCategory() const {
-    return mCategory;
-}
-
-const std::optional<Id> & MatchStore::getWhitePlayer() const {
+std::optional<Id> MatchStore::getWhitePlayer() const {
     return mWhitePlayer;
 }
 
-const std::optional<Id> & MatchStore::getBluePlayer() const {
+std::optional<Id> MatchStore::getBluePlayer() const {
     return mBluePlayer;
 }
 
-
+bool MatchStore::isFinished() const {
+    // TODO
+    return false;
+}

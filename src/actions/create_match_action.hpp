@@ -9,13 +9,14 @@
 
 class CreateMatchAction : public Action {
 public:
-    CreateMatchAction(CategoryStore * category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
+    CreateMatchAction(TournamentStore * tournament, CategoryStore * category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
     virtual bool operator()(TournamentStore * store) const;
     virtual void getInverse(Action *ptr) const;
 
+    Id getId() const;
 private:
-    std::optional<Id> whitePlayer;
-    std::optional<Id> bluePlayer;
+    Id mId;
     Id mCategory;
-
+    std::optional<Id> mWhitePlayer;
+    std::optional<Id> mBluePlayer;
 };

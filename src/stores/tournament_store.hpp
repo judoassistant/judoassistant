@@ -24,11 +24,14 @@ public:
 
     const std::unordered_map<Id, std::unique_ptr<PlayerStore>> & getPlayers() const;
     const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & getCategories() const;
+    CategoryStore & getCategory(Id id);
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     void dispatchAction(std::unique_ptr<Action> action);
 
     Id generateNextPlayerId();
+    Id generateNextCategoryId();
+    Id generateNextMatchId();
 private:
     std::string mName;
 

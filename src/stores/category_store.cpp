@@ -12,3 +12,10 @@ const std::map<Id, std::unique_ptr<MatchStore>> & CategoryStore::getMatches() co
     return mMatches;
 }
 
+MatchStore & CategoryStore::getMatch(Id id) {
+    return *(mMatches[id]);
+}
+
+const Id & CategoryStore::getId() const {
+    return mId;
+}

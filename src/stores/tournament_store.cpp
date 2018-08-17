@@ -26,6 +26,14 @@ Id TournamentStore::generateNextPlayerId() {
     return mNextPlayerId++;
 }
 
+Id TournamentStore::generateNextCategoryId() {
+    return mNextCategoryId++;
+}
+
+Id TournamentStore::generateNextMatchId() {
+    return mNextMatchId++;
+}
+
 void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
     mPlayers[ptr->getId()] = std::move(ptr);
 }
@@ -33,4 +41,8 @@ void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
 void TournamentStore::dispatchAction(std::unique_ptr<Action> action) {
     (*action)(this);
     mActions.push(std::move(action));
+}
+
+CategoryStore & TournamentStore::getCategory(Id id) {
+    return *mCategories[id];
 }
