@@ -8,11 +8,11 @@ const Id & MatchStore::getCategory() const {
     return mCategory;
 }
 
-const Id & MatchStore::getWhitePlayer() const {
+const std::optional<Id> & MatchStore::getWhitePlayer() const {
     return mWhitePlayer;
 }
 
-const Id & MatchStore::getBluePlayer() const {
+const std::optional<Id> & MatchStore::getBluePlayer() const {
     return mBluePlayer;
 }
 

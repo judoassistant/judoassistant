@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <cstdint>
 #include <unordered_map>
+#include <stack>
 
 #include "core.hpp"
+#include "actions/action.hpp"
 #include "stores/player_store.hpp"
 #include "stores/category_store.hpp"
 
@@ -26,6 +26,7 @@ public:
     const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & getCategories() const;
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
+    void dispatchAction(std::unique_ptr<Action> action);
 
     Id generateNextPlayerId();
 private:
@@ -33,8 +34,10 @@ private:
 
     std::unordered_map<Id, std::unique_ptr<PlayerStore>> mPlayers;
     std::unordered_map<Id, std::unique_ptr<CategoryStore>> mCategories;
+    std::stack<std::unique_ptr<Action>> mActions;
 
     Id mNextPlayerId;
     Id mNextCategoryId;
+    Id mNextMatchId;
 };
 

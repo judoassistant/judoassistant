@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stores/tournament_store.hpp"
+class TournamentStore;
 
 class Action {
 public:
