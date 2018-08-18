@@ -16,11 +16,11 @@ void PoolDrawStrategy::updateCategory(TournamentStore *tournament, CategoryStore
 }
 
 bool PoolDrawStrategy::isFinished(TournamentStore * tournament, CategoryStore *categoryStore) {
-    for (Id matchId : mMatchIds) {
-        const MatchStore & match = categoryStore->getMatch(matchId);
-        if (!match.isFinished())
-            return false;
-    }
+    // for (Id matchId : mMatchIds) {
+    //     const MatchStore & match = categoryStore->getMatch(matchId);
+    //     if (!match.isFinished())
+    //         return false;
+    // }
 
     return true;
     // TODO

@@ -10,7 +10,7 @@ class CreatePlayerAction : public Action {
 public:
     CreatePlayerAction(TournamentStore * store, const std::string & firstName, const std::string & lastName, uint8_t age);
     virtual bool operator()(TournamentStore * store) const;
-    virtual void getInverse(Action *ptr) const;
+    virtual std::unique_ptr<Action> getInverse() const;
 
 private:
     std::string mFirstName;

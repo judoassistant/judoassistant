@@ -43,6 +43,6 @@ void TournamentStore::dispatchAction(std::unique_ptr<Action> action) {
     mActions.push(std::move(action));
 }
 
-CategoryStore & TournamentStore::getCategory(Id id) {
-    return *mCategories[id];
+std::unique_ptr<CategoryStore> & TournamentStore::getCategory(Id id) {
+    return mCategories[id];
 }

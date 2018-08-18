@@ -8,11 +8,12 @@ CreateMatchAction::CreateMatchAction(TournamentStore * tournament, CategoryStore
 {}
 
 bool CreateMatchAction::operator()(TournamentStore * tournament) const {
-    CategoryStore & category = tournament->getCategory(mCategory);
-    category.addMatch(std::make_unique<MatchStore>(mId, mWhitePlayer, mBluePlayer));
+    std::unique_ptr<CategoryStore> & category = tournament->getCategory(mCategory);
+    category->addMatch(std::make_unique<MatchStore>(mId, mWhitePlayer, mBluePlayer));
+    return true;
 }
 
-void CreateMatchAction::getInverse(Action *ptr) const {
+std::unique_ptr<Action> CreateMatchAction::getInverse() const {
     // TODO
 }
 

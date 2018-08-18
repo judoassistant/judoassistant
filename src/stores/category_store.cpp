@@ -4,7 +4,7 @@ CategoryStore::CategoryStore() {
 
 }
 
-void CategoryStore::addMatch(std::unique_ptr<MatchStore> ptr) {
+void CategoryStore::addMatch(std::unique_ptr<MatchStore> && ptr) {
     mMatches[ptr->getId()] = std::move(ptr);
 }
 
@@ -12,10 +12,18 @@ const std::map<Id, std::unique_ptr<MatchStore>> & CategoryStore::getMatches() co
     return mMatches;
 }
 
-MatchStore & CategoryStore::getMatch(Id id) {
-    return *(mMatches[id]);
+std::unique_ptr<MatchStore> & CategoryStore::getMatch(Id id) {
+    return mMatches[id];
 }
 
 const Id & CategoryStore::getId() const {
     return mId;
+}
+
+void CategoryStore::setRuleset(std::unique_ptr<Ruleset> && ptr) {
+    mRuleset = std::move(ptr);
+}
+
+std::unique_ptr<Ruleset> & CategoryStore::getRuleset() {
+    return mRuleset;
 }

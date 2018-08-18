@@ -15,6 +15,6 @@ bool CreatePlayerAction::operator()(TournamentStore * store) const {
     return true;
 }
 
-void CreatePlayerAction::getInverse(Action *ptr) const {
+std::unique_ptr<Action> CreatePlayerAction::getInverse() const {
     // TODO
 }

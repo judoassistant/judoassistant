@@ -6,6 +6,7 @@
 
 #include "core.hpp"
 #include "stores/match_store.hpp"
+#include "rulesets/ruleset.hpp"
 
 class CategoryStore {
 public:
@@ -16,13 +17,17 @@ public:
     const Id & getId() const;
 
     const std::map<Id, std::unique_ptr<MatchStore>> & getMatches() const;
-    MatchStore & getMatch(Id id) ;
+    std::unique_ptr<MatchStore> & getMatch(Id id);
 
-    void addMatch(std::unique_ptr<MatchStore> ptr);
+    void addMatch(std::unique_ptr<MatchStore> && ptr);
+
+    void setRuleset(std::unique_ptr<Ruleset> && ptr);
+    std::unique_ptr<Ruleset> & getRuleset();
 private:
     Id mId;
     std::string mName;
     std::unordered_set<Id> mPlayers;
     std::map<Id, std::unique_ptr<MatchStore>> mMatches; // order matters in this case
+    std::unique_ptr<Ruleset> mRuleset;
 };
 
