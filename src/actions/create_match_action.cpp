@@ -1,4 +1,5 @@
 #include "actions/create_match_action.hpp"
+#include "exception.hpp"
 
 CreateMatchAction::CreateMatchAction(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
     : mId(tournament->generateNextMatchId())
@@ -14,7 +15,8 @@ bool CreateMatchAction::operator()(TournamentStore * tournament) const {
 }
 
 std::unique_ptr<Action> CreateMatchAction::getInverse() const {
-    // TODO
+    throw new NotImplementedException;
+    // TODO: Implement method
 }
 
 Id CreateMatchAction::getId() const {

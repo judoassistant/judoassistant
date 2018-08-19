@@ -3,7 +3,7 @@
 #include "core.hpp"
 #include "stores/match_store.hpp"
 
-// TODO: Handle matches that end in a draw
+// TODO: Make const where appropriate
 class Ruleset {
 public:
     virtual bool addWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;

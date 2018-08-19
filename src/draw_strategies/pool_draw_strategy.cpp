@@ -15,18 +15,18 @@ void PoolDrawStrategy::updateCategory(std::unique_ptr<TournamentStore> & tournam
     // noop
 }
 
-bool PoolDrawStrategy::isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) {
-    // for (Id matchId : mMatchIds) {
-    //     const MatchStore & match = categoryStore->getMatch(matchId);
-    //     if (!match.isFinished())
-    //         return false;
-    // }
+bool PoolDrawStrategy::isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) const {
+    std::unique_ptr<Ruleset> & ruleset = category->getRuleset();
+    for (Id matchId : mMatchIds) {
+        std::unique_ptr<MatchStore> & match = category->getMatch(matchId);
+        if (!ruleset->isFinished(match))
+            return false;
+    }
 
     return true;
-    // TODO
 }
 
-Id PoolDrawStrategy::get_rank(size_t rank) {
+Id PoolDrawStrategy::get_rank(size_t rank) const {
     // TODO
 }
 

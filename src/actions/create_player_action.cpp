@@ -1,5 +1,6 @@
 #include "actions/create_player_action.hpp"
 #include "stores/tournament_store.hpp"
+#include "exception.hpp"
 
 CreatePlayerAction::CreatePlayerAction(TournamentStore * store, const std::string & firstName, const std::string & lastName, uint8_t age)
     : mFirstName(firstName)
@@ -16,5 +17,6 @@ bool CreatePlayerAction::operator()(TournamentStore * store) const {
 }
 
 std::unique_ptr<Action> CreatePlayerAction::getInverse() const {
-    // TODO
+    throw new NotImplementedException;
+    // TODO: Implement method
 }
