@@ -1,5 +1,5 @@
 #include <iostream>
-#include "widgets/qutejudo_widget.hpp"
+#include "widgets/qutejudo_window.hpp"
 #include "applications/qutejudo_application.hpp"
 
 #include "core.hpp"
@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[]) {
     QutejudoApplication app(argc, argv);
-    QutejudoWidget window;
+    QutejudoWindow window;
     window.show();
 
     return app.exec();

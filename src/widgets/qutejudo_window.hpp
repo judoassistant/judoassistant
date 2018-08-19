@@ -1,19 +1,22 @@
 #pragma once
 
 #include <QMainWindow>
+#include "stores/tournament_store.hpp"
 
-class QutejudoWidget : public QMainWindow {
+class QutejudoWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    QutejudoWidget();
+    QutejudoWindow();
 
     void createTournamentMenu();
+    void createEditMenu();
     void createViewMenu();
     void createPreferencesMenu();
     void createHelpMenu();
 private slots:
-    void newFile();
+    void newTournament();
 private:
+    std::unique_ptr<TournamentStore> mTournament;
 };
 
