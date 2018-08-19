@@ -7,9 +7,9 @@
 
 class DrawStrategy {
 public:
-    virtual void initCategory(const std::vector<Id> &players, TournamentStore *tournament, CategoryStore *category) = 0;
-    virtual void updateCategory(TournamentStore *tournament, CategoryStore *categoryStore) = 0;
-    virtual bool isFinished(TournamentStore *tournament, CategoryStore *categoryStore) = 0;
-    virtual Id get_rank(size_t rank) = 0;
+    virtual void initCategory(const std::vector<Id> &players, std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) = 0;
+    virtual void updateCategory(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) = 0;
+    virtual bool isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) = 0;
+    virtual Id get_rank(size_t rank) = 0; // TODO: change this interface to handle players sharing rank
 };
 

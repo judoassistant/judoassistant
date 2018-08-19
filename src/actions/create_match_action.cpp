@@ -1,6 +1,6 @@
 #include "actions/create_match_action.hpp"
 
-CreateMatchAction::CreateMatchAction(TournamentStore * tournament, CategoryStore * category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
+CreateMatchAction::CreateMatchAction(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
     : mId(tournament->generateNextMatchId())
     , mCategory(category->getId())
     , mWhitePlayer(whitePlayer)

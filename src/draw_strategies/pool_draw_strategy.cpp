@@ -1,7 +1,7 @@
 #include "src/draw_strategies/pool_draw_strategy.hpp"
 #include "src/actions/create_match_action.hpp"
 
-void PoolDrawStrategy::initCategory(const std::vector<Id> &players, TournamentStore *tournament, CategoryStore *category) {
+void PoolDrawStrategy::initCategory(const std::vector<Id> &players, std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) {
     for (size_t i = 0; i < players.size(); ++i) {
         for (size_t j = i; j < players.size(); ++j) {
             std::unique_ptr<CreateMatchAction> action = std::make_unique<CreateMatchAction>(tournament, category, players[0], players[1]);
@@ -11,11 +11,11 @@ void PoolDrawStrategy::initCategory(const std::vector<Id> &players, TournamentSt
     }
 }
 
-void PoolDrawStrategy::updateCategory(TournamentStore *tournament, CategoryStore *categoryStore) {
+void PoolDrawStrategy::updateCategory(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) {
     // noop
 }
 
-bool PoolDrawStrategy::isFinished(TournamentStore * tournament, CategoryStore *categoryStore) {
+bool PoolDrawStrategy::isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) {
     // for (Id matchId : mMatchIds) {
     //     const MatchStore & match = categoryStore->getMatch(matchId);
     //     if (!match.isFinished())

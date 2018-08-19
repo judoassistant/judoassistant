@@ -8,7 +8,7 @@
 
 class CreateMatchAction : public Action {
 public:
-    CreateMatchAction(TournamentStore * tournament, CategoryStore * category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
+    CreateMatchAction(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
     virtual bool operator()(TournamentStore * store) const;
     virtual std::unique_ptr<Action> getInverse() const;
 
