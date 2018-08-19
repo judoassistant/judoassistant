@@ -53,6 +53,13 @@ std::chrono::high_resolution_clock::duration MatchStore::getClock() const {
     return mClock;
 }
 
+std::chrono::high_resolution_clock::duration MatchStore::getCurrentClock() const {
+    if (isStopped())
+        return mClock;
+    else
+        return (std::chrono::high_resolution_clock::now() - getTime()) - mClock;
+}
+
 void MatchStore::setTime(const std::chrono::high_resolution_clock::time_point & time) {
     mTime = time;
 }

@@ -1,26 +1,20 @@
 #include "rulesets/ruleset.hpp"
 
-bool Ruleset::enterGoldenScore(std::unique_ptr<MatchStore> & match) {
+bool Ruleset::enterGoldenScore(std::unique_ptr<MatchStore> & match) const {
+    if (match->isGoldenScore())
+        return false;
     match->setGoldenScore(true);
+    return true;
 }
 
-bool Ruleset::exitGoldenScore(std::unique_ptr<MatchStore> & match) {
+bool Ruleset::exitGoldenScore(std::unique_ptr<MatchStore> & match) const {
+    if (!match->isGoldenScore())
+        return false;
     match->setGoldenScore(false);
+    return true;
 }
 
-bool Ruleset::stop(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) {
-    match->setTime(time);
-    match->setClock(clock);
-    match->stop();
-}
-
-bool Ruleset::resume(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) {
-    match->setTime(time);
-    match->setClock(clock);
-    match->resume();
-}
-
-bool Ruleset::subtractIppon(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) {
+bool Ruleset::subtractIppon(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const {
     PlayerScore & score = match->getPlayerScore(playerIndex);
     if (score.ippon < 1)
         return false;
@@ -28,8 +22,10 @@ bool Ruleset::subtractIppon(std::unique_ptr<MatchStore> & match, MatchStore::Pla
     return true;
 }
 
-bool Ruleset::addIppon(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) {
+bool Ruleset::addIppon(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const {
     PlayerScore & score = match->getPlayerScore(playerIndex);
+    if (score.ippon > 0)
+        return false;
     score.ippon += 1;
     return true;
 }

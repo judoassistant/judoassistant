@@ -34,8 +34,10 @@ public:
     const std::vector<std::unique_ptr<MatchEvent>> & getEvents() const;
 
     // TODO: Make sure clock is serializeable(hint: it's probably not..)
+    // TODO: rename time and clock to something more logical
     std::chrono::high_resolution_clock::time_point getTime() const;
     std::chrono::high_resolution_clock::duration getClock() const;
+    std::chrono::high_resolution_clock::duration getCurrentClock() const;
     void setTime(const std::chrono::high_resolution_clock::time_point & time);
     void setClock(const std::chrono::high_resolution_clock::duration & clock);
     void stop();
