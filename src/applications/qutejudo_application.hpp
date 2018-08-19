@@ -5,7 +5,7 @@
 
 class QutejudoApplication : public QApplication {
 public:
-    QutejudoApplication(int argc, char *argv[]);
+    QutejudoApplication(int &argc, char *argv[]);
 private:
     QPalette m_palette;
 };

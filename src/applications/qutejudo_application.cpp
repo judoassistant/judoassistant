@@ -2,7 +2,7 @@
 #include <QStyleFactory>
 #include "applications/qutejudo_application.hpp"
 
-QutejudoApplication::QutejudoApplication(int argc, char *argv[]) : QApplication(argc, argv) {
+QutejudoApplication::QutejudoApplication(int &argc, char *argv[]) : QApplication(argc, argv) {
     setStyle(QStyleFactory::create("fusion"));
 
     m_palette.setColor(QPalette::Window, QColor(53,53,53));
