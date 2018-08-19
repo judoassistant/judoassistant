@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QUrl>
 #include "stores/tournament_store.hpp"
 
 class QutejudoWindow : public QMainWindow {
@@ -16,6 +17,9 @@ public:
     void createHelpMenu();
 private slots:
     void newTournament();
+    void openHomePage();
+    void openManual();
+    void openReportIssue();
 private:
     std::unique_ptr<TournamentStore> mTournament;
 };
