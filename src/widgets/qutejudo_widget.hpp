@@ -1,17 +1,19 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QTabWidget>
-#include <QString>
-#include <QVBoxLayout>
 
 class QutejudoWidget : public QMainWindow {
     Q_OBJECT
 
 public:
     QutejudoWidget();
-    ~QutejudoWidget();
+
+    void createTournamentMenu();
+    void createViewMenu();
+    void createPreferencesMenu();
+    void createHelpMenu();
+private slots:
+    void newFile();
 private:
-    QTabWidget * m_tabWidget;
 };
 
