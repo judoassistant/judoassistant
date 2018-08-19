@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <iostream>
 
 #include "version.hpp"
 #include "exception.hpp"

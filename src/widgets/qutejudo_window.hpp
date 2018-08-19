@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QUrl>
 #include "stores/tournament_store.hpp"
+#include "core.hpp"
 
 class QutejudoWindow : public QMainWindow {
     Q_OBJECT
@@ -17,10 +18,14 @@ public:
     void createHelpMenu();
 private slots:
     void newTournament();
+    void openTournament();
+    void saveTournament();
+    void saveAsTournament();
     void openHomePage();
     void openManual();
     void openReportIssue();
 private:
     std::unique_ptr<TournamentStore> mTournament;
+    QString mFileName;
 };
 

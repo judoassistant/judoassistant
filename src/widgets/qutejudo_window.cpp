@@ -3,6 +3,12 @@
 #include <QTabWidget>
 #include <QAction>
 #include <QDesktopServices>
+#include <QFileDialog>
+#include <QtDebug>
+#include <QStandardPaths>
+#include <QMessageBox>
+#include <cereal/archives/portable_binary.hpp>
+#include <fstream>
 
 #include "widgets/qutejudo_window.hpp"
 #include "widgets/tournament_widget.hpp"
@@ -11,6 +17,7 @@
 #include "widgets/tatamis_widget.hpp"
 #include "widgets/matches_widget.hpp"
 #include "config/web.hpp"
+#include "exception.hpp"
 
 QutejudoWindow::QutejudoWindow() {
     createTournamentMenu();
@@ -50,6 +57,7 @@ void QutejudoWindow::createTournamentMenu() {
         QAction *action = new QAction(tr("Open.."), this);
         action->setShortcuts(QKeySequence::Open);
         action->setToolTip(tr("Load tournament from a file"));
+        connect(action, &QAction::triggered, this, &QutejudoWindow::openTournament);
         menu->addAction(action);
     }
 
@@ -61,8 +69,10 @@ void QutejudoWindow::createTournamentMenu() {
 
     {
         QAction *action = new QAction(tr("Save"), this);
+        action->setEnabled(false);
         action->setShortcuts(QKeySequence::Save);
         action->setToolTip(tr("Save tournament to a file"));
+        connect(action, &QAction::triggered, this, &QutejudoWindow::saveTournament);
         menu->addAction(action);
     }
 
@@ -70,6 +80,8 @@ void QutejudoWindow::createTournamentMenu() {
         QAction *action = new QAction(tr("Save As.."), this);
         action->setShortcuts(QKeySequence::SaveAs);
         action->setToolTip(tr("Save the tournament to file"));
+        connect(action, &QAction::triggered, this, &QutejudoWindow::saveAsTournament);
+        menu->addAction(action);
         menu->addAction(action);
     }
 
@@ -81,10 +93,6 @@ void QutejudoWindow::createTournamentMenu() {
         action->setToolTip(tr("Quit Qutejudo"));
         menu->addAction(action);
     }
-}
-
-void QutejudoWindow::newTournament() {
-
 }
 
 void QutejudoWindow::createEditMenu() {
@@ -146,15 +154,57 @@ void QutejudoWindow::createHelpMenu() {
 }
 
 void QutejudoWindow::openHomePage() {
-    // TODO: handle openUrl error
-    QDesktopServices::openUrl(Config::HOME_PAGE_URL);
+    if(QDesktopServices::openUrl(Config::HOME_PAGE_URL))
+        return;
+
+    // QMessageBox::information(this, tr("Unable to open home page."));
 }
 
 void QutejudoWindow::openManual() {
-    QDesktopServices::openUrl(Config::MANUAL_URL);
+    if(QDesktopServices::openUrl(Config::MANUAL_URL))
+        return;
+
+    QMessageBox::information(this, tr("Unable to open manual."), tr("The manual is available at"));
 }
 
 void QutejudoWindow::openReportIssue() {
-    QDesktopServices::openUrl(Config::REPORT_ISSUE_URL);
+    if(QDesktopServices::openUrl(Config::REPORT_ISSUE_URL))
+        return;
+
+    // QMessageBox::information(this, tr("Unable to open report issue page."));
 }
 
+void QutejudoWindow::newTournament() {
+    // TODO: implement
+}
+
+void QutejudoWindow::openTournament() {
+    // TODO: Implement
+}
+
+void QutejudoWindow::saveTournament() {
+    if (mFileName.isEmpty())
+        saveAsTournament();
+    // TODO: implement
+}
+
+void QutejudoWindow::saveAsTournament() {
+    qDebug() << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
+
+    if (fileName.isEmpty())
+        return;
+
+    mFileName = fileName;
+
+    std::ofstream file(mFileName.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
+    cereal::PortableBinaryOutputArchive archive(file);
+
+    if (!file.is_open()) {
+        QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        return;
+    }
+
+    // archieve(mTournament)
+    // TODO: serialize
+}
