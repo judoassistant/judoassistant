@@ -38,8 +38,8 @@ void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
     mPlayers[ptr->getId()] = std::move(ptr);
 }
 
-void TournamentStore::dispatchAction(std::unique_ptr<Action> action) {
-    (*action)(this);
+void TournamentStore::dispatchAction(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<Action> && action) {
+    (*action)(tournament);
     mActions.push(std::move(action));
 }
 

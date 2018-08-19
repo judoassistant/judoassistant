@@ -8,8 +8,8 @@
 
 class CreatePlayerAction : public Action {
 public:
-    CreatePlayerAction(TournamentStore * store, const std::string & firstName, const std::string & lastName, uint8_t age);
-    virtual bool operator()(TournamentStore * store) const;
+    CreatePlayerAction(std::unique_ptr<TournamentStore> & tournament, const std::string & firstName, const std::string & lastName, uint8_t age);
+    virtual bool operator()(std::unique_ptr<TournamentStore> & tournament) const;
     virtual std::unique_ptr<Action> getInverse() const;
 
 private:

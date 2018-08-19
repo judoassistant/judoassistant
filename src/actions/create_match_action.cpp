@@ -8,7 +8,7 @@ CreateMatchAction::CreateMatchAction(std::unique_ptr<TournamentStore> & tourname
     , mBluePlayer(bluePlayer)
 {}
 
-bool CreateMatchAction::operator()(TournamentStore * tournament) const {
+bool CreateMatchAction::operator()(std::unique_ptr<TournamentStore> & tournament) const {
     std::unique_ptr<CategoryStore> & category = tournament->getCategory(mCategory);
     category->addMatch(std::make_unique<MatchStore>(mId, mWhitePlayer, mBluePlayer));
     return true;

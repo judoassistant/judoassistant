@@ -12,8 +12,8 @@ CreateMatchEventAction::CreateMatchEventAction(Id category, Id match, std::uniqu
     , mEvent(std::move(event))
 {}
 
-bool CreateMatchEventAction::operator()(TournamentStore * store) const {
-    std::unique_ptr<CategoryStore> & category = store->getCategory(mCategoryId);
+bool CreateMatchEventAction::operator()(std::unique_ptr<TournamentStore> & tournament) const {
+    std::unique_ptr<CategoryStore> & category = tournament->getCategory(mCategoryId);
     std::unique_ptr<Ruleset> & ruleset = category->getRuleset();
     std::unique_ptr<MatchStore> & match = category->getMatch(mMatchId);
     std::unique_ptr<MatchEvent> event = mEvent->clone();

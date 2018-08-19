@@ -9,7 +9,7 @@
 class CreateMatchAction : public Action {
 public:
     CreateMatchAction(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
-    virtual bool operator()(TournamentStore * store) const;
+    virtual bool operator()(std::unique_ptr<TournamentStore> & tournament) const;
     virtual std::unique_ptr<Action> getInverse() const;
 
     Id getId() const;

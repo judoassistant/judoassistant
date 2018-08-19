@@ -27,7 +27,7 @@ public:
     std::unique_ptr<CategoryStore> & getCategory(Id id);
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
-    void dispatchAction(std::unique_ptr<Action> action);
+    void dispatchAction(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<Action> && action);
 
     Id generateNextPlayerId();
     Id generateNextCategoryId();

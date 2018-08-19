@@ -6,7 +6,7 @@ void PoolDrawStrategy::initCategory(const std::vector<Id> &players, std::unique_
         for (size_t j = i; j < players.size(); ++j) {
             std::unique_ptr<CreateMatchAction> action = std::make_unique<CreateMatchAction>(tournament, category, players[0], players[1]);
             mMatchIds.push_back(action->getId());
-            tournament->dispatchAction(std::move(action));
+            tournament->dispatchAction(tournament, std::move(action));
         }
     }
 }

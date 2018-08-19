@@ -2,17 +2,17 @@
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
-CreatePlayerAction::CreatePlayerAction(TournamentStore * store, const std::string & firstName, const std::string & lastName, uint8_t age)
+CreatePlayerAction::CreatePlayerAction(std::unique_ptr<TournamentStore> & tournament, const std::string & firstName, const std::string & lastName, uint8_t age)
     : mFirstName(firstName)
     , mLastName(lastName)
     , mAge(age)
-    , mId(store->generateNextPlayerId())
+    , mId(tournament->generateNextPlayerId())
 {
 }
 
-bool CreatePlayerAction::operator()(TournamentStore * store) const {
+bool CreatePlayerAction::operator()(std::unique_ptr<TournamentStore> & tournament) const {
     auto player = std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge);
-    store->addPlayer(std::move(player));
+    tournament->addPlayer(std::move(player));
     return true;
 }
 
