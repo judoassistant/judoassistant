@@ -4,7 +4,10 @@
 #include <vector>
 #include <chrono>
 
+#include "serialize.hpp"
 #include "core.hpp"
+
+#include "stores/match_event.hpp"
 
 class MatchStore;
 class MatchEvent;
@@ -15,6 +18,15 @@ struct PlayerScore {
     uint8_t wazari;
     uint8_t shido;
     bool hansokuMake;
+
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar("ippon", ippon);
+        ar("wazari", wazari);
+        ar("shido", shido);
+        ar("hansokuMake", hansokuMake);
+    }
 };
 
 class MatchStore {
@@ -45,51 +57,28 @@ public:
     bool isStopped() const;
     bool isGoldenScore() const;
     void setGoldenScore(bool val);
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar("id", mId);
+        ar("scores", mScores);
+        ar("players", mPlayers);
+        ar("isStopped", mIsStopped);
+        ar("goldenScore", mGoldenScore);
+        ar("time", mTime);
+        ar("clock", mClock);
+
+        // TODO: serialize match events
+        // ar("events", mEvents);
+    }
 private:
     Id mId;
-    PlayerScore mScores[2];
-    std::optional<Id> mPlayers[2];
+    std::array<PlayerScore,2> mScores;
+    std::array<std::optional<Id>,2> mPlayers;
     bool mIsStopped;
     bool mGoldenScore; // whether the match is currently in golden score or not
     std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed
     std::chrono::high_resolution_clock::duration mClock; // the value of the clock when it was last resumed
     std::vector<std::unique_ptr<MatchEvent>> mEvents;
-};
-
-class MatchEvent {
-public:
-    virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const = 0;
-    virtual std::unique_ptr<MatchEvent> getInverse() const = 0;
-    virtual std::unique_ptr<MatchEvent> clone() const = 0;
-};
-
-class StopMatchEvent : public MatchEvent {
-public:
-    StopMatchEvent(std::unique_ptr<MatchStore> & match);
-    StopMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock);
-
-    virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const;
-    virtual std::unique_ptr<MatchEvent> getInverse() const;
-    virtual std::unique_ptr<MatchEvent> clone() const;
-private:
-    std::chrono::high_resolution_clock::time_point mNewTime;
-    std::chrono::high_resolution_clock::time_point mOldTime;
-    std::chrono::high_resolution_clock::duration mNewClock;
-    std::chrono::high_resolution_clock::duration mOldClock;
-};
-
-class ResumeMatchEvent : public MatchEvent {
-public:
-    ResumeMatchEvent(std::unique_ptr<MatchStore> & match);
-    ResumeMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock);
-
-    virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const;
-    virtual std::unique_ptr<MatchEvent> getInverse() const;
-    virtual std::unique_ptr<MatchEvent> clone() const;
-private:
-    std::chrono::high_resolution_clock::time_point mNewTime;
-    std::chrono::high_resolution_clock::time_point mOldTime;
-    std::chrono::high_resolution_clock::duration mNewClock;
-    std::chrono::high_resolution_clock::duration mOldClock;
 };
 

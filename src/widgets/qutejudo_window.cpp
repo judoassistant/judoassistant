@@ -7,7 +7,7 @@
 #include <QtDebug>
 #include <QStandardPaths>
 #include <QMessageBox>
-#include <cereal/archives/portable_binary.hpp>
+
 #include <fstream>
 
 #include "widgets/qutejudo_window.hpp"
@@ -18,6 +18,16 @@
 #include "widgets/matches_widget.hpp"
 #include "config/web.hpp"
 #include "exception.hpp"
+#include "serialize.hpp"
+
+#include "stores/category_store.hpp"
+#include "stores/match_store.hpp"
+#include "stores/match_event.hpp"
+#include "stores/player_store.hpp"
+#include "stores/tournament_store.hpp"
+
+#include "actions/actions.hpp"
+#include "rulesets/rulesets.hpp"
 
 QutejudoWindow::QutejudoWindow() {
     createTournamentMenu();
@@ -69,7 +79,6 @@ void QutejudoWindow::createTournamentMenu() {
 
     {
         QAction *action = new QAction(tr("Save"), this);
-        action->setEnabled(false);
         action->setShortcuts(QKeySequence::Save);
         action->setToolTip(tr("Save tournament to a file"));
         connect(action, &QAction::triggered, this, &QutejudoWindow::saveTournament);
@@ -182,10 +191,22 @@ void QutejudoWindow::openTournament() {
     // TODO: Implement
 }
 
+void QutejudoWindow::writeTournament() {
+    std::ofstream file(mFileName.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
+
+    if (!file.is_open()) {
+        QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        return;
+    }
+
+    cereal::PortableBinaryOutputArchive archive(file);
+    archive(mTournament);
+}
 void QutejudoWindow::saveTournament() {
     if (mFileName.isEmpty())
         saveAsTournament();
-    // TODO: implement
+    else
+        writeTournament();
 }
 
 void QutejudoWindow::saveAsTournament() {
@@ -196,15 +217,5 @@ void QutejudoWindow::saveAsTournament() {
         return;
 
     mFileName = fileName;
-
-    std::ofstream file(mFileName.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
-    cereal::PortableBinaryOutputArchive archive(file);
-
-    if (!file.is_open()) {
-        QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
-        return;
-    }
-
-    // archieve(mTournament)
-    // TODO: serialize
+    writeTournament();
 }

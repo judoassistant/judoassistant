@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "serialize.hpp"
 #include "actions/action.hpp"
 #include "stores/tournament_store.hpp"
 #include "stores/player_store.hpp"

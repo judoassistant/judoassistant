@@ -13,6 +13,7 @@ CreatePlayerAction::CreatePlayerAction(std::unique_ptr<TournamentStore> & tourna
 bool CreatePlayerAction::operator()(std::unique_ptr<TournamentStore> & tournament) const {
     auto player = std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge);
     tournament->addPlayer(std::move(player));
+    tournament->playerAdded(mId);
     return true;
 }
 

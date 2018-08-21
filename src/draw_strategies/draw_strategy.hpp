@@ -2,8 +2,11 @@
 
 #include "core.hpp"
 #include <vector>
-#include "stores/category_store.hpp"
 #include "actions/action.hpp"
+#include "serialize.hpp"
+
+class CategoryStore;
+class TournamentStore;
 
 // TODO: Make const where appropriate
 class DrawStrategy {

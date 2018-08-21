@@ -1,6 +1,8 @@
-#pragma
+#pragma once
 
 #include "core.hpp"
+#include "serialize.hpp"
+
 #include "stores/match_store.hpp"
 
 // TODO: Make const where appropriate
@@ -21,5 +23,8 @@ public:
     virtual bool subtractIppon(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const;
     virtual bool enterGoldenScore(std::unique_ptr<MatchStore> & match) const;
     virtual bool exitGoldenScore(std::unique_ptr<MatchStore> & match) const; // used for undoing actions
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {}
 };
 

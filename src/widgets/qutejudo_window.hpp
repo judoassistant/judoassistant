@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QUrl>
 #include "stores/tournament_store.hpp"
+#include "rulesets/twentyeighteen_ruleset.hpp"
 #include "core.hpp"
 
 class QutejudoWindow : public QMainWindow {
@@ -25,6 +26,7 @@ private slots:
     void openManual();
     void openReportIssue();
 private:
+    void writeTournament();
     std::unique_ptr<TournamentStore> mTournament;
     QString mFileName;
 };

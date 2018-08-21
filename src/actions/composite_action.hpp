@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "core.hpp"
+#include "serialize.hpp"
 #include "actions/action.hpp"
 // TODO: implement
 

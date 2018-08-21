@@ -1,6 +1,7 @@
 #pragma once
 
-#include "src/draw_strategies/draw_strategy.hpp"
+#include "draw_strategies/draw_strategy.hpp"
+#include "serialize.hpp"
 
 class PoolDrawStrategy : public DrawStrategy {
 public:

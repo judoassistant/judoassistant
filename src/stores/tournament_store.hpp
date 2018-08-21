@@ -17,6 +17,10 @@ public:
         ar("name", mName);
         ar("players", mPlayers);
         ar("categories", mCategories);
+        ar("nextPlayerId", mNextPlayerId);
+        ar("nextCategoryId", mNextCategoryId);
+        ar("nextMatchId", mNextMatchId);
+        // actions
     }
 
     const std::string & getName() const;
@@ -32,6 +36,18 @@ public:
     Id generateNextPlayerId();
     Id generateNextCategoryId();
     Id generateNextMatchId();
+
+    // signals useful for Qt
+    virtual void tournamentChanged(Id id) {}
+    virtual void matchAdded(Id id) {}
+    virtual void matchChanged(Id id) {}
+    virtual void matchDeleted(Id id) {}
+    virtual void categoryAdded(Id id) {}
+    virtual void categoryChanged(Id id) {}
+    virtual void categoryDeleted(Id id) {}
+    virtual void playerAdded(Id id) {}
+    virtual void playerChanged(Id id) {}
+    virtual void playerDeleted(Id id) {}
 private:
     std::string mName;
 

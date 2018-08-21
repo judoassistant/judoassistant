@@ -20,6 +20,7 @@ bool CreateMatchEventAction::operator()(std::unique_ptr<TournamentStore> & tourn
 
     (*event)(match, ruleset);
     match->pushEvent(std::move(event));
+    tournament->matchChanged(match->getId());
     return true;
 }
 

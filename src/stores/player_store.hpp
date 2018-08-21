@@ -12,11 +12,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        ar & mId;
-        ar & mFirstName;
-        ar & mLastName;
-        ar & mAge;
-        ar & mCategories;
+        ar("id", mId);
+        ar("firstName", mFirstName);
+        ar("lastName", mLastName);
+        ar("age", mAge);
+        ar("categories", mCategories);
     }
 
     const std::unordered_set<Id> & getCategories() const;
