@@ -1,0 +1,15 @@
+subdir('models')
+
+sources += ['src/widgets/categories_widget.cpp']
+sources += ['src/widgets/matches_widget.cpp']
+sources += ['src/widgets/players_widget.cpp']
+sources += ['src/widgets/qutejudo_window.cpp']
+sources += ['src/widgets/tatamis_widget.cpp']
+sources += ['src/widgets/tournament_widget.cpp']
+
+moc_headers += ['src/widgets/categories_widget.hpp']
+moc_headers += ['src/widgets/matches_widget.hpp']
+moc_headers += ['src/widgets/players_widget.hpp']
+moc_headers += ['src/widgets/qutejudo_window.hpp']
+moc_headers += ['src/widgets/tatamis_widget.hpp']
+moc_headers += ['src/widgets/tournament_widget.hpp']

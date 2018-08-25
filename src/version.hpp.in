@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION_MAJOR @qutejudo_VERSION_MAJOR@
-#define VERSION_MINOR @qutejudo_VERSION_MINOR@
-#define VERSION_PATCH @qutejudo_VERSION_PATCH@
+#define VERSION_MAJOR @version_major@
+#define VERSION_MINOR @version_minor@
+#define VERSION_PATCH @version_patch@
 

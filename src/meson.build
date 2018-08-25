@@ -1,0 +1,6 @@
+subdir('actions')
+subdir('applications')
+subdir('draw_strategies')
+subdir('rulesets')
+subdir('stores')
+subdir('widgets')

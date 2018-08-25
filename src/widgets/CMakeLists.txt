@@ -1,6 +1,0 @@
-add_sources(categories_widget.cpp)
-add_sources(matches_widget.cpp)
-add_sources(players_widget.cpp)
-add_sources(tatamis_widget.cpp)
-add_sources(tournament_widget.cpp)
-add_sources(qutejudo_window.cpp)
