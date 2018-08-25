@@ -36,6 +36,7 @@ public:
         BLUE = 1
     };
 
+    MatchStore() {}
     MatchStore(Id id, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
 
     Id getId() const;

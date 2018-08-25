@@ -8,6 +8,7 @@
 
 class PlayerStore {
 public:
+    PlayerStore() {}
     PlayerStore(Id id, const std::string & firstName, const std::string & lastName, uint8_t age);
 
     template<typename Archive>

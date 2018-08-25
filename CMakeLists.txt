@@ -48,6 +48,7 @@ add_subdirectory(src/draw_strategies)
 add_subdirectory(src/rulesets)
 add_subdirectory(src/stores)
 add_subdirectory(src/widgets)
+add_subdirectory(src/widgets/models)
 
 # qutejudo executable
 set(qutejudo_SOURCES ${SRCS} src/qutejudo.cpp)

@@ -4,6 +4,7 @@
 #include <stack>
 
 #include "core.hpp"
+#include "serialize.hpp"
 #include "actions/action.hpp"
 #include "stores/player_store.hpp"
 #include "stores/category_store.hpp"
