@@ -15,6 +15,10 @@ conf_data.set('version_patch', '0')
 
 configure_file(input : 'src/version.hpp.in', output: 'version.hpp', configuration: conf_data)
 
+# Copy icons
+configure_file(input : 'icomoon/SVG/116-user-plus.svg', output: 'player-add.svg', copy: true)
+configure_file(input : 'icomoon/SVG/117-user-minus.svg', output: 'player-delete.svg', copy: true)
+
 # Find all sources and headers
 include_dirs = include_directories(['.', 'src', 'cereal/include'])
 

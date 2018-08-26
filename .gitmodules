@@ -1,3 +1,6 @@
 [submodule "cereal"]
 	path = cereal
 	url = https://github.com/USCiLab/cereal.git
+[submodule "icomoon"]
+	path = icomoon
+	url = https://github.com/Keyamoon/IcoMoon-Free.git

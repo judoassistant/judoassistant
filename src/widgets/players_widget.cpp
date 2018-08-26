@@ -9,9 +9,9 @@ PlayersWidget::PlayersWidget(QTournamentStore &tournament)
     {
         QToolBar *toolBar = new QToolBar(tr("Players toolbar"), this);
         qDebug() << QIcon::themeName();
-        toolBar->addAction(QIcon::fromTheme("document-new"), tr("New player"));
-        toolBar->addAction(QIcon::fromTheme("contact-new"), tr("Edit player"));
-        toolBar->addAction(QIcon::fromTheme("contact-new"), tr("Delete player"));
+        toolBar->addAction(QIcon("player-add.svg"), tr("New player"));
+        toolBar->addAction(QIcon("player-delete.svg"), tr("Edit player"));
+        toolBar->addAction(QIcon("player-delete.svg"), tr("Delete player"));
 
         layout->addWidget(toolBar);
 
