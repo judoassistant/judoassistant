@@ -15,7 +15,11 @@ conf_data.set('version_patch', '0')
 
 configure_file(input : 'src/version.hpp.in', output: 'version.hpp', configuration: conf_data)
 
+# Copy license
+configure_file(input : 'LICENSE', output: 'qutejudo-license.txt', copy: true)
+
 # Copy icons
+configure_file(input : 'icomoon/License.txt', output: 'icomoon-license.txt', copy: true)
 configure_file(input : 'icomoon/SVG/116-user-plus.svg', output: 'player-add.svg', copy: true)
 configure_file(input : 'icomoon/SVG/117-user-minus.svg', output: 'player-delete.svg', copy: true)
 
