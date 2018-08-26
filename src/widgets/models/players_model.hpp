@@ -1,5 +1,6 @@
 #pragma once
 #include <QAbstractTableModel>
+#include <set>
 #include "store_handlers/qstore_handler.hpp"
 
 class PlayersModel : public QAbstractTableModel {
@@ -17,5 +18,7 @@ public slots:
     void playerDeleted(Id id);
     void tournamentReset();
 private:
+    const int COLUMN_COUNT = 3;
     QStoreHandler & mStoreHandler;
+    std::set<Id> mIds;
 };
