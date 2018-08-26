@@ -32,6 +32,7 @@
 QutejudoWindow::QutejudoWindow() {
     mTournament = std::make_unique<QTournamentStore>();
 
+    createStatusBar();
     createTournamentMenu();
     createEditMenu();
     createViewMenu();
@@ -53,13 +54,17 @@ QutejudoWindow::QutejudoWindow() {
     setWindowTitle(tr("Qutejudo"));
 }
 
+void QutejudoWindow::createStatusBar() {
+    statusBar();
+}
+
 void QutejudoWindow::createTournamentMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Tournament"));
 
     {
         QAction *action = new QAction(tr("New"), this);
         action->setShortcuts(QKeySequence::New);
-        action->setToolTip(tr("Create a new tournament"));
+        action->setStatusTip(tr("Create a new tournament"));
         connect(action, &QAction::triggered, this, &QutejudoWindow::newTournament);
         menu->addAction(action);
     }
@@ -69,7 +74,7 @@ void QutejudoWindow::createTournamentMenu() {
     {
         QAction *action = new QAction(tr("Open.."), this);
         action->setShortcuts(QKeySequence::Open);
-        action->setToolTip(tr("Load tournament from a file"));
+        action->setStatusTip(tr("Load tournament from a file"));
         connect(action, &QAction::triggered, this, &QutejudoWindow::openTournament);
         menu->addAction(action);
     }
@@ -84,7 +89,7 @@ void QutejudoWindow::createTournamentMenu() {
     {
         QAction *action = new QAction(tr("Save"), this);
         action->setShortcuts(QKeySequence::Save);
-        action->setToolTip(tr("Save tournament to a file"));
+        action->setStatusTip(tr("Save tournament to a file"));
         connect(action, &QAction::triggered, this, &QutejudoWindow::saveTournament);
         menu->addAction(action);
     }
@@ -92,7 +97,7 @@ void QutejudoWindow::createTournamentMenu() {
     {
         QAction *action = new QAction(tr("Save As.."), this);
         action->setShortcuts(QKeySequence::SaveAs);
-        action->setToolTip(tr("Save the tournament to file"));
+        action->setStatusTip(tr("Save the tournament to file"));
         connect(action, &QAction::triggered, this, &QutejudoWindow::saveAsTournament);
         menu->addAction(action);
         menu->addAction(action);
@@ -103,7 +108,7 @@ void QutejudoWindow::createTournamentMenu() {
     {
         QAction *action = new QAction(tr("Quit"), this);
         action->setShortcuts(QKeySequence::Quit);
-        action->setToolTip(tr("Quit Qutejudo"));
+        action->setStatusTip(tr("Quit Qutejudo"));
         menu->addAction(action);
     }
 }
@@ -114,14 +119,14 @@ void QutejudoWindow::createEditMenu() {
     {
         QAction *action = new QAction(tr("Undo"), this);
         action->setShortcuts(QKeySequence::Undo);
-        action->setToolTip(tr("Undo last action"));
+        action->setStatusTip(tr("Undo last action"));
         menu->addAction(action);
     }
 
     {
         QAction *action = new QAction(tr("Redo"), this);
         action->setShortcuts(QKeySequence::Redo);
-        action->setToolTip(tr("Redo the last undone action"));
+        action->setStatusTip(tr("Redo the last undone action"));
         menu->addAction(action);
     }
 }
@@ -197,6 +202,7 @@ void QutejudoWindow::writeTournament() {
 
     cereal::PortableBinaryOutputArchive archive(file);
     archive(*mTournament);
+    statusBar()->showMessage(tr("Saved tournament to file"));
 }
 
 void QutejudoWindow::readTournament() {
@@ -210,6 +216,7 @@ void QutejudoWindow::readTournament() {
     mTournament = std::make_unique<QTournamentStore>();
     cereal::PortableBinaryInputArchive archive(file);
     archive(*mTournament);
+    statusBar()->showMessage(tr("Opened tournament from file"));
 }
 
 void QutejudoWindow::newTournament() {

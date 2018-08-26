@@ -13,6 +13,7 @@ class QutejudoWindow : public QMainWindow {
 public:
     QutejudoWindow();
 
+    void createStatusBar();
     void createTournamentMenu();
     void createEditMenu();
     void createViewMenu();
