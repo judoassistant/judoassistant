@@ -24,12 +24,14 @@
 #include "stores/match_store.hpp"
 #include "stores/match_event.hpp"
 #include "stores/player_store.hpp"
-#include "stores/tournament_store.hpp"
+#include "stores/qtournament_store.hpp"
 
 #include "actions/actions.hpp"
 #include "rulesets/rulesets.hpp"
 
 QutejudoWindow::QutejudoWindow() {
+    mTournament = std::make_unique<QTournamentStore>();
+
     createTournamentMenu();
     createEditMenu();
     createViewMenu();
@@ -37,11 +39,12 @@ QutejudoWindow::QutejudoWindow() {
     createHelpMenu();
 
     QTabWidget * tabWidget = new QTabWidget(this);
-    tabWidget->addTab(new TournamentWidget(), tr("Tournament"));
-    tabWidget->addTab(new PlayersWidget(), tr("Players"));
-    tabWidget->addTab(new CategoriesWidget(), tr("Categories"));
-    tabWidget->addTab(new TatamisWidget(), tr("Tatamis"));
-    tabWidget->addTab(new MatchesWidget(), tr("Matches"));
+    tabWidget->addTab(new TournamentWidget(mTournament), tr("Tournament"));
+    tabWidget->addTab(new PlayersWidget(mTournament), tr("Players"));
+    tabWidget->addTab(new CategoriesWidget(mTournament), tr("Categories"));
+    tabWidget->addTab(new TatamisWidget(mTournament), tr("Tatamis"));
+    tabWidget->addTab(new MatchesWidget(mTournament), tr("Matches"));
+    tabWidget->setCurrentIndex(1);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
     setCentralWidget(tabWidget);

@@ -1,5 +1,5 @@
 #include "widgets/categories_widget.hpp"
 
-CategoriesWidget::CategoriesWidget() {
+CategoriesWidget::CategoriesWidget(std::unique_ptr<QTournamentStore> &tournament) {
 
 }

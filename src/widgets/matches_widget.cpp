@@ -1,5 +1,5 @@
 #include "widgets/matches_widget.hpp"
 
-MatchesWidget::MatchesWidget() {
+MatchesWidget::MatchesWidget(std::unique_ptr<QTournamentStore> &tournament) {
 
 }

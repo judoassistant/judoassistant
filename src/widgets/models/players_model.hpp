@@ -6,15 +6,12 @@ class PlayersModel : public QAbstractTableModel {
     Q_OBJECT
 public:
     PlayersModel(std::unique_ptr<QTournamentStore> & tournament, QObject * parent);
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 public slots:
-    void tournamentChanged(Id id);
-    void matchAdded(Id id);
-    void matchChanged(Id id);
-    void matchDeleted(Id id);
-    void categoryAdded(Id id);
-    void categoryChanged(Id id);
-    void categoryDeleted(Id id);
     void playerAdded(Id id);
     void playerChanged(Id id);
     void playerDeleted(Id id);

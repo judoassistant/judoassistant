@@ -25,9 +25,9 @@ public:
     StopMatchEvent(std::unique_ptr<MatchStore> & match);
     StopMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock);
 
-    virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const;
-    virtual std::unique_ptr<MatchEvent> getInverse() const;
-    virtual std::unique_ptr<MatchEvent> clone() const;
+    bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const override;
+    std::unique_ptr<MatchEvent> getInverse() const override;
+    std::unique_ptr<MatchEvent> clone() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -49,9 +49,9 @@ public:
     ResumeMatchEvent(std::unique_ptr<MatchStore> & match);
     ResumeMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock);
 
-    virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const;
-    virtual std::unique_ptr<MatchEvent> getInverse() const;
-    virtual std::unique_ptr<MatchEvent> clone() const;
+    bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const override;
+    std::unique_ptr<MatchEvent> getInverse() const override;
+    std::unique_ptr<MatchEvent> clone() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

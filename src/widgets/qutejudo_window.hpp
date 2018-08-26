@@ -2,9 +2,10 @@
 
 #include <QMainWindow>
 #include <QUrl>
-#include "stores/tournament_store.hpp"
-#include "rulesets/twentyeighteen_ruleset.hpp"
+
 #include "core.hpp"
+#include "stores/qtournament_store.hpp"
+#include "rulesets/twentyeighteen_ruleset.hpp"
 
 class QutejudoWindow : public QMainWindow {
     Q_OBJECT
@@ -27,7 +28,7 @@ private slots:
     void openReportIssue();
 private:
     void writeTournament();
-    std::unique_ptr<TournamentStore> mTournament;
+    std::unique_ptr<QTournamentStore> mTournament;
     QString mFileName;
 };
 

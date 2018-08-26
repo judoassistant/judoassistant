@@ -10,16 +10,16 @@ class TwentyEighteenRuleset : public Ruleset {
 private:
     const std::chrono::high_resolution_clock::duration NORMAL_TIME = std::chrono::minutes(4);
 public:
-    virtual bool addWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual bool subtractWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual bool subtractShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual bool addShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual bool isFinished(std::unique_ptr<MatchStore> & match) const = 0;
-    virtual bool shouldStop(std::unique_ptr<MatchStore> & match) const = 0;
-    virtual bool shouldEnterGoldenScore(std::unique_ptr<MatchStore> & match) const = 0;
-    virtual std::optional<MatchStore::PlayerIndex> getWinner(std::unique_ptr<MatchStore> & match) const = 0;
-    virtual bool stop(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const;
-    virtual bool resume(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const;
+    bool addWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const override;
+    bool subtractWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const override;
+    bool subtractShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const override;
+    bool addShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const override;
+    bool isFinished(std::unique_ptr<MatchStore> & match) const override;
+    bool shouldStop(std::unique_ptr<MatchStore> & match) const override;
+    bool shouldEnterGoldenScore(std::unique_ptr<MatchStore> & match) const override;
+    std::optional<MatchStore::PlayerIndex> getWinner(std::unique_ptr<MatchStore> & match) const override;
+    bool stop(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const override;
+    bool resume(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}

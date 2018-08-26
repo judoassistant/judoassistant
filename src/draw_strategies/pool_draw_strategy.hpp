@@ -7,10 +7,10 @@ class PoolDrawStrategy : public DrawStrategy {
 public:
     PoolDrawStrategy();
 
-    virtual void initCategory(const std::vector<Id> &players, std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) = 0;
-    virtual void updateCategory(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category);
-    virtual bool isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) const;
-    virtual Id get_rank(size_t rank) const;
+    void initCategory(const std::vector<Id> &players, std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) override;
+    void updateCategory(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) override;
+    bool isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) const override;
+    Id get_rank(size_t rank) const override;
 private:
     std::vector<Id> mMatchIds;
 };

@@ -4,35 +4,9 @@ PlayersModel::PlayersModel(std::unique_ptr<QTournamentStore> & tournament, QObje
     : QAbstractTableModel(parent)
     , mTournament(tournament)
 {
-    QObject::connect(mTournament.get(), &QTournamentStore::playerAddedSignal, this, &PlayersModel::playerAdded);
-}
-
-void PlayersModel::tournamentChanged(Id id) {
-    // TODO
-}
-
-void PlayersModel::matchAdded(Id id) {
-    // TODO
-}
-
-void PlayersModel::matchChanged(Id id) {
-    // TODO
-}
-
-void PlayersModel::matchDeleted(Id id) {
-    // TODO
-}
-
-void PlayersModel::categoryAdded(Id id) {
-    // TODO
-}
-
-void PlayersModel::categoryChanged(Id id) {
-    // TODO
-}
-
-void PlayersModel::categoryDeleted(Id id) {
-    // TODO
+    QObject::connect(mTournament.get(), &QTournamentStore::playerAdded, this, &PlayersModel::playerAdded);
+    QObject::connect(mTournament.get(), &QTournamentStore::playerChanged, this, &PlayersModel::playerChanged);
+    QObject::connect(mTournament.get(), &QTournamentStore::playerDeleted, this, &PlayersModel::playerDeleted);
 }
 
 void PlayersModel::playerAdded(Id id) {
@@ -45,5 +19,33 @@ void PlayersModel::playerChanged(Id id) {
 
 void PlayersModel::playerDeleted(Id id) {
     // TODO
+}
+
+int PlayersModel::rowCount(const QModelIndex &parent) const {
+    return mTournament->getPlayers().size();
+}
+
+int PlayersModel::columnCount(const QModelIndex &parent) const {
+    return 3;
+}
+
+QVariant PlayersModel::data(const QModelIndex &index, int role) const {
+    // TODO
+}
+
+QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (role == Qt::DisplayRole) {
+        if (orientation == Qt::Horizontal) {
+            switch (section) {
+                case 0:
+                    return QString(tr("First name"));
+                case 1:
+                    return QString(tr("Last name"));
+                case 2:
+                    return QString(tr("Age"));
+            }
+        }
+    }
+    return QVariant();
 }
 

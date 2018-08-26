@@ -6,21 +6,21 @@
 #include "serialize.hpp"
 #include "stores/tournament_store.hpp"
 
-class QTournamentStore : public QObject {
+class QTournamentStore : public QObject, public TournamentStore {
     Q_OBJECT
 public:
     QTournamentStore() {}
+
 signals:
-    // signals useful for Qt
-    // void tournamentChanged(Id id);
-    // void matchAdded(Id id);
-    // void matchChanged(Id id);
-    // void matchDeleted(Id id);
-    // void categoryAdded(Id id);
-    // void categoryChanged(Id id);
-    // void categoryDeleted(Id id);
-    void playerAddedSignal(Id);
-    // void playerChanged(Id id);
-    // void playerDeleted(Id id);
+    void tournamentChanged(Id id) override;
+    void matchAdded(Id id) override;
+    void matchChanged(Id id) override;
+    void matchDeleted(Id id) override;
+    void categoryAdded(Id id) override;
+    void categoryChanged(Id id) override;
+    void categoryDeleted(Id id) override;
+    void playerAdded(Id) override;
+    void playerChanged(Id id) override;
+    void playerDeleted(Id id) override;
 };
 
