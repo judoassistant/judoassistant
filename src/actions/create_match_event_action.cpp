@@ -1,8 +1,8 @@
 #include "actions/create_match_event_action.hpp"
 
-CreateMatchEventAction::CreateMatchEventAction(std::unique_ptr<CategoryStore> & category, std::unique_ptr<MatchStore> & match, std::unique_ptr<MatchEvent> && event)
-    : mCategoryId(category->getId())
-    , mMatchId(match->getId())
+CreateMatchEventAction::CreateMatchEventAction(CategoryStore & category, MatchStore & match, std::unique_ptr<MatchEvent> && event)
+    : mCategoryId(category.getId())
+    , mMatchId(match.getId())
     , mEvent(std::move(event))
 {}
 
@@ -12,15 +12,15 @@ CreateMatchEventAction::CreateMatchEventAction(Id category, Id match, std::uniqu
     , mEvent(std::move(event))
 {}
 
-bool CreateMatchEventAction::operator()(std::unique_ptr<TournamentStore> & tournament) const {
-    std::unique_ptr<CategoryStore> & category = tournament->getCategory(mCategoryId);
-    std::unique_ptr<Ruleset> & ruleset = category->getRuleset();
-    std::unique_ptr<MatchStore> & match = category->getMatch(mMatchId);
+bool CreateMatchEventAction::operator()(TournamentStore & tournament) const {
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+    Ruleset & ruleset = category.getRuleset();
+    MatchStore & match = category.getMatch(mMatchId);
     std::unique_ptr<MatchEvent> event = mEvent->clone();
 
     (*event)(match, ruleset);
-    match->pushEvent(std::move(event));
-    tournament->matchChanged(match->getId());
+    match.pushEvent(std::move(event));
+    tournament.matchChanged(match.getId());
     return true;
 }
 

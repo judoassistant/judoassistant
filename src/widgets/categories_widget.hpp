@@ -10,6 +10,6 @@ class CategoriesWidget : public QWidget {
     Q_OBJECT
 
 public:
-    CategoriesWidget(std::unique_ptr<QTournamentStore> &tournament);
+    CategoriesWidget(QTournamentStore &tournament);
 };
 

@@ -18,12 +18,12 @@ public:
     const Id & getId() const;
 
     const std::map<Id, std::unique_ptr<MatchStore>> & getMatches() const;
-    std::unique_ptr<MatchStore> & getMatch(Id id);
+    MatchStore & getMatch(Id id);
 
     void addMatch(std::unique_ptr<MatchStore> && ptr);
 
     void setRuleset(std::unique_ptr<Ruleset> && ptr);
-    std::unique_ptr<Ruleset> & getRuleset();
+    Ruleset & getRuleset();
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

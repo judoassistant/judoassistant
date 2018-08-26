@@ -1,7 +1,7 @@
 #include "widgets/players_widget.hpp"
 #include "widgets/models/players_model.hpp"
 
-PlayersWidget::PlayersWidget(std::unique_ptr<QTournamentStore> &tournament)
+PlayersWidget::PlayersWidget(QTournamentStore &tournament)
     : mTournament(tournament)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);

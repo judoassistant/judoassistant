@@ -9,8 +9,8 @@
 
 class CreatePlayerAction : public Action {
 public:
-    CreatePlayerAction(std::unique_ptr<TournamentStore> & tournament, const std::string & firstName, const std::string & lastName, uint8_t age);
-    bool operator()(std::unique_ptr<TournamentStore> & tournament) const override;
+    CreatePlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, uint8_t age);
+    bool operator()(TournamentStore & tournament) const override;
     std::unique_ptr<Action> getInverse() const override;
 
 private:

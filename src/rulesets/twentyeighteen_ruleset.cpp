@@ -1,7 +1,7 @@
 #include "rulesets/twentyeighteen_ruleset.hpp"
 
-bool TwentyEighteenRuleset::addWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match->getPlayerScore(playerIndex);
+bool TwentyEighteenRuleset::addWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+    PlayerScore & score = match.getPlayerScore(playerIndex);
     if (score.ippon == 1)
         return false;
     score.wazari = (score.wazari + 1) % 2;
@@ -9,8 +9,8 @@ bool TwentyEighteenRuleset::addWazari(std::unique_ptr<MatchStore> & match, Match
     return true;
 }
 
-bool TwentyEighteenRuleset::subtractWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match->getPlayerScore(playerIndex);
+bool TwentyEighteenRuleset::subtractWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+    PlayerScore & score = match.getPlayerScore(playerIndex);
     if (score.ippon == 0 && score.wazari == 0)
         return false;
     score.wazari = (score.wazari + 1) % 2;
@@ -19,8 +19,8 @@ bool TwentyEighteenRuleset::subtractWazari(std::unique_ptr<MatchStore> & match, 
     return true;
 }
 
-bool TwentyEighteenRuleset::addShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match->getPlayerScore(playerIndex);
+bool TwentyEighteenRuleset::addShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+    PlayerScore & score = match.getPlayerScore(playerIndex);
     if (score.hansokuMake == 1)
         return false;
     score.shido = (score.shido + 1) % 2;
@@ -28,8 +28,8 @@ bool TwentyEighteenRuleset::addShido(std::unique_ptr<MatchStore> & match, MatchS
     return true;
 }
 
-bool TwentyEighteenRuleset::subtractShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match->getPlayerScore(playerIndex);
+bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+    PlayerScore & score = match.getPlayerScore(playerIndex);
     if (score.hansokuMake == 0 && score.shido == 0)
         return false;
     score.wazari = (score.wazari + 2) % 3;
@@ -38,38 +38,38 @@ bool TwentyEighteenRuleset::subtractShido(std::unique_ptr<MatchStore> & match, M
 }
 
 
-bool TwentyEighteenRuleset::isFinished(std::unique_ptr<MatchStore> & match) const {
-    if (!match->isStopped())
+bool TwentyEighteenRuleset::isFinished(MatchStore & match) const {
+    if (!match.isStopped())
         return false;
 
-    PlayerScore & whiteScore = match->getPlayerScore(MatchStore::PlayerIndex::WHITE);
-    PlayerScore & blueScore = match->getPlayerScore(MatchStore::PlayerIndex::BLUE);
+    PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
+    PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
 
     if (whiteScore.hansokuMake || blueScore.hansokuMake) // also handle the case when both players are disqualified
         return true;
     return getWinner(match).has_value();
 }
 
-bool TwentyEighteenRuleset::shouldStop(std::unique_ptr<MatchStore> & match) const {
-    if (match->getCurrentClock() > NORMAL_TIME && !match->isGoldenScore())
+bool TwentyEighteenRuleset::shouldStop(MatchStore & match) const {
+    if (match.getCurrentClock() > NORMAL_TIME && !match.isGoldenScore())
         return true;
     if (getWinner(match).has_value())
         return true;
     return false;
 }
 
-bool TwentyEighteenRuleset::shouldEnterGoldenScore(std::unique_ptr<MatchStore> & match) const {
+bool TwentyEighteenRuleset::shouldEnterGoldenScore(MatchStore & match) const {
     if (getWinner(match).has_value())
         return false;
-    if (match->getCurrentClock() >= NORMAL_TIME && !match->isGoldenScore())
+    if (match.getCurrentClock() >= NORMAL_TIME && !match.isGoldenScore())
         return true;
     return false;
 }
 
-std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(std::unique_ptr<MatchStore> & match) const {
-    PlayerScore & whiteScore = match->getPlayerScore(MatchStore::PlayerIndex::WHITE);
-    PlayerScore & blueScore = match->getPlayerScore(MatchStore::PlayerIndex::BLUE);
-    auto currentClock = match->getCurrentClock();
+std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(MatchStore & match) const {
+    PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
+    PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
+    auto currentClock = match.getCurrentClock();
 
     if (whiteScore.ippon == 1)
         return MatchStore::PlayerIndex::WHITE;
@@ -87,24 +87,24 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(std::uni
     return std::nullopt;
 }
 
-bool TwentyEighteenRuleset::stop(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
-    if (match->isStopped())
+bool TwentyEighteenRuleset::stop(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
+    if (match.isStopped())
         return false;
-    match->setTime(time);
-    if (clock > NORMAL_TIME && !match->isGoldenScore())
-        match->setClock(NORMAL_TIME);
+    match.setTime(time);
+    if (clock > NORMAL_TIME && !match.isGoldenScore())
+        match.setClock(NORMAL_TIME);
     else
-        match->setClock(clock);
-    match->stop();
+        match.setClock(clock);
+    match.stop();
     return true;
 }
 
-bool TwentyEighteenRuleset::resume(std::unique_ptr<MatchStore> & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
-    if (!match->isStopped())
+bool TwentyEighteenRuleset::resume(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
+    if (!match.isStopped())
         return false;
-    match->setTime(time);
-    match->setClock(clock);
-    match->resume();
+    match.setTime(time);
+    match.setClock(clock);
+    match.resume();
     return true;
 }
 

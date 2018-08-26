@@ -10,10 +10,10 @@
 
 class CreateMatchEventAction : public Action {
 public:
-    CreateMatchEventAction(std::unique_ptr<CategoryStore> & category, std::unique_ptr<MatchStore> & match, std::unique_ptr<MatchEvent> && event);
+    CreateMatchEventAction(CategoryStore & category, MatchStore & match, std::unique_ptr<MatchEvent> && event);
     CreateMatchEventAction(Id category, Id match, std::unique_ptr<MatchEvent> && event);
 
-    bool operator()(std::unique_ptr<TournamentStore> & tournament) const override;
+    bool operator()(TournamentStore & tournament) const override;
     std::unique_ptr<Action> getInverse() const override;
 private:
     Id mCategoryId;

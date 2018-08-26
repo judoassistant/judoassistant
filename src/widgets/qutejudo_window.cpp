@@ -39,11 +39,11 @@ QutejudoWindow::QutejudoWindow() {
     createHelpMenu();
 
     QTabWidget * tabWidget = new QTabWidget(this);
-    tabWidget->addTab(new TournamentWidget(mTournament), tr("Tournament"));
-    tabWidget->addTab(new PlayersWidget(mTournament), tr("Players"));
-    tabWidget->addTab(new CategoriesWidget(mTournament), tr("Categories"));
-    tabWidget->addTab(new TatamisWidget(mTournament), tr("Tatamis"));
-    tabWidget->addTab(new MatchesWidget(mTournament), tr("Matches"));
+    tabWidget->addTab(new TournamentWidget(*mTournament), tr("Tournament"));
+    tabWidget->addTab(new PlayersWidget(*mTournament), tr("Players"));
+    tabWidget->addTab(new CategoriesWidget(*mTournament), tr("Categories"));
+    tabWidget->addTab(new TatamisWidget(*mTournament), tr("Tatamis"));
+    tabWidget->addTab(new MatchesWidget(*mTournament), tr("Matches"));
     tabWidget->setCurrentIndex(1);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
@@ -203,7 +203,7 @@ void QutejudoWindow::writeTournament() {
     }
 
     cereal::PortableBinaryOutputArchive archive(file);
-    archive(mTournament);
+    archive(*mTournament);
 }
 void QutejudoWindow::saveTournament() {
     if (mFileName.isEmpty())

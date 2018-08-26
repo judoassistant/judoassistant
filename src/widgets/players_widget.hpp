@@ -11,8 +11,8 @@ class PlayersWidget : public QWidget {
     Q_OBJECT
 
 public:
-    PlayersWidget(std::unique_ptr<QTournamentStore> &tournament);
+    PlayersWidget(QTournamentStore &tournament);
 private:
-    std::unique_ptr<QTournamentStore> &mTournament;
+    QTournamentStore &mTournament;
 };
 

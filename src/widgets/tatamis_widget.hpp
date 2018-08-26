@@ -10,6 +10,6 @@ class TatamisWidget : public QWidget {
     Q_OBJECT
 
 public:
-    TatamisWidget(std::unique_ptr<QTournamentStore> &tournament);
+    TatamisWidget(QTournamentStore &tournament);
 };
 

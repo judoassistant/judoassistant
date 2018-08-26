@@ -1,12 +1,12 @@
 #include "widgets/models/players_model.hpp"
 
-PlayersModel::PlayersModel(std::unique_ptr<QTournamentStore> & tournament, QObject * parent)
+PlayersModel::PlayersModel(QTournamentStore & tournament, QObject * parent)
     : QAbstractTableModel(parent)
     , mTournament(tournament)
 {
-    QObject::connect(mTournament.get(), &QTournamentStore::playerAdded, this, &PlayersModel::playerAdded);
-    QObject::connect(mTournament.get(), &QTournamentStore::playerChanged, this, &PlayersModel::playerChanged);
-    QObject::connect(mTournament.get(), &QTournamentStore::playerDeleted, this, &PlayersModel::playerDeleted);
+    QObject::connect(&mTournament, &QTournamentStore::playerAdded, this, &PlayersModel::playerAdded);
+    QObject::connect(&mTournament, &QTournamentStore::playerChanged, this, &PlayersModel::playerChanged);
+    QObject::connect(&mTournament, &QTournamentStore::playerDeleted, this, &PlayersModel::playerDeleted);
 }
 
 void PlayersModel::playerAdded(Id id) {
@@ -22,7 +22,7 @@ void PlayersModel::playerDeleted(Id id) {
 }
 
 int PlayersModel::rowCount(const QModelIndex &parent) const {
-    return mTournament->getPlayers().size();
+    return mTournament.getPlayers().size();
 }
 
 int PlayersModel::columnCount(const QModelIndex &parent) const {

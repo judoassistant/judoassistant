@@ -10,7 +10,7 @@ class MatchEvent {
 public:
     virtual ~MatchEvent() {}
 
-    virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const = 0;
+    virtual bool operator()(MatchStore & match, Ruleset & ruleset) const = 0;
     virtual std::unique_ptr<MatchEvent> getInverse() const = 0;
     virtual std::unique_ptr<MatchEvent> clone() const = 0;
 
@@ -22,10 +22,10 @@ public:
 class StopMatchEvent : public MatchEvent {
 public:
     StopMatchEvent() {}
-    StopMatchEvent(std::unique_ptr<MatchStore> & match);
+    StopMatchEvent(MatchStore & match);
     StopMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock);
 
-    bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const override;
+    bool operator()(MatchStore & match, Ruleset & ruleset) const override;
     std::unique_ptr<MatchEvent> getInverse() const override;
     std::unique_ptr<MatchEvent> clone() const override;
 
@@ -46,10 +46,10 @@ private:
 class ResumeMatchEvent : public MatchEvent {
 public:
     ResumeMatchEvent() {}
-    ResumeMatchEvent(std::unique_ptr<MatchStore> & match);
+    ResumeMatchEvent(MatchStore & match);
     ResumeMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock);
 
-    bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const override;
+    bool operator()(MatchStore & match, Ruleset & ruleset) const override;
     std::unique_ptr<MatchEvent> getInverse() const override;
     std::unique_ptr<MatchEvent> clone() const override;
 

@@ -9,15 +9,15 @@ StopMatchEvent::StopMatchEvent(std::chrono::high_resolution_clock::time_point ne
     , mOldClock(oldClock)
 {}
 
-StopMatchEvent::StopMatchEvent(std::unique_ptr<MatchStore> & match) {
+StopMatchEvent::StopMatchEvent(MatchStore & match) {
     mNewTime = std::chrono::high_resolution_clock::now();
-    mOldTime = match->getTime();
-    mNewClock = match->getClock() + (mNewTime - mOldTime);
-    mOldClock = match->getClock();
+    mOldTime = match.getTime();
+    mNewClock = match.getClock() + (mNewTime - mOldTime);
+    mOldClock = match.getClock();
 }
 
-bool StopMatchEvent::operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const {
-    return ruleset->stop(match, mNewTime, mNewClock);
+bool StopMatchEvent::operator()(MatchStore & match, Ruleset & ruleset) const {
+    return ruleset.stop(match, mNewTime, mNewClock);
 }
 
 std::unique_ptr<MatchEvent> StopMatchEvent::getInverse() const {
@@ -28,11 +28,11 @@ std::unique_ptr<MatchEvent> StopMatchEvent::clone() const {
     return std::make_unique<StopMatchEvent>(*this);
 }
 
-ResumeMatchEvent::ResumeMatchEvent(std::unique_ptr<MatchStore> & match) {
+ResumeMatchEvent::ResumeMatchEvent(MatchStore & match) {
     mNewTime = std::chrono::high_resolution_clock::now();
-    mOldTime = match->getTime();
-    mNewClock = match->getClock() + (mNewTime - mOldTime);
-    mOldClock = match->getClock();
+    mOldTime = match.getTime();
+    mNewClock = match.getClock() + (mNewTime - mOldTime);
+    mOldClock = match.getClock();
 }
 
 ResumeMatchEvent::ResumeMatchEvent(std::chrono::high_resolution_clock::time_point newTime, std::chrono::high_resolution_clock::time_point oldTime, std::chrono::high_resolution_clock::duration newClock, std::chrono::high_resolution_clock::duration oldClock)
@@ -42,8 +42,8 @@ ResumeMatchEvent::ResumeMatchEvent(std::chrono::high_resolution_clock::time_poin
     , mOldClock(oldClock)
 {}
 
-bool ResumeMatchEvent::operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const {
-    return ruleset->resume(match, mNewTime, mNewClock);
+bool ResumeMatchEvent::operator()(MatchStore & match, Ruleset & ruleset) const {
+    return ruleset.resume(match, mNewTime, mNewClock);
 }
 
 std::unique_ptr<MatchEvent> ResumeMatchEvent::getInverse() const {

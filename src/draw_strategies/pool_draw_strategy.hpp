@@ -7,9 +7,9 @@ class PoolDrawStrategy : public DrawStrategy {
 public:
     PoolDrawStrategy();
 
-    void initCategory(const std::vector<Id> &players, std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) override;
-    void updateCategory(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) override;
-    bool isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) const override;
+    void initCategory(const std::vector<Id> &players, TournamentStore & tournament, CategoryStore & category) override;
+    void updateCategory(TournamentStore & tournament, CategoryStore & category) override;
+    bool isFinished(TournamentStore & tournament, CategoryStore & category) const override;
     Id get_rank(size_t rank) const override;
 private:
     std::vector<Id> mMatchIds;
