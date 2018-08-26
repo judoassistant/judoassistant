@@ -18,20 +18,8 @@
 #include "widgets/matches_widget.hpp"
 #include "config/web.hpp"
 #include "exception.hpp"
-#include "serialize.hpp"
-
-#include "stores/category_store.hpp"
-#include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
-#include "stores/player_store.hpp"
-#include "stores/qtournament_store.hpp"
-
-#include "actions/actions.hpp"
-#include "rulesets/rulesets.hpp"
 
 QutejudoWindow::QutejudoWindow() {
-    mTournament = std::make_unique<QTournamentStore>();
-
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
@@ -40,11 +28,11 @@ QutejudoWindow::QutejudoWindow() {
     createHelpMenu();
 
     QTabWidget * tabWidget = new QTabWidget(this);
-    tabWidget->addTab(new TournamentWidget(*mTournament), tr("Tournament"));
-    tabWidget->addTab(new PlayersWidget(*mTournament), tr("Players"));
-    tabWidget->addTab(new CategoriesWidget(*mTournament), tr("Categories"));
-    tabWidget->addTab(new TatamisWidget(*mTournament), tr("Tatamis"));
-    tabWidget->addTab(new MatchesWidget(*mTournament), tr("Matches"));
+    tabWidget->addTab(new TournamentWidget(mStoreHandler), tr("Tournament"));
+    tabWidget->addTab(new PlayersWidget(mStoreHandler), tr("Players"));
+    tabWidget->addTab(new CategoriesWidget(mStoreHandler), tr("Categories"));
+    tabWidget->addTab(new TatamisWidget(mStoreHandler), tr("Tatamis"));
+    tabWidget->addTab(new MatchesWidget(mStoreHandler), tr("Matches"));
     tabWidget->setCurrentIndex(1);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
@@ -193,36 +181,23 @@ void QutejudoWindow::openReportIssue() {
 }
 
 void QutejudoWindow::writeTournament() {
-    std::ofstream file(mFileName.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
-
-    if (!file.is_open()) {
+    if (!mStoreHandler.write(mFileName))
         QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
-        return;
-    }
-
-    cereal::PortableBinaryOutputArchive archive(file);
-    archive(*mTournament);
-    statusBar()->showMessage(tr("Saved tournament to file"));
+    else
+        statusBar()->showMessage(tr("Saved tournament to file"));
 }
 
 void QutejudoWindow::readTournament() {
-    std::ifstream file(mFileName.toStdString(), std::ios::in | std::ios::binary);
-
-    if (!file.is_open()) {
+    if (!mStoreHandler.read(mFileName))
         QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
-        return;
-    }
-
-    mTournament = std::make_unique<QTournamentStore>();
-    cereal::PortableBinaryInputArchive archive(file);
-    archive(*mTournament);
-    statusBar()->showMessage(tr("Opened tournament from file"));
+    else
+        statusBar()->showMessage(tr("Opened tournament from file"));
 }
 
 void QutejudoWindow::newTournament() {
     // TODO: handle unsaved changes
     mFileName = "";
-    mTournament = std::make_unique<QTournamentStore>();
+    mStoreHandler.reset();
 }
 
 void QutejudoWindow::openTournament() {

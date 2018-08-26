@@ -4,7 +4,7 @@
 #include <QUrl>
 
 #include "core.hpp"
-#include "stores/qtournament_store.hpp"
+#include "store_handlers/master_store_handler.hpp"
 #include "rulesets/twentyeighteen_ruleset.hpp"
 
 class QutejudoWindow : public QMainWindow {
@@ -30,7 +30,7 @@ private slots:
 private:
     void writeTournament();
     void readTournament();
-    std::unique_ptr<QTournamentStore> mTournament;
+    MasterStoreHandler mStoreHandler;
     QString mFileName;
 };
 

@@ -5,14 +5,14 @@
 #include <QtWidgets>
 
 #include "core.hpp"
-#include "stores/qtournament_store.hpp"
+#include "store_handlers/qstore_handler.hpp"
 
 class PlayersWidget : public QWidget {
     Q_OBJECT
 
 public:
-    PlayersWidget(QTournamentStore &tournament);
+    PlayersWidget(QStoreHandler &storeHandler);
 private:
-    QTournamentStore &mTournament;
+    QStoreHandler &mStoreHandler;
 };
 

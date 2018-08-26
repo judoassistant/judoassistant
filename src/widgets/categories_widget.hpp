@@ -4,12 +4,12 @@
 #include <QString>
 
 #include "core.hpp"
-#include "stores/qtournament_store.hpp"
+#include "store_handlers/qstore_handler.hpp"
 
 class CategoriesWidget : public QWidget {
     Q_OBJECT
 
 public:
-    CategoriesWidget(QTournamentStore &tournament);
+    CategoriesWidget(QStoreHandler & storeHandler);
 };
 

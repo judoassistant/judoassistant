@@ -5,7 +5,6 @@
 
 #include "core.hpp"
 #include "serialize.hpp"
-#include "actions/action.hpp"
 #include "stores/player_store.hpp"
 #include "stores/category_store.hpp"
 
@@ -22,7 +21,6 @@ public:
         ar("nextPlayerId", mNextPlayerId);
         ar("nextCategoryId", mNextCategoryId);
         ar("nextMatchId", mNextMatchId);
-        // actions
     }
 
     const std::string & getName() const;
@@ -34,7 +32,6 @@ public:
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     PlayerStore & getPlayer(Id id);
-    void dispatchAction(std::unique_ptr<Action> && action);
 
     Id generateNextPlayerId();
     Id generateNextCategoryId();
@@ -56,7 +53,6 @@ private:
 
     std::unordered_map<Id, std::unique_ptr<PlayerStore>> mPlayers;
     std::unordered_map<Id, std::unique_ptr<CategoryStore>> mCategories;
-    std::stack<std::unique_ptr<Action>> mActions;
 
     Id mNextPlayerId;
     Id mNextCategoryId;

@@ -1,8 +1,8 @@
 #include "widgets/players_widget.hpp"
 #include "widgets/models/players_model.hpp"
 
-PlayersWidget::PlayersWidget(QTournamentStore &tournament)
-    : mTournament(tournament)
+PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
+    : mStoreHandler(storeHandler)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -20,7 +20,7 @@ PlayersWidget::PlayersWidget(QTournamentStore &tournament)
 
     {
         QTableView *tableView = new QTableView(this);
-        PlayersModel *model = new PlayersModel(tournament, layout);
+        PlayersModel *model = new PlayersModel(storeHandler, layout);
         tableView->setModel(model);
         tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 

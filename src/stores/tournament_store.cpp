@@ -43,11 +43,6 @@ PlayerStore & TournamentStore::getPlayer(Id id) {
     return *mPlayers[id];
 }
 
-void TournamentStore::dispatchAction(std::unique_ptr<Action> && action) {
-    (*action)(*this);
-    mActions.push(std::move(action));
-}
-
 CategoryStore & TournamentStore::getCategory(Id id) {
     return *mCategories[id];
 }

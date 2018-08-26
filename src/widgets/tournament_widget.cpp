@@ -1,5 +1,5 @@
 #include "widgets/tournament_widget.hpp"
 
-TournamentWidget::TournamentWidget(QTournamentStore &tournament) {
+TournamentWidget::TournamentWidget(QStoreHandler &storeHandler) {
 
 }

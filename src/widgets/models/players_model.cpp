@@ -1,12 +1,16 @@
 #include "widgets/models/players_model.hpp"
+#include "stores/qtournament_store.hpp"
 
-PlayersModel::PlayersModel(QTournamentStore & tournament, QObject * parent)
+PlayersModel::PlayersModel(QStoreHandler & storeHandler, QObject * parent)
     : QAbstractTableModel(parent)
-    , mTournament(tournament)
+    , mStoreHandler(storeHandler)
 {
-    QObject::connect(&mTournament, &QTournamentStore::playerAdded, this, &PlayersModel::playerAdded);
-    QObject::connect(&mTournament, &QTournamentStore::playerChanged, this, &PlayersModel::playerChanged);
-    QObject::connect(&mTournament, &QTournamentStore::playerDeleted, this, &PlayersModel::playerDeleted);
+    QTournamentStore & tournament = storeHandler.getTournament();
+
+    QObject::connect(&tournament, &QTournamentStore::playerAdded, this, &PlayersModel::playerAdded);
+    QObject::connect(&tournament, &QTournamentStore::playerChanged, this, &PlayersModel::playerChanged);
+    QObject::connect(&tournament, &QTournamentStore::playerDeleted, this, &PlayersModel::playerDeleted);
+    QObject::connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
 }
 
 void PlayersModel::playerAdded(Id id) {
@@ -21,8 +25,12 @@ void PlayersModel::playerDeleted(Id id) {
     // TODO
 }
 
+void PlayersModel::tournamentReset() {
+    // TODO
+}
+
 int PlayersModel::rowCount(const QModelIndex &parent) const {
-    return mTournament.getPlayers().size();
+    return mStoreHandler.getTournament().getPlayers().size();
 }
 
 int PlayersModel::columnCount(const QModelIndex &parent) const {
