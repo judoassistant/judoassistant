@@ -75,7 +75,8 @@ void QutejudoWindow::createTournamentMenu() {
     }
 
     {
-        QMenu * submenu = menu->addMenu("Open Recent");
+        // TODO: Implement open recent
+        // QMenu * submenu = menu->addMenu("Open Recent");
     }
 
     menu->addSeparator();
@@ -186,14 +187,6 @@ void QutejudoWindow::openReportIssue() {
     // QMessageBox::information(this, tr("Unable to open report issue page."));
 }
 
-void QutejudoWindow::newTournament() {
-    // TODO: implement
-}
-
-void QutejudoWindow::openTournament() {
-    // TODO: Implement
-}
-
 void QutejudoWindow::writeTournament() {
     std::ofstream file(mFileName.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
 
@@ -205,6 +198,37 @@ void QutejudoWindow::writeTournament() {
     cereal::PortableBinaryOutputArchive archive(file);
     archive(*mTournament);
 }
+
+void QutejudoWindow::readTournament() {
+    std::ifstream file(mFileName.toStdString(), std::ios::in | std::ios::binary);
+
+    if (!file.is_open()) {
+        QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        return;
+    }
+
+    mTournament = std::make_unique<QTournamentStore>();
+    cereal::PortableBinaryInputArchive archive(file);
+    archive(*mTournament);
+}
+
+void QutejudoWindow::newTournament() {
+    // TODO: handle unsaved changes
+    mFileName = "";
+    mTournament = std::make_unique<QTournamentStore>();
+}
+
+void QutejudoWindow::openTournament() {
+    // TODO: handle unsaved changes
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
+
+    if (fileName.isEmpty())
+        return;
+
+    mFileName = fileName;
+    readTournament();
+}
+
 void QutejudoWindow::saveTournament() {
     if (mFileName.isEmpty())
         saveAsTournament();
@@ -213,7 +237,6 @@ void QutejudoWindow::saveTournament() {
 }
 
 void QutejudoWindow::saveAsTournament() {
-    qDebug() << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
 
     if (fileName.isEmpty())

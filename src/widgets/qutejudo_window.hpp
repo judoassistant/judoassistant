@@ -28,6 +28,7 @@ private slots:
     void openReportIssue();
 private:
     void writeTournament();
+    void readTournament();
     std::unique_ptr<QTournamentStore> mTournament;
     QString mFileName;
 };

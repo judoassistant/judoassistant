@@ -11,6 +11,11 @@ class QTournamentStore : public QObject, public TournamentStore {
 public:
     QTournamentStore() {}
 
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        cereal::base_class<TournamentStore>(this);
+    }
+
 signals:
     void tournamentChanged(Id id) override;
     void matchAdded(Id id) override;
@@ -24,3 +29,5 @@ signals:
     void playerDeleted(Id id) override;
 };
 
+CEREAL_REGISTER_TYPE(QTournamentStore)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(TournamentStore, QTournamentStore)
