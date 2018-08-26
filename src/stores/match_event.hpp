@@ -8,6 +8,8 @@ class Ruleset;
 
 class MatchEvent {
 public:
+    virtual ~MatchEvent() {}
+
     virtual bool operator()(std::unique_ptr<MatchStore> & match, std::unique_ptr<Ruleset> & ruleset) const = 0;
     virtual std::unique_ptr<MatchEvent> getInverse() const = 0;
     virtual std::unique_ptr<MatchEvent> clone() const = 0;

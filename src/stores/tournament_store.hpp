@@ -12,6 +12,7 @@
 class TournamentStore {
 public:
     TournamentStore();
+    virtual ~TournamentStore();
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

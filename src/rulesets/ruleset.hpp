@@ -8,6 +8,7 @@
 // TODO: Make const where appropriate
 class Ruleset {
 public:
+    virtual ~Ruleset() {}
     virtual bool addWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual bool subtractWazari(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual bool subtractShido(std::unique_ptr<MatchStore> & match, MatchStore::PlayerIndex playerIndex) const = 0;

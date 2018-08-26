@@ -11,6 +11,7 @@ class TournamentStore;
 // TODO: Make const where appropriate
 class DrawStrategy {
 public:
+    virtual ~DrawStrategy() {};
     virtual void initCategory(const std::vector<Id> &players, std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) = 0;
     virtual void updateCategory(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) = 0;
     virtual bool isFinished(std::unique_ptr<TournamentStore> & tournament, std::unique_ptr<CategoryStore> & category) const = 0;

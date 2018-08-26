@@ -5,6 +5,7 @@ TournamentStore::TournamentStore()
     , mNextCategoryId(0)
 {}
 
+TournamentStore::~TournamentStore() {}
 
 const std::string & TournamentStore::getName() const {
     return mName;
