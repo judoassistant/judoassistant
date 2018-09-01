@@ -1,4 +1,12 @@
 #include "store_handlers/master_store_handler.hpp"
+#include "actions/create_player_action.hpp"
+
+MasterStoreHandler::MasterStoreHandler()
+    : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
+{
+    dispatch(std::make_unique<CreatePlayerAction>(getTournament(), "Bob", "Johnson", 29));
+    dispatch(std::make_unique<CreatePlayerAction>(getTournament(), "Alice", "Carpenter", 27));
+}
 
 bool MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
     return (*action)(*mTournament);
