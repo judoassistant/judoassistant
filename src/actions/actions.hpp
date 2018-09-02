@@ -4,3 +4,4 @@
 #include "actions/create_match_action.hpp"
 #include "actions/create_match_event_action.hpp"
 #include "actions/create_player_action.hpp"
+#include "actions/change_tournament_name_action.hpp"

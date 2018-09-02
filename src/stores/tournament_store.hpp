@@ -21,6 +21,8 @@ public:
         ar("nextPlayerId", mNextPlayerId);
         ar("nextCategoryId", mNextCategoryId);
         ar("nextMatchId", mNextMatchId);
+
+        std::cout << "Serialize called" << std::endl;
     }
 
     const std::string & getName() const;
@@ -38,7 +40,7 @@ public:
     Id generateNextMatchId();
 
     // signals useful for Qt
-    virtual void tournamentChanged(Id id) {}
+    virtual void tournamentChanged() {}
     virtual void matchAdded(Id id) {}
     virtual void matchChanged(Id id) {}
     virtual void matchDeleted(Id id) {}

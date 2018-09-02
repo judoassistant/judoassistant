@@ -1,5 +1,6 @@
 #include "widgets/players_widget.hpp"
 #include "widgets/models/players_model.hpp"
+#include "widgets/create_player_dialog.hpp"
 
 PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
     : mStoreHandler(storeHandler)
@@ -8,8 +9,13 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
     {
         QToolBar *toolBar = new QToolBar(tr("Players toolbar"), this);
-        qDebug() << QIcon::themeName();
-        toolBar->addAction(QIcon("player-add.svg"), tr("New player"));
+
+        QAction *playerCreateAction = new QAction(QIcon("player-add.svg"), tr("New player"));
+        playerCreateAction->setStatusTip(tr("Create a new player"));
+        toolBar->addAction(playerCreateAction);
+
+        connect(playerCreateAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
+
         toolBar->addAction(QIcon("player-delete.svg"), tr("Edit player"));
         toolBar->addAction(QIcon("player-delete.svg"), tr("Delete player"));
 
@@ -27,4 +33,10 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
         layout->addWidget(tableView);
     }
     setLayout(layout);
+}
+
+void PlayersWidget::showPlayerCreateDialog() {
+    CreatePlayerDialog dialog(mStoreHandler, this);
+
+    dialog.exec();
 }

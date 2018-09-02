@@ -67,7 +67,7 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString(QString::fromStdString(player.getLastName()));
             case 2:
-                return QString(player.getAge());
+                return player.getAge();
         }
     }
     return QVariant();

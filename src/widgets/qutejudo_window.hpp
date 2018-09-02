@@ -27,6 +27,7 @@ private slots:
     void openHomePage();
     void openManual();
     void openReportIssue();
+    void showAboutDialog();
 private:
     void writeTournament();
     void readTournament();

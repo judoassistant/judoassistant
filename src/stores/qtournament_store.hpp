@@ -13,11 +13,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        cereal::base_class<TournamentStore>(this);
+        ar(cereal::base_class<TournamentStore>(this));
     }
 
 signals:
-    void tournamentChanged(Id id) override;
+    void tournamentChanged() override;
     void matchAdded(Id id) override;
     void matchChanged(Id id) override;
     void matchDeleted(Id id) override;

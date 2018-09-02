@@ -9,9 +9,10 @@
 
 class PlayersWidget : public QWidget {
     Q_OBJECT
-
 public:
     PlayersWidget(QStoreHandler &storeHandler);
+public slots:
+    void showPlayerCreateDialog();
 private:
     QStoreHandler &mStoreHandler;
 };

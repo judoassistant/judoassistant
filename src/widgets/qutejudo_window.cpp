@@ -155,6 +155,7 @@ void QutejudoWindow::createHelpMenu() {
     }
     {
         QAction *action = new QAction(tr("About"), this);
+        connect(action, &QAction::triggered, this, &QutejudoWindow::showAboutDialog);
         menu->addAction(action);
     }
 }
@@ -226,4 +227,8 @@ void QutejudoWindow::saveAsTournament() {
 
     mFileName = fileName;
     writeTournament();
+}
+
+void QutejudoWindow::showAboutDialog() {
+    QMessageBox::about(this, tr("Qutejudo - About"), tr("TODO"));
 }
