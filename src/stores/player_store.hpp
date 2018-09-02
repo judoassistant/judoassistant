@@ -5,6 +5,7 @@
 #include <unordered_set>
 
 #include "core.hpp"
+#include "serialize.hpp"
 
 class PlayerStore {
 public:
@@ -13,11 +14,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        ar("id", mId);
-        ar("firstName", mFirstName);
-        ar("lastName", mLastName);
-        ar("age", mAge);
-        ar("categories", mCategories);
+        ar(cereal::make_nvp("id", mId));
+        ar(cereal::make_nvp("firstName", mFirstName));
+        ar(cereal::make_nvp("lastName", mLastName));
+        ar(cereal::make_nvp("age", mAge));
+        ar(cereal::make_nvp("categories", mCategories));
     }
 
     const std::unordered_set<Id> & getCategories() const;

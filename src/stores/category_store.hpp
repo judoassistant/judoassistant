@@ -27,12 +27,12 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar("id", mId);
-        ar("name", mName);
-        ar("players", mPlayers);
-        ar("matches", mMatches);
-        ar("ruleset", mRuleset);
-        ar("drawStrategy", mDrawStrategy);
+        ar(cereal::make_nvp("id", mId));
+        ar(cereal::make_nvp("name", mName));
+        ar(cereal::make_nvp("players", mPlayers));
+        ar(cereal::make_nvp("matches", mMatches));
+        ar(cereal::make_nvp("ruleset", mRuleset));
+        ar(cereal::make_nvp("drawStrategy", mDrawStrategy));
     }
 private:
     Id mId;

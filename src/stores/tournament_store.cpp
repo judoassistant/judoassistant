@@ -12,7 +12,6 @@ const std::string & TournamentStore::getName() const {
 }
 
 void TournamentStore::setName(const std::string & name) {
-    std::cout << "Change name " << name << std::endl;
     mName = name;
 }
 

@@ -31,10 +31,10 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mNewTime);
-        ar(mOldTime);
-        ar(mNewClock);
-        ar(mOldClock);
+        ar(cereal::make_nvp("newTime", mNewTime));
+        ar(cereal::make_nvp("oldTime", mOldTime));
+        ar(cereal::make_nvp("newClock", mNewClock));
+        ar(cereal::make_nvp("oldClock", mOldClock));
     }
 private:
     std::chrono::high_resolution_clock::time_point mNewTime;
@@ -55,10 +55,10 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mNewTime);
-        ar(mOldTime);
-        ar(mNewClock);
-        ar(mOldClock);
+        ar(cereal::make_nvp("newTime", mNewTime));
+        ar(cereal::make_nvp("oldTime", mOldTime));
+        ar(cereal::make_nvp("newClock", mNewClock));
+        ar(cereal::make_nvp("oldClock", mOldClock));
     }
 private:
     std::chrono::high_resolution_clock::time_point mNewTime;

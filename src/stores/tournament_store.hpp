@@ -15,14 +15,12 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar("name", mName);
-        ar("players", mPlayers);
-        ar("categories", mCategories);
-        ar("nextPlayerId", mNextPlayerId);
-        ar("nextCategoryId", mNextCategoryId);
-        ar("nextMatchId", mNextMatchId);
-
-        std::cout << "Serialize called" << std::endl;
+        ar(cereal::make_nvp("name", mName));
+        ar(cereal::make_nvp("players", mPlayers));
+        ar(cereal::make_nvp("categories", mCategories));
+        ar(cereal::make_nvp("nextPlayerId", mNextPlayerId));
+        ar(cereal::make_nvp("nextCategoryId", mNextCategoryId));
+        ar(cereal::make_nvp("nextMatchId", mNextMatchId));
     }
 
     const std::string & getName() const;

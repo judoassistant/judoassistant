@@ -22,10 +22,10 @@ struct PlayerScore {
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar("ippon", ippon);
-        ar("wazari", wazari);
-        ar("shido", shido);
-        ar("hansokuMake", hansokuMake);
+        ar(cereal::make_nvp("ippon", ippon));
+        ar(cereal::make_nvp("wazari", wazari));
+        ar(cereal::make_nvp("shido", shido));
+        ar(cereal::make_nvp("hansokuMake", hansokuMake));
     }
 };
 
@@ -61,13 +61,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar("id", mId);
-        ar("scores", mScores);
-        ar("players", mPlayers);
-        ar("isStopped", mIsStopped);
-        ar("goldenScore", mGoldenScore);
-        ar("time", mTime);
-        ar("clock", mClock);
+        ar(cereal::make_nvp("id", mId));
+        ar(cereal::make_nvp("scores", mScores));
+        ar(cereal::make_nvp("players", mPlayers));
+        ar(cereal::make_nvp("isStopped", mIsStopped));
+        ar(cereal::make_nvp("goldenScore", mGoldenScore));
+        ar(cereal::make_nvp("time", mTime));
+        ar(cereal::make_nvp("clock", mClock));
 
         // TODO: serialize match events
         // ar("events", mEvents);
