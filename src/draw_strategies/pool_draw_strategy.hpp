@@ -13,6 +13,8 @@ public:
     bool isFinished(TournamentStore & tournament, CategoryStore & category) const override;
     Id get_rank(size_t rank) const override;
     std::unique_ptr<DrawStrategy> clone() const override;
+    std::string getName() const override;
+    static std::string getStaticName();
 private:
     std::vector<Id> mMatchIds;
 };

@@ -121,3 +121,13 @@ bool TwentyEighteenRuleset::resume(MatchStore & match, std::chrono::high_resolut
 std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
     return std::make_unique<TwentyEighteenRuleset>();
 }
+
+std::string TwentyEighteenRuleset::getName() const {
+    return TwentyEighteenRuleset::getStaticName();
+}
+
+std::string TwentyEighteenRuleset::getStaticName() {
+    return "2018";
+    // TODO: Translate non-qt classes
+}
+

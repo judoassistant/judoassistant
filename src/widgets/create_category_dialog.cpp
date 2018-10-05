@@ -7,18 +7,25 @@
 #include "widgets/create_category_dialog.hpp"
 #include "actions/category_actions.hpp"
 
+#include "rulesets/rulesets.hpp"
+#include "draw_strategies/draw_strategies.hpp"
+
 CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget *parent)
     : QDialog(parent)
     , mStoreHandler(storeHandler)
 {
-    mFirstNameContent = new QLineEdit;
-    mLastNameContent = new QLineEdit;
-    mAgeContent = new QSpinBox;
+    mNameContent = new QLineEdit;
+
+    mRulesetContent = new QComboBox;
+    mRulesetContent->addItem(QString::fromStdString(TwentyEighteenRuleset::getStaticName()));
+
+    mDrawStrategyContent = new QComboBox;
+    mDrawStrategyContent->addItem(QString::fromStdString(PoolDrawStrategy::getStaticName()));
 
     QFormLayout *formLayout = new QFormLayout;
-    formLayout->addRow(tr("First name"), mFirstNameContent);
-    formLayout->addRow(tr("Last name"), mLastNameContent);
-    formLayout->addRow(tr("Age"), mAgeContent);
+    formLayout->addRow(tr("Name"), mNameContent);
+    formLayout->addRow(tr("Ruleset"), mRulesetContent);
+    formLayout->addRow(tr("Draw System"), mDrawStrategyContent);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
@@ -28,13 +35,14 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
     mainLayout->addLayout(formLayout);
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
-    setWindowTitle(tr("Create new player"));
+    setWindowTitle(tr("Create new category"));
 
     connect(buttonBox, &QDialogButtonBox::accepted, this, &CreateCategoryDialog::acceptClick);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &CreateCategoryDialog::cancelClick);
 }
 
 void CreateCategoryDialog::acceptClick() {
+    // TODO: implement
     // mStoreHandler.dispatch(std::make_unique<CreateCategoryAction>(mStoreHandler.getTournament(), mFirstNameContent->text().toStdString(), mLastNameContent->text().toStdString(), mAgeContent->value()));
     accept();
 }
@@ -42,3 +50,4 @@ void CreateCategoryDialog::acceptClick() {
 void CreateCategoryDialog::cancelClick() {
     reject();
 }
+

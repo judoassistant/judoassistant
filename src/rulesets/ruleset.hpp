@@ -9,6 +9,9 @@
 class Ruleset {
 public:
     virtual ~Ruleset() {}
+
+    virtual std::string getName() const = 0;
+
     virtual bool addWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual bool subtractWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual bool subtractShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const = 0;

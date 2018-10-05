@@ -34,3 +34,12 @@ Id PoolDrawStrategy::get_rank(size_t rank) const {
 std::unique_ptr<DrawStrategy> PoolDrawStrategy::clone() const {
     return std::make_unique<PoolDrawStrategy>();
 }
+
+std::string PoolDrawStrategy::getName() const {
+    return PoolDrawStrategy::getStaticName();
+}
+
+std::string PoolDrawStrategy::getStaticName() {
+    return "Pool";
+    // TODO: Translate non-qt classes
+}

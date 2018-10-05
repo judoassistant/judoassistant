@@ -5,7 +5,7 @@
 
 #include <QDialog>
 #include <QLineEdit>
-#include <QSpinBox>
+#include <QComboBox>
 
 class QStoreHandler;
 
@@ -19,7 +19,7 @@ public slots:
     void cancelClick();
 private:
     QStoreHandler & mStoreHandler;
-    QLineEdit *mFirstNameContent;
-    QLineEdit *mLastNameContent;
-    QSpinBox *mAgeContent;
+    QLineEdit *mNameContent;
+    QComboBox *mRulesetContent;
+    QComboBox *mDrawStrategyContent;
 };
