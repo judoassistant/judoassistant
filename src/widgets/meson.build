@@ -7,6 +7,7 @@ sources += ['src/widgets/qutejudo_window.cpp']
 sources += ['src/widgets/tatamis_widget.cpp']
 sources += ['src/widgets/tournament_widget.cpp']
 sources += ['src/widgets/create_player_dialog.cpp']
+sources += ['src/widgets/create_category_dialog.cpp']
 
 moc_headers += ['src/widgets/categories_widget.hpp']
 moc_headers += ['src/widgets/matches_widget.hpp']
@@ -15,4 +16,5 @@ moc_headers += ['src/widgets/qutejudo_window.hpp']
 moc_headers += ['src/widgets/tatamis_widget.hpp']
 moc_headers += ['src/widgets/tournament_widget.hpp']
 moc_headers += ['src/widgets/create_player_dialog.hpp']
+moc_headers += ['src/widgets/create_category_dialog.hpp']
 
