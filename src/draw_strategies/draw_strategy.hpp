@@ -19,3 +19,5 @@ public:
     virtual Id get_rank(size_t rank) const = 0; // TODO: change this interface to handle players sharing rank
 };
 
+// TODO: somehow handle undoing of winning scores (remove matches after they have been created)
+
