@@ -1,8 +1,11 @@
 #include "stores/category_store.hpp"
 
-CategoryStore::CategoryStore() {
-
-}
+CategoryStore::CategoryStore(Id id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
+    : mId(id)
+    , mName(name)
+    , mRuleset(std::move(ruleset))
+    , mDrawStrategy(std::move(drawStrategy))
+{}
 
 void CategoryStore::addMatch(std::unique_ptr<MatchStore> && ptr) {
     mMatches[ptr->getId()] = std::move(ptr);

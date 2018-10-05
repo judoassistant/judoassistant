@@ -11,7 +11,8 @@
 
 class CategoryStore {
 public:
-    CategoryStore();
+    CategoryStore() {}
+    CategoryStore(Id id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
 
     const std::unordered_set<Id> & getPlayers() const;
     const std::string & getName() const;

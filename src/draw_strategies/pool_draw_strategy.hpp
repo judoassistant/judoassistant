@@ -6,12 +6,13 @@
 
 class PoolDrawStrategy : public DrawStrategy {
 public:
-    PoolDrawStrategy();
+    PoolDrawStrategy() {}
 
     void initCategory(StoreHandler & store_handler, const std::vector<Id> &players, TournamentStore & tournament, CategoryStore & category) override;
     void updateCategory(StoreHandler & store_handler, TournamentStore & tournament, CategoryStore & category) override;
     bool isFinished(TournamentStore & tournament, CategoryStore & category) const override;
     Id get_rank(size_t rank) const override;
+    std::unique_ptr<DrawStrategy> clone() const override;
 private:
     std::vector<Id> mMatchIds;
 };

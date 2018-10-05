@@ -23,6 +23,8 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}
+
+    std::unique_ptr<Ruleset> clone() const override;
 };
 
 CEREAL_REGISTER_TYPE(TwentyEighteenRuleset)

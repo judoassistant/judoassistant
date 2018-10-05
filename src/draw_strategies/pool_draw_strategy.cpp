@@ -31,3 +31,6 @@ Id PoolDrawStrategy::get_rank(size_t rank) const {
     // TODO
 }
 
+std::unique_ptr<DrawStrategy> PoolDrawStrategy::clone() const {
+    return std::make_unique<PoolDrawStrategy>();
+}

@@ -15,3 +15,4 @@ moc_headers += ['src/widgets/qutejudo_window.hpp']
 moc_headers += ['src/widgets/tatamis_widget.hpp']
 moc_headers += ['src/widgets/tournament_widget.hpp']
 moc_headers += ['src/widgets/create_player_dialog.hpp']
+

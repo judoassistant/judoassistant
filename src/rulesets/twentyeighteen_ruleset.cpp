@@ -118,3 +118,6 @@ bool TwentyEighteenRuleset::resume(MatchStore & match, std::chrono::high_resolut
     return true;
 }
 
+std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
+    return std::make_unique<TwentyEighteenRuleset>();
+}

@@ -17,6 +17,7 @@ public:
     virtual void updateCategory(StoreHandler & store_handler, TournamentStore & tournament, CategoryStore & category) = 0;
     virtual bool isFinished(TournamentStore & tournament, CategoryStore & category) const = 0;
     virtual Id get_rank(size_t rank) const = 0; // TODO: change this interface to handle players sharing rank
+    virtual std::unique_ptr<DrawStrategy> clone() const = 0;
 };
 
 // TODO: somehow handle undoing of winning scores (remove matches after they have been created)
