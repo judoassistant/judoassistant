@@ -10,9 +10,8 @@
 class CreateMatchAction : public Action {
 public:
     CreateMatchAction(TournamentStore & tournament, CategoryStore & category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
-    bool operator()(TournamentStore & tournament) const override;
-    std::unique_ptr<Action> getInverse() const override;
-
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
     Id getId() const;
 private:
     Id mId;

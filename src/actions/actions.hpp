@@ -1,7 +1,7 @@
 #pragma once
 
 #include "actions/composite_action.hpp"
-#include "actions/create_match_action.hpp"
-#include "actions/create_match_event_action.hpp"
-#include "actions/create_player_action.hpp"
-#include "actions/change_tournament_name_action.hpp"
+#include "actions/match_actions.hpp"
+#include "actions/match_event_actions.hpp"
+#include "actions/player_actions.hpp"
+#include "actions/tournament_actions.hpp"

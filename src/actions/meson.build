@@ -1,6 +1,7 @@
-sources += ['src/actions/create_player_action.cpp']
-sources += ['src/actions/create_match_action.cpp']
-sources += ['src/actions/create_match_event_action.cpp']
+sources += ['src/actions/action.cpp']
+sources += ['src/actions/player_actions.cpp']
+sources += ['src/actions/match_actions.cpp']
+sources += ['src/actions/match_event_actions.cpp']
 sources += ['src/actions/composite_action.cpp']
-sources += ['src/actions/change_tournament_name_action.cpp']
+sources += ['src/actions/tournament_actions.cpp']
 

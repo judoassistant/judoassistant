@@ -39,6 +39,11 @@ bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::Player
 
 
 bool TwentyEighteenRuleset::isFinished(MatchStore & match) const {
+    if (!match.getPlayer(MatchStore::PlayerIndex::WHITE).has_value())
+        return true;
+    if (!match.getPlayer(MatchStore::PlayerIndex::BLUE).has_value())
+        return true;
+
     if (!match.isStopped())
         return false;
 
@@ -67,6 +72,11 @@ bool TwentyEighteenRuleset::shouldEnterGoldenScore(MatchStore & match) const {
 }
 
 std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(MatchStore & match) const {
+    if (!match.getPlayer(MatchStore::PlayerIndex::WHITE).has_value())
+        return MatchStore::PlayerIndex::BLUE;
+    if (!match.getPlayer(MatchStore::PlayerIndex::BLUE).has_value())
+        return MatchStore::PlayerIndex::WHITE;
+
     PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
     PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
     auto currentClock = match.getCurrentClock();

@@ -19,6 +19,7 @@ public:
 
     const std::map<Id, std::unique_ptr<MatchStore>> & getMatches() const;
     MatchStore & getMatch(Id id);
+    std::unique_ptr<MatchStore> eraseMatch(Id id);
 
     void addMatch(std::unique_ptr<MatchStore> && ptr);
 

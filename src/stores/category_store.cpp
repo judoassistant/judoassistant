@@ -13,7 +13,21 @@ const std::map<Id, std::unique_ptr<MatchStore>> & CategoryStore::getMatches() co
 }
 
 MatchStore & CategoryStore::getMatch(Id id) {
-    return *mMatches[id];
+    auto it = mMatches.find(id);
+    if (it == mMatches.end())
+        throw std::out_of_range("Attempted to get non-existing match");
+
+    return *(it->second);
+}
+
+std::unique_ptr<MatchStore> CategoryStore::eraseMatch(Id id) {
+    auto it = mMatches.find(id);
+    if (it == mMatches.end())
+        throw std::out_of_range("Attempted to erase non-existing match");
+
+    auto ptr = std::move(it->second);
+    mMatches.erase(it);
+    return ptr;
 }
 
 const Id & CategoryStore::getId() const {

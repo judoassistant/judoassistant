@@ -5,11 +5,12 @@
 #include "core.hpp"
 #include "serialize.hpp"
 #include "actions/action.hpp"
-// TODO: implement
 
 class CompositeAction : public Action {
 public:
     CompositeAction(std::vector<std::unique_ptr<Action>> && actions);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
 private:
     std::vector<std::unique_ptr<Action>> mActions;
 };

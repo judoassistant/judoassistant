@@ -5,7 +5,7 @@
 #include <QFormLayout>
 
 #include "widgets/create_player_dialog.hpp"
-#include "actions/create_player_action.hpp"
+#include "actions/player_actions.hpp"
 
 CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *parent)
     : QDialog(parent)

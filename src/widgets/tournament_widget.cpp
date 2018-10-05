@@ -3,7 +3,7 @@
 #include <QString>
 
 #include "widgets/tournament_widget.hpp"
-#include "actions/change_tournament_name_action.hpp"
+#include "actions/tournament_actions.hpp"
 
 TournamentWidget::TournamentWidget(QStoreHandler &storeHandler)
     : mStoreHandler(storeHandler)

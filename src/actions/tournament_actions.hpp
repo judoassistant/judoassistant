@@ -10,12 +10,10 @@
 class ChangeTournamentNameAction : public Action {
 public:
     ChangeTournamentNameAction(TournamentStore &tournament, const std::string &name);
-    ChangeTournamentNameAction(const std::string &oldName, const std::string &newName);
-    bool operator()(TournamentStore &tournament) const override;
-    std::unique_ptr<Action> getInverse() const override;
-
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
 private:
-    std::string mNewName;
-    std::string mOldName;
-    Id mId;
+    void swapNames(TournamentStore & tournament);
+    std::string mName;
 };
+

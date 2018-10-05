@@ -21,7 +21,7 @@ class MasterStoreHandler : public QStoreHandler {
     Q_OBJECT
 public:
     MasterStoreHandler();
-    bool dispatch(std::unique_ptr<Action> && action) override;
+    void dispatch(std::unique_ptr<Action> && action) override;
     QTournamentStore & getTournament() override;
     bool read(const QString &path);
     bool write(const QString &path);

@@ -6,9 +6,15 @@ class TournamentStore;
 
 class Action {
 public:
+    Action();
     virtual ~Action() {}
 
-    virtual bool operator()(TournamentStore & tournament) const = 0;
-    virtual std::unique_ptr<Action> getInverse() const = 0;
+    virtual void redoImpl(TournamentStore & tournament) = 0;
+    virtual void undoImpl(TournamentStore & tournament) = 0;
+
+    void redo(TournamentStore & tournament);
+    void undo(TournamentStore & tournament);
+private:
+    bool mDone;
 };
 

@@ -32,6 +32,7 @@ public:
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     PlayerStore & getPlayer(Id id);
+    std::unique_ptr<PlayerStore> erasePlayer(Id id);
 
     Id generateNextPlayerId();
     Id generateNextCategoryId();
@@ -48,6 +49,8 @@ public:
     virtual void playerAdded(Id id) {}
     virtual void playerChanged(Id id) {}
     virtual void playerDeleted(Id id) {}
+
+    // TODO: replace the word delete by the word erase
 private:
     std::string mName;
 

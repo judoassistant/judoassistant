@@ -1,5 +1,5 @@
 #include "src/draw_strategies/pool_draw_strategy.hpp"
-#include "src/actions/create_match_action.hpp"
+#include "src/actions/match_actions.hpp"
 #include "src/store_handlers/store_handler.hpp"
 
 void PoolDrawStrategy::initCategory(StoreHandler & store_handler, const std::vector<Id> &players, TournamentStore & tournament, CategoryStore & category) {
