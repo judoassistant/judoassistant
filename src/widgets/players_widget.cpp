@@ -1,6 +1,10 @@
+#include <QSplitter>
+#include <QToolBar>
+
 #include "widgets/players_widget.hpp"
 #include "widgets/models/players_model.hpp"
 #include "widgets/create_player_dialog.hpp"
+#include "widgets/edit_player_widget.hpp"
 
 PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
     : mStoreHandler(storeHandler)
@@ -24,14 +28,24 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
     }
 
+    QSplitter *splitter = new QSplitter(this);
+    splitter->setOrientation(Qt::Vertical);
+
     {
-        QTableView *tableView = new QTableView(this);
+        QTableView *tableView = new QTableView(splitter);
         PlayersModel *model = new PlayersModel(storeHandler, layout);
         tableView->setModel(model);
         tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-        layout->addWidget(tableView);
+        splitter->addWidget(tableView);
     }
+
+    {
+        EditPlayerWidget *editWidget = new EditPlayerWidget(storeHandler, splitter);
+        splitter->addWidget(editWidget);
+    }
+
+    layout->addWidget(splitter);
     setLayout(layout);
 }
 
