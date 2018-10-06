@@ -67,7 +67,15 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString(QString::fromStdString(player.getLastName()));
             case 2:
-                return player.getAge();
+                return (player.getAge().has_value() ? QVariant(player.getAge().value()) : QVariant(""));
+            case 3:
+                return (player.getRank().has_value() ? QVariant(QString::fromStdString(player.getRank().value().toString())) : QVariant(""));
+            case 4:
+                return QString(QString::fromStdString(player.getClub()));
+            case 5:
+                return (player.getWeight().has_value() ? QVariant(player.getWeight().value()) : QVariant(""));
+            case 6:
+                return (player.getCountry().has_value() ? QVariant(QString::fromStdString(player.getCountry().value().toString())) : QVariant(""));
         }
     }
     return QVariant();
@@ -83,6 +91,14 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
                     return QString(tr("Last name"));
                 case 2:
                     return QString(tr("Age"));
+                case 3:
+                    return QString(tr("Rank"));
+                case 4:
+                    return QString(tr("Club"));
+                case 5:
+                    return QString(tr("Weight"));
+                case 6:
+                    return QString(tr("Country"));
             }
         }
     }

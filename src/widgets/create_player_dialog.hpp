@@ -6,6 +6,8 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QComboBox>
+#include <QDoubleSpinBox>
 
 class QStoreHandler;
 
@@ -21,5 +23,9 @@ private:
     QStoreHandler & mStoreHandler;
     QLineEdit *mFirstNameContent;
     QLineEdit *mLastNameContent;
-    QSpinBox *mAgeContent;
+    QLineEdit *mAgeContent;
+    QComboBox *mRankContent;
+    QLineEdit *mClubContent;
+    QLineEdit *mWeightContent;
+    QComboBox *mCountryContent;
 };

@@ -38,6 +38,7 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
         PlayersModel *model = new PlayersModel(storeHandler, layout);
         QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(layout);
         proxyModel->setSourceModel(model);
+        // TODO: Fix sorting for rank
 
         tableView->setModel(proxyModel);
         tableView->setSelectionBehavior(QAbstractItemView::SelectRows);

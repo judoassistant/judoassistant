@@ -2,16 +2,20 @@
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
-CreatePlayerAction::CreatePlayerAction(TournamentStore & tournament, const std::string &firstName, const std::string &lastName, uint8_t age)
+CreatePlayerAction::CreatePlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
     : mId(tournament.generateNextPlayerId())
     , mFirstName(firstName)
     , mLastName(lastName)
     , mAge(age)
+    , mRank(rank)
+    , mClub(club)
+    , mWeight(weight)
+    , mCountry(country)
 {}
 
 void CreatePlayerAction::redoImpl(TournamentStore & tournament) {
     try {
-        tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge));
+        tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry));
         tournament.playerAdded(mId);
     }
     catch (const std::exception &e) {

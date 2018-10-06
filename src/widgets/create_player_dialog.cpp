@@ -13,12 +13,33 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
 {
     mFirstNameContent = new QLineEdit;
     mLastNameContent = new QLineEdit;
-    mAgeContent = new QSpinBox;
+
+    mAgeContent = new QLineEdit;
+    mAgeContent->setValidator(new QIntValidator(0, 120, mAgeContent));
+
+    mRankContent = new QComboBox;
+    mRankContent->addItem("");
+    for (PlayerRank rank : PlayerRank::values())
+        mRankContent->addItem(QString::fromStdString(rank.toString()));
+
+    mClubContent = new QLineEdit;
+
+    mWeightContent = new QLineEdit;
+    mWeightContent->setValidator(new QDoubleValidator(0.0, 400.0, 2, mWeightContent));
+
+    mCountryContent = new QComboBox;
+    mCountryContent->addItem("");
+    for (PlayerCountry country : PlayerCountry::values())
+        mCountryContent->addItem(QString::fromStdString(country.toString()));
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First name"), mFirstNameContent);
     formLayout->addRow(tr("Last name"), mLastNameContent);
     formLayout->addRow(tr("Age"), mAgeContent);
+    formLayout->addRow(tr("Rank"), mRankContent);
+    formLayout->addRow(tr("Club"), mClubContent);
+    formLayout->addRow(tr("Weight"), mWeightContent);
+    formLayout->addRow(tr("Country"), mCountryContent);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
@@ -35,7 +56,28 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
 }
 
 void CreatePlayerDialog::acceptClick() {
-    mStoreHandler.dispatch(std::make_unique<CreatePlayerAction>(mStoreHandler.getTournament(), mFirstNameContent->text().toStdString(), mLastNameContent->text().toStdString(), mAgeContent->value()));
+    std::string firstName = mFirstNameContent->text().toStdString();
+    std::string lastName = mLastNameContent->text().toStdString();
+
+    std::optional<int> age;
+    if (!mAgeContent->text().isEmpty())
+        age = mAgeContent->text().toInt();
+
+    std::optional<float> weight;
+    if (!mWeightContent->text().isEmpty())
+        weight = mWeightContent->text().toFloat();
+
+    std::optional<PlayerRank> rank;
+    if (mRankContent->currentIndex() > 0) // account for the first index being nullopt
+        rank = PlayerRank(mRankContent->currentIndex() - 1);
+
+    std::string club = mClubContent->text().toStdString();
+
+    std::optional<PlayerCountry> country;
+    if (mCountryContent->currentIndex() > 0) // account for the first index being nullopt
+        country = PlayerCountry(mCountryContent->currentIndex() - 1);
+
+    mStoreHandler.dispatch(std::make_unique<CreatePlayerAction>(mStoreHandler.getTournament(), firstName, lastName, age, rank, club, weight, country));
     accept();
 }
 

@@ -18,7 +18,7 @@ public slots:
     void playerDeleted(Id id);
     void tournamentReset();
 private:
-    const int COLUMN_COUNT = 3;
+    const int COLUMN_COUNT = 7;
     QStoreHandler & mStoreHandler;
     std::set<Id> mIds;
 };
