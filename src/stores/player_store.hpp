@@ -87,7 +87,6 @@ public:
         ar(cereal::make_nvp("categories", mCategories));
     }
 
-    const std::unordered_set<Id> & getCategories() const;
     const std::string & getFirstName() const;
     const std::string & getLastName() const;
     const std::optional<uint8_t> & getAge() const;
@@ -96,6 +95,14 @@ public:
     const std::optional<PlayerCountry> & getCountry() const;
     const std::string & getClub() const;
     const Id & getId() const;
+
+    const std::unordered_set<Id> & getMatches() const;
+    void addMatch(Id id);
+    void eraseMatch(Id id);
+
+    const std::unordered_set<Id> & getCategories() const;
+    void addCategory(Id id);
+    void eraseCategory(Id id);
 private:
     Id mId;
     std::string mFirstName;
@@ -107,5 +114,6 @@ private:
     std::optional<PlayerCountry> mCountry;
 
     std::unordered_set<Id> mCategories;
+    std::unordered_set<Id> mMatches;
 };
 

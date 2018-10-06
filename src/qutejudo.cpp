@@ -5,6 +5,8 @@
 #include "core.hpp"
 // #include "stores/tournament_store.hpp"
 
+// TODO: Rename Qutejudo to Judonizer
+
 int main(int argc, char *argv[]) {
     QutejudoApplication app(argc, argv);
     QutejudoWindow window;

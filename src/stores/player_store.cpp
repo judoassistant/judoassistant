@@ -94,3 +94,43 @@ const std::string & PlayerStore::getClub() const {
     return mClub;
 }
 
+void PlayerStore::eraseMatch(Id id) {
+    auto it = mMatches.find(id);
+    if (it == mMatches.end())
+        throw std::out_of_range("Attempted to erase non-existing match");
+
+    mMatches.erase(it);
+}
+
+void PlayerStore::addMatch(Id id) {
+    auto it = mMatches.find(id);
+    if (it != mMatches.end())
+        throw std::out_of_range("Attempted to add already existing match");
+
+    mMatches.insert(id);
+}
+
+const std::unordered_set<Id> & PlayerStore::getMatches() const {
+    return mMatches;
+}
+
+void PlayerStore::eraseCategory(Id id) {
+    auto it = mCategories.find(id);
+    if (it == mCategories.end())
+        throw std::out_of_range("Attempted to erase non-existing category");
+
+    mCategories.erase(it);
+}
+
+void PlayerStore::addCategory(Id id) {
+    auto it = mCategories.find(id);
+    if (it != mCategories.end())
+        throw std::out_of_range("Attempted to add already existing category");
+
+    mCategories.insert(id);
+}
+
+const std::unordered_set<Id> & PlayerStore::getCategories() const {
+    return mCategories;
+}
+

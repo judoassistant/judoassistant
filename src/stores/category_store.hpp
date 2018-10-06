@@ -14,21 +14,26 @@ public:
     CategoryStore() {}
     CategoryStore(Id id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
 
-    const std::unordered_set<Id> & getPlayers() const;
     const std::string & getName() const;
     const Id & getId() const;
 
     const std::map<Id, std::unique_ptr<MatchStore>> & getMatches() const;
     MatchStore & getMatch(Id id);
     std::unique_ptr<MatchStore> eraseMatch(Id id);
-
     void addMatch(std::unique_ptr<MatchStore> && ptr);
+
+    const std::unordered_set<Id> & getPlayers() const;
+    void erasePlayer(Id id);
+    void addPlayer(Id id);
 
     void setRuleset(std::unique_ptr<Ruleset> && ptr);
     Ruleset & getRuleset();
 
     void setDrawStrategy(std::unique_ptr<DrawStrategy> && ptr);
     DrawStrategy & getDrawStrategy();
+
+    void setIsDrawn(bool isDrawn);
+    bool isDrawn();
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -38,7 +43,9 @@ public:
         ar(cereal::make_nvp("matches", mMatches));
         ar(cereal::make_nvp("ruleset", mRuleset));
         ar(cereal::make_nvp("drawStrategy", mDrawStrategy));
+        ar(cereal::make_nvp("isDrawn", mIsDrawn));
     }
+
 private:
     Id mId;
     std::string mName;
@@ -46,5 +53,6 @@ private:
     std::map<Id, std::unique_ptr<MatchStore>> mMatches; // order matters in this case
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawStrategy> mDrawStrategy;
+    bool mIsDrawn;
 };
 
