@@ -20,7 +20,10 @@ public:
     virtual Id get_rank(size_t rank) const = 0; // TODO: change this interface to handle players sharing rank
     virtual std::unique_ptr<DrawStrategy> clone() const = 0;
     virtual std::string getName() const = 0;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {}
 };
 
-// TODO: somehow handle undoing of winning scores (remove matches after they have been created)
+// TODO: somehow handle undoing of winning scores (remove matches after they have been created). Should probably be done in the code where scores are created.
 
