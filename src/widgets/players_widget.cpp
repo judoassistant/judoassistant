@@ -1,5 +1,6 @@
 #include <QSplitter>
 #include <QToolBar>
+#include <QSortFilterProxyModel>
 
 #include "widgets/players_widget.hpp"
 #include "widgets/models/players_model.hpp"
@@ -33,9 +34,16 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
     {
         QTableView *tableView = new QTableView(splitter);
+
         PlayersModel *model = new PlayersModel(storeHandler, layout);
-        tableView->setModel(model);
+        QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(layout);
+        proxyModel->setSourceModel(model);
+
+        tableView->setModel(proxyModel);
+        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        tableView->setSortingEnabled(true);
+        tableView->sortByColumn(1, Qt::AscendingOrder);
 
         splitter->addWidget(tableView);
     }

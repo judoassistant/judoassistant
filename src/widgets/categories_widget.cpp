@@ -1,3 +1,7 @@
+#include <QSplitter>
+#include <QToolBar>
+#include <QSortFilterProxyModel>
+
 #include "widgets/categories_widget.hpp"
 #include "widgets/create_category_dialog.hpp"
 #include "widgets/models/categories_model.hpp"
@@ -21,9 +25,16 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
 
     {
         QTableView *tableView = new QTableView(this);
+
         CategoriesModel *model = new CategoriesModel(storeHandler, layout);
-        tableView->setModel(model);
+        QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(layout);
+        proxyModel->setSourceModel(model);
+
+        tableView->setModel(proxyModel);
         tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableView->setSortingEnabled(true);
+        tableView->sortByColumn(0, Qt::AscendingOrder);
 
         layout->addWidget(tableView);
     }
