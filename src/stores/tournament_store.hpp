@@ -28,7 +28,10 @@ public:
 
     const std::unordered_map<Id, std::unique_ptr<PlayerStore>> & getPlayers() const;
     const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & getCategories() const;
+
     CategoryStore & getCategory(Id id);
+    void addCategory(std::unique_ptr<CategoryStore> ptr);
+    std::unique_ptr<CategoryStore> eraseCategory(Id id);
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     PlayerStore & getPlayer(Id id);

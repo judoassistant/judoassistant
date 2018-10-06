@@ -27,6 +27,9 @@ public:
     void setRuleset(std::unique_ptr<Ruleset> && ptr);
     Ruleset & getRuleset();
 
+    void setDrawStrategy(std::unique_ptr<DrawStrategy> && ptr);
+    DrawStrategy & getDrawStrategy();
+
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::make_nvp("id", mId));

@@ -9,14 +9,21 @@ TournamentWidget::TournamentWidget(QStoreHandler &storeHandler)
     : mStoreHandler(storeHandler)
 {
     // Basic group fields
+
     QGroupBox *basicGroupBox = new QGroupBox(tr("Basic tournament information"));
+    QFormLayout *formLayout = new QFormLayout;
+    basicGroupBox->setLayout(formLayout);
+
     mNameContent = new QLineEdit;
     mNameContent->setText(QString::fromStdString(mStoreHandler.getTournament().getName()));
     connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
-
-    QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("Tournament name"), mNameContent);
-    basicGroupBox->setLayout(formLayout);
+
+    mLanguageContent = new QComboBox;
+    mLanguageContent->addItem("English");
+    mLanguageContent->addItem("Danish (Dansk)");
+    // connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
+    formLayout->addRow(tr("Tournament language"), mLanguageContent);
 
     // Main layout
     QVBoxLayout *mainLayout = new QVBoxLayout;

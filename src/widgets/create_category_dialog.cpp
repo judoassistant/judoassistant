@@ -42,8 +42,7 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
 }
 
 void CreateCategoryDialog::acceptClick() {
-    // TODO: implement
-    // mStoreHandler.dispatch(std::make_unique<CreateCategoryAction>(mStoreHandler.getTournament(), mFirstNameContent->text().toStdString(), mLastNameContent->text().toStdString(), mAgeContent->value()));
+    mStoreHandler.dispatch(std::make_unique<CreateCategoryAction>(mStoreHandler.getTournament(), mNameContent->text().toStdString(), std::make_unique<TwentyEighteenRuleset>(), std::make_unique<PoolDrawStrategy>()));
     accept();
 }
 

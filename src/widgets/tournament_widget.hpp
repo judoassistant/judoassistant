@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QLineEdit>
+#include <QComboBox>
 
 #include "core.hpp"
 #include "store_handlers/qstore_handler.hpp"
@@ -17,5 +18,6 @@ public:
 private:
     QStoreHandler &mStoreHandler;
     QLineEdit *mNameContent;
+    QComboBox *mLanguageContent;
 };
 

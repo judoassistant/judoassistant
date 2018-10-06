@@ -66,3 +66,20 @@ CategoryStore & TournamentStore::getCategory(Id id) {
 
     return *(it->second);
 }
+
+void TournamentStore::addCategory(std::unique_ptr<CategoryStore> ptr) {
+    if (mCategories.find(ptr->getId()) != mCategories.end())
+        throw std::runtime_error("Attempted to create category with non-unique id");
+    mCategories[ptr->getId()] = std::move(ptr);
+}
+
+std::unique_ptr<CategoryStore> TournamentStore::eraseCategory(Id id) {
+    auto it = mCategories.find(id);
+    if (it == mCategories.end())
+        throw std::out_of_range("Attempted to erase non-existing category");
+
+    auto ptr = std::move(it->second);
+    mCategories.erase(it);
+    return ptr;
+}
+

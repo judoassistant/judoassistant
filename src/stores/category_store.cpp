@@ -33,6 +33,14 @@ std::unique_ptr<MatchStore> CategoryStore::eraseMatch(Id id) {
     return ptr;
 }
 
+const std::unordered_set<Id> & CategoryStore::getPlayers() const {
+    return mPlayers;
+}
+
+const std::string & CategoryStore::getName() const {
+    return mName;
+}
+
 const Id & CategoryStore::getId() const {
     return mId;
 }
@@ -44,3 +52,12 @@ void CategoryStore::setRuleset(std::unique_ptr<Ruleset> && ptr) {
 Ruleset & CategoryStore::getRuleset() {
     return *mRuleset;
 }
+
+void CategoryStore::setDrawStrategy(std::unique_ptr<DrawStrategy> && ptr) {
+    mDrawStrategy = std::move(ptr);
+}
+
+DrawStrategy & CategoryStore::getDrawStrategy() {
+    return *mDrawStrategy;
+}
+

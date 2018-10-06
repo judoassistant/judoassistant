@@ -10,6 +10,7 @@ class CategoryStore;
 class TournamentStore;
 
 // TODO: Make const where appropriate
+// TODO: Consider renaming to DrawSystemStrategy to increase consistency with UI naming
 class DrawStrategy {
 public:
     virtual ~DrawStrategy() {};

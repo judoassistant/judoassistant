@@ -128,6 +128,6 @@ std::string TwentyEighteenRuleset::getName() const {
 
 std::string TwentyEighteenRuleset::getStaticName() {
     return "2018";
-    // TODO: Translate non-qt classes
+    // TODO: Handle delayed translation of this
 }
 

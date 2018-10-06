@@ -1,5 +1,6 @@
 #include "widgets/categories_widget.hpp"
 #include "widgets/create_category_dialog.hpp"
+#include "widgets/models/categories_model.hpp"
 
 CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
     : mStoreHandler(storeHandler)
@@ -19,12 +20,12 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
     }
 
     {
-        // QTableView *tableView = new QTableView(this);
-        // CategoriesModel *model = new CategoriesModel(storeHandler, layout);
-        // tableView->setModel(model);
-        // tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        QTableView *tableView = new QTableView(this);
+        CategoriesModel *model = new CategoriesModel(storeHandler, layout);
+        tableView->setModel(model);
+        tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-        // layout->addWidget(tableView);
+        layout->addWidget(tableView);
     }
     setLayout(layout);
 }
