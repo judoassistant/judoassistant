@@ -7,5 +7,3 @@
 #include "actions/player_actions.hpp"
 #include "actions/tournament_actions.hpp"
 
-// TODO: Implement serialization for all actions
-// TODO: Ensure atomicity of actions. Perhaps by having a CanRedo method

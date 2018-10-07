@@ -77,7 +77,7 @@ void CreatePlayerDialog::acceptClick() {
     if (mCountryContent->currentIndex() > 0) // account for the first index being nullopt
         country = PlayerCountry(mCountryContent->currentIndex() - 1);
 
-    mStoreHandler.dispatch(std::make_unique<CreatePlayerAction>(mStoreHandler.getTournament(), firstName, lastName, age, rank, club, weight, country));
+    mStoreHandler.dispatch(std::make_unique<AddPlayerAction>(mStoreHandler.getTournament(), firstName, lastName, age, rank, club, weight, country));
     accept();
 }
 

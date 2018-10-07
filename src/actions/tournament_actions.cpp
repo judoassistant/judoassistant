@@ -7,17 +7,13 @@ ChangeTournamentNameAction::ChangeTournamentNameAction(TournamentStore & tournam
 {}
 
 void ChangeTournamentNameAction::redoImpl(TournamentStore & tournament) {
-    swapNames(tournament);
+    mOldName = tournament.getName();
+    tournament.setName(mName);
+    tournament.changeTournament();
 }
 
 void ChangeTournamentNameAction::undoImpl(TournamentStore & tournament) {
-    swapNames(tournament);
+    tournament.setName(mOldName);
+    tournament.changeTournament();
 }
 
-void ChangeTournamentNameAction::swapNames(TournamentStore & tournament) {
-    std::string oldName = tournament.getName();
-    tournament.setName(mName);
-
-    mName = oldName;
-    tournament.tournamentChanged();
-}

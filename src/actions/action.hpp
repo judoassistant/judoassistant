@@ -2,6 +2,7 @@
 
 #include "core.hpp"
 
+// TODO: Implement serialization for all actions
 class TournamentStore;
 
 class Action {

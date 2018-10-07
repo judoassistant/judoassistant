@@ -4,7 +4,7 @@
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
-CreatePlayerAction::CreatePlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
+AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
     : mId(tournament.generateNextPlayerId())
     , mFirstName(firstName)
     , mLastName(lastName)
@@ -15,65 +15,61 @@ CreatePlayerAction::CreatePlayerAction(TournamentStore & tournament, const std::
     , mCountry(country)
 {}
 
-void CreatePlayerAction::redoImpl(TournamentStore & tournament) {
-    try {
-        tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry));
-        tournament.playerAdded(mId);
-    }
-    catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to redo create player.");
-    }
+void AddPlayerAction::redoImpl(TournamentStore & tournament) {
+    if (tournament.containsPlayer(mId))
+        throw ActionExecutionException("Failed to redo AddPlayerAction. Player already exists.");
+
+    tournament.beginAddPlayers({mId});
+    tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry));
+    tournament.endAddPlayers();
 }
 
-void CreatePlayerAction::undoImpl(TournamentStore & tournament) {
-    try {
-        tournament.erasePlayer(mId);
-        tournament.playerDeleted(mId);
-    }
-    catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to undo create player.");
-    }
+void AddPlayerAction::undoImpl(TournamentStore & tournament) {
+    tournament.beginErasePlayers({mId});
+    tournament.erasePlayer(mId);
+    tournament.endErasePlayers();
 }
 
-ErasePlayerAction::ErasePlayerAction(TournamentStore & tournament, Id player)
-    : mId(player)
+ErasePlayersAction::ErasePlayersAction(TournamentStore & tournament, std::vector<Id> playerIds)
+    : mPlayerIds(playerIds) // TODO: Use std::move where appropriate
 {}
 
-void ErasePlayerAction::redoImpl(TournamentStore & tournament) {
-    try {
-        // Remove the player all their categories (and their matches)
-        for (Id category : tournament.getPlayer(mId).getCategories()) {
-            RemovePlayerFromCategoryAction action(tournament, category, mId);
-            action.redo(tournament);
-            mActions.push(std::move(action));
-        }
+void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
+    std::unordered_set<Id> categoryIds;
 
-        mPlayer = tournament.erasePlayer(mId);
-        tournament.playerDeleted(mId);
+    for (Id playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId)) continue;
+
+        mErasedPlayerIds.push_back(playerId);
+
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        categoryIds.insert(player.getCategories().begin(), player.getCategories().end());
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to redo ErasePlayerAction.");
+
+    tournament.beginErasePlayers(mErasedPlayerIds);
+    for (Id categoryId : categoryIds) {
+        auto action = std::make_unique<ErasePlayersFromCategoryAction>(tournament, categoryId, mErasedPlayerIds); // lazily give the action all playerIds and let it figure the rest out on its own
+        action->redo(tournament);
+        mActions.push(std::move(action));
     }
+
+
+    for (Id playerId : mErasedPlayerIds)
+        mPlayers.push(std::move(tournament.erasePlayer(playerId)));
+    tournament.endErasePlayers();
 }
 
-void ErasePlayerAction::undoImpl(TournamentStore & tournament) {
-    try {
-        tournament.addPlayer(std::move(mPlayer));
-
-        // undo the RemovePlayerFromCategoryAction in reverse order
-        while (!mActions.empty()) {
-            mActions.top().undo(tournament);
-            mActions.pop();
-        }
-
-        tournament.playerAdded(mId);
+void ErasePlayersAction::undoImpl(TournamentStore & tournament) {
+    tournament.beginAddPlayers(mErasedPlayerIds);
+    while (!mPlayers.empty()) {
+        tournament.addPlayer(std::move(mPlayers.top()));
+        mPlayers.pop();
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to undo ErasePlayerAction.");
+    tournament.endAddPlayers();
+    mErasedPlayerIds.clear();
+
+    while (!mActions.empty()) {
+        mActions.top()->undo(tournament);
+        mActions.pop();
     }
 }
-

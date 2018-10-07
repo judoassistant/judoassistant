@@ -8,9 +8,9 @@
 #include "stores/category_store.hpp"
 #include "stores/player_store.hpp"
 
-class CreateCategoryAction : public Action {
+class AddCategoryAction : public Action {
 public:
-    CreateCategoryAction(TournamentStore & tournament, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
+    AddCategoryAction(TournamentStore & tournament, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
@@ -20,37 +20,55 @@ private:
     std::unique_ptr<DrawStrategy> mDrawStrategy;
 };
 
-class AddPlayerToCategoryAction : public Action {
+class DrawCategoryAction : public Action {
 public:
-    AddPlayerToCategoryAction(TournamentStore & tournament, Id category, Id player);
+    DrawCategoryAction(TournamentStore & tournament, Id category);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    Id mCategory;
-    Id mPlayer;
-    bool mIsDrawn;
+    Id mCategoryId;
+
+    // undo members
+    std::unique_ptr<MatchStore> mOldMatches;
 };
 
-class EraseMatchAction;
-
-class RemovePlayerFromCategoryAction : public Action {
+class AddPlayersToCategoryAction : public Action {
 public:
-    RemovePlayerFromCategoryAction(TournamentStore & tournament, Id category, Id player);
+    AddPlayersToCategoryAction(TournamentStore & tournament, Id categoryId, std::vector<Id> playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    Id mCategory;
-    Id mPlayer;
-    std::stack<EraseMatchAction> mActions;
+    Id mCategoryId;
+    std::vector<Id> mPlayerIds;
+
+    // undo members
+    std::vector<Id> mAddedPlayerIds;
+    std::unique_ptr<DrawCategoryAction> mDrawAction;
 };
 
-class EraseCategoryAction : public Action {
+class ErasePlayersFromCategoryAction : public Action {
 public:
-    EraseCategoryAction(TournamentStore & tournament, Id category);
+    ErasePlayersFromCategoryAction(TournamentStore & tournament, Id categoryId, std::vector<Id> playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    Id mId;
-    std::stack<RemovePlayerFromCategoryAction> mActions;
-    std::unique_ptr<CategoryStore> mCategory;
+    Id mCategoryId;
+    std::vector<Id> mPlayerIds;
+
+    // undo members
+    std::vector<Id> mErasedPlayerIds;
+    std::unique_ptr<DrawCategoryAction> mDrawAction;
+};
+
+class EraseCategoriesAction : public Action {
+public:
+    EraseCategoriesAction(TournamentStore & tournament, std::vector<Id> categoryIds);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    std::vector<Id> mCategoryIds;
+
+    // undo members
+    std::vector<Id> mErasedCategoryIds;
+    std::stack<std::unique_ptr<CategoryStore>> mCategories;
 };

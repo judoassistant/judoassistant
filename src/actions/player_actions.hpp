@@ -9,9 +9,9 @@
 #include "stores/tournament_store.hpp"
 #include "stores/player_store.hpp"
 
-class CreatePlayerAction : public Action {
+class AddPlayerAction : public Action {
 public:
-    CreatePlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country);
+    AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -26,15 +26,18 @@ private:
     std::optional<PlayerCountry> mCountry;
 };
 
-class RemovePlayerFromCategoryAction;
+class ErasePlayersFromCategoryAction;
 
-class ErasePlayerAction : public Action {
+class ErasePlayersAction : public Action {
 public:
-    ErasePlayerAction(TournamentStore & tournament, Id player);
+    ErasePlayersAction(TournamentStore & tournament, std::vector<Id> playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    Id mId;
-    std::stack<RemovePlayerFromCategoryAction> mActions;
-    std::unique_ptr<PlayerStore> mPlayer;
+    std::vector<Id> mPlayerIds;
+
+    // undo members
+    std::vector<Id> mErasedPlayerIds;
+    std::stack<std::unique_ptr<PlayerStore>> mPlayers;
+    std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
 };

@@ -21,6 +21,6 @@ private:
     QAction *mEraseAction;
     QTableView *mTableView;
     PlayersModel *mModel;
-    QSortFilterProxyModel *mProxyModel;
+    QSortFilterProxyModel *mProxyModel; // TODO: Make a custom SortFilterProxyModel
 };
 

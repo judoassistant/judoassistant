@@ -13,7 +13,9 @@ public:
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    void swapNames(TournamentStore & tournament);
     std::string mName;
+
+    // undo members
+    std::string mOldName;
 };
 

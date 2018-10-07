@@ -1,5 +1,7 @@
 #pragma once
+
 #include <QAbstractTableModel>
+#include <QItemSelection>
 #include <set>
 #include "store_handlers/qstore_handler.hpp"
 
@@ -12,10 +14,17 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+    std::vector<Id> getCategories(const QItemSelection &selection) const;
+    Id getCategory(int row) const;
+
+    int getRow(Id id) const;
+    std::vector<int> getRows(std::vector<Id> id) const;
 public slots:
-    void categoryAdded(Id id);
-    void categoryChanged(Id id);
-    void categoryDeleted(Id id);
+    void categoriesAdded(std::vector<Id> ids);
+    void categoriesChanged(std::vector<Id> ids);
+    void categoriesAboutToBeErased(std::vector<Id> ids);
+    void categoriesAboutToBeReset();
+    void categoriesReset();
     void tournamentReset();
 private:
     const int COLUMN_COUNT = 4;

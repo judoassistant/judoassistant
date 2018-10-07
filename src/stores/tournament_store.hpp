@@ -27,36 +27,52 @@ public:
     void setName(const std::string & name);
 
     const std::unordered_map<Id, std::unique_ptr<PlayerStore>> & getPlayers() const;
-    const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & getCategories() const;
-
-    const CategoryStore & getCategory(Id id) const;
-    CategoryStore & getCategory(Id id);
-    void addCategory(std::unique_ptr<CategoryStore> ptr);
-    std::unique_ptr<CategoryStore> eraseCategory(Id id);
-
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     PlayerStore & getPlayer(Id id);
     const PlayerStore & getPlayer(Id id) const;
     std::unique_ptr<PlayerStore> erasePlayer(Id id);
+    bool containsPlayer(Id id) const;
+
+    const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & getCategories() const;
+    const CategoryStore & getCategory(Id id) const;
+    CategoryStore & getCategory(Id id);
+    void addCategory(std::unique_ptr<CategoryStore> ptr);
+    std::unique_ptr<CategoryStore> eraseCategory(Id id);
+    bool containsCategory(Id id) const;
 
     Id generateNextPlayerId();
     Id generateNextCategoryId();
     Id generateNextMatchId();
 
-    // signals useful for Qt.
-    // TODO: Add beginCategoryChanged signal etc.
-    virtual void tournamentChanged() {}
-    virtual void matchAdded(Id id) {}
-    virtual void matchChanged(Id id) {}
-    virtual void matchDeleted(Id id) {}
-    virtual void categoryAdded(Id id) {}
-    virtual void categoryChanged(Id id) {}
-    virtual void categoryDeleted(Id id) {}
-    virtual void playerAdded(Id id) {}
-    virtual void playerChanged(Id id) {}
-    virtual void playerDeleted(Id id) {}
+    // signals used for frontends. Called by actions
+    virtual void changeTournament() {}
 
-    // TODO: replace the word delete by the word erase
+    virtual void changePlayers(std::vector<Id> id) {}
+    virtual void beginAddPlayers(std::vector<Id> id) {}
+    virtual void endAddPlayers() {}
+    virtual void beginErasePlayers(std::vector<Id> id) {}
+    virtual void endErasePlayers() {}
+    virtual void beginResetPlayers() {}
+    virtual void endResetPlayers() {}
+
+    virtual void addPlayersToCategory(Id category, std::vector<Id>) {}
+    virtual void erasePlayersFromCategory(Id category, std::vector<Id>) {}
+
+    virtual void changeCategories(std::vector<Id> id) {}
+    virtual void beginAddCategories(std::vector<Id> id) {}
+    virtual void endAddCategories() {}
+    virtual void beginEraseCategories(std::vector<Id> id) {}
+    virtual void endEraseCategories() {}
+    virtual void beginResetCategories() {}
+    virtual void endResetCategories() {}
+
+    virtual void changeMatches(std::vector<Id> id) {}
+    virtual void beginAddMatches(std::vector<Id> id) {}
+    virtual void endAddMatches() {}
+    virtual void beginEraseMatches(std::vector<Id> id) {}
+    virtual void endEraseMatches() {}
+    virtual void beginResetMatches() {}
+    virtual void endResetMatches() {}
 private:
     std::string mName;
 

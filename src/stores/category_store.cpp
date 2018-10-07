@@ -5,14 +5,9 @@ CategoryStore::CategoryStore(Id id, const std::string &name, std::unique_ptr<Rul
     , mName(name)
     , mRuleset(std::move(ruleset))
     , mDrawStrategy(std::move(drawStrategy))
-    , mIsDrawn(false)
 {}
 
 void CategoryStore::addMatch(std::unique_ptr<MatchStore> && ptr) {
-    // TODO: Make sure all code has range checks
-    auto it = mMatches.find(ptr->getId());
-    if (it != mMatches.end())
-        throw std::out_of_range("Attempted to add already existing match");
     mMatches[ptr->getId()] = std::move(ptr);
 }
 
@@ -22,28 +17,19 @@ const std::map<Id, std::unique_ptr<MatchStore>> & CategoryStore::getMatches() co
 
 MatchStore & CategoryStore::getMatch(Id id) {
     auto it = mMatches.find(id);
-    if (it == mMatches.end())
-        throw std::out_of_range("Attempted to get non-existing match");
-
     return *(it->second);
 }
 
 const MatchStore & CategoryStore::getMatch(Id id) const {
     auto it = mMatches.find(id);
-    if (it == mMatches.end())
-        throw std::out_of_range("Attempted to get non-existing match");
-
     return *(it->second);
 }
 
 std::unique_ptr<MatchStore> CategoryStore::eraseMatch(Id id) {
     auto it = mMatches.find(id);
-    if (it == mMatches.end())
-        throw std::out_of_range("Attempted to erase non-existing match");
-
     auto ptr = std::move(it->second);
     mMatches.erase(it);
-    return ptr;
+    return std::move(ptr);
 }
 
 const std::unordered_set<Id> & CategoryStore::getPlayers() const {
@@ -51,23 +37,19 @@ const std::unordered_set<Id> & CategoryStore::getPlayers() const {
 }
 
 void CategoryStore::erasePlayer(Id id) {
-    auto it = mPlayers.find(id);
-    if (it == mPlayers.end())
-        throw std::out_of_range("Attempted to erase non-existing player");
-
     mPlayers.erase(id);
 }
 
 void CategoryStore::addPlayer(Id id) {
-    auto it = mPlayers.find(id);
-    if (it != mPlayers.end())
-        throw std::out_of_range("Attempted to add already existing player");
-
     mPlayers.insert(id);
 }
 
 const std::string & CategoryStore::getName() const {
     return mName;
+}
+
+void CategoryStore::setName(const std::string &name) {
+    mName = name;
 }
 
 const Id & CategoryStore::getId() const {
@@ -82,6 +64,10 @@ Ruleset & CategoryStore::getRuleset() {
     return *mRuleset;
 }
 
+const Ruleset & CategoryStore::getRuleset() const {
+    return *mRuleset;
+}
+
 void CategoryStore::setDrawStrategy(std::unique_ptr<DrawStrategy> && ptr) {
     mDrawStrategy = std::move(ptr);
 }
@@ -90,10 +76,14 @@ DrawStrategy & CategoryStore::getDrawStrategy() {
     return *mDrawStrategy;
 }
 
-void CategoryStore::setIsDrawn(bool isDrawn) {
-    mIsDrawn = isDrawn;
+const DrawStrategy & CategoryStore::getDrawStrategy() const {
+    return *mDrawStrategy;
 }
 
-bool CategoryStore::isDrawn() {
-    return mIsDrawn;
+bool CategoryStore::containsMatch(Id id) const {
+    return mMatches.find(id) != mMatches.end();
+}
+
+bool CategoryStore::containsPlayer(Id id) const {
+    return mPlayers.find(id) != mPlayers.end();
 }

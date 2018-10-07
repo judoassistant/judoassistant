@@ -101,10 +101,12 @@ public:
     const std::unordered_set<Id> & getMatches() const;
     void addMatch(Id id);
     void eraseMatch(Id id);
+    bool containsMatch(Id id) const;
 
     const std::unordered_set<Id> & getCategories() const;
     void addCategory(Id id);
     void eraseCategory(Id id);
+    bool containsCategory(Id id) const;
 private:
     Id mId;
     std::string mFirstName;
@@ -116,6 +118,7 @@ private:
     std::optional<PlayerCountry> mCountry;
 
     std::unordered_set<Id> mCategories;
+    // TODO: storing list of match ids without category id is pretty useless
     std::unordered_set<Id> mMatches;
 };
 

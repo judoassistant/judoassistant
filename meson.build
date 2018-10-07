@@ -21,7 +21,7 @@ configure_file(input : 'LICENSE', output: 'qutejudo-license.txt', copy: true)
 # Copy icons
 configure_file(input : 'icomoon/License.txt', output: 'icomoon-license.txt', copy: true)
 configure_file(input : 'icomoon/SVG/116-user-plus.svg', output: 'player-add.svg', copy: true)
-configure_file(input : 'icomoon/SVG/117-user-minus.svg', output: 'player-delete.svg', copy: true)
+configure_file(input : 'icomoon/SVG/117-user-minus.svg', output: 'player-erase.svg', copy: true)
 
 # Find all sources and headers
 include_dirs = include_directories(['.', 'src', 'cereal/include'])

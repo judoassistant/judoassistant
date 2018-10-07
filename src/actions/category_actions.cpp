@@ -2,162 +2,204 @@
 
 #include "exception.hpp"
 
-CreateCategoryAction::CreateCategoryAction(TournamentStore & tournament, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
+AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
     : mId(tournament.generateNextCategoryId())
     , mName(name)
     , mRuleset(std::move(ruleset))
     , mDrawStrategy(std::move(drawStrategy))
 {}
 
-void CreateCategoryAction::redoImpl(TournamentStore & tournament) {
-    try {
-        tournament.addCategory(std::make_unique<CategoryStore>(mId, mName, mRuleset->clone(), mDrawStrategy->clone()));
-        tournament.categoryAdded(mId);
-    }
-    catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to redo create category.");
-    }
+void AddCategoryAction::redoImpl(TournamentStore & tournament) {
+    if (tournament.containsCategory(mId))
+        throw ActionExecutionException("Failed to redo AddCategoryAction. Category already exists.");
+    tournament.beginAddCategories({mId});
+    tournament.addCategory(std::make_unique<CategoryStore>(mId, mName, mRuleset->clone(), mDrawStrategy->clone()));
+    tournament.endAddCategories();
 }
 
-void CreateCategoryAction::undoImpl(TournamentStore & tournament) {
-    try {
-        tournament.eraseCategory(mId);
-        tournament.categoryDeleted(mId);
-    }
-    catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to undo create category.");
-    }
+void AddCategoryAction::undoImpl(TournamentStore & tournament) {
+    tournament.beginEraseCategories({mId});
+    tournament.eraseCategory(mId);
+    tournament.endEraseCategories();
 }
 
-AddPlayerToCategoryAction::AddPlayerToCategoryAction(TournamentStore & tournament, Id category, Id player)
-    : mCategory(category)
-    , mPlayer(player)
+AddPlayersToCategoryAction::AddPlayersToCategoryAction(TournamentStore & tournament, Id categoryId, std::vector<Id> playerIds)
+    : mCategoryId(categoryId)
+    , mPlayerIds(playerIds)
 {}
 
-void AddPlayerToCategoryAction::redoImpl(TournamentStore & tournament) {
-    try {
-        tournament.getPlayer(mPlayer).addCategory(mCategory);
+void AddPlayersToCategoryAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId)) return;
+    CategoryStore & category = tournament.getCategory(mCategoryId);
 
-        CategoryStore & category = tournament.getCategory(mCategory);
-        category.addPlayer(mPlayer);
-        mIsDrawn = category.isDrawn();
-        category.setIsDrawn(false);
-    }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to redo AddPlayerToCategoryAction.");
-    }
-}
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId)) continue;
 
-void AddPlayerToCategoryAction::undoImpl(TournamentStore & tournament) {
-    try {
-        tournament.getPlayer(mPlayer).eraseCategory(mCategory);
+        PlayerStore & player = tournament.getPlayer(playerId);
+        if (player.containsCategory(mCategoryId))
+            continue;
 
-        CategoryStore & category = tournament.getCategory(mCategory);
-        category.erasePlayer(mPlayer);
-        category.setIsDrawn(mIsDrawn);
+        mAddedPlayerIds.push_back(playerId);
+        player.addCategory(mCategoryId);
+        category.addPlayer(playerId);
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to undo AddPlayerToCategoryAction.");
+
+    tournament.addPlayersToCategory(mCategoryId, mAddedPlayerIds);
+
+    if (!mAddedPlayerIds.empty()) {
+        auto mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+        mDrawAction->redo(tournament);
     }
 }
 
-RemovePlayerFromCategoryAction::RemovePlayerFromCategoryAction(TournamentStore & tournament, Id category, Id player)
-    : mCategory(category)
-    , mPlayer(player)
+void AddPlayersToCategoryAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId)) return;
+
+    tournament.erasePlayersFromCategory(mCategoryId, mAddedPlayerIds);
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+    for (auto playerId : mAddedPlayerIds) {
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.eraseCategory(mCategoryId);
+        category.erasePlayer(playerId);
+    }
+
+    if (mDrawAction != nullptr) {
+        mDrawAction->undo(tournament);
+        mDrawAction.reset();
+    }
+
+    mAddedPlayerIds.clear();
+}
+
+ErasePlayersFromCategoryAction::ErasePlayersFromCategoryAction(TournamentStore & tournament, Id categoryId, std::vector<Id> playerIds)
+    : mCategoryId(categoryId)
+    , mPlayerIds(playerIds)
 {}
 
-void RemovePlayerFromCategoryAction::redoImpl(TournamentStore & tournament) {
-    try {
-        // TODO: consider a way to block excessive calls to TournamentStore::categoryChanged etc.
-        CategoryStore & category = tournament.getCategory(mCategory);
-        PlayerStore & player = tournament.getPlayer(mPlayer);
+void ErasePlayersFromCategoryAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId)) return;
 
-        // Remove all the player's matches from the category
-        auto &playerMatches = player.getMatches();
-        for (const auto & it : category.getMatches()) {
-            Id matchId = it.second->getId();
-            if (playerMatches.find(matchId) == playerMatches.end())
-                continue;
+    CategoryStore & category = tournament.getCategory(mCategoryId);
 
-            EraseMatchAction action(tournament, mCategory, matchId);
-            action.redo(tournament);
-            mActions.push(std::move(action));
-        }
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId)) continue;
 
-        category.erasePlayer(mPlayer);
-        player.eraseCategory(mCategory);
-        tournament.categoryChanged(mCategory);
-        tournament.playerChanged(mPlayer);
+        PlayerStore & player = tournament.getPlayer(playerId);
+        if (!player.containsCategory(mCategoryId))
+            continue;
+
+        mErasedPlayerIds.push_back(playerId);
+        player.eraseCategory(mCategoryId);
+        category.erasePlayer(playerId);
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to redo RemovePlayerFromCategoryAction.");
+
+    tournament.erasePlayersFromCategory(mCategoryId, mErasedPlayerIds);
+
+    if (!mErasedPlayerIds.empty()) {
+        auto mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+        mDrawAction->redo(tournament);
     }
 }
 
-void RemovePlayerFromCategoryAction::undoImpl(TournamentStore & tournament) {
-    try {
-        CategoryStore & category = tournament.getCategory(mCategory);
-        PlayerStore & player = tournament.getPlayer(mPlayer);
+void ErasePlayersFromCategoryAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId)) return;
 
-        category.addPlayer(mPlayer);
-        player.eraseCategory(mCategory);
+    CategoryStore & category = tournament.getCategory(mCategoryId);
 
-        // undo the EraseMatchActions in reverse order
-        while (!mActions.empty()) {
-            mActions.top().undo(tournament);
-            mActions.pop();
-        }
+    tournament.addPlayersToCategory(mCategoryId, mErasedPlayerIds);
 
-        tournament.categoryChanged(mCategory);
-        tournament.playerChanged(mPlayer);
+    for (auto playerId : mErasedPlayerIds) {
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.addCategory(mCategoryId);
+        category.addPlayer(playerId);
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to undo RemovePlayerFromCategoryAction.");
+
+    if (mDrawAction != nullptr) {
+        mDrawAction->undo(tournament);
+        mDrawAction.reset();
     }
+
+    mErasedPlayerIds.clear();
 }
 
-EraseCategoryAction::EraseCategoryAction(TournamentStore & tournament, Id category)
-    : mId(category)
+EraseCategoriesAction::EraseCategoriesAction(TournamentStore & tournament, std::vector<Id> categoryIds)
+    : mCategoryIds(categoryIds)
 {}
 
-void EraseCategoryAction::redoImpl(TournamentStore & tournament) {
-    try {
-        // Remove all the players from the category (and their matches)
-        for (Id player : tournament.getCategory(mId).getPlayers()) {
-            RemovePlayerFromCategoryAction action(tournament, mId, player);
-            action.redo(tournament);
-            mActions.push(std::move(action));
+void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+
+        mErasedCategoryIds.push_back(categoryId);
+    }
+
+    tournament.beginEraseCategories(mErasedCategoryIds);
+
+    for (auto categoryId : mErasedCategoryIds) {
+        CategoryStore & category = tournament.getCategory(categoryId);
+        for (auto playerId : category.getPlayers()) {
+            PlayerStore & player = tournament.getPlayer(playerId);
+            player.eraseCategory(categoryId);
         }
 
-        mCategory = tournament.eraseCategory(mId);
-        tournament.categoryDeleted(mId);
+        for (auto & it : category.getMatches()) {
+            const std::unique_ptr<MatchStore> & match = it.second;
+            auto whitePlayerId = match->getPlayer(MatchStore::PlayerIndex::WHITE);
+            if (whitePlayerId)
+                tournament.getPlayer(*whitePlayerId).eraseMatch(match->getId());
+
+            auto bluePlayerId = match->getPlayer(MatchStore::PlayerIndex::BLUE);
+            if (bluePlayerId)
+                tournament.getPlayer(*bluePlayerId).eraseMatch(match->getId());
+        }
+
+        mCategories.push(tournament.eraseCategory(categoryId));
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to redo EraseCategoryAction.");
-    }
+
+    tournament.endEraseCategories();
 }
 
-void EraseCategoryAction::undoImpl(TournamentStore & tournament) {
-    try {
-        tournament.addCategory(std::move(mCategory));
+void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
+    tournament.beginAddCategories(mErasedCategoryIds);
 
-        // undo the RemovePlayerFromCategoryAction in reverse order
-        while (!mActions.empty()) {
-            mActions.top().undo(tournament);
-            mActions.pop();
+    while (!mCategories.empty()) {
+        std::unique_ptr<CategoryStore> category = std::move(mCategories.top());
+
+        for (auto playerId : category->getPlayers()) {
+            PlayerStore & player = tournament.getPlayer(playerId);
+            player.addCategory(category->getId());
         }
 
-        tournament.categoryAdded(mId);
+        for (auto & it : category->getMatches()) {
+            const std::unique_ptr<MatchStore> & match = it.second;
+
+            auto whitePlayerId = match->getPlayer(MatchStore::PlayerIndex::WHITE);
+            if (whitePlayerId)
+                tournament.getPlayer(*whitePlayerId).addMatch(match->getId());
+
+            auto bluePlayerId = match->getPlayer(MatchStore::PlayerIndex::BLUE);
+            if (bluePlayerId)
+                tournament.getPlayer(*bluePlayerId).addMatch(match->getId());
+        }
+
+        tournament.addCategory(std::move(category));
+        mCategories.pop();
     }
-    catch (const std::exception &e){
-        std::cout << e.what() << std::endl;
-        throw ActionExecutionException("Failed to undo EraseCategoryAction.");
-    }
+
+    tournament.endAddCategories();
+}
+
+DrawCategoryAction::DrawCategoryAction(TournamentStore & tournament, Id category) {
+    // TODO: Implement
+    // Notes: category may contain invalid matches. Remember to erase matches from players and the category
+}
+
+void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
+    // TODO: Implement. Remember to check for empty category.
+}
+
+void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
+    // TODO: Implement. Remember to check for empty category
 }

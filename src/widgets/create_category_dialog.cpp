@@ -20,7 +20,7 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
     mRulesetContent->addItem(QString::fromStdString(TwentyEighteenRuleset::getStaticName()));
 
     mDrawStrategyContent = new QComboBox;
-    mDrawStrategyContent->addItem(QString::fromStdString(PoolDrawStrategy::getStaticName()));
+    // mDrawStrategyContent->addItem(QString::fromStdString(PoolDrawStrategy::getStaticName())); TODO: Uncomment this line
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("Name"), mNameContent);
@@ -42,7 +42,7 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
 }
 
 void CreateCategoryDialog::acceptClick() {
-    mStoreHandler.dispatch(std::make_unique<CreateCategoryAction>(mStoreHandler.getTournament(), mNameContent->text().toStdString(), std::make_unique<TwentyEighteenRuleset>(), std::make_unique<PoolDrawStrategy>()));
+    // mStoreHandler.dispatch(std::make_unique<CreateCategoryAction>(mStoreHandler.getTournament(), mNameContent->text().toStdString(), std::make_unique<TwentyEighteenRuleset>(), std::make_unique<PoolDrawStrategy>())); TODO: Uncomment this line
     accept();
 }
 

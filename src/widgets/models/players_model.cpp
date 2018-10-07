@@ -8,43 +8,6 @@ PlayersModel::PlayersModel(QStoreHandler & storeHandler, QObject * parent)
     tournamentReset();
 }
 
-void PlayersModel::playerAdded(Id id) {
-    auto it = mIds.insert(id).first;
-    int row = std::distance(mIds.begin(), it);
-    beginInsertRows(QModelIndex(), row, row);
-    endInsertRows();
-}
-
-void PlayersModel::playerChanged(Id id) {
-    auto it = mIds.find(id);
-    int row = std::distance(mIds.begin(), it);
-
-    emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
-}
-
-void PlayersModel::playerDeleted(Id id) {
-    auto it = mIds.find(id);
-    int row = std::distance(mIds.begin(), it);
-    beginRemoveRows(QModelIndex(), row, row);
-    mIds.erase(it);
-    endRemoveRows();
-}
-
-void PlayersModel::tournamentReset() {
-    beginResetModel();
-    QTournamentStore & tournament = mStoreHandler.getTournament();
-
-    mIds.clear();
-    for (const auto & p : tournament.getPlayers())
-        mIds.insert(p.first);
-
-    QObject::connect(&tournament, &QTournamentStore::playerAdded, this, &PlayersModel::playerAdded);
-    QObject::connect(&tournament, &QTournamentStore::playerChanged, this, &PlayersModel::playerChanged);
-    QObject::connect(&tournament, &QTournamentStore::playerDeleted, this, &PlayersModel::playerDeleted);
-    QObject::connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
-    endResetModel();
-}
-
 int PlayersModel::rowCount(const QModelIndex &parent) const {
     return mStoreHandler.getTournament().getPlayers().size();
 }
@@ -53,15 +16,9 @@ int PlayersModel::columnCount(const QModelIndex &parent) const {
     return COLUMN_COUNT;
 }
 
-const PlayerStore & PlayersModel::getPlayer(int row) const {
-    auto it = mIds.begin();
-    std::advance(it, row);
-
-    return mStoreHandler.getTournament().getPlayer(*it);
-}
-
 QVariant PlayersModel::data(const QModelIndex &index, int role) const {
-    const PlayerStore &player = getPlayer(index.row());
+    auto playerId = getPlayer(index.row());
+    const PlayerStore &player = mStoreHandler.getTournament().getPlayer(playerId);
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -113,5 +70,81 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
         }
     }
     return QVariant();
+}
+
+std::vector<Id> PlayersModel::getPlayers(const QItemSelection &selection) const {
+    std::unordered_set<int> rows;
+    for (auto index : selection.indexes())
+        rows.insert(index.row());
+
+    std::vector<Id> playerIds;
+    for (auto row : rows)
+        playerIds.push_back(getPlayer(row));
+
+    return std::move(playerIds);
+}
+
+Id PlayersModel::getPlayer(int row) const {
+    auto it = mIds.begin();
+    std::advance(it, row);
+    return *it;
+}
+
+int PlayersModel::getRow(Id id) const {
+    return std::distance(mIds.begin(), mIds.lower_bound(id));
+}
+
+void PlayersModel::playersAdded(std::vector<Id> ids) {
+    for (auto id : ids) {
+        int row = getRow(id);
+        beginInsertRows(QModelIndex(), row, row);
+        mIds.insert(id);
+        endInsertRows();
+    }
+}
+
+void PlayersModel::playersChanged(std::vector<Id> ids) {
+    for (auto id : ids) {
+        int row = getRow(id);
+        emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
+    }
+}
+
+void PlayersModel::playersAboutToBeErased(std::vector<Id> ids) {
+    for (auto id : ids) {
+        int row = getRow(id);
+        beginRemoveRows(QModelIndex(), row, row);
+        mIds.erase(id);
+        endRemoveRows();
+    }
+}
+
+void PlayersModel::playersAboutToBeReset() {
+    beginResetModel();
+}
+
+void PlayersModel::playersReset() {
+    mIds.clear();
+    for (const auto & p : mStoreHandler.getTournament().getPlayers())
+        mIds.insert(p.first);
+    endResetModel();
+}
+
+void PlayersModel::tournamentReset() {
+    beginResetModel();
+    QTournamentStore & tournament = mStoreHandler.getTournament();
+
+    mIds.clear();
+    for (const auto & p : tournament.getPlayers())
+        mIds.insert(p.first);
+
+    connect(&tournament, &QTournamentStore::playersAdded, this, &PlayersModel::playersAdded);
+    connect(&tournament, &QTournamentStore::playersChanged, this, &PlayersModel::playersChanged);
+    connect(&tournament, &QTournamentStore::playersAboutToBeErased, this, &PlayersModel::playersAboutToBeErased);
+    connect(&tournament, &QTournamentStore::playersAboutToBeReset, this, &PlayersModel::playersAboutToBeReset);
+    connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset);
+    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
+
+    endResetModel();
 }
 

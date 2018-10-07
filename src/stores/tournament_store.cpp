@@ -36,66 +36,51 @@ Id TournamentStore::generateNextMatchId() {
 }
 
 void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
-    if (mPlayers.find(ptr->getId()) != mPlayers.end())
-        throw std::runtime_error("Attempted to create player with non-unique id");
     mPlayers[ptr->getId()] = std::move(ptr);
 }
 
 PlayerStore & TournamentStore::getPlayer(Id id) {
     auto it = mPlayers.find(id);
-    if (it == mPlayers.end())
-        throw std::out_of_range("Attempted to get non-existing player");
-
     return *(it->second);
 }
 
 const PlayerStore & TournamentStore::getPlayer(Id id) const {
     auto it = mPlayers.find(id);
-    if (it == mPlayers.end())
-        throw std::out_of_range("Attempted to get non-existing player");
-
     return *(it->second);
 }
 
 std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(Id id) {
     auto it = mPlayers.find(id);
-    if (it == mPlayers.end())
-        throw std::out_of_range("Attempted to erase non-existing player");
-
     auto ptr = std::move(it->second);
     mPlayers.erase(it);
-    return ptr;
+    return std::move(ptr);
 }
 
 CategoryStore & TournamentStore::getCategory(Id id) {
     auto it = mCategories.find(id);
-    if (it == mCategories.end())
-        throw std::out_of_range("Attempted to get non-existing category");
-
     return *(it->second);
 }
 
 const CategoryStore & TournamentStore::getCategory(Id id) const {
     auto it = mCategories.find(id);
-    if (it == mCategories.end())
-        throw std::out_of_range("Attempted to get non-existing category");
-
     return *(it->second);
 }
 
 void TournamentStore::addCategory(std::unique_ptr<CategoryStore> ptr) {
-    if (mCategories.find(ptr->getId()) != mCategories.end())
-        throw std::runtime_error("Attempted to create category with non-unique id");
     mCategories[ptr->getId()] = std::move(ptr);
 }
 
 std::unique_ptr<CategoryStore> TournamentStore::eraseCategory(Id id) {
     auto it = mCategories.find(id);
-    if (it == mCategories.end())
-        throw std::out_of_range("Attempted to erase non-existing category");
-
     auto ptr = std::move(it->second);
     mCategories.erase(it);
-    return ptr;
+    return std::move(ptr);
 }
 
+bool TournamentStore::containsPlayer(Id id) const {
+    return mPlayers.find(id) != mPlayers.end();
+}
+
+bool TournamentStore::containsCategory(Id id) const {
+    return mCategories.find(id) != mCategories.end();
+}

@@ -23,8 +23,8 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
         // TODO: disable button when no selected players
-        mEraseAction = new QAction(QIcon("player-delete.svg"), tr("Delete the selected players"));
-        mEraseAction->setStatusTip(tr("Delete the selected players"));
+        mEraseAction = new QAction(QIcon("player-erase.svg"), tr("Erase the selected players"));
+        mEraseAction->setStatusTip(tr("Erase the selected players"));
         mEraseAction->setEnabled(false);
         toolBar->addAction(mEraseAction);
         connect(mEraseAction, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
@@ -72,16 +72,8 @@ void PlayersWidget::showPlayerCreateDialog() {
 void PlayersWidget::eraseSelectedPlayers() {
     std::unordered_set<int> rows;
     auto selected = mProxyModel->mapSelectionToSource(mTableView->selectionModel()->selection());
-    for (auto index : selected.indexes())
-        rows.insert(index.row());
 
-    std::vector<std::unique_ptr<Action>> actions;
-    for (auto row : rows) {
-        const PlayerStore & player = mModel->getPlayer(row);
-        actions.push_back(std::make_unique<ErasePlayerAction>(mStoreHandler.getTournament(), player.getId()));
-    }
-
-    mStoreHandler.dispatch(std::make_unique<CompositeAction>(std::move(actions)));
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersAction>(mStoreHandler.getTournament(), std::move(mModel->getPlayers(selected))));
 }
 
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {

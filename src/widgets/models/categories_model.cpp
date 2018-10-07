@@ -8,43 +8,6 @@ CategoriesModel::CategoriesModel(QStoreHandler & storeHandler, QObject * parent)
     tournamentReset();
 }
 
-void CategoriesModel::categoryAdded(Id id) {
-    auto it = mIds.insert(id).first;
-    int row = std::distance(mIds.begin(), it);
-    beginInsertRows(QModelIndex(), row, row);
-    endInsertRows();
-}
-
-void CategoriesModel::categoryChanged(Id id) {
-    auto it = mIds.find(id);
-    int row = std::distance(mIds.begin(), it);
-
-    emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
-}
-
-void CategoriesModel::categoryDeleted(Id id) {
-    auto it = mIds.find(id);
-    int row = std::distance(mIds.begin(), it);
-    beginRemoveRows(QModelIndex(), row, row);
-    mIds.erase(it);
-    endRemoveRows();
-}
-
-void CategoriesModel::tournamentReset() {
-    beginResetModel();
-    QTournamentStore & tournament = mStoreHandler.getTournament();
-
-    mIds.clear();
-    for (const auto & p : tournament.getCategories())
-        mIds.insert(p.first);
-
-    QObject::connect(&tournament, &QTournamentStore::categoryAdded, this, &CategoriesModel::categoryAdded);
-    QObject::connect(&tournament, &QTournamentStore::categoryChanged, this, &CategoriesModel::categoryChanged);
-    QObject::connect(&tournament, &QTournamentStore::categoryDeleted, this, &CategoriesModel::categoryDeleted);
-    QObject::connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &CategoriesModel::tournamentReset);
-    endResetModel();
-}
-
 int CategoriesModel::rowCount(const QModelIndex &parent) const {
     return mStoreHandler.getTournament().getCategories().size();
 }
@@ -54,12 +17,10 @@ int CategoriesModel::columnCount(const QModelIndex &parent) const {
 }
 
 QVariant CategoriesModel::data(const QModelIndex &index, int role) const {
-    if (role == Qt::DisplayRole) {
-        auto it = mIds.begin();
-        std::advance(it, index.row());
+    auto categoryId = getCategory(index.row());
+    const CategoryStore &category = mStoreHandler.getTournament().getCategory(categoryId);
 
-        Id id = *it;
-        CategoryStore &category = mStoreHandler.getTournament().getCategory(id);
+    if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
                 return QString(QString::fromStdString(category.getName()));
@@ -90,5 +51,81 @@ QVariant CategoriesModel::headerData(int section, Qt::Orientation orientation, i
         }
     }
     return QVariant();
+}
+
+std::vector<Id> CategoriesModel::getCategories(const QItemSelection &selection) const {
+    std::unordered_set<int> rows;
+    for (auto index : selection.indexes())
+        rows.insert(index.row());
+
+    std::vector<Id> categoryIds;
+    for (auto row : rows)
+        categoryIds.push_back(getCategory(row));
+
+    return std::move(categoryIds);
+}
+
+Id CategoriesModel::getCategory(int row) const {
+    auto it = mIds.begin();
+    std::advance(it, row);
+    return *it;
+}
+
+int CategoriesModel::getRow(Id id) const {
+    return std::distance(mIds.begin(), mIds.lower_bound(id));
+}
+
+void CategoriesModel::categoriesAdded(std::vector<Id> ids) {
+    for (auto id : ids) {
+        int row = getRow(id);
+        beginInsertRows(QModelIndex(), row, row);
+        mIds.insert(id);
+        endInsertRows();
+    }
+}
+
+void CategoriesModel::categoriesChanged(std::vector<Id> ids) {
+    for (auto id : ids) {
+        int row = getRow(id);
+        emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
+    }
+}
+
+void CategoriesModel::categoriesAboutToBeErased(std::vector<Id> ids) {
+    for (auto id : ids) {
+        int row = getRow(id);
+        beginRemoveRows(QModelIndex(), row, row);
+        mIds.erase(id);
+        endRemoveRows();
+    }
+}
+
+void CategoriesModel::categoriesAboutToBeReset() {
+    beginResetModel();
+}
+
+void CategoriesModel::categoriesReset() {
+    mIds.clear();
+    for (const auto & p : mStoreHandler.getTournament().getCategories())
+        mIds.insert(p.first);
+    endResetModel();
+}
+
+void CategoriesModel::tournamentReset() {
+    beginResetModel();
+    QTournamentStore & tournament = mStoreHandler.getTournament();
+
+    mIds.clear();
+    for (const auto & p : tournament.getCategories())
+        mIds.insert(p.first);
+
+    connect(&tournament, &QTournamentStore::categoriesAdded, this, &CategoriesModel::categoriesAdded);
+    connect(&tournament, &QTournamentStore::categoriesChanged, this, &CategoriesModel::categoriesChanged);
+    connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &CategoriesModel::categoriesAboutToBeErased);
+    connect(&tournament, &QTournamentStore::categoriesAboutToBeReset, this, &CategoriesModel::categoriesAboutToBeReset);
+    connect(&tournament, &QTournamentStore::categoriesReset, this, &CategoriesModel::categoriesReset);
+    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &CategoriesModel::tournamentReset);
+
+    endResetModel();
 }
 

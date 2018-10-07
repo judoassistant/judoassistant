@@ -99,18 +99,10 @@ const std::string & PlayerStore::getClub() const {
 }
 
 void PlayerStore::eraseMatch(Id id) {
-    auto it = mMatches.find(id);
-    if (it == mMatches.end())
-        throw std::out_of_range("Attempted to erase non-existing match");
-
-    mMatches.erase(it);
+    mMatches.erase(id);
 }
 
 void PlayerStore::addMatch(Id id) {
-    auto it = mMatches.find(id);
-    if (it != mMatches.end())
-        throw std::out_of_range("Attempted to add already existing match");
-
     mMatches.insert(id);
 }
 
@@ -119,18 +111,10 @@ const std::unordered_set<Id> & PlayerStore::getMatches() const {
 }
 
 void PlayerStore::eraseCategory(Id id) {
-    auto it = mCategories.find(id);
-    if (it == mCategories.end())
-        throw std::out_of_range("Attempted to erase non-existing category");
-
-    mCategories.erase(it);
+    mCategories.erase(id);
 }
 
 void PlayerStore::addCategory(Id id) {
-    auto it = mCategories.find(id);
-    if (it != mCategories.end())
-        throw std::out_of_range("Attempted to add already existing category");
-
     mCategories.insert(id);
 }
 
@@ -140,4 +124,12 @@ const std::unordered_set<Id> & PlayerStore::getCategories() const {
 
 int PlayerCountry::toInt() const {
     return static_cast<int>(mValue);
+}
+
+bool PlayerStore::containsMatch(Id id) const {
+    return mMatches.find(id) != mMatches.end();
+}
+
+bool PlayerStore::containsCategory(Id id) const {
+    return mCategories.find(id) != mCategories.end();
 }
