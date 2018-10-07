@@ -22,6 +22,7 @@ public:
     PlayerCountry(int value) : mValue(static_cast<Enum>(value)) {}
 
     std::string toString() const;
+    int toInt() const;
     static std::vector<PlayerCountry> values();
 
     template<typename Archive>
@@ -59,6 +60,7 @@ public:
     PlayerRank(int value) : mValue(static_cast<Enum>(value)) {}
 
     std::string toString() const;
+    int toInt() const;
     static std::vector<PlayerRank> values();
 
     template<typename Archive>

@@ -27,6 +27,10 @@ const Id & PlayerStore::getId() const {
     return mId;
 }
 
+int PlayerRank::toInt() const {
+    return static_cast<int>(mValue);
+}
+
 std::string PlayerRank::toString() const {
     // TODO: handle translation
     switch (mValue) {
@@ -134,3 +138,6 @@ const std::unordered_set<Id> & PlayerStore::getCategories() const {
     return mCategories;
 }
 
+int PlayerCountry::toInt() const {
+    return static_cast<int>(mValue);
+}

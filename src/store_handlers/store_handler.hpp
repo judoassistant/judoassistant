@@ -10,4 +10,5 @@ public:
     virtual ~StoreHandler() {}
     virtual void dispatch(std::unique_ptr<Action> && action) = 0;
     virtual TournamentStore & getTournament() = 0;
+    virtual const TournamentStore & getTournament() const = 0;
 };

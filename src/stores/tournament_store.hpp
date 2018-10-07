@@ -29,19 +29,22 @@ public:
     const std::unordered_map<Id, std::unique_ptr<PlayerStore>> & getPlayers() const;
     const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & getCategories() const;
 
+    const CategoryStore & getCategory(Id id) const;
     CategoryStore & getCategory(Id id);
     void addCategory(std::unique_ptr<CategoryStore> ptr);
     std::unique_ptr<CategoryStore> eraseCategory(Id id);
 
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     PlayerStore & getPlayer(Id id);
+    const PlayerStore & getPlayer(Id id) const;
     std::unique_ptr<PlayerStore> erasePlayer(Id id);
 
     Id generateNextPlayerId();
     Id generateNextCategoryId();
     Id generateNextMatchId();
 
-    // signals useful for Qt
+    // signals useful for Qt.
+    // TODO: Add beginCategoryChanged signal etc.
     virtual void tournamentChanged() {}
     virtual void matchAdded(Id id) {}
     virtual void matchChanged(Id id) {}

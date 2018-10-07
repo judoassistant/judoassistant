@@ -53,14 +53,17 @@ int PlayersModel::columnCount(const QModelIndex &parent) const {
     return COLUMN_COUNT;
 }
 
-QVariant PlayersModel::data(const QModelIndex &index, int role) const {
-    // TODO
-    if (role == Qt::DisplayRole) {
-        auto it = mIds.begin();
-        std::advance(it, index.row());
+const PlayerStore & PlayersModel::getPlayer(int row) const {
+    auto it = mIds.begin();
+    std::advance(it, row);
 
-        Id id = *it;
-        PlayerStore &player = mStoreHandler.getTournament().getPlayer(id);
+    return mStoreHandler.getTournament().getPlayer(*it);
+}
+
+QVariant PlayersModel::data(const QModelIndex &index, int role) const {
+    const PlayerStore &player = getPlayer(index.row());
+
+    if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
                 return QString(QString::fromStdString(player.getFirstName()));
@@ -78,6 +81,13 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
                 return (player.getCountry().has_value() ? QVariant(QString::fromStdString(player.getCountry().value().toString())) : QVariant(""));
         }
     }
+
+    if (role == Qt::UserRole) { // Used for sorting
+        if (index.column() == 3)
+            return (player.getRank().has_value() ? QVariant(player.getRank().value().toInt()) : QVariant(""));
+        return data(index, Qt::DisplayRole);
+    }
+
     return QVariant();
 }
 

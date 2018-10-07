@@ -28,6 +28,14 @@ MatchStore & CategoryStore::getMatch(Id id) {
     return *(it->second);
 }
 
+const MatchStore & CategoryStore::getMatch(Id id) const {
+    auto it = mMatches.find(id);
+    if (it == mMatches.end())
+        throw std::out_of_range("Attempted to get non-existing match");
+
+    return *(it->second);
+}
+
 std::unique_ptr<MatchStore> CategoryStore::eraseMatch(Id id) {
     auto it = mMatches.find(id);
     if (it == mMatches.end())

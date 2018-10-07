@@ -4,6 +4,8 @@
 
 #include "serialize.hpp"
 #include "actions/action.hpp"
+#include "actions/match_actions.hpp"
+#include "actions/category_actions.hpp"
 #include "stores/tournament_store.hpp"
 #include "stores/player_store.hpp"
 

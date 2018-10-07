@@ -49,6 +49,14 @@ PlayerStore & TournamentStore::getPlayer(Id id) {
     return *(it->second);
 }
 
+const PlayerStore & TournamentStore::getPlayer(Id id) const {
+    auto it = mPlayers.find(id);
+    if (it == mPlayers.end())
+        throw std::out_of_range("Attempted to get non-existing player");
+
+    return *(it->second);
+}
+
 std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(Id id) {
     auto it = mPlayers.find(id);
     if (it == mPlayers.end())
@@ -60,6 +68,14 @@ std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(Id id) {
 }
 
 CategoryStore & TournamentStore::getCategory(Id id) {
+    auto it = mCategories.find(id);
+    if (it == mCategories.end())
+        throw std::out_of_range("Attempted to get non-existing category");
+
+    return *(it->second);
+}
+
+const CategoryStore & TournamentStore::getCategory(Id id) const {
     auto it = mCategories.find(id);
     if (it == mCategories.end())
         throw std::out_of_range("Attempted to get non-existing category");

@@ -13,6 +13,10 @@ QTournamentStore & MasterStoreHandler::getTournament() {
     return *mTournament;
 }
 
+const QTournamentStore & MasterStoreHandler::getTournament() const {
+    return *mTournament;
+}
+
 void MasterStoreHandler::reset() {
     mTournament = std::make_unique<QTournamentStore>();
     emit tournamentReset();

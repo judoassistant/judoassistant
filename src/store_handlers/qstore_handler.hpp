@@ -10,6 +10,7 @@ class QStoreHandler : public QObject, public StoreHandler {
     Q_OBJECT
 public:
     QTournamentStore & getTournament() override = 0;
+    const QTournamentStore & getTournament() const override = 0;
 signals:
     void tournamentReset();
 };

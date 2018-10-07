@@ -23,6 +23,7 @@ public:
     MasterStoreHandler();
     void dispatch(std::unique_ptr<Action> && action) override;
     QTournamentStore & getTournament() override;
+    const QTournamentStore & getTournament() const override;
     bool read(const QString &path);
     bool write(const QString &path);
     void reset();
