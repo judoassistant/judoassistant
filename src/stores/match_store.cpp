@@ -2,8 +2,9 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_event.hpp"
 
-MatchStore::MatchStore(Id id, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
+MatchStore::MatchStore(Id id, Id category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
     : mId(id)
+    , mCategory(category)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
@@ -71,4 +72,8 @@ void MatchStore::setClock(const std::chrono::high_resolution_clock::duration & c
 
 PlayerScore & MatchStore::getPlayerScore(PlayerIndex index) {
     return mScores[static_cast<size_t>(index)];
+}
+
+Id MatchStore::getCategory() const {
+    return mCategory;
 }

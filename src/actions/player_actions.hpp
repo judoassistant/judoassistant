@@ -24,13 +24,15 @@ private:
     std::optional<PlayerCountry> mCountry;
 };
 
-// class DeletePlayerAction : public Action {
-// public:
-//     DeletePlayerAction(TournamentStore & tournament, const Id & player);
-//     void redoImpl(TournamentStore & tournament) override;
-//     void undoImpl(TournamentStore & tournament) override;
-// private:
-//     Id mId;
-//     std::unique_ptr<PlayerStore player> mPlayer;
-// };
+class RemovePlayerFromCategoryAction;
 
+class ErasePlayerAction : public Action {
+public:
+    ErasePlayerAction(TournamentStore & tournament, Id player);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    Id mId;
+    std::stack<RemovePlayerFromCategoryAction> mActions;
+    std::unique_ptr<PlayerStore> mPlayer;
+};

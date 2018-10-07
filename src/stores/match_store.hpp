@@ -19,7 +19,6 @@ struct PlayerScore {
     uint8_t shido;
     bool hansokuMake;
 
-
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::make_nvp("ippon", ippon));
@@ -37,7 +36,7 @@ public:
     };
 
     MatchStore() {}
-    MatchStore(Id id, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
+    MatchStore(Id id, Id category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
 
     Id getId() const;
     std::optional<Id> getPlayer(PlayerIndex index) const;
@@ -59,6 +58,8 @@ public:
     bool isGoldenScore() const;
     void setGoldenScore(bool val);
 
+    Id getCategory() const;
+
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::make_nvp("id", mId));
@@ -74,6 +75,7 @@ public:
     }
 private:
     Id mId;
+    Id mCategory;
     std::array<PlayerScore,2> mScores;
     std::array<std::optional<Id>,2> mPlayers;
     bool mIsStopped;

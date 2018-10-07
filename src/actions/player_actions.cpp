@@ -1,4 +1,6 @@
 #include "actions/player_actions.hpp"
+#include "actions/category_actions.hpp"
+#include "actions/match_actions.hpp"
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
@@ -35,25 +37,43 @@ void CreatePlayerAction::undoImpl(TournamentStore & tournament) {
     }
 }
 
-// DeletePlayerAction::DeletePlayerAction(TournamentStore & tournament, const Id & player)
-//     : mId(id)
-//     , mPlayer(nullptr)
-// {}
+ErasePlayerAction::ErasePlayerAction(TournamentStore & tournament, Id player)
+    : mId(player)
+{}
 
-// void DeletePlayerAction::redoImpl(TournamentStore & tournament) {
-//     try {
-//         mPlayer = tournament.erasePlayer(mId);
+void ErasePlayerAction::redoImpl(TournamentStore & tournament) {
+    try {
+        // Remove the player all their categories (and their matches)
+        for (Id category : tournament.getPlayer(mId).getCategories()) {
+            RemovePlayerFromCategoryAction action(tournament, category, mId);
+            action.redo(tournament);
+            mActions.push(std::move(action));
+        }
 
-//         for (Id category : mPlayer->getCategories()) {
-//             tournament.getCategory(category
-//         }
-//     }
-//     catch (std::exception e) {
-//         std::cout << e << std::endl;
-//         throw ActionExecutionException("Failed to delete player");
-//     }
-// }
+        mPlayer = tournament.erasePlayer(mId);
+        tournament.playerDeleted(mId);
+    }
+    catch (const std::exception &e){
+        std::cout << e.what() << std::endl;
+        throw ActionExecutionException("Failed to redo ErasePlayerAction.");
+    }
+}
 
-// void DeletePlayerAction::undoImpl(TournamentStore & tournament) {
-//     tournament.addPlayer(std::move(mPlayer));
-// }
+void ErasePlayerAction::undoImpl(TournamentStore & tournament) {
+    try {
+        tournament.addPlayer(std::move(mPlayer));
+
+        // undo the RemovePlayerFromCategoryAction in reverse order
+        while (!mActions.empty()) {
+            mActions.top().undo(tournament);
+            mActions.pop();
+        }
+
+        tournament.playerAdded(mId);
+    }
+    catch (const std::exception &e){
+        std::cout << e.what() << std::endl;
+        throw ActionExecutionException("Failed to undo ErasePlayerAction.");
+    }
+}
+

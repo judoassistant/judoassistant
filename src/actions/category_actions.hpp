@@ -30,6 +30,8 @@ private:
     bool mIsDrawn;
 };
 
+class EraseMatchAction;
+
 class RemovePlayerFromCategoryAction : public Action {
 public:
     RemovePlayerFromCategoryAction(TournamentStore & tournament, Id category, Id player);
@@ -38,6 +40,16 @@ public:
 private:
     Id mCategory;
     Id mPlayer;
-    bool mIsDrawn;
-    std::vector<std::unique_ptr<MatchStore>> mMatches;
+    std::stack<EraseMatchAction> mActions;
+};
+
+class EraseCategoryAction : public Action {
+public:
+    EraseCategoryAction(TournamentStore & tournament, Id category);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    Id mId;
+    std::stack<RemovePlayerFromCategoryAction> mActions;
+    std::unique_ptr<CategoryStore> mCategory;
 };
