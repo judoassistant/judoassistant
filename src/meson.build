@@ -5,3 +5,5 @@ subdir('rulesets')
 subdir('stores')
 subdir('store_handlers')
 subdir('widgets')
+
+sources += ['src/log.cpp']
