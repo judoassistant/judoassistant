@@ -10,26 +10,28 @@
 
 class AddCategoryAction : public Action {
 public:
-    AddCategoryAction(TournamentStore & tournament, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
+    AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
     CategoryId mId;
     std::string mName;
-    std::unique_ptr<Ruleset> mRuleset;
-    std::unique_ptr<DrawStrategy> mDrawStrategy;
+    uint8_t mRuleset;
+    uint8_t mDrawSystem;
 };
 
 class DrawCategoryAction : public Action {
 public:
-    DrawCategoryAction(TournamentStore & tournament, CategoryId category);
+    DrawCategoryAction(TournamentStore & tournament, CategoryId categoryId);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
     CategoryId mCategoryId;
 
     // undo members
-    std::unique_ptr<MatchStore> mOldMatches;
+    std::stack<std::unique_ptr<MatchStore>> mOldMatches;
+    std::stack<std::unique_ptr<Action>> mActions;
+    std::unique_ptr<DrawSystem> mOldDrawSystem;
 };
 
 class AddPlayersToCategoryAction : public Action {

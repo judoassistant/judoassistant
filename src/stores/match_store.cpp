@@ -74,6 +74,10 @@ PlayerScore & MatchStore::getPlayerScore(PlayerIndex index) {
     return mScores[static_cast<size_t>(index)];
 }
 
+const PlayerScore & MatchStore::getPlayerScore(PlayerIndex index) const {
+    return mScores[static_cast<size_t>(index)];
+}
+
 CategoryId MatchStore::getCategory() const {
     return mCategory;
 }

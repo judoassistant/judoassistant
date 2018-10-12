@@ -49,3 +49,6 @@ void AddMatchAction::undoImpl(TournamentStore & tournament) {
     tournament.endEraseMatches();
 }
 
+MatchId AddMatchAction::getMatchId() {
+    return mId;
+}

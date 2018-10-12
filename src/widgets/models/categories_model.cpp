@@ -27,7 +27,7 @@ QVariant CategoriesModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString(QString::fromStdString(category.getRuleset().getName()));
             case 2:
-                return QString(QString::fromStdString(category.getDrawStrategy().getName()));
+                return QString(QString::fromStdString(category.getDrawSystem().getName()));
             case 3:
                 return static_cast<int>(category.getPlayers().size());
         }

@@ -1,10 +1,10 @@
 #include "stores/category_store.hpp"
 
-CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
+CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem)
     : mId(id)
     , mName(name)
     , mRuleset(std::move(ruleset))
-    , mDrawStrategy(std::move(drawStrategy))
+    , mDrawSystem(std::move(drawSystem))
 {}
 
 void CategoryStore::addMatch(std::unique_ptr<MatchStore> && ptr) {
@@ -68,16 +68,16 @@ const Ruleset & CategoryStore::getRuleset() const {
     return *mRuleset;
 }
 
-void CategoryStore::setDrawStrategy(std::unique_ptr<DrawStrategy> && ptr) {
-    mDrawStrategy = std::move(ptr);
+void CategoryStore::setDrawSystem(std::unique_ptr<DrawSystem> && ptr) {
+    mDrawSystem = std::move(ptr);
 }
 
-DrawStrategy & CategoryStore::getDrawStrategy() {
-    return *mDrawStrategy;
+DrawSystem & CategoryStore::getDrawSystem() {
+    return *mDrawSystem;
 }
 
-const DrawStrategy & CategoryStore::getDrawStrategy() const {
-    return *mDrawStrategy;
+const DrawSystem & CategoryStore::getDrawSystem() const {
+    return *mDrawSystem;
 }
 
 bool CategoryStore::containsMatch(MatchId id) const {

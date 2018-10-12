@@ -42,6 +42,7 @@ public:
     MatchId getId() const;
     std::optional<PlayerId> getPlayer(PlayerIndex index) const;
     PlayerScore & getPlayerScore(PlayerIndex index);
+    const PlayerScore & getPlayerScore(PlayerIndex index) const;
 
     void pushEvent(std::unique_ptr<MatchEvent> && event);
     const std::vector<std::unique_ptr<MatchEvent>> & getEvents() const;
@@ -78,7 +79,7 @@ private:
     MatchId mId;
     CategoryId mCategory;
     std::array<PlayerScore,2> mScores;
-    std::array<std::optional<PlayerId>,2> mPlayers;
+    std::array<std::optional<PlayerId>,2> mPlayers; // TODO: differentiate between byes and matches where both players haven't been added yet
     bool mIsStopped;
     bool mGoldenScore; // whether the match is currently in golden score or not
     std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed

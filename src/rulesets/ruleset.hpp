@@ -5,7 +5,6 @@
 
 #include "stores/match_store.hpp"
 
-// TODO: Make const where appropriate
 class Ruleset {
 public:
     virtual ~Ruleset() {}
@@ -16,10 +15,10 @@ public:
     virtual bool subtractWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual bool subtractShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual bool addShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual bool isFinished(MatchStore & match) const = 0;
-    virtual bool shouldStop(MatchStore & match) const = 0;
-    virtual bool shouldEnterGoldenScore(MatchStore & match) const = 0;
-    virtual std::optional<MatchStore::PlayerIndex> getWinner(MatchStore & match) const = 0;
+    virtual bool isFinished(const MatchStore & match) const = 0;
+    virtual bool shouldStop(const MatchStore & match) const = 0;
+    virtual bool shouldEnterGoldenScore(const MatchStore & match) const = 0;
+    virtual std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore & match) const = 0;
     virtual bool stop(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const = 0;
     virtual bool resume(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const = 0;
 

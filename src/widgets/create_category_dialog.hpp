@@ -21,5 +21,5 @@ private:
     QStoreHandler & mStoreHandler;
     QLineEdit *mNameContent;
     QComboBox *mRulesetContent;
-    QComboBox *mDrawStrategyContent;
+    QComboBox *mDrawSystemContent;
 };

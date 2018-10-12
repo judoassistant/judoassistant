@@ -1,19 +1,32 @@
 #include "actions/category_actions.hpp"
+#include "draw_systems/draw_systems.hpp"
+#include "rulesets/rulesets.hpp"
 
 #include "exception.hpp"
 
-AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
+AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
     : mId(tournament.generateNextCategoryId())
     , mName(name)
-    , mRuleset(std::move(ruleset))
-    , mDrawStrategy(std::move(drawStrategy))
+    , mRuleset(ruleset)
+    , mDrawSystem(drawSystem)
 {}
 
 void AddCategoryAction::redoImpl(TournamentStore & tournament) {
     if (tournament.containsCategory(mId))
         throw ActionExecutionException("Failed to redo AddCategoryAction. Category already exists.");
+
+    const auto &rulesets = Rulesets::getRulesets();
+    if (mRuleset > rulesets.size())
+        throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid ruleset specified.");
+    auto ruleset = rulesets[mRuleset]->clone();
+
+    const auto &drawSystems = DrawSystems::getDrawSystems();
+    if (mDrawSystem > drawSystems.size())
+        throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid drawSystem specified.");
+    auto drawSystem = drawSystems[mDrawSystem]->clone();
+
     tournament.beginAddCategories({mId});
-    tournament.addCategory(std::make_unique<CategoryStore>(mId, mName, mRuleset->clone(), mDrawStrategy->clone()));
+    tournament.addCategory(std::make_unique<CategoryStore>(mId, mName, std::move(ruleset), std::move(drawSystem)));
     tournament.endAddCategories();
 }
 
@@ -191,15 +204,71 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
     tournament.endAddCategories();
 }
 
-DrawCategoryAction::DrawCategoryAction(TournamentStore & tournament, CategoryId category) {
-    // TODO: Implement
-    // Notes: category may contain invalid matches. Remember to erase matches from players and the category
-}
+DrawCategoryAction::DrawCategoryAction(TournamentStore & tournament, CategoryId categoryId)
+    : mCategoryId(categoryId)
+{}
 
 void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
-    // TODO: Implement. Remember to check for empty category.
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    // Delete all existing matches
+    tournament.beginResetMatches(mCategoryId);
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    for (const auto & it : category.getMatches()) {
+        const std::unique_ptr<MatchStore> & match = it.second;
+        std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
+        if (whitePlayer && tournament.containsPlayer(*whitePlayer))
+            tournament.getPlayer(*whitePlayer).eraseMatch(mCategoryId, match->getId());
+
+        std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
+        if (bluePlayer && tournament.containsPlayer(*bluePlayer))
+            tournament.getPlayer(*bluePlayer).eraseMatch(mCategoryId, match->getId());
+
+        mOldMatches.push(category.eraseMatch(match->getId()));
+    }
+
+    mOldDrawSystem = category.getDrawSystem().clone();
+
+    std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
+    std::vector<std::unique_ptr<Action>> actions = category.getDrawSystem().initCategory(playerIds, tournament, category);
+
+    for (size_t i = 0; i < actions.size(); ++i) {
+        actions[i]->redo(tournament);
+        mActions.push(std::move(actions[i]));
+    }
+
+    tournament.endResetMatches(mCategoryId);
 }
 
 void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
-    // TODO: Implement. Remember to check for empty category
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    tournament.beginResetMatches(mCategoryId);
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    while (!mActions.empty()) {
+        mActions.top()->undo(tournament);
+        mActions.pop();
+    }
+
+    category.setDrawSystem(std::move(mOldDrawSystem));
+
+    while (!mOldMatches.empty()) {
+        std::unique_ptr<MatchStore> match = std::move(mOldMatches.top());
+
+        std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
+        if (whitePlayer && tournament.containsPlayer(*whitePlayer))
+            tournament.getPlayer(*whitePlayer).eraseMatch(mCategoryId, match->getId());
+
+        std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
+        if (bluePlayer && tournament.containsPlayer(*bluePlayer))
+            tournament.getPlayer(*bluePlayer).eraseMatch(mCategoryId, match->getId());
+
+        category.addMatch(std::move(match));
+    }
+
+    tournament.endResetMatches(mCategoryId);
 }

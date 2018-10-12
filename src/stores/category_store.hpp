@@ -6,14 +6,14 @@
 
 #include "core.hpp"
 #include "stores/match_store.hpp"
-#include "draw_strategies/draw_strategy.hpp"
+#include "draw_systems/draw_system.hpp"
 #include "rulesets/ruleset.hpp"
 #include "id.hpp"
 
 class CategoryStore {
 public:
     CategoryStore() {}
-    CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
+    CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
 
     const std::string & getName() const;
     void setName(const std::string &name);
@@ -36,9 +36,9 @@ public:
     Ruleset & getRuleset();
     const Ruleset & getRuleset() const;
 
-    void setDrawStrategy(std::unique_ptr<DrawStrategy> && ptr);
-    DrawStrategy & getDrawStrategy();
-    const DrawStrategy & getDrawStrategy() const;
+    void setDrawSystem(std::unique_ptr<DrawSystem> && ptr);
+    DrawSystem & getDrawSystem();
+    const DrawSystem & getDrawSystem() const;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -47,7 +47,7 @@ public:
         ar(cereal::make_nvp("players", mPlayers));
         ar(cereal::make_nvp("matches", mMatches));
         ar(cereal::make_nvp("ruleset", mRuleset));
-        ar(cereal::make_nvp("drawStrategy", mDrawStrategy));
+        ar(cereal::make_nvp("drawSystem", mDrawSystem));
     }
 private:
     CategoryId mId;
@@ -55,6 +55,6 @@ private:
     std::unordered_set<PlayerId, PlayerId::Hasher> mPlayers;
     std::map<MatchId, std::unique_ptr<MatchStore>> mMatches; // order matters in this case
     std::unique_ptr<Ruleset> mRuleset;
-    std::unique_ptr<DrawStrategy> mDrawStrategy;
+    std::unique_ptr<DrawSystem> mDrawSystem;
 };
 

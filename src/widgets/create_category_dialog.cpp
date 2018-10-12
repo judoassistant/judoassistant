@@ -8,7 +8,7 @@
 #include "actions/category_actions.hpp"
 
 #include "rulesets/rulesets.hpp"
-#include "draw_strategies/draw_strategies.hpp"
+#include "draw_systems/draw_systems.hpp"
 
 CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget *parent)
     : QDialog(parent)
@@ -17,15 +17,17 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
     mNameContent = new QLineEdit;
 
     mRulesetContent = new QComboBox;
-    mRulesetContent->addItem(QString::fromStdString(TwentyEighteenRuleset::getStaticName()));
+    for (const auto & ruleset : Rulesets::getRulesets())
+        mRulesetContent->addItem(QString::fromStdString(ruleset->getName()));
 
-    mDrawStrategyContent = new QComboBox;
-    // mDrawStrategyContent->addItem(QString::fromStdString(PoolDrawStrategy::getStaticName())); TODO: Uncomment this line
+    mDrawSystemContent = new QComboBox;
+    for (const auto & system : DrawSystems::getDrawSystems())
+        mDrawSystemContent->addItem(QString::fromStdString(system->getName()));
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("Name"), mNameContent);
     formLayout->addRow(tr("Ruleset"), mRulesetContent);
-    formLayout->addRow(tr("Draw System"), mDrawStrategyContent);
+    formLayout->addRow(tr("Draw System"), mDrawSystemContent);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
@@ -42,7 +44,7 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
 }
 
 void CreateCategoryDialog::acceptClick() {
-    // mStoreHandler.dispatch(std::make_unique<CreateCategoryAction>(mStoreHandler.getTournament(), mNameContent->text().toStdString(), std::make_unique<TwentyEighteenRuleset>(), std::make_unique<PoolDrawStrategy>())); TODO: Uncomment this line
+    mStoreHandler.dispatch(std::make_unique<AddCategoryAction>(mStoreHandler.getTournament(), mNameContent->text().toStdString(), mRulesetContent->currentIndex(), mDrawSystemContent->currentIndex()));
     accept();
 }
 

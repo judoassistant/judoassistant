@@ -38,7 +38,7 @@ bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::Player
 }
 
 
-bool TwentyEighteenRuleset::isFinished(MatchStore & match) const {
+bool TwentyEighteenRuleset::isFinished(const MatchStore & match) const {
     if (!match.getPlayer(MatchStore::PlayerIndex::WHITE).has_value())
         return true;
     if (!match.getPlayer(MatchStore::PlayerIndex::BLUE).has_value())
@@ -47,15 +47,15 @@ bool TwentyEighteenRuleset::isFinished(MatchStore & match) const {
     if (!match.isStopped())
         return false;
 
-    PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
-    PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
+    const PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
+    const PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
 
     if (whiteScore.hansokuMake || blueScore.hansokuMake) // also handle the case when both players are disqualified
         return true;
     return getWinner(match).has_value();
 }
 
-bool TwentyEighteenRuleset::shouldStop(MatchStore & match) const {
+bool TwentyEighteenRuleset::shouldStop(const MatchStore & match) const {
     if (match.getCurrentClock() > NORMAL_TIME && !match.isGoldenScore())
         return true;
     if (getWinner(match).has_value())
@@ -63,7 +63,7 @@ bool TwentyEighteenRuleset::shouldStop(MatchStore & match) const {
     return false;
 }
 
-bool TwentyEighteenRuleset::shouldEnterGoldenScore(MatchStore & match) const {
+bool TwentyEighteenRuleset::shouldEnterGoldenScore(const MatchStore & match) const {
     if (getWinner(match).has_value())
         return false;
     if (match.getCurrentClock() >= NORMAL_TIME && !match.isGoldenScore())
@@ -71,14 +71,14 @@ bool TwentyEighteenRuleset::shouldEnterGoldenScore(MatchStore & match) const {
     return false;
 }
 
-std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(MatchStore & match) const {
+std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const MatchStore & match) const {
     if (!match.getPlayer(MatchStore::PlayerIndex::WHITE).has_value())
         return MatchStore::PlayerIndex::BLUE;
     if (!match.getPlayer(MatchStore::PlayerIndex::BLUE).has_value())
         return MatchStore::PlayerIndex::WHITE;
 
-    PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
-    PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
+    const PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
+    const PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
     auto currentClock = match.getCurrentClock();
 
     if (whiteScore.ippon == 1)
@@ -123,11 +123,7 @@ std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
 }
 
 std::string TwentyEighteenRuleset::getName() const {
-    return TwentyEighteenRuleset::getStaticName();
-}
-
-std::string TwentyEighteenRuleset::getStaticName() {
-    return "2018";
     // TODO: Handle delayed translation of this
+    return "2018";
 }
 

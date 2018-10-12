@@ -1,6 +1,6 @@
 subdir('actions')
 subdir('applications')
-subdir('draw_strategies')
+subdir('draw_systems')
 subdir('rulesets')
 subdir('stores')
 subdir('store_handlers')

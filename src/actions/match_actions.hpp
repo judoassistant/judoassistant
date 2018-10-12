@@ -12,6 +12,7 @@ public:
     AddMatchAction(TournamentStore & tournament, CategoryId categoryId, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+    MatchId getMatchId();
 private:
     MatchId mId;
     CategoryId mCategoryId;

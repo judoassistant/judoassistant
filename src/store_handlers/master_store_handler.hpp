@@ -15,7 +15,7 @@
 
 #include "actions/actions.hpp"
 #include "rulesets/rulesets.hpp"
-#include "draw_strategies/draw_strategies.hpp"
+#include "draw_systems/draw_systems.hpp"
 
 class MasterStoreHandler : public QStoreHandler {
     Q_OBJECT
