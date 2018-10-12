@@ -6,6 +6,7 @@
 
 #include "core.hpp"
 #include "serialize.hpp"
+#include "id.hpp"
 
 class PlayerCountry {
 public:
@@ -74,7 +75,7 @@ private:
 class PlayerStore {
 public:
     PlayerStore() {}
-    PlayerStore(Id id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country);
+    PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country);
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
@@ -96,19 +97,19 @@ public:
     const std::optional<PlayerRank> & getRank() const;
     const std::optional<PlayerCountry> & getCountry() const;
     const std::string & getClub() const;
-    const Id & getId() const;
+    const PlayerId & getId() const;
 
-    const std::unordered_set<Id> & getMatches() const;
-    void addMatch(Id id);
-    void eraseMatch(Id id);
-    bool containsMatch(Id id) const;
+    const std::unordered_set<CategoryId, CategoryId::Hasher> & getCategories() const;
+    void addCategory(CategoryId id);
+    void eraseCategory(CategoryId id);
+    bool containsCategory(CategoryId id) const;
 
-    const std::unordered_set<Id> & getCategories() const;
-    void addCategory(Id id);
-    void eraseCategory(Id id);
-    bool containsCategory(Id id) const;
+    const std::unordered_set<std::pair<CategoryId,MatchId>, CategoryIdMatchIdHasher> & getMatches() const;
+    void addMatch(CategoryId categoryId, MatchId matchId);
+    void eraseMatch(CategoryId categoryId, MatchId matchId);
+    bool containsMatch(CategoryId categoryId, MatchId matchId) const;
 private:
-    Id mId;
+    PlayerId mId;
     std::string mFirstName;
     std::string mLastName;
     std::optional<uint8_t> mAge;
@@ -117,8 +118,7 @@ private:
     std::optional<float> mWeight;
     std::optional<PlayerCountry> mCountry;
 
-    std::unordered_set<Id> mCategories;
-    // TODO: storing list of match ids without category id is pretty useless
-    std::unordered_set<Id> mMatches;
+    std::unordered_set<CategoryId, CategoryId::Hasher> mCategories;
+    std::unordered_set<std::pair<CategoryId,MatchId>, CategoryIdMatchIdHasher> mMatches;
 };
 

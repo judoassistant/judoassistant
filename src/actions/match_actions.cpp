@@ -1,7 +1,7 @@
 #include "actions/match_actions.hpp"
 #include "exception.hpp"
 
-AddMatchAction::AddMatchAction(TournamentStore & tournament, Id categoryId, std::optional<Id> whitePlayerId, std::optional<Id> bluePlayerId)
+AddMatchAction::AddMatchAction(TournamentStore & tournament, CategoryId categoryId, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
     : mId(tournament.generateNextMatchId())
     , mCategoryId(categoryId)
     , mWhitePlayerId(whitePlayerId)
@@ -15,17 +15,17 @@ void AddMatchAction::redoImpl(TournamentStore & tournament) {
     if (category.containsMatch(mId))
         throw ActionExecutionException("Failed to redo AddMatchAction. Match already exists.");
 
-    tournament.beginAddMatches({mId});
-    std::optional<Id> whitePlayerId;
+    tournament.beginAddMatches(mCategoryId, {mId});
+    std::optional<PlayerId> whitePlayerId;
     if (mWhitePlayerId && tournament.containsPlayer(*mWhitePlayerId)) {
         whitePlayerId = mWhitePlayerId;
-        tournament.getPlayer(*whitePlayerId).addMatch(mId);
+        tournament.getPlayer(*whitePlayerId).addMatch(mCategoryId, mId);
     }
 
-    std::optional<Id> bluePlayerId;
+    std::optional<PlayerId> bluePlayerId;
     if (mBluePlayerId && tournament.containsPlayer(*mBluePlayerId)) {
         bluePlayerId = mBluePlayerId;
-        tournament.getPlayer(*bluePlayerId).addMatch(mId);
+        tournament.getPlayer(*bluePlayerId).addMatch(mCategoryId, mId);
     }
 
     category.addMatch(std::make_unique<MatchStore>(mId, mCategoryId, whitePlayerId, bluePlayerId));
@@ -37,13 +37,13 @@ void AddMatchAction::undoImpl(TournamentStore & tournament) {
 
     CategoryStore & category = tournament.getCategory(mCategoryId);
 
-    tournament.beginEraseMatches({mId});
+    tournament.beginEraseMatches(mCategoryId, {mId});
 
     if (mWhitePlayerId && tournament.containsPlayer(*mWhitePlayerId))
-        tournament.getPlayer(*mWhitePlayerId).eraseMatch(mId);
+        tournament.getPlayer(*mWhitePlayerId).eraseMatch(mCategoryId, mId);
 
     if (mBluePlayerId && tournament.containsPlayer(*mBluePlayerId))
-        tournament.getPlayer(*mBluePlayerId).eraseMatch(mId);
+        tournament.getPlayer(*mBluePlayerId).eraseMatch(mCategoryId, mId);
 
     category.eraseMatch(mId);
     tournament.endEraseMatches();

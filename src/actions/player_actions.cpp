@@ -30,14 +30,14 @@ void AddPlayerAction::undoImpl(TournamentStore & tournament) {
     tournament.endErasePlayers();
 }
 
-ErasePlayersAction::ErasePlayersAction(TournamentStore & tournament, std::vector<Id> playerIds)
+ErasePlayersAction::ErasePlayersAction(TournamentStore & tournament, std::vector<PlayerId> playerIds)
     : mPlayerIds(playerIds) // TODO: Use std::move where appropriate
 {}
 
 void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
-    std::unordered_set<Id> categoryIds;
+    std::unordered_set<CategoryId, CategoryId::Hasher> categoryIds;
 
-    for (Id playerId : mPlayerIds) {
+    for (auto playerId : mPlayerIds) {
         if (!tournament.containsPlayer(playerId)) continue;
 
         mErasedPlayerIds.push_back(playerId);
@@ -47,14 +47,14 @@ void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
     }
 
     tournament.beginErasePlayers(mErasedPlayerIds);
-    for (Id categoryId : categoryIds) {
+    for (auto categoryId : categoryIds) {
         auto action = std::make_unique<ErasePlayersFromCategoryAction>(tournament, categoryId, mErasedPlayerIds); // lazily give the action all playerIds and let it figure the rest out on its own
         action->redo(tournament);
         mActions.push(std::move(action));
     }
 
 
-    for (Id playerId : mErasedPlayerIds)
+    for (auto playerId : mErasedPlayerIds)
         mPlayers.push(std::move(tournament.erasePlayer(playerId)));
     tournament.endErasePlayers();
 }

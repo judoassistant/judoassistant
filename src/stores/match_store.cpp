@@ -2,15 +2,15 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_event.hpp"
 
-MatchStore::MatchStore(Id id, Id category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer)
+MatchStore::MatchStore(MatchId id, CategoryId categoryId, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
     : mId(id)
-    , mCategory(category)
+    , mCategory(categoryId)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
 }
 
-Id MatchStore::getId() const {
+MatchId MatchStore::getId() const {
     return mId;
 }
 
@@ -35,7 +35,7 @@ bool MatchStore::isStopped() const {
     return mIsStopped;
 }
 
-std::optional<Id> MatchStore::getPlayer(PlayerIndex index) const {
+std::optional<PlayerId> MatchStore::getPlayer(PlayerIndex index) const {
     return mPlayers[static_cast<size_t>(index)];
 }
 
@@ -74,6 +74,6 @@ PlayerScore & MatchStore::getPlayerScore(PlayerIndex index) {
     return mScores[static_cast<size_t>(index)];
 }
 
-Id MatchStore::getCategory() const {
+CategoryId MatchStore::getCategory() const {
     return mCategory;
 }

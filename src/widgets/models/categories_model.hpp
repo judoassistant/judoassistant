@@ -14,20 +14,20 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    std::vector<Id> getCategories(const QItemSelection &selection) const;
-    Id getCategory(int row) const;
+    std::vector<CategoryId> getCategories(const QItemSelection &selection) const;
+    CategoryId getCategory(int row) const;
 
-    int getRow(Id id) const;
-    std::vector<int> getRows(std::vector<Id> id) const;
+    int getRow(CategoryId id) const;
+    std::vector<int> getRows(std::vector<CategoryId> id) const;
 public slots:
-    void categoriesAdded(std::vector<Id> ids);
-    void categoriesChanged(std::vector<Id> ids);
-    void categoriesAboutToBeErased(std::vector<Id> ids);
+    void categoriesAdded(std::vector<CategoryId> ids);
+    void categoriesChanged(std::vector<CategoryId> ids);
+    void categoriesAboutToBeErased(std::vector<CategoryId> ids);
     void categoriesAboutToBeReset();
     void categoriesReset();
     void tournamentReset();
 private:
     const int COLUMN_COUNT = 4;
     QStoreHandler & mStoreHandler;
-    std::set<Id> mIds;
+    std::set<CategoryId> mIds;
 };

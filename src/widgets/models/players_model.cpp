@@ -72,29 +72,29 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
     return QVariant();
 }
 
-std::vector<Id> PlayersModel::getPlayers(const QItemSelection &selection) const {
+std::vector<PlayerId> PlayersModel::getPlayers(const QItemSelection &selection) const {
     std::unordered_set<int> rows;
     for (auto index : selection.indexes())
         rows.insert(index.row());
 
-    std::vector<Id> playerIds;
+    std::vector<PlayerId> playerIds;
     for (auto row : rows)
         playerIds.push_back(getPlayer(row));
 
     return std::move(playerIds);
 }
 
-Id PlayersModel::getPlayer(int row) const {
+PlayerId PlayersModel::getPlayer(int row) const {
     auto it = mIds.begin();
     std::advance(it, row);
     return *it;
 }
 
-int PlayersModel::getRow(Id id) const {
+int PlayersModel::getRow(PlayerId id) const {
     return std::distance(mIds.begin(), mIds.lower_bound(id));
 }
 
-void PlayersModel::playersAdded(std::vector<Id> ids) {
+void PlayersModel::playersAdded(std::vector<PlayerId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
         beginInsertRows(QModelIndex(), row, row);
@@ -103,14 +103,14 @@ void PlayersModel::playersAdded(std::vector<Id> ids) {
     }
 }
 
-void PlayersModel::playersChanged(std::vector<Id> ids) {
+void PlayersModel::playersChanged(std::vector<PlayerId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
         emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
     }
 }
 
-void PlayersModel::playersAboutToBeErased(std::vector<Id> ids) {
+void PlayersModel::playersAboutToBeErased(std::vector<PlayerId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
         beginRemoveRows(QModelIndex(), row, row);

@@ -9,13 +9,13 @@
 
 class AddMatchAction : public Action {
 public:
-    AddMatchAction(TournamentStore & tournament, Id categoryId, std::optional<Id> whitePlayerId, std::optional<Id> bluePlayerId);
+    AddMatchAction(TournamentStore & tournament, CategoryId categoryId, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    Id mId;
-    Id mCategoryId;
-    std::optional<Id> mWhitePlayerId;
-    std::optional<Id> mBluePlayerId;
+    MatchId mId;
+    CategoryId mCategoryId;
+    std::optional<PlayerId> mWhitePlayerId;
+    std::optional<PlayerId> mBluePlayerId;
 };
 

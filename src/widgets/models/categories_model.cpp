@@ -53,29 +53,29 @@ QVariant CategoriesModel::headerData(int section, Qt::Orientation orientation, i
     return QVariant();
 }
 
-std::vector<Id> CategoriesModel::getCategories(const QItemSelection &selection) const {
+std::vector<CategoryId> CategoriesModel::getCategories(const QItemSelection &selection) const {
     std::unordered_set<int> rows;
     for (auto index : selection.indexes())
         rows.insert(index.row());
 
-    std::vector<Id> categoryIds;
+    std::vector<CategoryId> categoryIds;
     for (auto row : rows)
         categoryIds.push_back(getCategory(row));
 
     return std::move(categoryIds);
 }
 
-Id CategoriesModel::getCategory(int row) const {
+CategoryId CategoriesModel::getCategory(int row) const {
     auto it = mIds.begin();
     std::advance(it, row);
     return *it;
 }
 
-int CategoriesModel::getRow(Id id) const {
+int CategoriesModel::getRow(CategoryId id) const {
     return std::distance(mIds.begin(), mIds.lower_bound(id));
 }
 
-void CategoriesModel::categoriesAdded(std::vector<Id> ids) {
+void CategoriesModel::categoriesAdded(std::vector<CategoryId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
         beginInsertRows(QModelIndex(), row, row);
@@ -84,14 +84,14 @@ void CategoriesModel::categoriesAdded(std::vector<Id> ids) {
     }
 }
 
-void CategoriesModel::categoriesChanged(std::vector<Id> ids) {
+void CategoriesModel::categoriesChanged(std::vector<CategoryId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
         emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
     }
 }
 
-void CategoriesModel::categoriesAboutToBeErased(std::vector<Id> ids) {
+void CategoriesModel::categoriesAboutToBeErased(std::vector<CategoryId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
         beginRemoveRows(QModelIndex(), row, row);

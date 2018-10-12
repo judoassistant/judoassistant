@@ -1,6 +1,6 @@
 #include "stores/player_store.hpp"
 
-PlayerStore::PlayerStore(Id id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
+PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
     : mId(id)
     , mFirstName(firstName)
     , mLastName(lastName)
@@ -23,7 +23,7 @@ const std::optional<uint8_t> & PlayerStore::getAge() const {
     return mAge;
 }
 
-const Id & PlayerStore::getId() const {
+const PlayerId & PlayerStore::getId() const {
     return mId;
 }
 
@@ -98,27 +98,31 @@ const std::string & PlayerStore::getClub() const {
     return mClub;
 }
 
-void PlayerStore::eraseMatch(Id id) {
-    mMatches.erase(id);
+void PlayerStore::eraseMatch(CategoryId categoryId, MatchId matchId) {
+    mMatches.erase(std::make_pair(categoryId, matchId));
 }
 
-void PlayerStore::addMatch(Id id) {
-    mMatches.insert(id);
+void PlayerStore::addMatch(CategoryId categoryId, MatchId matchId) {
+    mMatches.insert(std::make_pair(categoryId, matchId));
 }
 
-const std::unordered_set<Id> & PlayerStore::getMatches() const {
+const std::unordered_set<std::pair<CategoryId,MatchId>, CategoryIdMatchIdHasher> & PlayerStore::getMatches() const {
     return mMatches;
 }
 
-void PlayerStore::eraseCategory(Id id) {
+bool PlayerStore::containsMatch(CategoryId categoryId, MatchId matchId) const {
+    return mMatches.find(std::make_pair(categoryId, matchId)) != mMatches.end();
+}
+
+void PlayerStore::eraseCategory(CategoryId id) {
     mCategories.erase(id);
 }
 
-void PlayerStore::addCategory(Id id) {
+void PlayerStore::addCategory(CategoryId id) {
     mCategories.insert(id);
 }
 
-const std::unordered_set<Id> & PlayerStore::getCategories() const {
+const std::unordered_set<CategoryId, CategoryId::Hasher> & PlayerStore::getCategories() const {
     return mCategories;
 }
 
@@ -126,10 +130,6 @@ int PlayerCountry::toInt() const {
     return static_cast<int>(mValue);
 }
 
-bool PlayerStore::containsMatch(Id id) const {
-    return mMatches.find(id) != mMatches.end();
-}
-
-bool PlayerStore::containsCategory(Id id) const {
+bool PlayerStore::containsCategory(CategoryId id) const {
     return mCategories.find(id) != mCategories.end();
 }

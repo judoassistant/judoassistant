@@ -23,5 +23,5 @@ EditPlayerWidget::EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent
     setLayout(formLayout);
 }
 
-void EditPlayerWidget::setPlayer(Id id) {
+void EditPlayerWidget::setPlayer(PlayerId id) {
 }

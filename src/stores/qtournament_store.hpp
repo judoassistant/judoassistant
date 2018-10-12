@@ -19,73 +19,75 @@ public:
     // signals used for frontends. Called by actions
     void changeTournament() override;
 
-    void changePlayers(std::vector<Id> id) override;
-    void beginAddPlayers(std::vector<Id> id) override;
+    void changePlayers(std::vector<PlayerId> id) override;
+    void beginAddPlayers(std::vector<PlayerId> id) override;
     void endAddPlayers() override;
-    void beginErasePlayers(std::vector<Id> id) override;
+    void beginErasePlayers(std::vector<PlayerId> id) override;
     void endErasePlayers() override;
     void beginResetPlayers() override;
     void endResetPlayers() override;
 
-    void addPlayersToCategory(Id categoryId, std::vector<Id> playerIds) override;
-    void erasePlayersFromCategory(Id categoryId, std::vector<Id> playerIds) override;
+    void addPlayersToCategory(CategoryId categoryId, std::vector<PlayerId> playerIds) override;
+    void erasePlayersFromCategory(CategoryId categoryId, std::vector<PlayerId> playerIds) override;
 
-    void changeCategories(std::vector<Id> id) override;
-    void beginAddCategories(std::vector<Id> id) override;
+    void changeCategories(std::vector<CategoryId> id) override;
+    void beginAddCategories(std::vector<CategoryId> id) override;
     void endAddCategories() override;
-    void beginEraseCategories(std::vector<Id> id) override;
+    void beginEraseCategories(std::vector<CategoryId> id) override;
     void endEraseCategories() override;
     void beginResetCategories() override;
     void endResetCategories() override;
 
-    void changeMatches(std::vector<Id> id) override;
-    void beginAddMatches(std::vector<Id> id) override;
+    void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
+    void beginAddMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
     void endAddMatches() override;
-    void beginEraseMatches(std::vector<Id> id) override;
+    void beginEraseMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
     void endEraseMatches() override;
-    void beginResetMatches() override;
-    void endResetMatches() override;
+    void beginResetMatches(CategoryId categoryId) override;
+    void endResetMatches(CategoryId categoryId) override;
 
 signals:
     void tournamentChanged();
 
-    void playersChanged(std::vector<Id> id);
-    void playersAboutToBeAdded(std::vector<Id> id);
-    void playersAdded(std::vector<Id> id);
-    void playersAboutToBeErased(std::vector<Id> id);
-    void playersErased(std::vector<Id> id);
+    void playersChanged(std::vector<PlayerId> id);
+    void playersAboutToBeAdded(std::vector<PlayerId> id);
+    void playersAdded(std::vector<PlayerId> id);
+    void playersAboutToBeErased(std::vector<PlayerId> id);
+    void playersErased(std::vector<PlayerId> id);
     void playersAboutToBeReset();
     void playersReset();
 
-    void playersAddedToCategory(Id category, std::vector<Id>);
-    void playersErasedFromCategory(Id category, std::vector<Id>);
+    void playersAddedToCategory(CategoryId category, std::vector<PlayerId>);
+    void playersErasedFromCategory(CategoryId category, std::vector<PlayerId>);
 
-    void categoriesChanged(std::vector<Id> id);
-    void categoriesAboutToBeAdded(std::vector<Id> id);
-    void categoriesAdded(std::vector<Id> id);
-    void categoriesAboutToBeErased(std::vector<Id> id);
-    void categoriesErased(std::vector<Id> id);
+    void categoriesChanged(std::vector<CategoryId> id);
+    void categoriesAboutToBeAdded(std::vector<CategoryId> id);
+    void categoriesAdded(std::vector<CategoryId> id);
+    void categoriesAboutToBeErased(std::vector<CategoryId> id);
+    void categoriesErased(std::vector<CategoryId> id);
     void categoriesAboutToBeReset();
     void categoriesReset();
 
-    void matchesChanged(std::vector<Id> id);
-    void matchesAboutToBeAdded(std::vector<Id> id);
-    void matchesAdded(std::vector<Id> id);
-    void matchesAboutToBeErased(std::vector<Id> id);
-    void matchesErased(std::vector<Id> id);
-    void matchesAboutToBeReset();
-    void matchesReset();
+    void matchesChanged(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void matchesAboutToBeAdded(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void matchesAdded(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void matchesAboutToBeErased(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void matchesErased(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void matchesAboutToBeReset(CategoryId categoryId);
+    void matchesReset(CategoryId categoryId);
 private:
-    std::optional<std::vector<Id>> mAddedPlayerIds;
-    std::optional<std::vector<Id>> mErasedPlayerIds;
+    std::optional<std::vector<PlayerId>> mAddedPlayerIds;
+    std::optional<std::vector<PlayerId>> mErasedPlayerIds;
     bool mResettingPlayers;
 
-    std::optional<std::vector<Id>> mAddedCategoryIds;
-    std::optional<std::vector<Id>> mErasedCategoryIds;
+    std::optional<std::vector<CategoryId>> mAddedCategoryIds;
+    std::optional<std::vector<CategoryId>> mErasedCategoryIds;
     bool mResettingCategories;
 
-    std::optional<std::vector<Id>> mAddedMatchIds;
-    std::optional<std::vector<Id>> mErasedMatchIds;
+    std::optional<CategoryId> mAddedMatchesCategoryId;
+    std::optional<std::vector<MatchId>> mAddedMatchIds;
+    std::optional<CategoryId> mErasedMatchesCategoryId;
+    std::optional<std::vector<MatchId>> mErasedMatchIds;
     bool mResettingMatches;
 };
 

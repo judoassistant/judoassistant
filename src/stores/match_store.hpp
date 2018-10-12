@@ -6,6 +6,7 @@
 
 #include "serialize.hpp"
 #include "core.hpp"
+#include "id.hpp"
 
 #include "stores/match_event.hpp"
 
@@ -36,10 +37,10 @@ public:
     };
 
     MatchStore() {}
-    MatchStore(Id id, Id category, std::optional<Id> whitePlayer, std::optional<Id> bluePlayer);
+    MatchStore(MatchId id, CategoryId categoryId, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
 
-    Id getId() const;
-    std::optional<Id> getPlayer(PlayerIndex index) const;
+    MatchId getId() const;
+    std::optional<PlayerId> getPlayer(PlayerIndex index) const;
     PlayerScore & getPlayerScore(PlayerIndex index);
 
     void pushEvent(std::unique_ptr<MatchEvent> && event);
@@ -58,7 +59,7 @@ public:
     bool isGoldenScore() const;
     void setGoldenScore(bool val);
 
-    Id getCategory() const;
+    CategoryId getCategory() const;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -74,10 +75,10 @@ public:
         // ar("events", mEvents);
     }
 private:
-    Id mId;
-    Id mCategory;
+    MatchId mId;
+    CategoryId mCategory;
     std::array<PlayerScore,2> mScores;
-    std::array<std::optional<Id>,2> mPlayers;
+    std::array<std::optional<PlayerId>,2> mPlayers;
     bool mIsStopped;
     bool mGoldenScore; // whether the match is currently in golden score or not
     std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed

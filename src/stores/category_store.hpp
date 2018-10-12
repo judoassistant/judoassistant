@@ -8,28 +8,29 @@
 #include "stores/match_store.hpp"
 #include "draw_strategies/draw_strategy.hpp"
 #include "rulesets/ruleset.hpp"
+#include "id.hpp"
 
 class CategoryStore {
 public:
     CategoryStore() {}
-    CategoryStore(Id id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
+    CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy);
 
     const std::string & getName() const;
     void setName(const std::string &name);
 
-    const Id & getId() const;
+    const CategoryId & getId() const;
 
-    const std::map<Id, std::unique_ptr<MatchStore>> & getMatches() const;
-    MatchStore & getMatch(Id id);
-    const MatchStore & getMatch(Id id) const;
-    std::unique_ptr<MatchStore> eraseMatch(Id id);
+    const std::map<MatchId, std::unique_ptr<MatchStore>> & getMatches() const;
+    MatchStore & getMatch(MatchId id);
+    const MatchStore & getMatch(MatchId id) const;
+    std::unique_ptr<MatchStore> eraseMatch(MatchId id);
     void addMatch(std::unique_ptr<MatchStore> && ptr);
-    bool containsMatch(Id id) const;
+    bool containsMatch(MatchId id) const;
 
-    const std::unordered_set<Id> & getPlayers() const;
-    void erasePlayer(Id id);
-    void addPlayer(Id id);
-    bool containsPlayer(Id id) const;
+    const std::unordered_set<PlayerId, PlayerId::Hasher> & getPlayers() const;
+    void erasePlayer(PlayerId id);
+    void addPlayer(PlayerId id);
+    bool containsPlayer(PlayerId id) const;
 
     void setRuleset(std::unique_ptr<Ruleset> && ptr);
     Ruleset & getRuleset();
@@ -48,12 +49,11 @@ public:
         ar(cereal::make_nvp("ruleset", mRuleset));
         ar(cereal::make_nvp("drawStrategy", mDrawStrategy));
     }
-
 private:
-    Id mId;
+    CategoryId mId;
     std::string mName;
-    std::unordered_set<Id> mPlayers;
-    std::map<Id, std::unique_ptr<MatchStore>> mMatches; // order matters in this case
+    std::unordered_set<PlayerId, PlayerId::Hasher> mPlayers;
+    std::map<MatchId, std::unique_ptr<MatchStore>> mMatches; // order matters in this case
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawStrategy> mDrawStrategy;
 };

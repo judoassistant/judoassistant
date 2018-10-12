@@ -4,6 +4,7 @@
 #include <vector>
 #include "actions/action.hpp"
 #include "serialize.hpp"
+#include "id.hpp"
 
 class StoreHandler;
 class CategoryStore;
@@ -14,10 +15,10 @@ class TournamentStore;
 class DrawStrategy {
 public:
     virtual ~DrawStrategy() {};
-    virtual void initCategory(StoreHandler & store_handler, const std::vector<Id> &players, TournamentStore & tournament, CategoryStore & category) = 0;
+    virtual void initCategory(StoreHandler & store_handler, const std::vector<PlayerId> &players, TournamentStore & tournament, CategoryStore & category) = 0;
     virtual void updateCategory(StoreHandler & store_handler, TournamentStore & tournament, CategoryStore & category) = 0;
     virtual bool isFinished(TournamentStore & tournament, CategoryStore & category) const = 0;
-    virtual Id get_rank(size_t rank) const = 0; // TODO: change this interface to handle players sharing rank
+    virtual PlayerId get_rank(size_t rank) const = 0; // TODO: change this interface to handle players sharing rank
     virtual std::unique_ptr<DrawStrategy> clone() const = 0;
     virtual std::string getName() const = 0;
 

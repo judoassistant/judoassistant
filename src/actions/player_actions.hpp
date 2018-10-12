@@ -16,7 +16,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
 private:
-    Id mId;
+    PlayerId mId;
     std::string mFirstName;
     std::string mLastName;
     std::optional<uint8_t> mAge;
@@ -30,14 +30,14 @@ class ErasePlayersFromCategoryAction;
 
 class ErasePlayersAction : public Action {
 public:
-    ErasePlayersAction(TournamentStore & tournament, std::vector<Id> playerIds);
+    ErasePlayersAction(TournamentStore & tournament, std::vector<PlayerId> playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 private:
-    std::vector<Id> mPlayerIds;
+    std::vector<PlayerId> mPlayerIds;
 
     // undo members
-    std::vector<Id> mErasedPlayerIds;
+    std::vector<PlayerId> mErasedPlayerIds;
     std::stack<std::unique_ptr<PlayerStore>> mPlayers;
     std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
 };

@@ -15,11 +15,11 @@ public:
     EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent);
 
 public slots:
-    void setPlayer(Id id);
+    void setPlayer(PlayerId id);
 private:
     QStoreHandler & mStoreHandler;
     QLineEdit *mFirstNameContent;
     QLineEdit *mLastNameContent;
     QSpinBox *mAgeContent;
-    std::optional<Id> mId;
+    std::optional<PlayerId> mId;
 };

@@ -1,8 +1,6 @@
 #include "stores/tournament_store.hpp"
 
 TournamentStore::TournamentStore()
-    : mNextPlayerId(0)
-    , mNextCategoryId(0)
 {}
 
 TournamentStore::~TournamentStore() {}
@@ -15,53 +13,74 @@ void TournamentStore::setName(const std::string & name) {
     mName = name;
 }
 
-const std::unordered_map<Id, std::unique_ptr<PlayerStore>> & TournamentStore::getPlayers() const {
+const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>, PlayerId::Hasher> & TournamentStore::getPlayers() const {
     return mPlayers;
 }
 
-const std::unordered_map<Id, std::unique_ptr<CategoryStore>> & TournamentStore::getCategories() const {
+const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>, CategoryId::Hasher> & TournamentStore::getCategories() const {
     return mCategories;
 }
 
-Id TournamentStore::generateNextPlayerId() {
-    return mNextPlayerId++;
+PlayerId TournamentStore::generateNextPlayerId() {
+    while (true) {
+        PlayerId id = mPlayerIdGenerator();
+        if (!containsPlayer(id))
+            return id;
+    }
 }
 
-Id TournamentStore::generateNextCategoryId() {
-    return mNextCategoryId++;
+CategoryId TournamentStore::generateNextCategoryId() {
+    while (true) {
+        CategoryId id = mCategoryIdGenerator();
+        if (!containsCategory(id))
+            return id;
+    }
 }
 
-Id TournamentStore::generateNextMatchId() {
-    return mNextMatchId++;
+MatchId TournamentStore::generateNextMatchId() {
+    while (true) {
+        MatchId id = mMatchIdGenerator();
+
+        bool exists = false;
+        for (const auto & it : getCategories()) {
+            if (it.second->containsMatch(id)) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists)
+            return id;
+    }
 }
 
 void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
     mPlayers[ptr->getId()] = std::move(ptr);
 }
 
-PlayerStore & TournamentStore::getPlayer(Id id) {
+PlayerStore & TournamentStore::getPlayer(PlayerId id) {
     auto it = mPlayers.find(id);
     return *(it->second);
 }
 
-const PlayerStore & TournamentStore::getPlayer(Id id) const {
+const PlayerStore & TournamentStore::getPlayer(PlayerId id) const {
     auto it = mPlayers.find(id);
     return *(it->second);
 }
 
-std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(Id id) {
+std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(PlayerId id) {
     auto it = mPlayers.find(id);
     auto ptr = std::move(it->second);
     mPlayers.erase(it);
     return std::move(ptr);
 }
 
-CategoryStore & TournamentStore::getCategory(Id id) {
+CategoryStore & TournamentStore::getCategory(CategoryId id) {
     auto it = mCategories.find(id);
     return *(it->second);
 }
 
-const CategoryStore & TournamentStore::getCategory(Id id) const {
+const CategoryStore & TournamentStore::getCategory(CategoryId id) const {
     auto it = mCategories.find(id);
     return *(it->second);
 }
@@ -70,17 +89,18 @@ void TournamentStore::addCategory(std::unique_ptr<CategoryStore> ptr) {
     mCategories[ptr->getId()] = std::move(ptr);
 }
 
-std::unique_ptr<CategoryStore> TournamentStore::eraseCategory(Id id) {
+std::unique_ptr<CategoryStore> TournamentStore::eraseCategory(CategoryId id) {
     auto it = mCategories.find(id);
     auto ptr = std::move(it->second);
     mCategories.erase(it);
     return std::move(ptr);
 }
 
-bool TournamentStore::containsPlayer(Id id) const {
+bool TournamentStore::containsPlayer(PlayerId id) const {
     return mPlayers.find(id) != mPlayers.end();
 }
 
-bool TournamentStore::containsCategory(Id id) const {
+bool TournamentStore::containsCategory(CategoryId id) const {
     return mCategories.find(id) != mCategories.end();
 }
+

@@ -1,6 +1,6 @@
 #include "stores/category_store.hpp"
 
-CategoryStore::CategoryStore(Id id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
+CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawStrategy> drawStrategy)
     : mId(id)
     , mName(name)
     , mRuleset(std::move(ruleset))
@@ -11,36 +11,36 @@ void CategoryStore::addMatch(std::unique_ptr<MatchStore> && ptr) {
     mMatches[ptr->getId()] = std::move(ptr);
 }
 
-const std::map<Id, std::unique_ptr<MatchStore>> & CategoryStore::getMatches() const {
+const std::map<MatchId, std::unique_ptr<MatchStore>> & CategoryStore::getMatches() const {
     return mMatches;
 }
 
-MatchStore & CategoryStore::getMatch(Id id) {
+MatchStore & CategoryStore::getMatch(MatchId id) {
     auto it = mMatches.find(id);
     return *(it->second);
 }
 
-const MatchStore & CategoryStore::getMatch(Id id) const {
+const MatchStore & CategoryStore::getMatch(MatchId id) const {
     auto it = mMatches.find(id);
     return *(it->second);
 }
 
-std::unique_ptr<MatchStore> CategoryStore::eraseMatch(Id id) {
+std::unique_ptr<MatchStore> CategoryStore::eraseMatch(MatchId id) {
     auto it = mMatches.find(id);
     auto ptr = std::move(it->second);
     mMatches.erase(it);
     return std::move(ptr);
 }
 
-const std::unordered_set<Id> & CategoryStore::getPlayers() const {
+const std::unordered_set<PlayerId, PlayerId::Hasher> & CategoryStore::getPlayers() const {
     return mPlayers;
 }
 
-void CategoryStore::erasePlayer(Id id) {
+void CategoryStore::erasePlayer(PlayerId id) {
     mPlayers.erase(id);
 }
 
-void CategoryStore::addPlayer(Id id) {
+void CategoryStore::addPlayer(PlayerId id) {
     mPlayers.insert(id);
 }
 
@@ -52,7 +52,7 @@ void CategoryStore::setName(const std::string &name) {
     mName = name;
 }
 
-const Id & CategoryStore::getId() const {
+const CategoryId & CategoryStore::getId() const {
     return mId;
 }
 
@@ -80,10 +80,10 @@ const DrawStrategy & CategoryStore::getDrawStrategy() const {
     return *mDrawStrategy;
 }
 
-bool CategoryStore::containsMatch(Id id) const {
+bool CategoryStore::containsMatch(MatchId id) const {
     return mMatches.find(id) != mMatches.end();
 }
 
-bool CategoryStore::containsPlayer(Id id) const {
+bool CategoryStore::containsPlayer(PlayerId id) const {
     return mPlayers.find(id) != mPlayers.end();
 }
