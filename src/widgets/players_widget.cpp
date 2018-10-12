@@ -37,13 +37,9 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
     {
         mTableView = new QTableView(splitter);
+        mModel = new PlayersProxyModel(storeHandler, layout);
 
-        mModel = new PlayersModel(storeHandler, layout);
-        mProxyModel = new QSortFilterProxyModel(layout); // Consider making a custom proxy model
-        mProxyModel->setSourceModel(mModel);
-        mProxyModel->setSortRole(Qt::UserRole);
-
-        mTableView->setModel(mProxyModel);
+        mTableView->setModel(mModel);
         mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         mTableView->setSortingEnabled(true);
@@ -70,10 +66,8 @@ void PlayersWidget::showPlayerCreateDialog() {
 }
 
 void PlayersWidget::eraseSelectedPlayers() {
-    std::unordered_set<int> rows;
-    auto selected = mProxyModel->mapSelectionToSource(mTableView->selectionModel()->selection());
-
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersAction>(mStoreHandler.getTournament(), std::move(mModel->getPlayers(selected))));
+    auto playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersAction>(mStoreHandler.getTournament(), std::move(playerIds)));
 }
 
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {

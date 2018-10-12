@@ -2,6 +2,7 @@
 
 #include <QAbstractTableModel>
 #include <QItemSelection>
+#include <QSortFilterProxyModel>
 #include <set>
 #include "store_handlers/qstore_handler.hpp"
 
@@ -31,3 +32,13 @@ private:
     QStoreHandler & mStoreHandler;
     std::set<CategoryId> mIds;
 };
+
+class CategoriesProxyModel : public QSortFilterProxyModel {
+public:
+    CategoriesProxyModel(QStoreHandler &storeHandler, QObject *parent);
+    std::vector<CategoryId> getCategories(const QItemSelection &selection) const;
+
+private:
+    CategoriesModel *mModel;
+};
+

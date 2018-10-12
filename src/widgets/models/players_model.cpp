@@ -148,3 +148,16 @@ void PlayersModel::tournamentReset() {
     endResetModel();
 }
 
+PlayersProxyModel::PlayersProxyModel(QStoreHandler &storeHandler, QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+    mModel = new PlayersModel(storeHandler, this);
+
+    setSourceModel(mModel);
+    setSortRole(Qt::UserRole);
+}
+
+std::vector<PlayerId> PlayersProxyModel::getPlayers(const QItemSelection &selection) const {
+    return mModel->getPlayers(mapSelectionToSource(selection));
+}
+

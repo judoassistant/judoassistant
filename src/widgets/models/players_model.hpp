@@ -3,12 +3,13 @@
 #include <QAbstractTableModel>
 #include <QItemSelection>
 #include <set>
+#include <QSortFilterProxyModel>
 #include "store_handlers/qstore_handler.hpp"
 
 class PlayersModel : public QAbstractTableModel {
     Q_OBJECT
 public:
-    PlayersModel(QStoreHandler & storeHandler, QObject * parent);
+    PlayersModel(QStoreHandler &storeHandler, QObject *parent);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -31,3 +32,13 @@ private:
     QStoreHandler & mStoreHandler;
     std::set<PlayerId> mIds;
 };
+
+class PlayersProxyModel : public QSortFilterProxyModel {
+public:
+    PlayersProxyModel(QStoreHandler &storeHandler, QObject *parent);
+    std::vector<PlayerId> getPlayers(const QItemSelection &selection) const;
+
+private:
+    PlayersModel *mModel;
+};
+

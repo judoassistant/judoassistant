@@ -129,3 +129,16 @@ void CategoriesModel::tournamentReset() {
     endResetModel();
 }
 
+CategoriesProxyModel::CategoriesProxyModel(QStoreHandler &storeHandler, QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+    mModel = new CategoriesModel(storeHandler, this);
+
+    setSourceModel(mModel);
+    setSortRole(Qt::UserRole);
+}
+
+std::vector<CategoryId> CategoriesProxyModel::getCategories(const QItemSelection &selection) const {
+    return mModel->getCategories(mapSelectionToSource(selection));
+}
+

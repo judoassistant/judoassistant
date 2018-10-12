@@ -2,7 +2,6 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
-#include <QSortFilterProxyModel>
 
 #include "core.hpp"
 #include "store_handlers/qstore_handler.hpp"
@@ -20,7 +19,6 @@ private:
     QStoreHandler &mStoreHandler;
     QAction *mEraseAction;
     QTableView *mTableView;
-    PlayersModel *mModel;
-    QSortFilterProxyModel *mProxyModel; // TODO: Make a custom SortFilterProxyModel
+    PlayersProxyModel *mModel;
 };
 

@@ -4,7 +4,6 @@
 
 #include "widgets/categories_widget.hpp"
 #include "widgets/create_category_dialog.hpp"
-#include "widgets/models/categories_model.hpp"
 
 CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
     : mStoreHandler(storeHandler)
@@ -24,19 +23,16 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
     }
 
     {
-        QTableView *tableView = new QTableView(this);
+        mTableView = new QTableView(this);
+        mModel = new CategoriesProxyModel(storeHandler, layout);
 
-        CategoriesModel *model = new CategoriesModel(storeHandler, layout);
-        QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(layout);
-        proxyModel->setSourceModel(model);
+        mTableView->setModel(mModel);
+        mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        mTableView->setSortingEnabled(true);
+        mTableView->sortByColumn(0, Qt::AscendingOrder);
 
-        tableView->setModel(proxyModel);
-        tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        tableView->setSortingEnabled(true);
-        tableView->sortByColumn(0, Qt::AscendingOrder);
-
-        layout->addWidget(tableView);
+        layout->addWidget(mTableView);
     }
     setLayout(layout);
 }
