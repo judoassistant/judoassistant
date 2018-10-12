@@ -14,6 +14,8 @@ public:
     CategoriesWidget(QStoreHandler & storeHandler);
 public slots:
     void showCategoryCreateDialog();
+    void eraseSelectedCategories();
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 private:
     QStoreHandler &mStoreHandler;
     QAction *mEraseAction;

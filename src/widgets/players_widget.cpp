@@ -5,7 +5,6 @@
 #include "widgets/create_player_dialog.hpp"
 #include "widgets/edit_player_widget.hpp"
 
-#include "actions/composite_action.hpp"
 #include "actions/player_actions.hpp"
 
 PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
@@ -22,7 +21,6 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
-        // TODO: disable button when no selected players
         mEraseAction = new QAction(QIcon("player-erase.svg"), tr("Erase the selected players"));
         mEraseAction->setStatusTip(tr("Erase the selected players"));
         mEraseAction->setEnabled(false);
