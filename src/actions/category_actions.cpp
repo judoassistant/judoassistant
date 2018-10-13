@@ -60,7 +60,7 @@ void AddPlayersToCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.addPlayersToCategory(mCategoryId, mAddedPlayerIds);
 
     if (!mAddedPlayerIds.empty()) {
-        auto mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+        mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
         mDrawAction->redo(tournament);
     }
 }
@@ -110,7 +110,7 @@ void ErasePlayersFromCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.erasePlayersFromCategory(mCategoryId, mErasedPlayerIds);
 
     if (!mErasedPlayerIds.empty()) {
-        auto mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+        mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
         mDrawAction->redo(tournament);
     }
 }

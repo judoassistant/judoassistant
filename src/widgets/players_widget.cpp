@@ -41,8 +41,10 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
         mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         mTableView->setSortingEnabled(true);
         mTableView->sortByColumn(1, Qt::AscendingOrder);
+        mTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
         connect(mTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PlayersWidget::selectionChanged);
+        connect(mTableView, &QTableView::customContextMenuRequested, this, &PlayersWidget::showContextMenu);
 
         splitter->addWidget(mTableView);
     }
@@ -57,9 +59,58 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 }
 
 void PlayersWidget::showPlayerCreateDialog() {
-    CreatePlayerDialog dialog(mStoreHandler, this);
+    CreatePlayerDialog dialog(mStoreHandler);
 
     dialog.exec();
+}
+
+void PlayersWidget::showContextMenu(const QPoint &pos) {
+    std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+    const TournamentStore &tournament = mStoreHandler.getTournament();
+
+    if (playerIds.empty())
+        return;
+
+    std::unordered_set<CategoryId, CategoryId::Hasher> playerCategoryIds; // TODO: Sort this alphabetically
+    for (PlayerId playerId : playerIds) {
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        for (CategoryId categoryId : player.getCategories())
+            playerCategoryIds.insert(categoryId);
+    }
+
+    QMenu *menu = new QMenu;
+    {
+        QAction *action = menu->addAction(tr("Erase selected players"));
+        connect(action, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
+    }
+    menu->addSeparator();
+    {
+        QAction *action = menu->addAction(tr("Erase selected players from all categories"));
+        action->setEnabled(!playerCategoryIds.empty());
+        connect(action, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayersFromAllCategories);
+    }
+    {
+        QMenu *submenu = menu->addMenu(tr("Erase selected players from category"));
+        submenu->setEnabled(!playerCategoryIds.empty());
+
+        for (CategoryId categoryId : playerCategoryIds) {
+            const CategoryStore & category = tournament.getCategory(categoryId);
+            QAction *action = submenu->addAction(QString::fromStdString(category.getName()));
+            connect(action, &QAction::triggered, [&, categoryId](){eraseSelectedPlayersFromCategory(categoryId);});
+        }
+    }
+    {
+        QMenu *submenu = menu->addMenu(tr("Add selected players to category"));
+
+        for (const auto & it : tournament.getCategories()) {
+            QAction *action = submenu->addAction(QString::fromStdString(it.second->getName()));
+            CategoryId categoryId = it.first;
+            connect(action, &QAction::triggered, [&, categoryId](){addSelectedPlayersToCategory(categoryId);});
+        }
+    }
+
+    menu->exec(mTableView->mapToGlobal(pos), 0);
+    delete menu;
 }
 
 void PlayersWidget::eraseSelectedPlayers() {
@@ -77,3 +128,20 @@ void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItem
     else
         mEditPlayerWidget->setPlayer(std::nullopt);
 }
+
+void PlayersWidget::eraseSelectedPlayersFromAllCategories() {
+    std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+
+    log_debug().field("playerIds", playerIds).msg("Erasing selected players all categories");
+}
+
+void PlayersWidget::eraseSelectedPlayersFromCategory(CategoryId categoryId) {
+    std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(mStoreHandler.getTournament(), categoryId, std::move(playerIds)));
+}
+
+void PlayersWidget::addSelectedPlayersToCategory(CategoryId categoryId) {
+    std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+    mStoreHandler.dispatch(std::make_unique<AddPlayersToCategoryAction>(mStoreHandler.getTournament(), categoryId, std::move(playerIds)));
+}
+

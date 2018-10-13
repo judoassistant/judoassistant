@@ -15,7 +15,11 @@ public:
 public slots:
     void showPlayerCreateDialog();
     void eraseSelectedPlayers();
+    void eraseSelectedPlayersFromAllCategories();
+    void eraseSelectedPlayersFromCategory(CategoryId categoryId);
+    void addSelectedPlayersToCategory(CategoryId categoryId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void showContextMenu(const QPoint &pos);
 private:
     QStoreHandler &mStoreHandler;
     QAction *mEraseAction;

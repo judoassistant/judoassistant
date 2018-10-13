@@ -14,7 +14,7 @@ class QStoreHandler;
 class CreatePlayerDialog : public QDialog {
     Q_OBJECT
 public:
-    CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *parent);
+    CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *parent = nullptr);
 
 public slots:
     void acceptClick();
