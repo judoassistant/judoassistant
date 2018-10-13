@@ -195,7 +195,12 @@ void QutejudoWindow::writeTournament() {
 }
 
 void QutejudoWindow::readTournament() {
-    if (!mStoreHandler.read(mFileName))
+    readTournament(mFileName);
+}
+
+void QutejudoWindow::readTournament(const QString &fileName) {
+    mFileName = fileName;
+    if (!mStoreHandler.read(fileName))
         QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
     else
         statusBar()->showMessage(tr("Opened tournament from file"));
@@ -214,8 +219,7 @@ void QutejudoWindow::openTournament() {
     if (fileName.isEmpty())
         return;
 
-    mFileName = fileName;
-    readTournament();
+    readTournament(fileName);
 }
 
 void QutejudoWindow::saveTournament() {

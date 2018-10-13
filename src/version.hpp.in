@@ -1,6 +1,9 @@
 #pragma once
 
+#include <string>
+
 #define VERSION_MAJOR @version_major@
 #define VERSION_MINOR @version_minor@
 #define VERSION_PATCH @version_patch@
 
+std::string getApplicationVersion();

@@ -7,3 +7,4 @@ subdir('store_handlers')
 subdir('widgets')
 
 sources += ['src/log.cpp']
+sources += ['src/version.cpp']

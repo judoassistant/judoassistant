@@ -13,12 +13,9 @@ class QutejudoWindow : public QMainWindow {
 public:
     QutejudoWindow();
 
-    void createStatusBar();
-    void createTournamentMenu();
-    void createEditMenu();
-    void createViewMenu();
-    void createPreferencesMenu();
-    void createHelpMenu();
+    void readTournament();
+    void readTournament(const QString &fileName);
+
 private slots:
     void newTournament();
     void openTournament();
@@ -28,9 +25,16 @@ private slots:
     void openManual();
     void openReportIssue();
     void showAboutDialog();
+
 private:
+    void createStatusBar();
+    void createTournamentMenu();
+    void createEditMenu();
+    void createViewMenu();
+    void createPreferencesMenu();
+    void createHelpMenu();
+
     void writeTournament();
-    void readTournament();
     MasterStoreHandler mStoreHandler;
     QString mFileName;
 };

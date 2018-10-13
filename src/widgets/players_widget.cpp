@@ -133,6 +133,7 @@ void PlayersWidget::eraseSelectedPlayersFromAllCategories() {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
 
     log_debug().field("playerIds", playerIds).msg("Erasing selected players all categories");
+    // TODO: Implement
 }
 
 void PlayersWidget::eraseSelectedPlayersFromCategory(CategoryId categoryId) {

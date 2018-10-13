@@ -1,8 +1,23 @@
-#include <QPalette>
-#include <QStyleFactory>
 #include "applications/qutejudo_application.hpp"
 
+#include <QStyleFactory>
+#include <QCommandLineParser>
+#include "widgets/qutejudo_window.hpp"
+
 QutejudoApplication::QutejudoApplication(int &argc, char *argv[]) : QApplication(argc, argv) {
+    setApplicationName("Qutejudo");
+    setApplicationVersion(QString::fromStdString(getApplicationVersion()));
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Qutejudo");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("tournament", "Tournament file to open");
+
+    parser.process(*this);
+
+    mArgs = parser.positionalArguments();
+
     // setStyle(QStyleFactory::create("fusion"));
 
     // m_palette.setColor(QPalette::Window, QColor(53,53,53));
@@ -19,4 +34,16 @@ QutejudoApplication::QutejudoApplication(int &argc, char *argv[]) : QApplication
     // m_palette.setColor(QPalette::HighlightedText, Qt::black);
 
     // setPalette(m_palette);
+}
+
+int QutejudoApplication::exec() {
+    QutejudoWindow window;
+
+    if (mArgs.size() > 0) {
+        window.readTournament(mArgs.at(0));
+    }
+
+    window.show();
+
+    return QApplication::exec();
 }
