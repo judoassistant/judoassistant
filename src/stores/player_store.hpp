@@ -8,6 +8,7 @@
 #include "serialize.hpp"
 #include "id.hpp"
 
+// TODO: Perhaps use CRTP for this
 class PlayerCountry {
 public:
     // TODO: Find list of countries
@@ -25,6 +26,14 @@ public:
     std::string toString() const;
     int toInt() const;
     static std::vector<PlayerCountry> values();
+
+    bool operator==(const PlayerCountry &other) const {
+        return mValue == other.mValue;
+    }
+
+    bool operator<(const PlayerCountry &other) const {
+        return mValue < other.mValue;
+    }
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
@@ -64,6 +73,14 @@ public:
     int toInt() const;
     static std::vector<PlayerRank> values();
 
+    bool operator==(const PlayerRank &other) const {
+        return mValue == other.mValue;
+    }
+
+    bool operator<(const PlayerRank &other) const {
+        return mValue < other.mValue;
+    }
+
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
         ar(mValue);
@@ -98,6 +115,14 @@ public:
     const std::optional<PlayerCountry> & getCountry() const;
     const std::string & getClub() const;
     const PlayerId & getId() const;
+
+    void setFirstName(const std::string & firstName);
+    void setLastName(const std::string & lastName);
+    void setAge(std::optional<uint8_t> age);
+    void setWeight(std::optional<float> weight);
+    void setRank(std::optional<PlayerRank> rank);
+    void setCountry(std::optional<PlayerCountry> country);
+    void setClub(const std::string & club);
 
     const std::unordered_set<CategoryId, CategoryId::Hasher> & getCategories() const;
     void addCategory(CategoryId id);

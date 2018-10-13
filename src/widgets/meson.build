@@ -1,4 +1,5 @@
 subdir('models')
+subdir('validators')
 
 sources += ['src/widgets/categories_widget.cpp']
 sources += ['src/widgets/matches_widget.cpp']

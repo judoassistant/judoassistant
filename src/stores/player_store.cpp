@@ -133,3 +133,32 @@ int PlayerCountry::toInt() const {
 bool PlayerStore::containsCategory(CategoryId id) const {
     return mCategories.find(id) != mCategories.end();
 }
+
+void PlayerStore::setFirstName(const std::string & firstName) {
+    mFirstName = firstName;
+}
+
+void PlayerStore::setLastName(const std::string & lastName) {
+    mLastName = lastName;
+}
+
+void PlayerStore::setAge(std::optional<uint8_t> age) {
+    mAge = age;
+}
+
+void PlayerStore::setWeight(std::optional<float> weight) {
+    mWeight = weight;
+}
+
+void PlayerStore::setRank(std::optional<PlayerRank> rank) {
+    mRank = rank;
+}
+
+void PlayerStore::setCountry(std::optional<PlayerCountry> country) {
+    mCountry = country;
+}
+
+void PlayerStore::setClub(const std::string & club) {
+    mClub = club;
+}
+

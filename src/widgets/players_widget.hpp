@@ -6,6 +6,7 @@
 #include "core.hpp"
 #include "store_handlers/qstore_handler.hpp"
 #include "widgets/models/players_model.hpp"
+#include "widgets/edit_player_widget.hpp"
 
 class PlayersWidget : public QWidget {
     Q_OBJECT
@@ -20,5 +21,6 @@ private:
     QAction *mEraseAction;
     QTableView *mTableView;
     PlayersProxyModel *mModel;
+    EditPlayerWidget *mEditPlayerWidget;
 };
 

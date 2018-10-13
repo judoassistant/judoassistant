@@ -6,6 +6,7 @@
 
 #include "widgets/create_player_dialog.hpp"
 #include "actions/player_actions.hpp"
+#include "widgets/validators/optional_validator.hpp"
 
 CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *parent)
     : QDialog(parent)
@@ -15,7 +16,7 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
     mLastNameContent = new QLineEdit;
 
     mAgeContent = new QLineEdit;
-    mAgeContent->setValidator(new QIntValidator(0, 120, mAgeContent));
+    mAgeContent->setValidator(new OptionalValidator(new QIntValidator(0, 120), this));
 
     mRankContent = new QComboBox;
     mRankContent->addItem("");
@@ -25,7 +26,7 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
     mClubContent = new QLineEdit;
 
     mWeightContent = new QLineEdit;
-    mWeightContent->setValidator(new QDoubleValidator(0.0, 400.0, 2, mWeightContent));
+    mWeightContent->setValidator(new OptionalValidator(new QDoubleValidator(0.0, 400.0, 2), this));
 
     mCountryContent = new QComboBox;
     mCountryContent->addItem("");

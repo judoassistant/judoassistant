@@ -73,3 +73,171 @@ void ErasePlayersAction::undoImpl(TournamentStore & tournament) {
         mActions.pop();
     }
 }
+
+ChangePlayerFirstNameAction::ChangePlayerFirstNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerFirstNameAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getFirstName();
+    player.setFirstName(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerFirstNameAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setFirstName(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+ChangePlayerLastNameAction::ChangePlayerLastNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerLastNameAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getLastName();
+    player.setLastName(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerLastNameAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setLastName(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+ChangePlayerClubAction::ChangePlayerClubAction(TournamentStore &tournament, PlayerId playerId, const std::string &value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerClubAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getClub();
+    player.setClub(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerClubAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setClub(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+ChangePlayerAgeAction::ChangePlayerAgeAction(TournamentStore &tournament, PlayerId playerId, std::optional<uint8_t> value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerAgeAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getAge();
+    player.setAge(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerAgeAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setAge(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+ChangePlayerRankAction::ChangePlayerRankAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerRank> value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerRankAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getRank();
+    player.setRank(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerRankAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setRank(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+ChangePlayerWeightAction::ChangePlayerWeightAction(TournamentStore &tournament, PlayerId playerId, std::optional<float> value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerWeightAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getWeight();
+    player.setWeight(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerWeightAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setWeight(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+ChangePlayerCountryAction::ChangePlayerCountryAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerCountry> value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerCountryAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getCountry();
+    player.setCountry(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerCountryAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setCountry(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}

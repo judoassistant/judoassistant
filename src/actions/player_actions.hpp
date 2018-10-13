@@ -41,3 +41,94 @@ private:
     std::stack<std::unique_ptr<PlayerStore>> mPlayers;
     std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
 };
+
+class ChangePlayerFirstNameAction : public Action {
+public:
+    ChangePlayerFirstNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::string mValue;
+
+    // undo members
+    std::string mOldValue;
+};
+
+class ChangePlayerLastNameAction : public Action {
+public:
+    ChangePlayerLastNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::string mValue;
+
+    // undo members
+    std::string mOldValue;
+};
+
+class ChangePlayerAgeAction : public Action {
+public:
+    ChangePlayerAgeAction(TournamentStore &tournament, PlayerId playerId, std::optional<uint8_t> value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::optional<uint8_t> mValue;
+
+    // undo members
+    std::optional<uint8_t> mOldValue;
+};
+
+class ChangePlayerRankAction : public Action {
+public:
+    ChangePlayerRankAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerRank> value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::optional<PlayerRank> mValue;
+
+    // undo members
+    std::optional<PlayerRank> mOldValue;
+};
+
+class ChangePlayerClubAction : public Action {
+public:
+    ChangePlayerClubAction(TournamentStore &tournament, PlayerId playerId, const std::string &value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::string mValue;
+
+    // undo members
+    std::string mOldValue;
+};
+
+class ChangePlayerWeightAction : public Action {
+public:
+    ChangePlayerWeightAction(TournamentStore &tournament, PlayerId playerId, std::optional<float> value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::optional<float> mValue;
+
+    // undo members
+    std::optional<float> mOldValue;
+};
+
+class ChangePlayerCountryAction : public Action {
+public:
+    ChangePlayerCountryAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerCountry> value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::optional<PlayerCountry> mValue;
+
+    // undo members
+    std::optional<PlayerCountry> mOldValue;
+};

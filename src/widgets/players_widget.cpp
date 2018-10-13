@@ -3,7 +3,6 @@
 
 #include "widgets/players_widget.hpp"
 #include "widgets/create_player_dialog.hpp"
-#include "widgets/edit_player_widget.hpp"
 
 #include "actions/player_actions.hpp"
 
@@ -49,8 +48,8 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
     }
 
     {
-        EditPlayerWidget *editWidget = new EditPlayerWidget(storeHandler, splitter);
-        splitter->addWidget(editWidget);
+        mEditPlayerWidget = new EditPlayerWidget(storeHandler, splitter);
+        splitter->addWidget(mEditPlayerWidget);
     }
 
     layout->addWidget(splitter);
@@ -69,5 +68,12 @@ void PlayersWidget::eraseSelectedPlayers() {
 }
 
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    mEraseAction->setEnabled(selected.indexes().size() > 0);
+    auto playerIds = mModel->getPlayers(selected);
+
+    mEraseAction->setEnabled(!playerIds.empty());
+
+    if (playerIds.size() == 1)
+        mEditPlayerWidget->setPlayer(playerIds.front());
+    else
+        mEditPlayerWidget->setPlayer(std::nullopt);
 }
