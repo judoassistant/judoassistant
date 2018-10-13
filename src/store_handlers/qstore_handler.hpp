@@ -13,4 +13,6 @@ public:
     const QTournamentStore & getTournament() const override = 0;
 signals:
     void tournamentReset();
+    void undoStatusChanged(bool canUndo);
+    void redoStatusChanged(bool canRedo);
 };

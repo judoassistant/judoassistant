@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <optional>
+#include <QString>
 
 class Log {
 public:
@@ -42,6 +43,8 @@ std::ostream & operator<<(std::ostream & o, std::optional<T> opt) {
         return o << *opt;
     return o << "nullopt";
 }
+
+std::ostream & operator<<(std::ostream & o, const QString &str);
 
 Log & log_info();
 Log & log_debug(); // TODO: make this a null sink in production builds and have support for file output

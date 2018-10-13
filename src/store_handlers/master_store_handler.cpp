@@ -6,7 +6,15 @@ MasterStoreHandler::MasterStoreHandler()
 {}
 
 void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
-    action->redo(*mTournament);
+    log_debug().msg("Dispatching action");
+    mActionStack.push_back(std::move(action));
+    mActionStack.back()->redo(*mTournament);
+    if (mActionStack.size() == 1) // mActionStack was empty before pushing the action
+        emit undoStatusChanged(true);
+    if (!mRedoStack.empty()) {
+        mRedoStack.clear();
+        emit redoStatusChanged(false);
+    }
 }
 
 QTournamentStore & MasterStoreHandler::getTournament() {
@@ -19,10 +27,15 @@ const QTournamentStore & MasterStoreHandler::getTournament() const {
 
 void MasterStoreHandler::reset() {
     mTournament = std::make_unique<QTournamentStore>();
+    mActionStack.clear();
+    mRedoStack.clear();
     emit tournamentReset();
+    emit redoStatusChanged(false);
+    emit undoStatusChanged(false);
 }
 
 bool MasterStoreHandler::read(const QString &path) {
+    log_debug().field("path", path).msg("Reading tournament from file");
     std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
 
     if (!file.is_open())
@@ -31,11 +44,16 @@ bool MasterStoreHandler::read(const QString &path) {
     mTournament = std::make_unique<QTournamentStore>();
     cereal::PortableBinaryInputArchive archive(file);
     archive(*mTournament);
+    mActionStack.clear();
+    mRedoStack.clear();
     emit tournamentReset();
+    emit redoStatusChanged(false);
+    emit undoStatusChanged(false);
     return true;
 }
 
 bool MasterStoreHandler::write(const QString &path) {
+    log_debug().field("path", path).msg("Writing tournament to file");
     std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
 
     if (!file.is_open())
@@ -44,4 +62,40 @@ bool MasterStoreHandler::write(const QString &path) {
     cereal::PortableBinaryOutputArchive archive(file);
     archive(*mTournament);
     return true;
+}
+
+bool MasterStoreHandler::canUndo() {
+    return !mActionStack.empty();
+}
+
+void MasterStoreHandler::undo() {
+    log_debug().msg("Undoing last action");
+    std::unique_ptr<Action> action = std::move(mActionStack.back());
+    mActionStack.pop_back();
+
+    action->undo(*mTournament);
+    mRedoStack.push_back(std::move(action));
+
+    if (mRedoStack.size() == 1) // mRedoStack was empty before pushing the action
+        emit redoStatusChanged(true);
+    if (mActionStack.empty())
+        emit undoStatusChanged(false);
+}
+
+bool MasterStoreHandler::canRedo() {
+    return !mRedoStack.empty();
+}
+
+void MasterStoreHandler::redo() {
+    log_debug().msg("Redoing action");
+    std::unique_ptr<Action> action = std::move(mRedoStack.back());
+    mRedoStack.pop_back();
+
+    action->redo(*mTournament);
+    mActionStack.push_back(std::move(action));
+
+    if (mRedoStack.empty())
+        emit redoStatusChanged(false);
+    if (mActionStack.size() == 1)
+        emit undoStatusChanged(true); // mActionStack was empty before pushing the action
 }

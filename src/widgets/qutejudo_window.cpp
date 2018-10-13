@@ -108,14 +108,20 @@ void QutejudoWindow::createEditMenu() {
         QAction *action = new QAction(tr("Undo"), this);
         action->setShortcuts(QKeySequence::Undo);
         action->setStatusTip(tr("Undo last action"));
+        action->setEnabled(mStoreHandler.canUndo());
         menu->addAction(action);
+        connect(&mStoreHandler, &MasterStoreHandler::undoStatusChanged, action, &QAction::setEnabled);
+        connect(action, &QAction::triggered, &mStoreHandler, &MasterStoreHandler::undo);
     }
 
     {
         QAction *action = new QAction(tr("Redo"), this);
         action->setShortcuts(QKeySequence::Redo);
         action->setStatusTip(tr("Redo the last undone action"));
+        action->setEnabled(mStoreHandler.canRedo());
         menu->addAction(action);
+        connect(&mStoreHandler, &MasterStoreHandler::redoStatusChanged, action, &QAction::setEnabled);
+        connect(action, &QAction::triggered, &mStoreHandler, &MasterStoreHandler::redo);
     }
 }
 
@@ -232,3 +238,4 @@ void QutejudoWindow::saveAsTournament() {
 void QutejudoWindow::showAboutDialog() {
     QMessageBox::about(this, tr("Qutejudo - About"), tr("TODO"));
 }
+

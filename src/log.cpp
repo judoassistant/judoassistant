@@ -44,3 +44,6 @@ Log & log_fatal() {
     return instance;
 }
 
+std::ostream & operator<<(std::ostream & o, const QString &str) {
+    return o << str.toStdString();
+}
