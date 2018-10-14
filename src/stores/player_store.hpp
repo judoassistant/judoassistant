@@ -8,7 +8,6 @@
 #include "serialize.hpp"
 #include "id.hpp"
 
-// TODO: Perhaps use CRTP for this
 class PlayerCountry {
 public:
     // TODO: Find list of countries
@@ -42,6 +41,8 @@ public:
 private:
     Enum mValue;
 };
+
+std::ostream & operator<<(std::ostream &out, const PlayerCountry &country);
 
 class PlayerRank {
 public:
@@ -88,6 +89,8 @@ public:
 private:
     Enum mValue;
 };
+
+std::ostream & operator<<(std::ostream &out, const PlayerRank &rank);
 
 class PlayerStore {
 public:

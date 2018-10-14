@@ -162,3 +162,10 @@ void PlayerStore::setClub(const std::string & club) {
     mClub = club;
 }
 
+std::ostream & operator<<(std::ostream &out, const PlayerCountry &country) {
+    return out << country.toString();
+}
+
+std::ostream & operator<<(std::ostream &out, const PlayerRank &rank) {
+    return out << rank.toString();
+}
