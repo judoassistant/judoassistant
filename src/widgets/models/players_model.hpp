@@ -27,8 +27,10 @@ public slots:
     void playersAboutToBeReset();
     void playersReset();
     void tournamentReset();
+    void playerCategoriesChanged(CategoryId, std::vector<PlayerId> playerIds);
 private:
-    const int COLUMN_COUNT = 7;
+    std::string listPlayerCategories(const PlayerStore &player) const;
+    const int COLUMN_COUNT = 8;
     QStoreHandler & mStoreHandler;
     std::set<PlayerId> mIds;
 };

@@ -1,5 +1,8 @@
 #include "widgets/models/players_model.hpp"
 #include "stores/qtournament_store.hpp"
+#include <QColor>
+#include <QBrush>
+#include <sstream>
 
 PlayersModel::PlayersModel(QStoreHandler & storeHandler, QObject * parent)
     : QAbstractTableModel(parent)
@@ -23,9 +26,9 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
-                return QString(QString::fromStdString(player.getFirstName()));
+                return QString::fromStdString(player.getFirstName());
             case 1:
-                return QString(QString::fromStdString(player.getLastName()));
+                return QString::fromStdString(player.getLastName());
             case 2:
                 return (player.getAge().has_value() ? QVariant(player.getAge().value()) : QVariant(""));
             case 3:
@@ -36,6 +39,8 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
                 return (player.getWeight().has_value() ? QVariant(player.getWeight().value()) : QVariant(""));
             case 6:
                 return (player.getCountry().has_value() ? QVariant(QString::fromStdString(player.getCountry().value().toString())) : QVariant(""));
+            case 7:
+                return QString::fromStdString(listPlayerCategories(player)); // TODO: Create custom widget to show color-coded Bootstrap-style badges
         }
     }
 
@@ -66,6 +71,8 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
                     return QString(tr("Weight"));
                 case 6:
                     return QString(tr("Country"));
+                case 7:
+                    return QString(tr("Categories"));
             }
         }
     }
@@ -145,6 +152,9 @@ void PlayersModel::tournamentReset() {
     connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset);
     connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
 
+    connect(&tournament, &QTournamentStore::playersAddedToCategory, this, &PlayersModel::playerCategoriesChanged);
+    connect(&tournament, &QTournamentStore::playersErasedFromCategory, this, &PlayersModel::playerCategoriesChanged);
+
     endResetModel();
 }
 
@@ -159,5 +169,22 @@ PlayersProxyModel::PlayersProxyModel(QStoreHandler &storeHandler, QObject *paren
 
 std::vector<PlayerId> PlayersProxyModel::getPlayers(const QItemSelection &selection) const {
     return mModel->getPlayers(mapSelectionToSource(selection));
+}
+
+std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const {
+    std::stringstream res;
+    for (auto categoryId : player.getCategories()) {
+        const CategoryStore &category = mStoreHandler.getTournament().getCategory(categoryId);
+        res << category.getName() << " ";
+    }
+
+    return res.str();
+}
+
+void PlayersModel::playerCategoriesChanged(CategoryId, std::vector<PlayerId> playerIds) {
+    for (auto playerId : playerIds) {
+        int row = getRow(playerId);
+        emit dataChanged(createIndex(7,row), createIndex(7,row));
+    }
 }
 

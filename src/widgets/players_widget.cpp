@@ -80,6 +80,10 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
 
     QMenu *menu = new QMenu;
     {
+        QAction *action = menu->addAction(tr("Create a new player"));
+        connect(action, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
+    }
+    {
         QAction *action = menu->addAction(tr("Erase selected players"));
         connect(action, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
     }
