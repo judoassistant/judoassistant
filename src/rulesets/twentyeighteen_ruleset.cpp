@@ -1,7 +1,7 @@
 #include "rulesets/twentyeighteen_ruleset.hpp"
 
 bool TwentyEighteenRuleset::addWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match.getPlayerScore(playerIndex);
+    auto & score = match.getScore(playerIndex);
     if (score.ippon == 1)
         return false;
     score.wazari = (score.wazari + 1) % 2;
@@ -10,7 +10,7 @@ bool TwentyEighteenRuleset::addWazari(MatchStore & match, MatchStore::PlayerInde
 }
 
 bool TwentyEighteenRuleset::subtractWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match.getPlayerScore(playerIndex);
+    auto & score = match.getScore(playerIndex);
     if (score.ippon == 0 && score.wazari == 0)
         return false;
     score.wazari = (score.wazari + 1) % 2;
@@ -20,7 +20,7 @@ bool TwentyEighteenRuleset::subtractWazari(MatchStore & match, MatchStore::Playe
 }
 
 bool TwentyEighteenRuleset::addShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match.getPlayerScore(playerIndex);
+    auto & score = match.getScore(playerIndex);
     if (score.hansokuMake == 1)
         return false;
     score.shido = (score.shido + 1) % 2;
@@ -29,7 +29,7 @@ bool TwentyEighteenRuleset::addShido(MatchStore & match, MatchStore::PlayerIndex
 }
 
 bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match.getPlayerScore(playerIndex);
+    auto & score = match.getScore(playerIndex);
     if (score.hansokuMake == 0 && score.shido == 0)
         return false;
     score.wazari = (score.wazari + 2) % 3;
@@ -39,16 +39,18 @@ bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::Player
 
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore & match) const {
-    if (!match.getPlayer(MatchStore::PlayerIndex::WHITE).has_value())
+    if (match.isTentative())
+        return false;
+    if (!match.getWhitePlayer().has_value())
         return true;
-    if (!match.getPlayer(MatchStore::PlayerIndex::BLUE).has_value())
+    if (!match.getBluePlayer().has_value())
         return true;
 
     if (!match.isStopped())
         return false;
 
-    const PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
-    const PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
+    const auto & whiteScore = match.getWhiteScore();
+    const auto & blueScore = match.getBlueScore();
 
     if (whiteScore.hansokuMake || blueScore.hansokuMake) // also handle the case when both players are disqualified
         return true;
@@ -72,13 +74,13 @@ bool TwentyEighteenRuleset::shouldEnterGoldenScore(const MatchStore & match) con
 }
 
 std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const MatchStore & match) const {
-    if (!match.getPlayer(MatchStore::PlayerIndex::WHITE).has_value())
+    if (!match.getWhitePlayer().has_value())
         return MatchStore::PlayerIndex::BLUE;
-    if (!match.getPlayer(MatchStore::PlayerIndex::BLUE).has_value())
+    if (!match.getBluePlayer().has_value())
         return MatchStore::PlayerIndex::WHITE;
 
-    const PlayerScore & whiteScore = match.getPlayerScore(MatchStore::PlayerIndex::WHITE);
-    const PlayerScore & blueScore = match.getPlayerScore(MatchStore::PlayerIndex::BLUE);
+    const auto & whiteScore = match.getWhiteScore();
+    const auto & blueScore = match.getBlueScore();
     auto currentClock = match.getCurrentClock();
 
     if (whiteScore.ippon == 1)

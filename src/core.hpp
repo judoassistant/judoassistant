@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
-#include <QDebug>
+#include <assert.h>
 
 #include "version.hpp"
 #include "exception.hpp"

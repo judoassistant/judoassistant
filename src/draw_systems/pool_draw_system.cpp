@@ -18,7 +18,7 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vec
     // TODO: Sort the matches to maximize recovery
     for (size_t i = 0; i < playerIds.size(); ++i) {
         for (size_t j = i+1; j < playerIds.size(); ++j) {
-            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), playerIds[i], playerIds[j]);
+            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), MatchType::NORMAL, "Pool", false, playerIds[i], playerIds[j]);
             mMatchIds.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }
@@ -47,3 +47,6 @@ std::vector<std::pair<size_t, PlayerId>> PoolDrawSystem::get_results() const {
     return {};
 }
 
+bool PoolDrawSystem::hasFinalBlock() const {
+    return false;
+}

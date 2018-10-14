@@ -11,6 +11,7 @@ public:
 
     std::unique_ptr<DrawSystem> clone() const override;
     std::string getName() const override;
+    bool hasFinalBlock() const override;
 
     std::vector<std::unique_ptr<Action>> initCategory(const std::vector<PlayerId> &playerIds, TournamentStore & tournament, CategoryStore & category) override;
     std::vector<std::unique_ptr<Action>> updateCategory(TournamentStore & tournament, CategoryStore & category) override;

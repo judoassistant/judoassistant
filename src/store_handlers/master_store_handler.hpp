@@ -18,6 +18,8 @@
 #include "rulesets/rulesets.hpp"
 #include "draw_systems/draw_systems.hpp"
 
+// TODO: Restrict undo stack to some max size
+// TODO: Keep a copy of the tournament store without the undostack applied
 class MasterStoreHandler : public QStoreHandler {
     Q_OBJECT
 public:

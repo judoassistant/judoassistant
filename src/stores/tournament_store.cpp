@@ -13,11 +13,11 @@ void TournamentStore::setName(const std::string & name) {
     mName = name;
 }
 
-const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>, PlayerId::Hasher> & TournamentStore::getPlayers() const {
+const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> & TournamentStore::getPlayers() const {
     return mPlayers;
 }
 
-const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>, CategoryId::Hasher> & TournamentStore::getCategories() const {
+const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> & TournamentStore::getCategories() const {
     return mCategories;
 }
 
@@ -102,5 +102,13 @@ bool TournamentStore::containsPlayer(PlayerId id) const {
 
 bool TournamentStore::containsCategory(CategoryId id) const {
     return mCategories.find(id) != mCategories.end();
+}
+
+const TatamiList & TournamentStore::getTatamis() const {
+    return mTatamis;
+}
+
+TatamiList & TournamentStore::getTatamis() {
+    return mTatamis;
 }
 

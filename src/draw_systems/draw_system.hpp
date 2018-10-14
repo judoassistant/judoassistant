@@ -15,6 +15,7 @@ public:
 
     virtual std::unique_ptr<DrawSystem> clone() const = 0;
     virtual std::string getName() const = 0;
+    virtual bool hasFinalBlock() const = 0;
 
     virtual std::vector<std::unique_ptr<Action>> initCategory(const std::vector<PlayerId> &playerIds, TournamentStore & tournament, CategoryStore & category) = 0;
     virtual std::vector<std::unique_ptr<Action>> updateCategory(TournamentStore & tournament, CategoryStore & category) = 0;

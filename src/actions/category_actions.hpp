@@ -29,7 +29,7 @@ private:
     CategoryId mCategoryId;
 
     // undo members
-    std::stack<std::unique_ptr<MatchStore>> mOldMatches;
+    std::vector<std::unique_ptr<MatchStore>> mOldMatches;
     std::stack<std::unique_ptr<Action>> mActions;
     std::unique_ptr<DrawSystem> mOldDrawSystem;
 };

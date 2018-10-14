@@ -15,7 +15,7 @@ bool Ruleset::exitGoldenScore(MatchStore & match) const {
 }
 
 bool Ruleset::subtractIppon(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match.getPlayerScore(playerIndex);
+    auto & score = match.getScore(playerIndex);
     if (score.ippon < 1)
         return false;
     score.ippon -= 1;
@@ -23,7 +23,7 @@ bool Ruleset::subtractIppon(MatchStore & match, MatchStore::PlayerIndex playerIn
 }
 
 bool Ruleset::addIppon(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    PlayerScore & score = match.getPlayerScore(playerIndex);
+    auto & score = match.getScore(playerIndex);
     if (score.ippon > 0)
         return false;
     score.ippon += 1;

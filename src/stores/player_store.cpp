@@ -106,7 +106,7 @@ void PlayerStore::addMatch(CategoryId categoryId, MatchId matchId) {
     mMatches.insert(std::make_pair(categoryId, matchId));
 }
 
-const std::unordered_set<std::pair<CategoryId,MatchId>, CategoryIdMatchIdHasher> & PlayerStore::getMatches() const {
+const std::unordered_set<std::pair<CategoryId,MatchId>> & PlayerStore::getMatches() const {
     return mMatches;
 }
 
@@ -122,7 +122,7 @@ void PlayerStore::addCategory(CategoryId id) {
     mCategories.insert(id);
 }
 
-const std::unordered_set<CategoryId, CategoryId::Hasher> & PlayerStore::getCategories() const {
+const std::unordered_set<CategoryId> & PlayerStore::getCategories() const {
     return mCategories;
 }
 

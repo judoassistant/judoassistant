@@ -2,9 +2,12 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_event.hpp"
 
-MatchStore::MatchStore(MatchId id, CategoryId categoryId, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
+MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool tentative, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
     : mId(id)
     , mCategory(categoryId)
+    , mType(type)
+    , mTitle(title)
+    , mTentative(tentative)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
@@ -21,7 +24,6 @@ void MatchStore::stop() {
 void MatchStore::resume() {
     mIsStopped = false;
 }
-
 
 bool MatchStore::isGoldenScore() const {
     return mGoldenScore;
@@ -70,14 +72,50 @@ void MatchStore::setClock(const std::chrono::high_resolution_clock::duration & c
     mClock = clock;
 }
 
-PlayerScore & MatchStore::getPlayerScore(PlayerIndex index) {
+MatchStore::Score & MatchStore::getScore(PlayerIndex index) {
     return mScores[static_cast<size_t>(index)];
 }
 
-const PlayerScore & MatchStore::getPlayerScore(PlayerIndex index) const {
+const MatchStore::Score & MatchStore::getScore(PlayerIndex index) const {
     return mScores[static_cast<size_t>(index)];
 }
 
 CategoryId MatchStore::getCategory() const {
     return mCategory;
+}
+
+MatchStore::Score & MatchStore::getWhiteScore() {
+    return getScore(PlayerIndex::WHITE);
+}
+
+MatchStore::Score & MatchStore::getBlueScore() {
+    return getScore(PlayerIndex::BLUE);
+}
+
+const MatchStore::Score & MatchStore::getWhiteScore() const {
+    return getScore(PlayerIndex::WHITE);
+}
+
+const MatchStore::Score & MatchStore::getBlueScore() const {
+    return getScore(PlayerIndex::BLUE);
+}
+
+std::optional<PlayerId> MatchStore::getWhitePlayer() const {
+    return getPlayer(PlayerIndex::WHITE);
+}
+
+std::optional<PlayerId> MatchStore::getBluePlayer() const {
+    return getPlayer(PlayerIndex::BLUE);
+}
+
+bool MatchStore::isTentative() const {
+    return mTentative;
+}
+
+void MatchStore::setTentative(bool tentative) {
+    mTentative = tentative;
+}
+
+MatchType MatchStore::getType() const {
+    return mType;
 }

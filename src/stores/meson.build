@@ -2,6 +2,7 @@ sources += ['src/stores/category_store.cpp']
 sources += ['src/stores/match_event.cpp']
 sources += ['src/stores/match_store.cpp']
 sources += ['src/stores/player_store.cpp']
+sources += ['src/stores/tatami_store.cpp']
 sources += ['src/stores/tournament_store.cpp']
 sources += ['src/stores/qtournament_store.cpp']
 

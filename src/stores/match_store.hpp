@@ -14,35 +14,52 @@ class MatchStore;
 class MatchEvent;
 class Ruleset;
 
-struct PlayerScore {
-    uint8_t ippon;
-    uint8_t wazari;
-    uint8_t shido;
-    bool hansokuMake;
-
-    template<typename Archive>
-    void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("ippon", ippon));
-        ar(cereal::make_nvp("wazari", wazari));
-        ar(cereal::make_nvp("shido", shido));
-        ar(cereal::make_nvp("hansokuMake", hansokuMake));
-    }
+enum class MatchType {
+    NORMAL, FINAL
 };
 
 class MatchStore {
 public:
     enum class PlayerIndex {
-        WHITE = 0,
-        BLUE = 1
+        WHITE, BLUE
+    };
+
+    struct Score {
+        uint8_t ippon;
+        uint8_t wazari;
+        uint8_t shido;
+        bool hansokuMake;
+
+        template<typename Archive>
+        void serialize(Archive& ar, uint32_t const version) {
+            ar(cereal::make_nvp("ippon", ippon));
+            ar(cereal::make_nvp("wazari", wazari));
+            ar(cereal::make_nvp("shido", shido));
+            ar(cereal::make_nvp("hansokuMake", hansokuMake));
+        }
     };
 
     MatchStore() {}
-    MatchStore(MatchId id, CategoryId categoryId, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
+    MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool tentative, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
 
     MatchId getId() const;
     std::optional<PlayerId> getPlayer(PlayerIndex index) const;
-    PlayerScore & getPlayerScore(PlayerIndex index);
-    const PlayerScore & getPlayerScore(PlayerIndex index) const;
+    std::optional<PlayerId> getWhitePlayer() const;
+    std::optional<PlayerId> getBluePlayer() const;
+
+    Score & getScore(PlayerIndex color);
+    Score & getWhiteScore();
+    Score & getBlueScore();
+
+    const Score & getScore(PlayerIndex color) const;
+    const Score & getWhiteScore() const;
+    const Score & getBlueScore() const;
+
+    const std::string & getTitle() const;
+    MatchType getType() const;
+
+    bool isTentative() const;
+    void setTentative(bool tentative);
 
     void pushEvent(std::unique_ptr<MatchEvent> && event);
     const std::vector<std::unique_ptr<MatchEvent>> & getEvents() const;
@@ -71,6 +88,9 @@ public:
         ar(cereal::make_nvp("goldenScore", mGoldenScore));
         ar(cereal::make_nvp("time", mTime));
         ar(cereal::make_nvp("clock", mClock));
+        ar(cereal::make_nvp("type", mType));
+        ar(cereal::make_nvp("tentative", mTentative));
+        ar(cereal::make_nvp("title", mTitle));
 
         // TODO: serialize match events
         // ar("events", mEvents);
@@ -78,8 +98,11 @@ public:
 private:
     MatchId mId;
     CategoryId mCategory;
-    std::array<PlayerScore,2> mScores;
-    std::array<std::optional<PlayerId>,2> mPlayers; // TODO: differentiate between byes and matches where both players haven't been added yet
+    MatchType mType;
+    std::string mTitle;
+    bool mTentative;
+    std::array<Score,2> mScores;
+    std::array<std::optional<PlayerId>,2> mPlayers;
     bool mIsStopped;
     bool mGoldenScore; // whether the match is currently in golden score or not
     std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed

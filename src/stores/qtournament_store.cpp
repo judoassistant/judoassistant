@@ -170,58 +170,6 @@ void QTournamentStore::changeMatches(CategoryId categoryId, std::vector<MatchId>
     emit matchesChanged(categoryId, matchIds);
 }
 
-void QTournamentStore::beginAddMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
-    if (mResettingMatches)
-        return;
-
-    if (mAddedMatchIds)
-        throw std::runtime_error("beginAddMatches called immidiately after another beginAddMatches call.");
-
-    log_debug().field("categoryId", categoryId).field("matchIds", matchIds).msg("Emitting matchesAboutToBeAdded");
-    emit matchesAboutToBeAdded(categoryId, matchIds);
-    mAddedMatchIds = matchIds;
-    mAddedMatchesCategoryId = categoryId;
-}
-
-void QTournamentStore::endAddMatches() {
-    if (mResettingMatches)
-        return;
-
-    if (!mAddedMatchIds)
-        throw std::runtime_error("endAddMatches called with calling beginAddMatches first.");
-
-    log_debug().field("categoryId", *mAddedMatchesCategoryId).field("matchIds", mAddedMatchIds).msg("Emitting matchesAdded");
-    emit matchesAdded(*mAddedMatchesCategoryId, *mAddedMatchIds);
-    mAddedMatchIds.reset();
-    mAddedMatchesCategoryId.reset();
-}
-
-void QTournamentStore::beginEraseMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
-    if (mResettingMatches)
-        return;
-
-    if (mErasedMatchIds)
-        throw std::runtime_error("beginEraseMatches called immidiately after another beginEraseMatches call.");
-
-    log_debug().field("categoryId", categoryId).field("matchIds", matchIds).msg("Emitting matchesAboutToBeErased");
-    emit matchesAboutToBeErased(categoryId, matchIds);
-    mErasedMatchIds = matchIds;
-    mErasedMatchesCategoryId = categoryId;
-}
-
-void QTournamentStore::endEraseMatches() {
-    if (mResettingMatches)
-        return;
-
-    if (!mErasedMatchIds)
-        throw std::runtime_error("endEraseMatches called with calling beginEraseMatches first.");
-
-    log_debug().field("categoryId", *mErasedMatchesCategoryId).field("matchIds", *mErasedMatchIds).msg("Emitting matchesErased");
-    emit matchesErased(*mErasedMatchesCategoryId, *mErasedMatchIds);
-    mErasedMatchIds.reset();
-    mErasedMatchesCategoryId.reset();
-}
-
 void QTournamentStore::beginResetMatches(CategoryId categoryId) {
     if (mResettingMatches)
         throw std::runtime_error("beginResetMatches called immidiately after another beginResetMatches call.");
@@ -238,5 +186,46 @@ void QTournamentStore::endResetMatches(CategoryId categoryId) {
     mResettingMatches = false;
     log_debug().field("categoryId", categoryId).msg("Emitting matchesReset");
     emit matchesReset(categoryId);
+}
+
+void QTournamentStore::changeTatamis(std::vector<size_t> id) {
+    log_debug().field("ids", id).msg("Emitting tatamisChanged");
+    emit tatamisChanged(id);
+}
+
+void QTournamentStore::beginAddTatamis(std::vector<size_t> id) {
+    if (mAddedTatamiIds)
+        throw std::runtime_error("beginAddTatamis called immidiately after another beginAddTatamis call.");
+
+    log_debug().field("ids", id).msg("Emitting tatamisAboutToBeAdded");
+    emit tatamisAboutToBeAdded(id);
+    mAddedTatamiIds = id;
+}
+
+void QTournamentStore::endAddTatamis() {
+    if (!mAddedTatamiIds)
+        throw std::runtime_error("endAddTatamis called with calling beginAddTatamis first.");
+
+    log_debug().field("ids", *mAddedTatamiIds).msg("Emitting tatamisAdded");
+    emit tatamisAdded(*mAddedTatamiIds);
+    mAddedTatamiIds.reset();
+}
+
+void QTournamentStore::beginEraseTatamis(std::vector<size_t> id) {
+    if (mErasedTatamiIds)
+        throw std::runtime_error("beginEraseTatamis called immidiately after another beginEraseTatamis call.");
+
+    log_debug().field("ids", id).msg("Emitting tatamisAboutToBeErased");
+    emit tatamisAboutToBeErased(id);
+    mErasedTatamiIds = id;
+}
+
+void QTournamentStore::endEraseTatamis() {
+    if (!mErasedTatamiIds)
+        throw std::runtime_error("endEraseTatamis called with calling beginEraseTatamis first.");
+
+    log_debug().field("ids", *mErasedTatamiIds).msg("Emitting tatamisErased");
+    emit tatamisErased(*mErasedTatamiIds);
+    mErasedTatamiIds.reset();
 }
 

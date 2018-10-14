@@ -7,6 +7,7 @@
 #include "core.hpp"
 #include "serialize.hpp"
 #include "id.hpp"
+#include "hash.hpp"
 
 class PlayerCountry {
 public:
@@ -127,12 +128,12 @@ public:
     void setCountry(std::optional<PlayerCountry> country);
     void setClub(const std::string & club);
 
-    const std::unordered_set<CategoryId, CategoryId::Hasher> & getCategories() const;
+    const std::unordered_set<CategoryId> & getCategories() const;
     void addCategory(CategoryId id);
     void eraseCategory(CategoryId id);
     bool containsCategory(CategoryId id) const;
 
-    const std::unordered_set<std::pair<CategoryId,MatchId>, CategoryIdMatchIdHasher> & getMatches() const;
+    const std::unordered_set<std::pair<CategoryId,MatchId>> & getMatches() const;
     void addMatch(CategoryId categoryId, MatchId matchId);
     void eraseMatch(CategoryId categoryId, MatchId matchId);
     bool containsMatch(CategoryId categoryId, MatchId matchId) const;
@@ -146,7 +147,7 @@ private:
     std::optional<float> mWeight;
     std::optional<PlayerCountry> mCountry;
 
-    std::unordered_set<CategoryId, CategoryId::Hasher> mCategories;
-    std::unordered_set<std::pair<CategoryId,MatchId>, CategoryIdMatchIdHasher> mMatches;
+    std::unordered_set<CategoryId> mCategories;
+    std::unordered_set<std::pair<CategoryId,MatchId>> mMatches;
 };
 

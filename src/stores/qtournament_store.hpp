@@ -39,12 +39,14 @@ public:
     void endResetCategories() override;
 
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
-    void beginAddMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
-    void endAddMatches() override;
-    void beginEraseMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
-    void endEraseMatches() override;
     void beginResetMatches(CategoryId categoryId) override;
     void endResetMatches(CategoryId categoryId) override;
+
+    void changeTatamis(std::vector<size_t> ids) override;
+    void beginAddTatamis(std::vector<size_t> ids) override;
+    void endAddTatamis() override;
+    void beginEraseTatamis(std::vector<size_t> ids) override;
+    void endEraseTatamis() override;
 
 signals:
     void tournamentChanged();
@@ -75,6 +77,13 @@ signals:
     void matchesErased(CategoryId categoryId, std::vector<MatchId> matchIds);
     void matchesAboutToBeReset(CategoryId categoryId);
     void matchesReset(CategoryId categoryId);
+
+    void tatamisChanged(std::vector<size_t> id);
+    void tatamisAboutToBeAdded(std::vector<size_t> id);
+    void tatamisAdded(std::vector<size_t> id);
+    void tatamisAboutToBeErased(std::vector<size_t> id);
+    void tatamisErased(std::vector<size_t> id);
+
 private:
     std::optional<std::vector<PlayerId>> mAddedPlayerIds;
     std::optional<std::vector<PlayerId>> mErasedPlayerIds;
@@ -89,6 +98,9 @@ private:
     std::optional<CategoryId> mErasedMatchesCategoryId;
     std::optional<std::vector<MatchId>> mErasedMatchIds;
     bool mResettingMatches;
+
+    std::optional<std::vector<size_t>> mAddedTatamiIds;
+    std::optional<std::vector<size_t>> mErasedTatamiIds;
 };
 
 CEREAL_REGISTER_TYPE(QTournamentStore)

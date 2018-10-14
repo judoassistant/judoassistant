@@ -8,6 +8,8 @@
 #include "stores/player_store.hpp"
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
+#include "stores/tatami_store.hpp"
+#include "position_manager.hpp"
 
 class PlayerStore;
 class CategoryStore;
@@ -28,25 +30,38 @@ public:
     const std::string & getName() const;
     void setName(const std::string & name);
 
-    const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>, PlayerId::Hasher> & getPlayers() const;
+    const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> & getPlayers() const;
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
     PlayerStore & getPlayer(PlayerId id);
     const PlayerStore & getPlayer(PlayerId id) const;
     std::unique_ptr<PlayerStore> erasePlayer(PlayerId id);
     bool containsPlayer(PlayerId id) const;
 
-    const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>, CategoryId::Hasher> & getCategories() const;
+    const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> & getCategories() const;
     const CategoryStore & getCategory(CategoryId id) const;
     CategoryStore & getCategory(CategoryId id);
     void addCategory(std::unique_ptr<CategoryStore> ptr);
     std::unique_ptr<CategoryStore> eraseCategory(CategoryId id);
     bool containsCategory(CategoryId id) const;
 
+    const TatamiList & getTatamis() const;
+    TatamiList & getTatamis();
+
     PlayerId generateNextPlayerId();
     CategoryId generateNextCategoryId();
     MatchId generateNextMatchId();
 
+    template <typename T>
+    PositionId generateNextPositionId(const PositionManager<T> &manager) {
+        while (true) {
+            PositionId id = mPositionIdGenerator();
+            if (!manager.containsId(id))
+                return id;
+        }
+    };
+
     // signals used for frontends. Called by actions
+    // TODO: Update signal system to support tatamis and changes to category
     virtual void changeTournament() {}
 
     virtual void changePlayers(std::vector<PlayerId> id) {}
@@ -69,20 +84,25 @@ public:
     virtual void endResetCategories() {}
 
     virtual void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {}
-    virtual void beginAddMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {}
-    virtual void endAddMatches() {}
-    virtual void beginEraseMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {}
-    virtual void endEraseMatches() {}
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
+
+    virtual void changeTatamis(std::vector<size_t> ids) {}
+    virtual void beginAddTatamis(std::vector<size_t> ids) {}
+    virtual void endAddTatamis() {}
+    virtual void beginEraseTatamis(std::vector<size_t> ids) {}
+    virtual void endEraseTatamis() {}
+
 private:
     std::string mName;
 
-    std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>, PlayerId::Hasher> mPlayers;
-    std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>, CategoryId::Hasher> mCategories;
+    std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> mPlayers;
+    std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> mCategories;
+    TatamiList mTatamis;
 
     PlayerId::Generator mPlayerIdGenerator;
     CategoryId::Generator mCategoryIdGenerator;
     MatchId::Generator mMatchIdGenerator;
+    PositionId::Generator mPositionIdGenerator;
 };
 

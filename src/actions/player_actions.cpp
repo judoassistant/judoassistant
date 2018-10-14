@@ -35,7 +35,7 @@ ErasePlayersAction::ErasePlayersAction(TournamentStore & tournament, std::vector
 {}
 
 void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
-    std::unordered_set<CategoryId, CategoryId::Hasher> categoryIds;
+    std::unordered_set<CategoryId> categoryIds;
 
     for (auto playerId : mPlayerIds) {
         if (!tournament.containsPlayer(playerId)) continue;

@@ -84,10 +84,23 @@ public:
     PlayerId(InternalType value) : Id(value) {}
 };
 
-struct CategoryIdMatchIdHasher {
+class PositionId : public Id<PositionId> {
 public:
-    size_t operator()(const std::pair<CategoryId, MatchId> &k) const {
-        return CategoryId::Hasher()(k.first) ^ MatchId::Hasher()(k.second);
-    }
+    PositionId() {}
+    PositionId(InternalType value) : Id(value) {}
 };
+
+namespace std {
+    template<>
+    class hash<MatchId> : public Id<MatchId>::Hasher {};
+
+    template<>
+    class hash<CategoryId> : public Id<CategoryId>::Hasher {};
+
+    template<>
+    class hash<PlayerId> : public Id<PlayerId>::Hasher {};
+
+    template<>
+    class hash<PositionId> : public Id<PositionId>::Hasher {};
+}
 

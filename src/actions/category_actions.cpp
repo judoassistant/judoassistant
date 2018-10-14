@@ -157,8 +157,7 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
             player.eraseCategory(categoryId);
         }
 
-        for (auto & it : category.getMatches()) {
-            const std::unique_ptr<MatchStore> & match = it.second;
+        for (const std::unique_ptr<MatchStore> &match : category.getMatches()) {
             auto whitePlayerId = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayerId)
                 tournament.getPlayer(*whitePlayerId).eraseMatch(categoryId, match->getId());
@@ -185,9 +184,7 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
             player.addCategory(category->getId());
         }
 
-        for (auto & it : category->getMatches()) {
-            const std::unique_ptr<MatchStore> & match = it.second;
-
+        for (const std::unique_ptr<MatchStore> &match : category->getMatches()) {
             auto whitePlayerId = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayerId)
                 tournament.getPlayer(*whitePlayerId).addMatch(category->getId(), match->getId());
@@ -216,8 +213,7 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.beginResetMatches(mCategoryId);
     CategoryStore & category = tournament.getCategory(mCategoryId);
 
-    for (const auto & it : category.getMatches()) {
-        const std::unique_ptr<MatchStore> & match = it.second;
+    for (const std::unique_ptr<MatchStore> &match : category.getMatches()) {
         std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
         if (whitePlayer && tournament.containsPlayer(*whitePlayer))
             tournament.getPlayer(*whitePlayer).eraseMatch(mCategoryId, match->getId());
@@ -225,10 +221,9 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
         std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
         if (bluePlayer && tournament.containsPlayer(*bluePlayer))
             tournament.getPlayer(*bluePlayer).eraseMatch(mCategoryId, match->getId());
-
-        mOldMatches.push(category.eraseMatch(match->getId()));
     }
 
+    mOldMatches = std::move(category.clearMatches());
     mOldDrawSystem = category.getDrawSystem().clone();
 
     std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
@@ -240,6 +235,12 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
     }
 
     tournament.endResetMatches(mCategoryId);
+
+    for (MatchType type : {MatchType::FINAL, MatchType::NORMAL}) {
+        std::optional<TatamiLocation> location = category.getTatamiLocation(type);
+        if (location)
+            tournament.getTatamis().recomputeBlock(tournament, *location);
+    }
 }
 
 void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
@@ -256,10 +257,7 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 
     category.setDrawSystem(std::move(mOldDrawSystem));
 
-    while (!mOldMatches.empty()) {
-        std::unique_ptr<MatchStore> match = std::move(mOldMatches.top());
-        mOldMatches.pop();
-
+    for (std::unique_ptr<MatchStore> & match : mOldMatches) {
         std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
         if (whitePlayer && tournament.containsPlayer(*whitePlayer))
             tournament.getPlayer(*whitePlayer).eraseMatch(mCategoryId, match->getId());
@@ -268,10 +266,18 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
         if (bluePlayer && tournament.containsPlayer(*bluePlayer))
             tournament.getPlayer(*bluePlayer).eraseMatch(mCategoryId, match->getId());
 
-        category.addMatch(std::move(match));
+        category.pushMatch(std::move(match));
     }
 
+    mOldMatches.clear();
+
     tournament.endResetMatches(mCategoryId);
+
+    for (MatchType type : {MatchType::FINAL, MatchType::NORMAL}) {
+        std::optional<TatamiLocation> location = category.getTatamiLocation(type);
+        if (location)
+            tournament.getTatamis().recomputeBlock(tournament, *location);
+    }
 }
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(TournamentStore & tournament, std::vector<PlayerId> playerIds)
@@ -280,7 +286,7 @@ ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(Tournam
 
 void ErasePlayersFromAllCategoriesAction::redoImpl(TournamentStore & tournament) {
     std::vector<PlayerId> playerIds;
-    std::unordered_set<CategoryId, CategoryId::Hasher> categoryIds;
+    std::unordered_set<CategoryId> categoryIds;
 
     for (auto playerId : mPlayerIds) {
         if (!tournament.containsPlayer(playerId)) continue;
