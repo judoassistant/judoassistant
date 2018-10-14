@@ -20,20 +20,20 @@ QutejudoApplication::QutejudoApplication(int &argc, char *argv[]) : QApplication
 
     // setStyle(QStyleFactory::create("fusion"));
 
-    // m_palette.setColor(QPalette::Window, QColor(53,53,53));
-    // m_palette.setColor(QPalette::WindowText, Qt::white);
-    // m_palette.setColor(QPalette::Base, QColor(15,15,15));
-    // m_palette.setColor(QPalette::AlternateBase, QColor(53,53,53));
-    // m_palette.setColor(QPalette::ToolTipBase, Qt::white);
-    // m_palette.setColor(QPalette::ToolTipText, Qt::white);
-    // m_palette.setColor(QPalette::Text, Qt::white);
-    // m_palette.setColor(QPalette::Button, QColor(53,53,53));
-    // m_palette.setColor(QPalette::ButtonText, Qt::white);
-    // m_palette.setColor(QPalette::BrightText, Qt::red);
-    // m_palette.setColor(QPalette::Highlight, QColor(142,45,197).lighter());
-    // m_palette.setColor(QPalette::HighlightedText, Qt::black);
+    // mPalette.setColor(QPalette::Window, QColor(53,53,53));
+    // mPalette.setColor(QPalette::WindowText, Qt::white);
+    // mPalette.setColor(QPalette::Base, QColor(15,15,15));
+    // mPalette.setColor(QPalette::AlternateBase, QColor(53,53,53));
+    // mPalette.setColor(QPalette::ToolTipBase, Qt::white);
+    // mPalette.setColor(QPalette::ToolTipText, Qt::white);
+    // mPalette.setColor(QPalette::Text, Qt::white);
+    // mPalette.setColor(QPalette::Button, QColor(53,53,53));
+    // mPalette.setColor(QPalette::ButtonText, Qt::white);
+    // mPalette.setColor(QPalette::BrightText, Qt::red);
+    // mPalette.setColor(QPalette::Highlight, QColor(142,45,197).lighter());
+    // mPalette.setColor(QPalette::HighlightedText, Qt::black);
 
-    // setPalette(m_palette);
+    // setPalette(mPalette);
 }
 
 int QutejudoApplication::exec() {

@@ -20,6 +20,7 @@
 #include "exception.hpp"
 
 QutejudoWindow::QutejudoWindow() {
+    // TODO: Add todostack sidebar
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
