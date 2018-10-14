@@ -273,3 +273,35 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 
     tournament.endResetMatches(mCategoryId);
 }
+
+ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(TournamentStore & tournament, std::vector<PlayerId> playerIds)
+    : mPlayerIds(playerIds)
+{}
+
+void ErasePlayersFromAllCategoriesAction::redoImpl(TournamentStore & tournament) {
+    std::vector<PlayerId> playerIds;
+    std::unordered_set<CategoryId, CategoryId::Hasher> categoryIds;
+
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId)) continue;
+
+        playerIds.push_back(playerId);
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        const auto &playerCategories = player.getCategories();
+        categoryIds.insert(playerCategories.begin(), playerCategories.end());
+    }
+
+    for (auto categoryId : categoryIds) {
+        auto action = std::make_unique<ErasePlayersFromCategoryAction>(tournament, categoryId, playerIds);
+        action->redo(tournament);
+        mActions.push(std::move(action));
+    }
+}
+
+void ErasePlayersFromAllCategoriesAction::undoImpl(TournamentStore & tournament) {
+    while (!mActions.empty()) {
+        mActions.top()->undo(tournament);
+        mActions.pop();
+    }
+}
+

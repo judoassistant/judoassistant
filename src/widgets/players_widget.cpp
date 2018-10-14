@@ -132,8 +132,7 @@ void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItem
 void PlayersWidget::eraseSelectedPlayersFromAllCategories() {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
 
-    log_debug().field("playerIds", playerIds).msg("Erasing selected players all categories");
-    // TODO: Implement
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromAllCategoriesAction>(mStoreHandler.getTournament(), std::move(playerIds)));
 }
 
 void PlayersWidget::eraseSelectedPlayersFromCategory(CategoryId categoryId) {

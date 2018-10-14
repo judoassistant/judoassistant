@@ -75,3 +75,14 @@ private:
     std::stack<std::unique_ptr<CategoryStore>> mCategories;
 };
 
+class ErasePlayersFromAllCategoriesAction : public Action {
+public:
+    ErasePlayersFromAllCategoriesAction(TournamentStore & tournament, std::vector<PlayerId> playerIds);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    std::vector<PlayerId> mPlayerIds;
+
+    // undo members
+    std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
+};
