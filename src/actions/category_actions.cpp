@@ -258,6 +258,7 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 
     while (!mOldMatches.empty()) {
         std::unique_ptr<MatchStore> match = std::move(mOldMatches.top());
+        mOldMatches.pop();
 
         std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
         if (whitePlayer && tournament.containsPlayer(*whitePlayer))
