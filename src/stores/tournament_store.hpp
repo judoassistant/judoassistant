@@ -25,6 +25,7 @@ public:
         ar(cereal::make_nvp("name", mName));
         ar(cereal::make_nvp("players", mPlayers));
         ar(cereal::make_nvp("categories", mCategories));
+        ar(cereal::make_nvp("tatamis", mTatamis));
     }
 
     const std::string & getName() const;
@@ -87,7 +88,7 @@ public:
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
 
-    virtual void changeTatamis(std::vector<size_t> ids) {}
+    virtual void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {}
     virtual void beginAddTatamis(std::vector<size_t> ids) {}
     virtual void endAddTatamis() {}
     virtual void beginEraseTatamis(std::vector<size_t> ids) {}

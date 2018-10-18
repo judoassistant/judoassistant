@@ -34,7 +34,7 @@ QutejudoWindow::QutejudoWindow() {
     tabWidget->addTab(new CategoriesWidget(mStoreHandler), tr("Categories"));
     tabWidget->addTab(new TatamisWidget(mStoreHandler), tr("Tatamis"));
     tabWidget->addTab(new MatchesWidget(mStoreHandler), tr("Matches"));
-    tabWidget->setCurrentIndex(1);
+    tabWidget->setCurrentIndex(3);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
     setCentralWidget(tabWidget);

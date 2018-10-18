@@ -8,3 +8,4 @@ subdir('widgets')
 
 sources += ['src/log.cpp']
 sources += ['src/version.cpp']
+sources += ['src/position_manager.cpp']

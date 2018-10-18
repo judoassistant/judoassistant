@@ -15,8 +15,10 @@ class MatchEvent;
 class Ruleset;
 
 enum class MatchType {
-    NORMAL, FINAL
+    KNOCKOUT, FINAL
 };
+
+std::ostream &operator<<(std::ostream &out, const MatchType &matchType);
 
 class MatchStore {
 public:
@@ -40,7 +42,7 @@ public:
     };
 
     MatchStore() {}
-    MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool tentative, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
+    MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
 
     MatchId getId() const;
     std::optional<PlayerId> getPlayer(PlayerIndex index) const;
@@ -58,8 +60,7 @@ public:
     const std::string & getTitle() const;
     MatchType getType() const;
 
-    bool isTentative() const;
-    void setTentative(bool tentative);
+    bool isBye() const;
 
     void pushEvent(std::unique_ptr<MatchEvent> && event);
     const std::vector<std::unique_ptr<MatchEvent>> & getEvents() const;
@@ -89,7 +90,7 @@ public:
         ar(cereal::make_nvp("time", mTime));
         ar(cereal::make_nvp("clock", mClock));
         ar(cereal::make_nvp("type", mType));
-        ar(cereal::make_nvp("tentative", mTentative));
+        ar(cereal::make_nvp("bye", mBye));
         ar(cereal::make_nvp("title", mTitle));
 
         // TODO: serialize match events
@@ -100,7 +101,7 @@ private:
     CategoryId mCategory;
     MatchType mType;
     std::string mTitle;
-    bool mTentative;
+    bool mBye;
     std::array<Score,2> mScores;
     std::array<std::optional<PlayerId>,2> mPlayers;
     bool mIsStopped;

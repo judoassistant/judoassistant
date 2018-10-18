@@ -1,6 +1,8 @@
 #include "stores/category_store.hpp"
 #include "stores/tatami_store.hpp"
 
+#include <sstream>
+
 CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem)
     : mId(id)
     , mName(name)
@@ -24,6 +26,14 @@ void CategoryStore::addPlayer(PlayerId id) {
 
 const std::string & CategoryStore::getName() const {
     return mName;
+}
+
+std::string CategoryStore::getName(MatchType type) const {
+    std::stringstream res;
+    res << mName;
+    if (getDrawSystem().hasFinalBlock())
+        res << " (" << (type == MatchType::KNOCKOUT ? "Knockout" : "Final") << ")"; // TODO: Translate
+    return res.str();
 }
 
 void CategoryStore::setName(const std::string &name) {

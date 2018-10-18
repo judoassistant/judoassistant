@@ -4,6 +4,7 @@
 #include "id.hpp"
 #include "hash.hpp"
 #include "position_manager.hpp"
+#include "serialize.hpp"
 
 enum class MatchType;
 
@@ -11,7 +12,16 @@ struct TatamiLocation {
     size_t tatamiIndex;
     PositionHandle concurrentGroup;
     PositionHandle sequentialGroup;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("tatamiIndex", tatamiIndex));
+        ar(cereal::make_nvp("concurrentGroup", concurrentGroup));
+        ar(cereal::make_nvp("sequentialGroup", sequentialGroup));
+    }
 };
+
+std::ostream &operator<<(std::ostream &out, const TatamiLocation &location);
 
 class TournamentStore;
 class CategoryStore;
@@ -54,6 +64,12 @@ public:
     size_t blockCount() const;
 
     void recompute(const TournamentStore &tournament);
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("blocks", mBlocks));
+        ar(cereal::make_nvp("matchCount", mMatchCount));
+    }
 private:
     BlockList mBlocks;
     size_t mMatchCount;
@@ -76,24 +92,35 @@ public:
     SequentialBlockGroup & getGroup(PositionHandle handle);
 
     void recompute(const TournamentStore &tournament);
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("groups", mGroups));
+        ar(cereal::make_nvp("matches", mMatches));
+        ar(cereal::make_nvp("matchMap", mMatchMap));
+    }
 private:
     PositionManager<SequentialBlockGroup> mGroups;
     MatchList mMatches;
     std::unordered_map<std::pair<CategoryId, MatchId>,size_t> mMatchMap;
-    std::unordered_map<std::pair<CategoryId, MatchType>,size_t> mCategoryMap;
 };
 
 class TatamiStore {
 public:
     void eraseGroup(PositionHandle handle);
-    PositionHandle addGroup(TournamentStore & tournament, size_t index);
+    std::pair<PositionHandle, PositionHandle> addGroup(TournamentStore & tournament, size_t index);
+    bool containsGroup(PositionHandle handle) const;
     PositionHandle getHandle(size_t index) const;
     size_t groupCount() const;
 
     ConcurrentBlockGroup & getGroup(PositionHandle handle);
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("groups", mGroups));
+    }
 private:
     PositionManager<ConcurrentBlockGroup> mGroups;
-    std::unordered_map<std::pair<CategoryId, MatchType>,size_t> mCategoryMap;
 };
 
 class TatamiList {
@@ -107,6 +134,13 @@ public:
     std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>> popTatami();
     void recoverTatami(const std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>> &contents);
     size_t tatamiCount() const;
+    TatamiStore & operator[](size_t index);
+    const TatamiStore & operator[](size_t index) const;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("tatamis", mTatamis));
+    }
 private:
     std::vector<TatamiStore> mTatamis;
 };

@@ -134,6 +134,10 @@ PositionHandle ConcurrentBlockGroup::getHandle(size_t index) const {
     return mGroups.getHandle(index);
 }
 
+bool TatamiStore::containsGroup(PositionHandle handle) const {
+    return mGroups.containsId(handle.id);
+}
+
 size_t ConcurrentBlockGroup::groupCount() const {
     return mGroups.size();
 }
@@ -200,11 +204,17 @@ void TatamiStore::eraseGroup(PositionHandle handle) {
     mGroups.erase(handle);
 }
 
-PositionHandle TatamiStore::addGroup(TournamentStore & tournament, size_t index) {
-    PositionHandle handle;
-    handle.id = tournament.generateNextPositionId(mGroups);
-    handle.index = index;
-    return handle;
+std::pair<PositionHandle, PositionHandle> TatamiStore::addGroup(TournamentStore & tournament, size_t index) {
+    PositionHandle conHandle;
+    conHandle.id = tournament.generateNextPositionId(mGroups);
+    conHandle.index = index;
+
+    PositionHandle seqHandle;
+    // the new group is empty. Just generate id based on this group
+    seqHandle.id = tournament.generateNextPositionId(mGroups);
+    seqHandle.index = index;
+
+    return {conHandle, seqHandle};
 }
 
 PositionHandle TatamiStore::getHandle(size_t index) const {
@@ -295,5 +305,19 @@ void TatamiList::recoverTatami(const std::vector<std::tuple<CategoryId, MatchTyp
 
 size_t TatamiList::tatamiCount() const {
     return mTatamis.size();
+}
+
+TatamiStore & TatamiList::operator[](size_t index) {
+    assert(index < tatamiCount());
+    return mTatamis[index];
+}
+
+const TatamiStore & TatamiList::operator[](size_t index) const {
+    assert(index < tatamiCount());
+    return mTatamis[index];
+}
+
+std::ostream &operator<<(std::ostream &out, const TatamiLocation &location) {
+    return out << "(" << location.tatamiIndex << "; " << location.concurrentGroup << "; " << location.sequentialGroup << ")";
 }
 

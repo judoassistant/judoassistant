@@ -23,6 +23,15 @@ void SetTatamiLocationAction::redoImpl(TournamentStore & tournament) {
 
     tatamis.moveBlock(tournament, mCategoryId, mType, mOldLocation, mLocation, mSeqIndex);
     category.setTatamiLocation(mType, mLocation);
+
+    {
+        std::vector<TatamiLocation> locations;
+        if (mOldLocation) locations.push_back(*mOldLocation);
+        if (mLocation) locations.push_back(*mLocation);
+        std::vector<std::pair<CategoryId, MatchType>> blocks = {{mCategoryId, mType}};
+
+        tournament.changeTatamis(std::move(locations), std::move(blocks));
+    }
 }
 
 void SetTatamiLocationAction::undoImpl(TournamentStore & tournament) {
@@ -35,6 +44,15 @@ void SetTatamiLocationAction::undoImpl(TournamentStore & tournament) {
 
     tatamis.moveBlock(tournament, mCategoryId, mType, mLocation, mOldLocation, mOldSeqIndex);
     category.setTatamiLocation(mType, mOldLocation);
+
+    {
+        std::vector<TatamiLocation> locations;
+        if (mOldLocation) locations.push_back(*mOldLocation);
+        if (mLocation) locations.push_back(*mLocation);
+        std::vector<std::pair<CategoryId, MatchType>> blocks = {{mCategoryId, mType}};
+
+        tournament.changeTatamis(std::move(locations), std::move(blocks));
+    }
 }
 
 SetTatamiCount::SetTatamiCount(TournamentStore & tournament, size_t count)

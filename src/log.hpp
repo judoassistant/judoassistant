@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <vector>
+#include <set>
 #include <iostream>
 #include <optional>
 #include <QString>
@@ -28,13 +29,29 @@ private:
 template<typename T>
 std::ostream &operator<<(std::ostream & o, const std::vector<T> & vec) {
     o << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        o << vec[i];
-        if (i != vec.size()-1)
+    for (auto it = vec.begin(); it != vec.end(); ) {
+        o << *it;
+
+        std::advance(it, 1);
+        if (it != vec.end())
             o << "; ";
     }
 
     return o << "]";
+}
+
+template<typename T, typename Comp, typename Alloc>
+std::ostream &operator<<(std::ostream & o, const std::set<T, Comp, Alloc> & set) {
+    o << "{";
+    for (auto it = set.begin(); it != set.end(); ) {
+        o << *it;
+
+        std::advance(it, 1);
+        if (it != set.end())
+            o << "; ";
+    }
+
+    return o << "}";
 }
 
 template <typename T>
@@ -42,6 +59,11 @@ std::ostream & operator<<(std::ostream & o, std::optional<T> opt) {
     if (opt)
         return o << *opt;
     return o << "nullopt";
+}
+
+template <typename A, typename B>
+std::ostream & operator<<(std::ostream & o, std::pair<A,B> pair) {
+    return o << "(" << pair.first << "; " << pair.second << ")";
 }
 
 std::ostream & operator<<(std::ostream & o, const QString &str);

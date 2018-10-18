@@ -5,6 +5,7 @@
 #include <map>
 
 #include "core.hpp"
+#include "serialize.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tatami_store.hpp"
 #include "draw_systems/draw_system.hpp"
@@ -22,6 +23,7 @@ public:
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
 
     const std::string & getName() const;
+    std::string getName(MatchType type) const;
     void setName(const std::string &name);
 
     const CategoryId & getId() const;
@@ -58,6 +60,9 @@ public:
         ar(cereal::make_nvp("name", mName));
         ar(cereal::make_nvp("players", mPlayers));
         ar(cereal::make_nvp("matches", mMatches));
+        ar(cereal::make_nvp("matchMap", mMatchMap));
+        ar(cereal::make_nvp("matchCount", mMatchCount));
+        ar(cereal::make_nvp("tatamiLocation", mTatamiLocation));
         ar(cereal::make_nvp("ruleset", mRuleset));
         ar(cereal::make_nvp("drawSystem", mDrawSystem));
     }

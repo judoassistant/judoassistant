@@ -3,7 +3,13 @@
 
 MasterStoreHandler::MasterStoreHandler()
     : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
-{}
+{
+    // TODO: Remove this after testing
+    mTournament->getTatamis().pushTatami();
+    mTournament->getTatamis().pushTatami();
+    mTournament->getTatamis().pushTatami();
+    mTournament->getTatamis().pushTatami();
+}
 
 void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
     log_debug().msg("Dispatching action");

@@ -42,7 +42,7 @@ public:
     void beginResetMatches(CategoryId categoryId) override;
     void endResetMatches(CategoryId categoryId) override;
 
-    void changeTatamis(std::vector<size_t> ids) override;
+    void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) override;
     void beginAddTatamis(std::vector<size_t> ids) override;
     void endAddTatamis() override;
     void beginEraseTatamis(std::vector<size_t> ids) override;
@@ -78,7 +78,7 @@ signals:
     void matchesAboutToBeReset(CategoryId categoryId);
     void matchesReset(CategoryId categoryId);
 
-    void tatamisChanged(std::vector<size_t> id);
+    void tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void tatamisAboutToBeAdded(std::vector<size_t> id);
     void tatamisAdded(std::vector<size_t> id);
     void tatamisAboutToBeErased(std::vector<size_t> id);

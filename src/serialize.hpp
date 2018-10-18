@@ -9,6 +9,7 @@
 #include <cereal/types/unordered_set.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/map.hpp>
+#include <cereal/types/utility.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/polymorphic.hpp>
 

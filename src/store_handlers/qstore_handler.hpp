@@ -12,7 +12,7 @@ public:
     QTournamentStore & getTournament() override = 0;
     const QTournamentStore & getTournament() const override = 0;
 signals:
-    void tournamentReset();
+    void tournamentReset(); // TODO: change to abouttobereset
     void undoStatusChanged(bool canUndo);
     void redoStatusChanged(bool canRedo);
 };

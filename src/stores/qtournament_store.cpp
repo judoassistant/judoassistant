@@ -188,9 +188,9 @@ void QTournamentStore::endResetMatches(CategoryId categoryId) {
     emit matchesReset(categoryId);
 }
 
-void QTournamentStore::changeTatamis(std::vector<size_t> id) {
-    log_debug().field("ids", id).msg("Emitting tatamisChanged");
-    emit tatamisChanged(id);
+void QTournamentStore::changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+    log_debug().field("locations", locations).field("blocks", blocks).msg("Emitting tatamisChanged");
+    emit tatamisChanged(locations, blocks);
 }
 
 void QTournamentStore::beginAddTatamis(std::vector<size_t> id) {

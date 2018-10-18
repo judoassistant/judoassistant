@@ -1,12 +1,12 @@
 #include "actions/match_actions.hpp"
 #include "exception.hpp"
 
-AddMatchAction::AddMatchAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool tentative, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
+AddMatchAction::AddMatchAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
     : mId(tournament.generateNextMatchId())
     , mCategoryId(categoryId)
     , mType(type)
     , mTitle(title)
-    , mTentative(tentative)
+    , mBye(bye)
     , mWhitePlayerId(whitePlayerId)
     , mBluePlayerId(bluePlayerId)
 {}
@@ -30,7 +30,7 @@ void AddMatchAction::redoImpl(TournamentStore & tournament) {
         tournament.getPlayer(*bluePlayerId).addMatch(mCategoryId, mId);
     }
 
-    category.pushMatch(std::make_unique<MatchStore>(mId, mCategoryId, mType, mTitle, mTentative, whitePlayerId, bluePlayerId));
+    category.pushMatch(std::make_unique<MatchStore>(mId, mCategoryId, mType, mTitle, mBye, whitePlayerId, bluePlayerId));
 }
 
 void AddMatchAction::undoImpl(TournamentStore & tournament) {

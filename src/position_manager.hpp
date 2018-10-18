@@ -5,11 +5,20 @@
 #include <algorithm>
 #include "id.hpp"
 #include "core.hpp"
+#include "serialize.hpp"
 
 struct PositionHandle {
     PositionId id;
     size_t index;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("id", id));
+        ar(cereal::make_nvp("index", index));
+    }
 };
+
+std::ostream &operator<<(std::ostream &out, const PositionHandle &handle);
 
 template <typename T>
 class PositionManager {
@@ -47,6 +56,12 @@ public:
 
     bool containsId(PositionId id) const {
         return mElements.find(id) != mElements.end();
+    }
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("ids", mIds));
+        ar(cereal::make_nvp("elements", mElements));
     }
 
 private:

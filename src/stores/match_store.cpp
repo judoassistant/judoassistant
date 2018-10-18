@@ -2,12 +2,12 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_event.hpp"
 
-MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool tentative, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
+MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
     : mId(id)
     , mCategory(categoryId)
     , mType(type)
     , mTitle(title)
-    , mTentative(tentative)
+    , mBye(bye)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
@@ -108,14 +108,17 @@ std::optional<PlayerId> MatchStore::getBluePlayer() const {
     return getPlayer(PlayerIndex::BLUE);
 }
 
-bool MatchStore::isTentative() const {
-    return mTentative;
-}
-
-void MatchStore::setTentative(bool tentative) {
-    mTentative = tentative;
-}
-
 MatchType MatchStore::getType() const {
     return mType;
+}
+
+std::ostream &operator<<(std::ostream &out, const MatchType &matchType) {
+    if (matchType == MatchType::FINAL)
+        return out << "final";
+    return out << "knockout";
+
+}
+
+bool MatchStore::isBye() const {
+    return mBye;
 }

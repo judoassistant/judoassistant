@@ -39,12 +39,12 @@ bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::Player
 
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore & match) const {
-    if (match.isTentative())
-        return false;
+    if (match.isBye())
+        return true;
     if (!match.getWhitePlayer().has_value())
-        return true;
+        return false;
     if (!match.getBluePlayer().has_value())
-        return true;
+        return false;
 
     if (!match.isStopped())
         return false;
