@@ -14,6 +14,7 @@ public:
     PlayersWidget(QStoreHandler &storeHandler);
 public slots:
     void showPlayerCreateDialog();
+    void showAutoAddCategoriesWidget();
     void eraseSelectedPlayers();
     void eraseSelectedPlayersFromAllCategories();
     void eraseSelectedPlayersFromCategory(CategoryId categoryId);
@@ -23,6 +24,7 @@ public slots:
 private:
     QStoreHandler &mStoreHandler;
     QAction *mEraseAction;
+    QAction *mAutoAddCategoriesAction;
     QTableView *mTableView;
     PlayersProxyModel *mModel;
     EditPlayerWidget *mEditPlayerWidget;

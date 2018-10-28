@@ -3,6 +3,7 @@
 
 #include "widgets/players_widget.hpp"
 #include "widgets/create_player_dialog.hpp"
+#include "widgets/auto_add_category_dialog.hpp"
 
 #include "actions/player_actions.hpp"
 
@@ -25,6 +26,12 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
         mEraseAction->setEnabled(false);
         toolBar->addAction(mEraseAction);
         connect(mEraseAction, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
+
+        mAutoAddCategoriesAction = new QAction(QIcon("player-erase.svg"), tr("Automatically create categories for the selected players.."));
+        mAutoAddCategoriesAction->setStatusTip(tr("Automatically create categories for the selected players.."));
+        mAutoAddCategoriesAction->setEnabled(false);
+        toolBar->addAction(mAutoAddCategoriesAction);
+        connect(mAutoAddCategoriesAction, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
 
         layout->addWidget(toolBar);
     }
@@ -60,6 +67,31 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
 void PlayersWidget::showPlayerCreateDialog() {
     CreatePlayerDialog dialog(mStoreHandler);
+
+    dialog.exec();
+}
+
+void PlayersWidget::showAutoAddCategoriesWidget() {
+    std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+    if (playerIds.empty())
+        return;
+
+    bool hasWeights = true;
+    for (auto playerId : playerIds) {
+        const auto &player = mStoreHandler.getTournament().getPlayer(playerId);
+        if (!player.getWeight()) {
+            hasWeights = false;
+            break;
+        }
+    }
+
+    if (!hasWeights) {
+        auto reply = QMessageBox::question(this, tr("Missing weights"), tr("Not all of the selected players have a weight entered. Players with no weight will be ignored. Would you like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
+        if (reply == QMessageBox::Cancel)
+            return;
+    }
+
+    AutoAddCategoryDialog dialog(mStoreHandler, playerIds);
 
     dialog.exec();
 }
@@ -112,6 +144,10 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
             connect(action, &QAction::triggered, [&, categoryId](){addSelectedPlayersToCategory(categoryId);});
         }
     }
+    {
+        QAction *action = menu->addAction(tr("Automatically create categories for the selected players.."));
+        connect(action, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
+    }
 
     menu->exec(mTableView->mapToGlobal(pos), 0);
     delete menu;
@@ -126,6 +162,7 @@ void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItem
     auto playerIds = mModel->getPlayers(selected);
 
     mEraseAction->setEnabled(!playerIds.empty());
+    mAutoAddCategoriesAction->setEnabled(!playerIds.empty());
 
     if (playerIds.size() == 1)
         mEditPlayerWidget->setPlayer(playerIds.front());

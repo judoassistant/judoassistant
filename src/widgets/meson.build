@@ -2,6 +2,7 @@ subdir('misc')
 subdir('models')
 subdir('validators')
 
+sources += ['src/widgets/auto_add_category_dialog.cpp']
 sources += ['src/widgets/categories_widget.cpp']
 sources += ['src/widgets/matches_widget.cpp']
 sources += ['src/widgets/players_widget.cpp']
@@ -14,6 +15,7 @@ sources += ['src/widgets/create_category_dialog.cpp']
 sources += ['src/widgets/unallocated_blocks_widget.cpp']
 sources += ['src/widgets/tatami_widget.cpp']
 
+moc_headers += ['src/widgets/auto_add_category_dialog.hpp']
 moc_headers += ['src/widgets/categories_widget.hpp']
 moc_headers += ['src/widgets/matches_widget.hpp']
 moc_headers += ['src/widgets/players_widget.hpp']

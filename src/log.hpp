@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <vector>
+#include <unordered_set>
 #include <set>
 #include <iostream>
 #include <optional>
@@ -27,31 +28,33 @@ private:
 };
 
 template<typename T>
-std::ostream &operator<<(std::ostream & o, const std::vector<T> & vec) {
-    o << "[";
-    for (auto it = vec.begin(); it != vec.end(); ) {
+std::ostream &log_container(std::ostream &o, const T &container, const std::string &openBracket, const std::string &closeBracket, const std::string &seperator) {
+    o << openBracket;
+    for (auto it = container.begin(); it != container.end(); ) {
         o << *it;
 
         std::advance(it, 1);
-        if (it != vec.end())
-            o << "; ";
+        if (it != container.end())
+            o << seperator;
     }
 
-    return o << "]";
+    return o << closeBracket;
+
+}
+
+template<typename T>
+std::ostream &operator<<(std::ostream & o, const std::vector<T> & vec) {
+    return log_container(o, vec, "[", "]", "; ");
+}
+
+template<typename T, typename Comp, typename Alloc>
+std::ostream &operator<<(std::ostream & o, const std::unordered_set<T, Comp, Alloc> & set) {
+    return log_container(o, set, "{", "}", "; ");
 }
 
 template<typename T, typename Comp, typename Alloc>
 std::ostream &operator<<(std::ostream & o, const std::set<T, Comp, Alloc> & set) {
-    o << "{";
-    for (auto it = set.begin(); it != set.end(); ) {
-        o << *it;
-
-        std::advance(it, 1);
-        if (it != set.end())
-            o << "; ";
-    }
-
-    return o << "}";
+    return log_container(o, set, "{", "}", "; ");
 }
 
 template <typename T>

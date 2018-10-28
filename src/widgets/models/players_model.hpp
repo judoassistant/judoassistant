@@ -27,12 +27,15 @@ public slots:
     void playersAboutToBeReset();
     void playersReset();
     void tournamentReset();
-    void playerCategoriesChanged(CategoryId, std::vector<PlayerId> playerIds);
+    void playerCategoriesChanged(std::vector<PlayerId> playerIds);
+    void categoriesAboutToBeErased(std::vector<CategoryId> playerIds);
+    void categoriesErased(std::vector<CategoryId> playerIds);
 private:
     std::string listPlayerCategories(const PlayerStore &player) const;
     const int COLUMN_COUNT = 8;
     QStoreHandler & mStoreHandler;
     std::set<PlayerId> mIds;
+    std::unordered_set<PlayerId> mAffectedPlayers; // Used when receiving a categoriesAboutToBeErased signal
 };
 
 class PlayersProxyModel : public QSortFilterProxyModel {

@@ -1,3 +1,6 @@
+#include <sstream>
+#include <set>
+
 #include "actions/category_actions.hpp"
 #include "draw_systems/draw_systems.hpp"
 #include "rulesets/rulesets.hpp"
@@ -10,6 +13,10 @@ AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::st
     , mRuleset(ruleset)
     , mDrawSystem(drawSystem)
 {}
+
+CategoryId AddCategoryAction::getId() const {
+    return mId;
+}
 
 void AddCategoryAction::redoImpl(TournamentStore & tournament) {
     if (tournament.containsCategory(mId))
@@ -327,5 +334,133 @@ void ErasePlayersFromAllCategoriesAction::undoImpl(TournamentStore & tournament)
         mActions.top()->undo(tournament);
         mActions.pop();
     }
+}
+
+struct Solution {
+    bool possible;
+    std::multiset<size_t> sizes;
+    size_t next;
+
+    bool operator<(const Solution &other) {
+        if (possible != other.possible)
+            return possible; // smaller iff possible
+
+        auto i = sizes.begin();
+        auto j = other.sizes.begin();
+
+        while (i != sizes.end() && j != other.sizes.end()) {
+            if (*i != *j)
+                return *i > *j;
+
+            ++j;
+            ++i;
+        }
+
+        return false;
+    }
+};
+
+AutoAddCategoriesAction::AutoAddCategoriesAction(TournamentStore &tournament, std::vector<PlayerId> playerIds, std::string baseName, float maxDifference, size_t maxSize)
+    : mBaseName(baseName)
+{
+    log_debug().msg("Redoing");
+    std::vector<std::pair<float, PlayerId>> weights;
+    for (auto playerId : playerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        if (!player.getWeight())
+            continue;
+        weights.push_back({*player.getWeight(), playerId});
+    }
+
+    log_debug().field("weights", weights).msg("Created weights array");
+    if (weights.empty())
+        return;
+
+    std::sort(weights.begin(), weights.end());
+
+    std::vector<Solution> dp(weights.size()+1);
+
+    auto & back = dp.back();
+    back.possible = true;
+
+    for (int i = weights.size() - 1; i >= 0; --i) {
+        Solution best_so_far;
+        best_so_far.possible = false;
+
+        for (size_t j = static_cast<size_t>(i); j < weights.size(); ++j) {
+            auto diff = 100.0 * (weights[j].first - weights[i].first)/weights[j].first;
+            auto size = j-static_cast<size_t>(i)+1;
+
+            if (size > maxSize)
+                break;
+            if (diff > maxDifference)
+                break;
+
+            const auto & next = dp[j+1];
+
+            Solution current;
+            current.possible = next.possible;
+            if (current.possible) { // no reason to copy if not possible
+                current.sizes = next.sizes;
+                current.sizes.insert(size);
+                if (current.sizes.size() > 50) // Limit to 50 to avoid n^3 complexity
+                    current.sizes.erase(std::prev(current.sizes.end()));
+            }
+            current.next = j+1;
+
+            if (current < best_so_far)
+                best_so_far = current;
+        }
+
+        dp[i] = best_so_far;
+    }
+
+    if (!dp[0].possible) return;
+
+    size_t next = 0;
+    while (next != weights.size()) {
+        auto sol = dp[next];
+        std::vector<PlayerId> playerIds;
+        for (size_t j = next; j < sol.next; ++j)
+            playerIds.push_back(weights[j].second);
+
+        mCategoryIds.push_back(tournament.generateNextCategoryId());
+        mPlayerIds.push_back(std::move(playerIds));
+
+        next = sol.next;
+    }
+}
+
+
+void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
+    for (auto categoryId : mCategoryIds) {
+        if (tournament.containsCategory(categoryId))
+            throw ActionExecutionException("Failed to redo AutoAddCategoriesAction. Category already exists.");
+    }
+
+    const auto &rulesets = Rulesets::getRulesets();
+    const auto &drawSystems = DrawSystems::getDrawSystems();
+    tournament.beginAddCategories(mCategoryIds);
+    for (size_t i = 0; i < mCategoryIds.size(); ++i) {
+        // TODO: Use different drawsystems for different size groups
+        std::stringstream ss;
+        ss << mBaseName << " " << i << std::endl;
+        auto ruleset = rulesets[0]->clone();
+        auto drawSystem = drawSystems[0]->clone();
+        tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], ss.str(), std::move(ruleset), std::move(drawSystem)));
+    }
+    tournament.endAddCategories();
+
+    for (size_t i = 0; i < mCategoryIds.size(); ++i) {
+        AddPlayersToCategoryAction playersAction(tournament, mCategoryIds[i], mPlayerIds[i]);
+        playersAction.redo(tournament);
+    }
+}
+
+void AutoAddCategoriesAction::undoImpl(TournamentStore & tournament) {
+    EraseCategoriesAction eraseAction(tournament, mCategoryIds);
+    eraseAction.redo(tournament);
 }
 

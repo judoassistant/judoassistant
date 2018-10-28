@@ -152,8 +152,10 @@ void PlayersModel::tournamentReset() {
     connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset);
     connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
 
-    connect(&tournament, &QTournamentStore::playersAddedToCategory, this, &PlayersModel::playerCategoriesChanged);
-    connect(&tournament, &QTournamentStore::playersErasedFromCategory, this, &PlayersModel::playerCategoriesChanged);
+    connect(&tournament, &QTournamentStore::playersAddedToCategory, [&](CategoryId, const std::vector<PlayerId> &ids) {this->playerCategoriesChanged(ids);});
+    connect(&tournament, &QTournamentStore::playersErasedFromCategory, [&](CategoryId, const std::vector<PlayerId> &ids) {this->playerCategoriesChanged(ids);});
+    connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &PlayersModel::categoriesAboutToBeErased);
+    connect(&tournament, &QTournamentStore::categoriesErased, this, &PlayersModel::categoriesErased);
 
     endResetModel();
 }
@@ -181,10 +183,22 @@ std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const 
     return res.str();
 }
 
-void PlayersModel::playerCategoriesChanged(CategoryId, std::vector<PlayerId> playerIds) {
+void PlayersModel::playerCategoriesChanged(std::vector<PlayerId> playerIds) {
     for (auto playerId : playerIds) {
         int row = getRow(playerId);
-        emit dataChanged(createIndex(7,row), createIndex(7,row));
+        emit dataChanged(createIndex(row, 7), createIndex(row, 7));
     }
+}
+
+void PlayersModel::categoriesAboutToBeErased(std::vector<CategoryId> categoryIds) {
+    mAffectedPlayers.clear();
+    for (auto categoryId : categoryIds) {
+        const auto & ids = mStoreHandler.getTournament().getCategory(categoryId).getPlayers();
+        mAffectedPlayers.insert(ids.begin(), ids.end());
+    }
+}
+
+void PlayersModel::categoriesErased(std::vector<CategoryId> categoryIds) {
+    playerCategoriesChanged(std::vector(mAffectedPlayers.begin(), mAffectedPlayers.end()));
 }
 

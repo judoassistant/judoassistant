@@ -13,6 +13,7 @@ public:
     AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+    CategoryId getId() const;
 private:
     CategoryId mId;
     std::string mName;
@@ -85,4 +86,16 @@ private:
 
     // undo members
     std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
+};
+
+class AutoAddCategoriesAction : public Action {
+public:
+    AutoAddCategoriesAction(TournamentStore &tournament, std::vector<PlayerId> playerIds, std::string baseName, float maxDifference, size_t maxSize);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+private:
+    std::vector<std::vector<PlayerId>> mPlayerIds;
+    std::vector<CategoryId> mCategoryIds;
+    std::string mBaseName;
 };
