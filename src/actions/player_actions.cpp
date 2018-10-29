@@ -4,7 +4,7 @@
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
-AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
+AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
     : mId(tournament.generateNextPlayerId())
     , mFirstName(firstName)
     , mLastName(lastName)
@@ -147,7 +147,7 @@ void ChangePlayerClubAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerAgeAction::ChangePlayerAgeAction(TournamentStore &tournament, PlayerId playerId, std::optional<uint8_t> value)
+ChangePlayerAgeAction::ChangePlayerAgeAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerAge> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -195,7 +195,7 @@ void ChangePlayerRankAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerWeightAction::ChangePlayerWeightAction(TournamentStore &tournament, PlayerId playerId, std::optional<float> value)
+ChangePlayerWeightAction::ChangePlayerWeightAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerWeight> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}

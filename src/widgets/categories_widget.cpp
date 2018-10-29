@@ -35,7 +35,8 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
         mModel = new CategoriesProxyModel(storeHandler, layout);
 
         mTableView->setModel(mModel);
-        mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        mTableView->horizontalHeader()->setStretchLastSection(true);
+        mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
         mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         mTableView->setSortingEnabled(true);
         mTableView->sortByColumn(0, Qt::AscendingOrder);

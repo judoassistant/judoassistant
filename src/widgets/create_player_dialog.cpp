@@ -16,7 +16,7 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
     mLastNameContent = new QLineEdit;
 
     mAgeContent = new QLineEdit;
-    mAgeContent->setValidator(new OptionalValidator(new QIntValidator(0, 120), this));
+    mAgeContent->setValidator(new OptionalValidator(new QIntValidator(PlayerAge::min(), PlayerAge::max()), this));
 
     mRankContent = new QComboBox;
     mRankContent->addItem("");
@@ -26,7 +26,7 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
     mClubContent = new QLineEdit;
 
     mWeightContent = new QLineEdit;
-    mWeightContent->setValidator(new OptionalValidator(new QDoubleValidator(0.0, 400.0, 2), this));
+    mWeightContent->setValidator(new OptionalValidator(new QDoubleValidator(PlayerWeight::min(), PlayerWeight::max(), 2), this));
 
     mCountryContent = new QComboBox;
     mCountryContent->addItem("");
@@ -66,13 +66,13 @@ void CreatePlayerDialog::acceptClick() {
     std::string firstName = mFirstNameContent->text().toStdString();
     std::string lastName = mLastNameContent->text().toStdString();
 
-    std::optional<int> age;
+    std::optional<PlayerAge> age;
     if (!mAgeContent->text().isEmpty())
-        age = mAgeContent->text().toInt();
+        age = PlayerAge(mAgeContent->text().toInt());
 
-    std::optional<float> weight;
+    std::optional<PlayerWeight> weight;
     if (!mWeightContent->text().isEmpty())
-        weight = mWeightContent->text().toFloat();
+        weight = PlayerWeight(mWeightContent->text().toFloat());
 
     std::optional<PlayerRank> rank;
     if (mRankContent->currentIndex() > 0) // account for the first index being nullopt

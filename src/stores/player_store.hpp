@@ -12,6 +12,7 @@
 class PlayerCountry {
 public:
     // TODO: Find list of countries
+    // TODO: Make a more sophisticated from string method
     static const size_t SIZE = 3;
     enum Enum {
         DENMARK,
@@ -20,8 +21,8 @@ public:
     };
 
     PlayerCountry() {}
-    PlayerCountry(Enum value) : mValue(value) {}
-    PlayerCountry(int value) : mValue(static_cast<Enum>(value)) {}
+    PlayerCountry(const std::string &str);
+    PlayerCountry(int value);
 
     std::string toString() const;
     int toInt() const;
@@ -39,7 +40,10 @@ public:
     void serialize(Archive& ar, const unsigned int version) {
         ar(mValue);
     }
+
 private:
+    PlayerCountry(Enum value) : mValue(value) {}
+
     Enum mValue;
 };
 
@@ -68,8 +72,8 @@ public:
     };
 
     PlayerRank() {}
-    PlayerRank(Enum value) : mValue(value) {}
-    PlayerRank(int value) : mValue(static_cast<Enum>(value)) {}
+    PlayerRank(const std::string &str);
+    PlayerRank(int value);
 
     std::string toString() const;
     int toInt() const;
@@ -88,7 +92,13 @@ public:
         ar(mValue);
     }
 private:
+    PlayerRank(Enum value) : mValue(value) {}
+
     Enum mValue;
+};
+
+enum class Sex {
+    MALE, FEMALE
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerRank &rank);
@@ -102,8 +112,8 @@ public:
     };
 
     PlayerSex() {}
-    PlayerSex(Enum value) : mValue(value) {}
-    PlayerSex(int value) : mValue(static_cast<Enum>(value)) {}
+    PlayerSex(int value);
+    PlayerSex(const std::string &str);
 
     std::string toString() const;
     int toInt() const;
@@ -122,15 +132,77 @@ public:
         ar(mValue);
     }
 private:
+    PlayerSex(Enum value) : mValue(value) {}
+
     Enum mValue;
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerSex &rank);
 
+class PlayerWeight {
+public:
+    PlayerWeight() {}
+    PlayerWeight(float weight);
+    PlayerWeight(const std::string &str);
+
+    std::string toString() const;
+    float toFloat() const;
+
+    bool operator==(const PlayerWeight &other) const {
+        return mValue == other.mValue;
+    }
+
+    bool operator<(const PlayerWeight &other) const {
+        return mValue < other.mValue;
+    }
+
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar(mValue);
+    }
+
+    static float max();
+    static float min();
+private:
+    float mValue;
+};
+
+std::ostream & operator<<(std::ostream &out, const PlayerWeight &weight);
+
+class PlayerAge {
+public:
+    PlayerAge() {}
+    PlayerAge(int age);
+    PlayerAge(const std::string &str);
+
+    std::string toString() const;
+    int toInt() const;
+
+    bool operator==(const PlayerAge &other) const {
+        return mValue == other.mValue;
+    }
+
+    bool operator<(const PlayerAge &other) const {
+        return mValue < other.mValue;
+    }
+
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar(mValue);
+    }
+
+    static int max();
+    static int min();
+private:
+    int mValue;
+};
+
+std::ostream & operator<<(std::ostream &out, const PlayerAge &age);
+
 class PlayerStore {
 public:
     PlayerStore() {}
-    PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
+    PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
@@ -148,8 +220,8 @@ public:
 
     const std::string & getFirstName() const;
     const std::string & getLastName() const;
-    const std::optional<uint8_t> & getAge() const;
-    const std::optional<float> & getWeight() const;
+    const std::optional<PlayerAge> & getAge() const;
+    const std::optional<PlayerWeight> & getWeight() const;
     const std::optional<PlayerRank> & getRank() const;
     const std::optional<PlayerCountry> & getCountry() const;
     const std::string & getClub() const;
@@ -158,8 +230,8 @@ public:
 
     void setFirstName(const std::string & firstName);
     void setLastName(const std::string & lastName);
-    void setAge(std::optional<uint8_t> age);
-    void setWeight(std::optional<float> weight);
+    void setAge(std::optional<PlayerAge> age);
+    void setWeight(std::optional<PlayerWeight> weight);
     void setRank(std::optional<PlayerRank> rank);
     void setCountry(std::optional<PlayerCountry> country);
     void setClub(const std::string & club);
@@ -178,10 +250,10 @@ private:
     PlayerId mId;
     std::string mFirstName;
     std::string mLastName;
-    std::optional<uint8_t> mAge;
+    std::optional<PlayerAge> mAge;
     std::optional<PlayerRank> mRank;
     std::string mClub;
-    std::optional<float> mWeight;
+    std::optional<PlayerWeight> mWeight;
     std::optional<PlayerCountry> mCountry;
     std::optional<PlayerSex> mSex;
 

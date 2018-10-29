@@ -1,6 +1,6 @@
 #include "stores/player_store.hpp"
 
-PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
+PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
     : mId(id)
     , mFirstName(firstName)
     , mLastName(lastName)
@@ -20,7 +20,7 @@ const std::string & PlayerStore::getLastName() const {
     return mLastName;
 }
 
-const std::optional<uint8_t> & PlayerStore::getAge() const {
+const std::optional<PlayerAge> & PlayerStore::getAge() const {
     return mAge;
 }
 
@@ -83,7 +83,7 @@ std::vector<PlayerCountry> PlayerCountry::values() {
     return res;
 }
 
-const std::optional<float> & PlayerStore::getWeight() const {
+const std::optional<PlayerWeight> & PlayerStore::getWeight() const {
     return mWeight;
 }
 
@@ -143,11 +143,11 @@ void PlayerStore::setLastName(const std::string & lastName) {
     mLastName = lastName;
 }
 
-void PlayerStore::setAge(std::optional<uint8_t> age) {
+void PlayerStore::setAge(std::optional<PlayerAge> age) {
     mAge = age;
 }
 
-void PlayerStore::setWeight(std::optional<float> weight) {
+void PlayerStore::setWeight(std::optional<PlayerWeight> weight) {
     mWeight = weight;
 }
 
@@ -200,3 +200,141 @@ void PlayerStore::setSex(const std::optional<PlayerSex> sex) {
 const std::optional<PlayerSex> PlayerStore::getSex() const {
     return mSex;
 }
+
+PlayerCountry::PlayerCountry(const std::string &str) {
+    for (int i = 0; i < static_cast<int>(SIZE); ++i) {
+        auto country = PlayerCountry(i);
+        if (country.toString() == str) {
+            mValue = static_cast<Enum>(i);
+            return;
+        }
+    }
+
+    throw std::invalid_argument(str);
+}
+
+PlayerRank::PlayerRank(const std::string &str) {
+    for (int i = 0; i < static_cast<int>(SIZE); ++i) {
+        auto rank = PlayerRank(i);
+        if (rank.toString() == str) {
+            mValue = static_cast<Enum>(i);
+            return;
+        }
+    }
+
+    throw std::invalid_argument(str);
+}
+
+PlayerSex::PlayerSex(const std::string &str) {
+    for (int i = 0; i < static_cast<int>(SIZE); ++i) {
+        auto sex = PlayerSex(i);
+        if (sex.toString() == str) {
+            mValue = static_cast<Enum>(i);
+            return;
+        }
+    }
+
+    throw std::invalid_argument(str);
+}
+
+PlayerWeight::PlayerWeight(float value)
+    : mValue(value)
+{
+    if (mValue < min() || mValue > max())
+        throw std::invalid_argument(std::to_string(value));
+}
+
+PlayerWeight::PlayerWeight(const std::string &str) {
+    try {
+        if (!str.empty() && str.front() == '-')
+            mValue = std::stof(str.substr(1, str.size()-1));
+        mValue = std::stof(str);
+    }
+    catch (const std::exception &e) {
+        throw std::invalid_argument(str);
+    }
+
+    if (mValue < min() || mValue > max())
+        throw std::invalid_argument(str);
+}
+
+std::string PlayerWeight::toString() const {
+    return std::to_string(mValue);
+}
+
+float PlayerWeight::toFloat() const {
+    return mValue;
+}
+
+float PlayerWeight::max() {
+    return 400;
+}
+
+float PlayerWeight::min() {
+    return 0;
+}
+
+std::ostream & operator<<(std::ostream &out, const PlayerWeight &weight) {
+    return out << weight.toString();
+}
+
+PlayerAge::PlayerAge(int value)
+    : mValue(value)
+{
+    if (mValue < min() || mValue > max())
+        throw std::invalid_argument(std::to_string(value));
+}
+
+PlayerAge::PlayerAge(const std::string &str) {
+    try {
+        mValue = std::stoi(str);
+    }
+    catch (const std::exception &e) {
+        throw std::invalid_argument(str);
+    }
+
+    if (mValue < min() || mValue > max())
+        throw std::invalid_argument(str);
+}
+
+std::string PlayerAge::toString() const {
+    return std::to_string(mValue);
+}
+
+int PlayerAge::toInt() const {
+    return mValue;
+}
+
+int PlayerAge::max() {
+    return 255;
+}
+
+int PlayerAge::min() {
+    return 0;
+}
+
+std::ostream & operator<<(std::ostream &out, const PlayerAge &age) {
+    return out << age.toString();
+}
+
+PlayerRank::PlayerRank(int value)
+    : mValue(static_cast<Enum>(value))
+{
+    if (mValue < 0 || mValue >= SIZE)
+        throw std::invalid_argument(std::to_string(value));
+}
+
+PlayerCountry::PlayerCountry(int value)
+    : mValue(static_cast<Enum>(value))
+{
+    if (mValue < 0 || mValue >= SIZE)
+        throw std::invalid_argument(std::to_string(value));
+}
+
+PlayerSex::PlayerSex(int value)
+    : mValue(static_cast<Enum>(value))
+{
+    if (mValue < 0 || mValue > 1)
+        throw std::invalid_argument(std::to_string(value));
+}
+

@@ -30,17 +30,17 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString::fromStdString(player.getLastName());
             case 2:
-                return (player.getAge().has_value() ? QVariant(player.getAge().value()) : QVariant(""));
+                return (player.getAge() ? QVariant(player.getAge()->toInt()) : QVariant(""));
             case 3:
-                return (player.getRank().has_value() ? QVariant(QString::fromStdString(player.getRank().value().toString())) : QVariant(""));
+                return (player.getRank() ? QVariant(QString::fromStdString(player.getRank()->toString())) : QVariant(""));
             case 4:
                 return QString(QString::fromStdString(player.getClub()));
             case 5:
-                return (player.getWeight().has_value() ? QVariant(player.getWeight().value()) : QVariant(""));
+                return (player.getWeight() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
             case 6:
-                return (player.getCountry().has_value() ? QVariant(QString::fromStdString(player.getCountry().value().toString())) : QVariant(""));
+                return (player.getCountry() ? QVariant(QString::fromStdString(player.getCountry()->toString())) : QVariant(""));
             case 7:
-                return (player.getSex().has_value() ? QVariant(QString::fromStdString(player.getSex().value().toString())) : QVariant(""));
+                return (player.getSex() ? QVariant(QString::fromStdString(player.getSex()->toString())) : QVariant(""));
             case 8:
                 return QString::fromStdString(listPlayerCategories(player)); // TODO: Create custom widget to show color-coded Bootstrap-style badges
         }
@@ -117,7 +117,7 @@ void PlayersModel::playersAdded(std::vector<PlayerId> ids) {
 void PlayersModel::playersChanged(std::vector<PlayerId> ids) {
     for (auto id : ids) {
         int row = getRow(id);
-        emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
+        emit dataChanged(createIndex(row,0), createIndex(row, COLUMN_COUNT-1));
     }
 }
 

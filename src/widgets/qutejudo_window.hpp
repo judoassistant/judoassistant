@@ -19,6 +19,7 @@ public:
 private slots:
     void newTournament();
     void openTournament();
+    void openImportPlayers();
     void saveTournament();
     void saveAsTournament();
     void openHomePage();

@@ -16,6 +16,8 @@
 #include "widgets/categories_widget.hpp"
 #include "widgets/tatamis_widget.hpp"
 #include "widgets/matches_widget.hpp"
+#include "widgets/import_players_csv_dialog.hpp"
+#include "widgets/import_helpers/csv_reader.hpp"
 #include "config/web.hpp"
 #include "exception.hpp"
 
@@ -71,6 +73,17 @@ void QutejudoWindow::createTournamentMenu() {
     {
         // TODO: Implement open recent
         // QMenu * submenu = menu->addMenu("Open Recent");
+    }
+
+    {
+        QMenu *submenu = menu->addMenu(tr("Import.."));
+
+        {
+            QAction *action = new QAction(tr("Import players.."), this);
+            action->setStatusTip(tr("Import players from a file"));
+            connect(action, &QAction::triggered, this, &QutejudoWindow::openImportPlayers);
+            submenu->addAction(action);
+        }
     }
 
     menu->addSeparator();
@@ -171,26 +184,26 @@ void QutejudoWindow::openHomePage() {
     if(QDesktopServices::openUrl(Config::HOME_PAGE_URL))
         return;
 
-    // QMessageBox::information(this, tr("Unable to open home page."));
+    // QMessageBox::warning(this, tr("Unable to open home page."));
 }
 
 void QutejudoWindow::openManual() {
     if(QDesktopServices::openUrl(Config::MANUAL_URL))
         return;
 
-    QMessageBox::information(this, tr("Unable to open manual."), tr("The manual is available at"));
+    QMessageBox::warning(this, tr("Unable to open manual."), tr("The manual is available at"));
 }
 
 void QutejudoWindow::openReportIssue() {
     if(QDesktopServices::openUrl(Config::REPORT_ISSUE_URL))
         return;
 
-    // QMessageBox::information(this, tr("Unable to open report issue page."));
+    // QMessageBox::warning(this, tr("Unable to open report issue page."));
 }
 
 void QutejudoWindow::writeTournament() {
     if (!mStoreHandler.write(mFileName))
-        QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
     else
         statusBar()->showMessage(tr("Saved tournament to file"));
 }
@@ -202,7 +215,7 @@ void QutejudoWindow::readTournament() {
 void QutejudoWindow::readTournament(const QString &fileName) {
     mFileName = fileName;
     if (!mStoreHandler.read(fileName))
-        QMessageBox::information(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
     else
         statusBar()->showMessage(tr("Opened tournament from file"));
 }
@@ -231,6 +244,7 @@ void QutejudoWindow::saveTournament() {
 }
 
 void QutejudoWindow::saveAsTournament() {
+    // TODO: Append .qj if not already
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
 
     if (fileName.isEmpty())
@@ -242,5 +256,23 @@ void QutejudoWindow::saveAsTournament() {
 
 void QutejudoWindow::showAboutDialog() {
     QMessageBox::about(this, tr("Qutejudo - About"), tr("TODO"));
+}
+
+void QutejudoWindow::openImportPlayers() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Import players"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Comma-separated (CSV) Files (*.csv);;All Files (*)"));
+
+    if (fileName.isEmpty())
+        return;
+
+    CSVReader reader(fileName);
+    if (!reader.isOpen()) {
+        QMessageBox::warning(this, tr("Unable to open file"), tr("The given file could not be opened."));
+        return;
+    }
+
+
+    ImportPlayersCSVDialog dialog(mStoreHandler, &reader);
+
+    dialog.exec();
 }
 

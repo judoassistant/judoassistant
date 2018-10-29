@@ -18,7 +18,7 @@ EditPlayerWidget::EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent
     connect(mLastNameContent, &QLineEdit::editingFinished, this, &EditPlayerWidget::lastNameEdited);
 
     mAgeContent = new QLineEdit;
-    mAgeContent->setValidator(new OptionalValidator(new QIntValidator(0, 120), this));
+    mAgeContent->setValidator(new OptionalValidator(new QIntValidator(PlayerAge::min(), PlayerAge::max()), this));
     connect(mAgeContent, &QLineEdit::editingFinished, this, &EditPlayerWidget::ageEdited);
 
     mRankContent = new QComboBox;
@@ -31,7 +31,7 @@ EditPlayerWidget::EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent
     connect(mClubContent, &QLineEdit::editingFinished, this, &EditPlayerWidget::clubEdited);
 
     mWeightContent = new QLineEdit;
-    mWeightContent->setValidator(new OptionalValidator(new QDoubleValidator(0.0, 400.0, 2), this));
+    mWeightContent->setValidator(new OptionalValidator(new QDoubleValidator(PlayerWeight::min(), PlayerWeight::max(), 2), this));
     connect(mWeightContent, &QLineEdit::editingFinished, this, &EditPlayerWidget::weightEdited);
 
     mCountryContent = new QComboBox;
@@ -111,7 +111,7 @@ void EditPlayerWidget::setPlayer(std::optional<PlayerId> id) { // TODO: Listen t
         mLastNameContent->setEnabled(true);
 
         if (player.getAge())
-            mAgeContent->setText(QString::number(*(player.getAge())));
+            mAgeContent->setText(QString::number(player.getAge()->toInt()));
         else
             mAgeContent->setText("");
 
@@ -124,7 +124,7 @@ void EditPlayerWidget::setPlayer(std::optional<PlayerId> id) { // TODO: Listen t
         mClubContent->setEnabled(true);
 
         if (player.getWeight())
-            mWeightContent->setText(QString::number(*(player.getWeight())));
+            mWeightContent->setText(QString::number(player.getWeight()->toFloat()));
         else
             mWeightContent->setText("");
         mWeightContent->setEnabled(true);
@@ -151,7 +151,7 @@ void EditPlayerWidget::playerChanged() {
     if (lastName != mLastNameContent->text())
         mLastNameContent->setText(lastName);
 
-    QString age = (player.getAge() ? QString::number(*player.getAge()) : "");
+    QString age = (player.getAge() ? QString::number(player.getAge()->toInt()) : "");
     if (age != mAgeContent->text())
         mAgeContent->setText(age);
 
@@ -163,7 +163,7 @@ void EditPlayerWidget::playerChanged() {
     if (club != mClubContent->text())
         mClubContent->setText(club);
 
-    QString weight = (player.getWeight() ? QString::number(*player.getWeight()) : "");
+    QString weight = (player.getWeight() ? QString::number(player.getWeight()->toFloat()) : "");
     if (weight != mWeightContent->text())
         mWeightContent->setText(weight);
 
@@ -208,11 +208,11 @@ void EditPlayerWidget::ageEdited() {
 
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
-    std::optional<uint8_t> newValue;
+    std::optional<PlayerAge> newValue;
     if (!mAgeContent->text().isEmpty())
-        newValue = mAgeContent->text().toInt();
+        newValue = PlayerAge(mAgeContent->text().toInt());
 
-    std::optional<uint8_t> oldValue = player.getAge();
+    std::optional<PlayerAge> oldValue = player.getAge();
     if (newValue == oldValue) return;
 
     mStoreHandler.dispatch(std::make_unique<ChangePlayerAgeAction>(tournament, *mPlayerId, newValue));
@@ -253,11 +253,11 @@ void EditPlayerWidget::weightEdited() {
 
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
-    std::optional<float> newValue;
+    std::optional<PlayerWeight> newValue;
     if (!mWeightContent->text().isEmpty())
-        newValue = mWeightContent->text().toFloat();
+        newValue = PlayerWeight(mWeightContent->text().toFloat());
 
-    std::optional<float> oldValue = player.getWeight();
+    std::optional<PlayerWeight> oldValue = player.getWeight();
     if (newValue == oldValue) return;
 
     mStoreHandler.dispatch(std::make_unique<ChangePlayerWeightAction>(tournament, *mPlayerId, newValue));

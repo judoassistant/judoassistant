@@ -371,7 +371,7 @@ AutoAddCategoriesAction::AutoAddCategoriesAction(TournamentStore &tournament, st
         const PlayerStore &player = tournament.getPlayer(playerId);
         if (!player.getWeight())
             continue;
-        weights.push_back({*player.getWeight(), playerId});
+        weights.push_back({player.getWeight()->toFloat(), playerId});
     }
 
     log_debug().field("weights", weights).msg("Created weights array");

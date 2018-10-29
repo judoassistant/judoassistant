@@ -1,5 +1,6 @@
 #include <QSplitter>
 #include <QToolBar>
+#include <QHeaderView>
 
 #include "widgets/players_widget.hpp"
 #include "widgets/create_player_dialog.hpp"
@@ -45,7 +46,8 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
         mTableView->setModel(mModel);
         mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        mTableView->horizontalHeader()->setStretchLastSection(true);
+        mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
         mTableView->setSortingEnabled(true);
         mTableView->sortByColumn(1, Qt::AscendingOrder);
         mTableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -137,6 +139,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
     }
     {
         QMenu *submenu = menu->addMenu(tr("Add selected players to category"));
+        submenu->setEnabled(!tournament.getCategories().empty());
 
         for (const auto & it : tournament.getCategories()) {
             QAction *action = submenu->addAction(QString::fromStdString(it.second->getName()));
