@@ -4,6 +4,7 @@
 #include <QGraphicsItem>
 #include "stores/tatami_store.hpp"
 #include "store_handlers/qstore_handler.hpp"
+#include "widgets/misc/numerical_string_comparator.hpp"
 #include <set>
 
 class UnallocatedBlockItem : public QGraphicsItem
@@ -35,6 +36,7 @@ public:
     bool operator()(const std::pair<CategoryId, MatchType>, const std::pair<CategoryId, MatchType>) const;
 private:
     const TournamentStore *mTournament;
+    NumericalStringComparator mComp;
 };
 
 class UnallocatedBlocksWidget : public QGraphicsView {

@@ -6,6 +6,7 @@
 #include <set>
 #include "store_handlers/qstore_handler.hpp"
 
+// TODO: Correctly sort by name
 class CategoriesModel : public QAbstractTableModel {
     Q_OBJECT
 public:

@@ -190,7 +190,7 @@ bool BlockComparator::operator()(const std::pair<CategoryId, MatchType> first, c
     auto secondName = secondCategory.getName(second.second);
 
     if (firstName != secondName) // In case two categories have the same name
-        return firstName < secondName;
+        return mComp(firstName, secondName);
     return first < second;
 }
 
