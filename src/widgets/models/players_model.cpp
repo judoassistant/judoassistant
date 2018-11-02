@@ -40,6 +40,8 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 6:
                 return (player.getCountry().has_value() ? QVariant(QString::fromStdString(player.getCountry().value().toString())) : QVariant(""));
             case 7:
+                return (player.getSex().has_value() ? QVariant(QString::fromStdString(player.getSex().value().toString())) : QVariant(""));
+            case 8:
                 return QString::fromStdString(listPlayerCategories(player)); // TODO: Create custom widget to show color-coded Bootstrap-style badges
         }
     }
@@ -72,6 +74,8 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
                 case 6:
                     return QString(tr("Country"));
                 case 7:
+                    return QString(tr("Sex"));
+                case 8:
                     return QString(tr("Categories"));
             }
         }

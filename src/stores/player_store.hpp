@@ -93,10 +93,44 @@ private:
 
 std::ostream & operator<<(std::ostream &out, const PlayerRank &rank);
 
+class PlayerSex {
+public:
+    static const size_t SIZE = 2;
+    enum Enum {
+        MALE,
+        FEMALE,
+    };
+
+    PlayerSex() {}
+    PlayerSex(Enum value) : mValue(value) {}
+    PlayerSex(int value) : mValue(static_cast<Enum>(value)) {}
+
+    std::string toString() const;
+    int toInt() const;
+    static std::vector<PlayerSex> values();
+
+    bool operator==(const PlayerSex &other) const {
+        return mValue == other.mValue;
+    }
+
+    bool operator<(const PlayerSex &other) const {
+        return mValue < other.mValue;
+    }
+
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar(mValue);
+    }
+private:
+    Enum mValue;
+};
+
+std::ostream & operator<<(std::ostream &out, const PlayerSex &rank);
+
 class PlayerStore {
 public:
     PlayerStore() {}
-    PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country);
+    PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
@@ -109,6 +143,7 @@ public:
         ar(cereal::make_nvp("weight", mWeight));
         ar(cereal::make_nvp("country", mCountry));
         ar(cereal::make_nvp("categories", mCategories));
+        ar(cereal::make_nvp("sex", mSex));
     }
 
     const std::string & getFirstName() const;
@@ -119,6 +154,7 @@ public:
     const std::optional<PlayerCountry> & getCountry() const;
     const std::string & getClub() const;
     const PlayerId & getId() const;
+    const std::optional<PlayerSex> getSex() const;
 
     void setFirstName(const std::string & firstName);
     void setLastName(const std::string & lastName);
@@ -127,6 +163,7 @@ public:
     void setRank(std::optional<PlayerRank> rank);
     void setCountry(std::optional<PlayerCountry> country);
     void setClub(const std::string & club);
+    void setSex(const std::optional<PlayerSex> sex);
 
     const std::unordered_set<CategoryId> & getCategories() const;
     void addCategory(CategoryId id);
@@ -146,6 +183,7 @@ private:
     std::string mClub;
     std::optional<float> mWeight;
     std::optional<PlayerCountry> mCountry;
+    std::optional<PlayerSex> mSex;
 
     std::unordered_set<CategoryId> mCategories;
     std::unordered_set<std::pair<CategoryId,MatchId>> mMatches;

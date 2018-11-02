@@ -32,7 +32,7 @@ public slots:
     void categoriesErased(std::vector<CategoryId> playerIds);
 private:
     std::string listPlayerCategories(const PlayerStore &player) const;
-    const int COLUMN_COUNT = 8;
+    const int COLUMN_COUNT = 9;
     QStoreHandler & mStoreHandler;
     std::set<PlayerId> mIds;
     std::unordered_set<PlayerId> mAffectedPlayers; // Used when receiving a categoriesAboutToBeErased signal

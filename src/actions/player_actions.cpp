@@ -4,7 +4,7 @@
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
-AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
+AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
     : mId(tournament.generateNextPlayerId())
     , mFirstName(firstName)
     , mLastName(lastName)
@@ -13,6 +13,7 @@ AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string
     , mClub(club)
     , mWeight(weight)
     , mCountry(country)
+    , mSex(sex)
 {}
 
 void AddPlayerAction::redoImpl(TournamentStore & tournament) {
@@ -20,7 +21,7 @@ void AddPlayerAction::redoImpl(TournamentStore & tournament) {
         throw ActionExecutionException("Failed to redo AddPlayerAction. Player already exists.");
 
     tournament.beginAddPlayers({mId});
-    tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry));
+    tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry, mSex));
     tournament.endAddPlayers();
 }
 
@@ -241,3 +242,28 @@ void ChangePlayerCountryAction::undoImpl(TournamentStore & tournament) {
     player.setCountry(mOldValue);
     tournament.changePlayers({mPlayerId});
 }
+
+ChangePlayerSexAction::ChangePlayerSexAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerSex> value)
+    : mPlayerId(playerId)
+    , mValue(value)
+{}
+
+void ChangePlayerSexAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    mOldValue = player.getSex();
+    player.setSex(mValue);
+    tournament.changePlayers({mPlayerId});
+}
+
+void ChangePlayerSexAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsPlayer(mPlayerId))
+        return;
+
+    PlayerStore & player = tournament.getPlayer(mPlayerId);
+    player.setSex(mOldValue);
+    tournament.changePlayers({mPlayerId});
+}
+

@@ -23,6 +23,7 @@ private:
     void clubEdited();
     void weightEdited();
     void countryEdited();
+    void sexEdited();
     void playerChanged();
     void playersChanged(std::vector<PlayerId> ids);
     void tournamentReset();
@@ -36,4 +37,5 @@ private:
     QLineEdit *mClubContent;
     QLineEdit *mWeightContent;
     QComboBox *mCountryContent;
+    QComboBox *mSexContent;
 };

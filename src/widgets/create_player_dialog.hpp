@@ -28,4 +28,5 @@ private:
     QLineEdit *mClubContent;
     QLineEdit *mWeightContent;
     QComboBox *mCountryContent;
+    QComboBox *mSexContent;
 };

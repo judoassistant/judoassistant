@@ -40,6 +40,12 @@ EditPlayerWidget::EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent
         mCountryContent->addItem(QString::fromStdString(country.toString()));
     connect(mCountryContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {countryEdited();});
 
+    mSexContent = new QComboBox;
+    mSexContent->addItem("");
+    for (PlayerSex sex : PlayerSex::values())
+        mSexContent->addItem(QString::fromStdString(sex.toString()));
+    connect(mSexContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {sexEdited();});
+
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First name"), mFirstNameContent);
     formLayout->addRow(tr("Last name"), mLastNameContent);
@@ -48,6 +54,7 @@ EditPlayerWidget::EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent
     formLayout->addRow(tr("Club"), mClubContent);
     formLayout->addRow(tr("Weight"), mWeightContent);
     formLayout->addRow(tr("Country"), mCountryContent);
+    formLayout->addRow(tr("Sex"), mSexContent);
 
     setPlayer(std::nullopt);
     setLayout(formLayout);
@@ -90,6 +97,8 @@ void EditPlayerWidget::setPlayer(std::optional<PlayerId> id) { // TODO: Listen t
         mWeightContent->setEnabled(false);
         mCountryContent->setCurrentIndex(0);
         mCountryContent->setEnabled(false);
+        mSexContent->setCurrentIndex(0);
+        mSexContent->setEnabled(false);
     }
 
     if (id) {
@@ -122,6 +131,9 @@ void EditPlayerWidget::setPlayer(std::optional<PlayerId> id) { // TODO: Listen t
 
         mCountryContent->setCurrentIndex(player.getCountry() ? player.getCountry()->toInt() + 1 : 0);
         mCountryContent->setEnabled(true);
+
+        mSexContent->setCurrentIndex(player.getSex() ? player.getSex()->toInt() + 1 : 0);
+        mSexContent->setEnabled(true);
     }
 }
 
@@ -158,6 +170,10 @@ void EditPlayerWidget::playerChanged() {
     int countryIndex = (player.getCountry() ? player.getCountry()->toInt() + 1 : 0);
     if (countryIndex != mCountryContent->currentIndex())
         mCountryContent->setCurrentIndex(countryIndex);
+
+    int sexIndex = (player.getSex() ? player.getSex()->toInt() + 1 : 0);
+    if (sexIndex != mSexContent->currentIndex())
+        mSexContent->setCurrentIndex(sexIndex);
 }
 
 void EditPlayerWidget::firstNameEdited() {
@@ -264,3 +280,19 @@ void EditPlayerWidget::countryEdited() {
     mStoreHandler.dispatch(std::make_unique<ChangePlayerCountryAction>(tournament, *mPlayerId, newValue));
 }
 
+void EditPlayerWidget::sexEdited() {
+    TournamentStore &tournament = mStoreHandler.getTournament();
+    if (!tournament.containsPlayer(*mPlayerId)) return;
+
+    PlayerStore &player = tournament.getPlayer(*mPlayerId);
+
+    std::optional<PlayerSex> newValue;
+    if (mSexContent->currentIndex() > 0)
+        newValue = PlayerSex(mSexContent->currentIndex() - 1);
+
+    std::optional<PlayerSex> oldValue = player.getSex();
+
+    if (newValue == oldValue) return;
+
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerSexAction>(tournament, *mPlayerId, newValue));
+}

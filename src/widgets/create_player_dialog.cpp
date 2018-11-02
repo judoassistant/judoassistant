@@ -33,6 +33,11 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
     for (PlayerCountry country : PlayerCountry::values())
         mCountryContent->addItem(QString::fromStdString(country.toString()));
 
+    mSexContent = new QComboBox;
+    mSexContent->addItem("");
+    for (PlayerSex country : PlayerSex::values())
+        mSexContent->addItem(QString::fromStdString(country.toString()));
+
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First name"), mFirstNameContent);
     formLayout->addRow(tr("Last name"), mLastNameContent);
@@ -41,6 +46,7 @@ CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *pa
     formLayout->addRow(tr("Club"), mClubContent);
     formLayout->addRow(tr("Weight"), mWeightContent);
     formLayout->addRow(tr("Country"), mCountryContent);
+    formLayout->addRow(tr("Sex"), mSexContent);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
@@ -78,7 +84,11 @@ void CreatePlayerDialog::acceptClick() {
     if (mCountryContent->currentIndex() > 0) // account for the first index being nullopt
         country = PlayerCountry(mCountryContent->currentIndex() - 1);
 
-    mStoreHandler.dispatch(std::make_unique<AddPlayerAction>(mStoreHandler.getTournament(), firstName, lastName, age, rank, club, weight, country));
+    std::optional<PlayerSex> sex;
+    if (mSexContent->currentIndex() > 0) // account for the first index being nullopt
+        sex = PlayerSex(mSexContent->currentIndex() - 1);
+
+    mStoreHandler.dispatch(std::make_unique<AddPlayerAction>(mStoreHandler.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
     accept();
 }
 

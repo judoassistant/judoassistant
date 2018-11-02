@@ -11,7 +11,7 @@
 
 class AddPlayerAction : public Action {
 public:
-    AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country);
+    AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -24,6 +24,7 @@ private:
     std::string mClub;
     std::optional<float> mWeight;
     std::optional<PlayerCountry> mCountry;
+    std::optional<PlayerSex> mSex;
 };
 
 class ErasePlayersFromCategoryAction;
@@ -131,4 +132,17 @@ private:
 
     // undo members
     std::optional<PlayerCountry> mOldValue;
+};
+
+class ChangePlayerSexAction : public Action {
+public:
+    ChangePlayerSexAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerSex> value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    PlayerId mPlayerId;
+    std::optional<PlayerSex> mValue;
+
+    // undo members
+    std::optional<PlayerSex> mOldValue;
 };

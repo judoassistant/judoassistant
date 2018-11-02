@@ -1,6 +1,6 @@
 #include "stores/player_store.hpp"
 
-PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country)
+PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<uint8_t> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<float> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
     : mId(id)
     , mFirstName(firstName)
     , mLastName(lastName)
@@ -9,6 +9,7 @@ PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::
     , mClub(club)
     , mWeight(weight)
     , mCountry(country)
+    , mSex(sex)
 {}
 
 const std::string & PlayerStore::getFirstName() const {
@@ -168,4 +169,34 @@ std::ostream & operator<<(std::ostream &out, const PlayerCountry &country) {
 
 std::ostream & operator<<(std::ostream &out, const PlayerRank &rank) {
     return out << rank.toString();
+}
+
+std::string PlayerSex::toString() const {
+    // TODO: handle translation
+    switch (mValue) {
+        case MALE: return "Male";
+        case FEMALE: return "Female";
+        default: return "";
+    }
+}
+
+std::vector<PlayerSex> PlayerSex::values() {
+    std::vector<PlayerSex> res;
+    for (size_t i = 0; i < SIZE; ++i) {
+        res.push_back(PlayerSex(static_cast<Enum>(i)));
+    }
+
+    return res;
+}
+
+int PlayerSex::toInt() const {
+    return static_cast<int>(mValue);
+}
+
+void PlayerStore::setSex(const std::optional<PlayerSex> sex) {
+    mSex = sex;
+}
+
+const std::optional<PlayerSex> PlayerStore::getSex() const {
+    return mSex;
 }
