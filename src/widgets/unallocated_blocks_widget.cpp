@@ -43,6 +43,9 @@ void UnallocatedBlocksWidget::tatamisChanged(std::vector<TatamiLocation> locatio
     bool shouldShift = false;
 
     for (auto block : blocks) {
+        if (!tournament.containsCategory(block.first))
+            continue;
+
         const CategoryStore & category = tournament.getCategory(block.first);
         if (!category.getTatamiLocation(block.second))
             shouldShift |= insertBlock(category, block.second);
@@ -216,7 +219,9 @@ void UnallocatedBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
     painter->setBrush(Qt::lightGray);
 
     painter->drawRect(0, 0, WIDTH, HEIGHT);
-    painter->drawText(PADDING, PADDING+10, QString::fromStdString(mCategory->getName(mType)));
+    QString name = QString::fromStdString(mCategory->getName(mType));
+    QString str = QString("%1 (%2 matches)").arg(name).arg(QString::number(mCategory->getMatchCount(mType))); // TODO: translate
+    painter->drawText(PADDING, PADDING+10, str);
 }
 
 void UnallocatedBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {

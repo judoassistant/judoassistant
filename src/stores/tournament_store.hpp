@@ -62,7 +62,6 @@ public:
     };
 
     // signals used for frontends. Called by actions
-    // TODO: Update signal system to support tatamis and changes to category
     virtual void changeTournament() {}
 
     virtual void changePlayers(std::vector<PlayerId> id) {}

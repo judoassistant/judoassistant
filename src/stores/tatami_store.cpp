@@ -246,6 +246,7 @@ bool TatamiList::containsTatami(TatamiLocation location) {
     return location.tatamiIndex < mTatamis.size();
 }
 
+// TODO: Undoing a EraseCategory can cause reordering of groups. Fix this
 void TatamiList::moveBlock(const TournamentStore &tournament, CategoryId categoryId, MatchType type, std::optional<TatamiLocation> from, std::optional<TatamiLocation> to, size_t seqIndex) {
     TatamiStore *fromTatami, *toTatami;
     ConcurrentBlockGroup *fromConcurrentGroup, *toConcurrentGroup;
@@ -256,7 +257,6 @@ void TatamiList::moveBlock(const TournamentStore &tournament, CategoryId categor
         fromConcurrentGroup = &fromTatami->getGroup(from->concurrentGroup);
         fromSequentialGroup = &fromConcurrentGroup->getGroup(from->sequentialGroup);
         fromSequentialGroup->eraseBlock(categoryId, type);
-
     }
 
     if (to) {

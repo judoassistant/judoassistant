@@ -19,9 +19,28 @@ struct TatamiLocation {
         ar(cereal::make_nvp("concurrentGroup", concurrentGroup));
         ar(cereal::make_nvp("sequentialGroup", sequentialGroup));
     }
+
+    bool operator==(const TatamiLocation &other) const {
+        return tatamiIndex == other.tatamiIndex
+            && concurrentGroup == other.concurrentGroup
+            && sequentialGroup == other.sequentialGroup;
+    }
 };
 
 std::ostream &operator<<(std::ostream &out, const TatamiLocation &location);
+
+namespace std {
+    template <>
+    struct hash<TatamiLocation> {
+        size_t operator()(const TatamiLocation &v) const {
+            size_t seed = 0;
+            hash_combine(seed, v.tatamiIndex);
+            hash_combine(seed, v.concurrentGroup);
+            hash_combine(seed, v.sequentialGroup);
+            return seed;
+        }
+    };
+};
 
 class TournamentStore;
 class CategoryStore;

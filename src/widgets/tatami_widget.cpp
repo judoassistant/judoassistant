@@ -241,17 +241,19 @@ void ConcurrentBlockItem::reloadBlocks() {
 
     auto & group = mStoreHandler->getTournament().getTatamis()[mTatamiIndex].getGroup(mHandle);
     size_t offset = PADDING;
-    mHeight = 0;
+    int newHeight = 0;
     for (size_t i = 0; i < group.groupCount(); ++i) {
         auto * item = new SequentialBlockItem(mStoreHandler, mTatamiIndex, mHandle, group.getHandle(i), this);
         item->setPos(offset, PADDING);
         offset += SequentialBlockItem::WIDTH + PADDING;
-        mHeight = std::max(mHeight, item->getHeight());
+        newHeight = std::max(newHeight, item->getHeight());
         mSequentialGroups.push_back(item);
     }
 
-    mHeight += PADDING*2;
-    update();
+    newHeight += PADDING*2;
+    prepareGeometryChange();
+    mHeight = newHeight;
+    // update();
 }
 
 PositionHandle ConcurrentBlockItem::getHandle() const {
@@ -402,7 +404,7 @@ void BlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     painter->drawRect(0, 0, WIDTH, getHeight());
     painter->drawText(PADDING, PADDING+10, QString::fromStdString(mCategory->getName(mType)));
 
-    QString countString = "(" + QString::number(mMatchCount) + " matches)"; // TODO: Translate
+    QString countString = QString("(%1 matches)").arg(QString::number(mMatchCount)); // TODO: translate
     painter->drawText(PADDING, PADDING+25, countString);
 }
 

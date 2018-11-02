@@ -6,6 +6,7 @@
 #include "id.hpp"
 #include "core.hpp"
 #include "serialize.hpp"
+#include "hash.hpp"
 
 struct PositionHandle {
     PositionId id;
@@ -16,6 +17,22 @@ struct PositionHandle {
         ar(cereal::make_nvp("id", id));
         ar(cereal::make_nvp("index", index));
     }
+
+    bool operator==(const PositionHandle &other) const {
+        return id == other.id && index == other.index;
+    }
+};
+
+namespace std {
+    template <>
+    struct hash<PositionHandle> {
+        size_t operator()(const PositionHandle &v) const {
+            size_t seed = 0;
+            hash_combine(seed, v.id);
+            hash_combine(seed, v.index);
+            return seed;
+        }
+    };
 };
 
 std::ostream &operator<<(std::ostream &out, const PositionHandle &handle);

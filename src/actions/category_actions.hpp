@@ -7,6 +7,7 @@
 #include "stores/tournament_store.hpp"
 #include "stores/category_store.hpp"
 #include "stores/player_store.hpp"
+#include "stores/tatami_store.hpp"
 
 class AddCategoryAction : public Action {
 public:
@@ -74,6 +75,8 @@ private:
     // undo members
     std::vector<CategoryId> mErasedCategoryIds;
     std::stack<std::unique_ptr<CategoryStore>> mCategories;
+    std::vector<TatamiLocation> mLocations;
+    std::vector<std::pair<CategoryId, MatchType>> mBlocks;
 };
 
 class ErasePlayersFromAllCategoriesAction : public Action {
