@@ -3,6 +3,7 @@
 
 MasterStoreHandler::MasterStoreHandler()
     : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
+    , mIsDirty(false)
 {
     // TODO: Remove this after testing
     mTournament->getTatamis().pushTatami();
@@ -12,6 +13,7 @@ MasterStoreHandler::MasterStoreHandler()
 }
 
 void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
+    mIsDirty = true;
     log_debug().msg("Dispatching action");
     mActionStack.push_back(std::move(action));
     mActionStack.back()->redo(*mTournament);
@@ -38,6 +40,7 @@ void MasterStoreHandler::reset() {
     emit tournamentReset();
     emit redoStatusChanged(false);
     emit undoStatusChanged(false);
+    mIsDirty = false;
 }
 
 bool MasterStoreHandler::read(const QString &path) {
@@ -55,6 +58,7 @@ bool MasterStoreHandler::read(const QString &path) {
     emit tournamentReset();
     emit redoStatusChanged(false);
     emit undoStatusChanged(false);
+    mIsDirty = false;
     return true;
 }
 
@@ -67,6 +71,7 @@ bool MasterStoreHandler::write(const QString &path) {
 
     cereal::PortableBinaryOutputArchive archive(file);
     archive(*mTournament);
+    mIsDirty = false;
     return true;
 }
 
@@ -81,6 +86,7 @@ void MasterStoreHandler::undo() {
 
     action->undo(*mTournament);
     mRedoStack.push_back(std::move(action));
+    mIsDirty = true;
 
     if (mRedoStack.size() == 1) // mRedoStack was empty before pushing the action
         emit redoStatusChanged(true);
@@ -99,9 +105,15 @@ void MasterStoreHandler::redo() {
 
     action->redo(*mTournament);
     mActionStack.push_back(std::move(action));
+    mIsDirty = true;
 
     if (mRedoStack.empty())
         emit redoStatusChanged(false);
     if (mActionStack.size() == 1)
         emit undoStatusChanged(true); // mActionStack was empty before pushing the action
 }
+
+bool MasterStoreHandler::isDirty() const {
+    return mIsDirty;
+}
+

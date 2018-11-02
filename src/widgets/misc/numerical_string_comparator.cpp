@@ -48,5 +48,7 @@ bool NumericalStringComparator::operator()(const std::string &a, const std::stri
 
         return itA->second < itB->second;
     }
+
+    return splitA.size() < splitB.size();
 }
 

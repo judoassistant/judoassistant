@@ -34,8 +34,10 @@ public:
     bool read(const QString &path);
     bool write(const QString &path);
     void reset();
+    bool isDirty() const;
 private:
     std::unique_ptr<QTournamentStore> mTournament;
     std::vector<std::unique_ptr<Action>> mActionStack;
     std::vector<std::unique_ptr<Action>> mRedoStack;
+    bool mIsDirty;
 };

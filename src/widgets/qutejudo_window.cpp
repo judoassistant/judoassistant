@@ -102,7 +102,6 @@ void QutejudoWindow::createTournamentMenu() {
         action->setStatusTip(tr("Save the tournament to file"));
         connect(action, &QAction::triggered, this, &QutejudoWindow::saveAsTournament);
         menu->addAction(action);
-        menu->addAction(action);
     }
 
     menu->addSeparator();
@@ -111,6 +110,7 @@ void QutejudoWindow::createTournamentMenu() {
         QAction *action = new QAction(tr("Quit"), this);
         action->setShortcuts(QKeySequence::Quit);
         action->setStatusTip(tr("Quit Qutejudo"));
+        connect(action, &QAction::triggered, this, &QutejudoWindow::quit);
         menu->addAction(action);
     }
 }
@@ -221,19 +221,38 @@ void QutejudoWindow::readTournament(const QString &fileName) {
 }
 
 void QutejudoWindow::newTournament() {
-    // TODO: handle unsaved changes
+    if (mStoreHandler.isDirty()) {
+        auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
+        if (reply == QMessageBox::Cancel)
+            return;
+    }
+
     mFileName = "";
     mStoreHandler.reset();
 }
 
 void QutejudoWindow::openTournament() {
-    // TODO: handle unsaved changes
+    if (mStoreHandler.isDirty()) {
+        auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
+        if (reply == QMessageBox::Cancel)
+            return;
+    }
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
 
     if (fileName.isEmpty())
         return;
 
     readTournament(fileName);
+}
+
+void QutejudoWindow::quit() {
+    if (mStoreHandler.isDirty()) {
+        auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to exit without saving?"), QMessageBox::Yes | QMessageBox::Cancel);
+        if (reply == QMessageBox::Cancel)
+            return;
+    }
+
+    QCoreApplication::exit();
 }
 
 void QutejudoWindow::saveTournament() {

@@ -17,6 +17,7 @@ public:
     void readTournament(const QString &fileName);
 
 private slots:
+    void quit();
     void newTournament();
     void openTournament();
     void openImportPlayers();
