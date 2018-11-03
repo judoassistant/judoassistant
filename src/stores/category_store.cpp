@@ -44,9 +44,10 @@ const CategoryId & CategoryStore::getId() const {
     return mId;
 }
 
-void CategoryStore::setRuleset(std::unique_ptr<Ruleset> && ptr) {
-    // TODO: Update all match scores
+std::unique_ptr<Ruleset> CategoryStore::setRuleset(std::unique_ptr<Ruleset> && ptr) {
+    auto old = std::move(mRuleset);
     mRuleset = std::move(ptr);
+    return std::move(old);
 }
 
 Ruleset & CategoryStore::getRuleset() {
@@ -57,9 +58,10 @@ const Ruleset & CategoryStore::getRuleset() const {
     return *mRuleset;
 }
 
-void CategoryStore::setDrawSystem(std::unique_ptr<DrawSystem> && ptr) {
-    throw std::runtime_error("setDrawSystem: remember to update tatami locations!");
+std::unique_ptr<DrawSystem> CategoryStore::setDrawSystem(std::unique_ptr<DrawSystem> && ptr) {
+    auto old = std::move(mDrawSystem);
     mDrawSystem = std::move(ptr);
+    return std::move(old);
 }
 
 DrawSystem & CategoryStore::getDrawSystem() {

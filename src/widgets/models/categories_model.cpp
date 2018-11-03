@@ -30,8 +30,15 @@ QVariant CategoriesModel::data(const QModelIndex &index, int role) const {
                 return QString(QString::fromStdString(category.getDrawSystem().getName()));
             case 3:
                 return static_cast<int>(category.getPlayers().size());
+            case 4:
+                return static_cast<int>(category.getMatches().size());
         }
     }
+
+    if (role == Qt::UserRole) { // Used for sorting
+        return data(index, Qt::DisplayRole);
+    }
+
     return QVariant();
 }
 
@@ -47,6 +54,8 @@ QVariant CategoriesModel::headerData(int section, Qt::Orientation orientation, i
                     return QString(tr("Draw System"));
                 case 3:
                     return QString(tr("Players Count"));
+                case 4:
+                    return QString(tr("Match Count"));
             }
         }
     }
@@ -124,9 +133,22 @@ void CategoriesModel::tournamentReset() {
     connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &CategoriesModel::categoriesAboutToBeErased);
     connect(&tournament, &QTournamentStore::categoriesAboutToBeReset, this, &CategoriesModel::categoriesAboutToBeReset);
     connect(&tournament, &QTournamentStore::categoriesReset, this, &CategoriesModel::categoriesReset);
+    connect(&tournament, &QTournamentStore::matchesReset, this, &CategoriesModel::matchesReset);
+    connect(&tournament, &QTournamentStore::playersAddedToCategory, [&](CategoryId categoryId, const std::vector<PlayerId> &playerIds) {this->categoryPlayersChanged(categoryId);});
+    connect(&tournament, &QTournamentStore::playersErasedFromCategory, [&](CategoryId categoryId, const std::vector<PlayerId> &playerIds) {this->categoryPlayersChanged(categoryId);});
     connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &CategoriesModel::tournamentReset);
 
     endResetModel();
+}
+
+void CategoriesModel::matchesReset(CategoryId categoryId) {
+    int row = getRow(categoryId);
+    emit dataChanged(createIndex(row, 4), createIndex(row, 4));
+}
+
+void CategoriesModel::categoryPlayersChanged(CategoryId categoryId) {
+    int row = getRow(categoryId);
+    emit dataChanged(createIndex(row, 3), createIndex(row, 3));
 }
 
 CategoriesProxyModel::CategoriesProxyModel(QStoreHandler &storeHandler, QObject *parent)

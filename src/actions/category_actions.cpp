@@ -492,7 +492,7 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
         // TODO: Use different drawsystems for different size groups
         std::stringstream ss;
-        ss << mBaseName << " " << i+1 << std::endl;
+        ss << mBaseName << " " << i+1;
         auto ruleset = rulesets[0]->clone();
         auto drawSystem = drawSystems[0]->clone();
         tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], ss.str(), std::move(ruleset), std::move(drawSystem)));
@@ -508,5 +508,103 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
 void AutoAddCategoriesAction::undoImpl(TournamentStore & tournament) {
     EraseCategoriesAction eraseAction(tournament, mCategoryIds);
     eraseAction.redo(tournament);
+}
+
+ChangeCategoryNameAction::ChangeCategoryNameAction(TournamentStore &tournament, CategoryId categoryId, const std::string &value)
+    : mCategoryId(categoryId)
+    , mValue(value)
+{}
+
+void ChangeCategoryNameAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+    mOldValue = category.getName();
+    category.setName(mValue);
+    tournament.changeCategories({mCategoryId});
+}
+
+void ChangeCategoryNameAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+    category.setName(mOldValue);
+    tournament.changeCategories({mCategoryId});
+}
+
+ChangeCategoryRulesetAction::ChangeCategoryRulesetAction (TournamentStore &tournament, CategoryId categoryId, uint8_t ruleset)
+    : mCategoryId(categoryId)
+    , mRuleset(ruleset)
+{}
+
+void ChangeCategoryRulesetAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    const auto &rulesets = Rulesets::getRulesets();
+    if (mRuleset > rulesets.size())
+        throw ActionExecutionException("Failed to redo ChangeCategoryRulesetAction. Invalid ruleset specified.");
+    auto ruleset = rulesets[mRuleset]->clone();
+
+    mOldRuleset = category.setRuleset(std::move(ruleset));
+    mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+    mDrawAction->redo(tournament);
+
+    tournament.changeCategories({mCategoryId});
+}
+
+void ChangeCategoryRulesetAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    mOldRuleset = category.setRuleset(std::move(mOldRuleset));
+    mDrawAction->undo(tournament);
+    mDrawAction.reset();
+
+    tournament.changeCategories({mCategoryId});
+}
+
+ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction (TournamentStore &tournament, CategoryId categoryId, uint8_t drawSystem)
+    : mCategoryId(categoryId)
+    , mDrawSystem(drawSystem)
+{}
+
+void ChangeCategoryDrawSystemAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    const auto &drawSystems = DrawSystems::getDrawSystems();
+    if (mDrawSystem > drawSystems.size())
+        throw ActionExecutionException("Failed to redo ChangeCategoryDrawSystemAction. Invalid drawSystem specified.");
+    auto drawSystem = drawSystems[mDrawSystem]->clone();
+
+    mOldDrawSystem = category.setDrawSystem(std::move(drawSystem));
+
+    mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+    mDrawAction->redo(tournament);
+
+    tournament.changeCategories({mCategoryId});
+}
+
+void ChangeCategoryDrawSystemAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    mOldDrawSystem = category.setDrawSystem(std::move(mOldDrawSystem));
+
+    mDrawAction->undo(tournament);
+    mDrawAction.reset();
+
+    tournament.changeCategories({mCategoryId});
 }
 

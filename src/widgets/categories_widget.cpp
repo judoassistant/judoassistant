@@ -1,6 +1,8 @@
 #include <QSplitter>
+#include <QTabWidget>
 #include <QToolBar>
-#include <QSortFilterProxyModel>
+#include <QVBoxLayout>
+#include <QHeaderView>
 
 #include "widgets/categories_widget.hpp"
 #include "widgets/create_category_dialog.hpp"
@@ -30,6 +32,8 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
         layout->addWidget(toolBar);
     }
 
+    QSplitter *splitter = new QSplitter(this);
+    splitter->setOrientation(Qt::Horizontal);
     {
         mTableView = new QTableView(this);
         mModel = new CategoriesProxyModel(storeHandler, layout);
@@ -43,8 +47,25 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
 
         connect(mTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CategoriesWidget::selectionChanged);
 
-        layout->addWidget(mTableView);
+        splitter->addWidget(mTableView);
     }
+
+    {
+        QTabWidget *tabWidget = new QTabWidget(this);
+
+        mEditCategoryWidget = new EditCategoryWidget(storeHandler, splitter);
+        tabWidget->addTab(mEditCategoryWidget, tr("General"));
+
+        mEditCategoryPlayersWidget = new EditCategoryPlayersWidget(mStoreHandler, this);
+        tabWidget->addTab(mEditCategoryPlayersWidget, tr("Players"));
+
+        QWidget *c = new QWidget(this);
+        tabWidget->addTab(c, tr("Matches"));
+
+        splitter->addWidget(tabWidget);
+    }
+
+    layout->addWidget(splitter);
     setLayout(layout);
 }
 
@@ -60,5 +81,12 @@ void CategoriesWidget::eraseSelectedCategories() {
 }
 
 void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    mEraseAction->setEnabled(selected.indexes().size() > 0);
+    auto categoryIds = mModel->getCategories(selected);
+    std::optional<CategoryId> categoryId = (categoryIds.size() == 1 ? std::make_optional<CategoryId>(categoryIds.front()) : std::nullopt);
+
+    mEraseAction->setEnabled(!categoryIds.empty());
+
+    mEditCategoryWidget->setCategory(categoryId);
+    mEditCategoryPlayersWidget->setCategory(categoryId);
 }
+

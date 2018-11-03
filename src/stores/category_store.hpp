@@ -43,11 +43,11 @@ public:
     void addPlayer(PlayerId id);
     bool containsPlayer(PlayerId id) const;
 
-    void setRuleset(std::unique_ptr<Ruleset> && ptr);
+    std::unique_ptr<Ruleset> setRuleset(std::unique_ptr<Ruleset> && ptr);
     Ruleset & getRuleset();
     const Ruleset & getRuleset() const;
 
-    void setDrawSystem(std::unique_ptr<DrawSystem> && ptr);
+    std::unique_ptr<DrawSystem> setDrawSystem(std::unique_ptr<DrawSystem> && ptr);
     DrawSystem & getDrawSystem();
     const DrawSystem & getDrawSystem() const;
 

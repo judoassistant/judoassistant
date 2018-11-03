@@ -1,6 +1,9 @@
 #include <QSplitter>
 #include <QToolBar>
 #include <QHeaderView>
+#include <QVBoxLayout>
+#include <QMessageBox>
+#include <QMenu>
 
 #include "widgets/players_widget.hpp"
 #include "widgets/create_player_dialog.hpp"
@@ -38,7 +41,7 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
     }
 
     QSplitter *splitter = new QSplitter(this);
-    splitter->setOrientation(Qt::Vertical);
+    splitter->setOrientation(Qt::Horizontal);
 
     {
         mTableView = new QTableView(splitter);

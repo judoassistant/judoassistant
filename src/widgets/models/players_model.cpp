@@ -164,19 +164,6 @@ void PlayersModel::tournamentReset() {
     endResetModel();
 }
 
-PlayersProxyModel::PlayersProxyModel(QStoreHandler &storeHandler, QObject *parent)
-    : QSortFilterProxyModel(parent)
-{
-    mModel = new PlayersModel(storeHandler, this);
-
-    setSourceModel(mModel);
-    setSortRole(Qt::UserRole);
-}
-
-std::vector<PlayerId> PlayersProxyModel::getPlayers(const QItemSelection &selection) const {
-    return mModel->getPlayers(mapSelectionToSource(selection));
-}
-
 std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const {
     std::stringstream res;
     for (auto categoryId : player.getCategories()) {
@@ -204,5 +191,42 @@ void PlayersModel::categoriesAboutToBeErased(std::vector<CategoryId> categoryIds
 
 void PlayersModel::categoriesErased(std::vector<CategoryId> categoryIds) {
     playerCategoriesChanged(std::vector(mAffectedPlayers.begin(), mAffectedPlayers.end()));
+}
+
+PlayersProxyModel::PlayersProxyModel(QStoreHandler &storeHandler, QObject *parent)
+    : QSortFilterProxyModel(parent)
+    , mStoreHandler(storeHandler)
+    , mHidden(false)
+{
+    mModel = new PlayersModel(storeHandler, this);
+
+    setSourceModel(mModel);
+    setSortRole(Qt::UserRole);
+}
+
+std::vector<PlayerId> PlayersProxyModel::getPlayers(const QItemSelection &selection) const {
+    return mModel->getPlayers(mapSelectionToSource(selection));
+}
+
+void PlayersProxyModel::hideAll() {
+    mHidden = true;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::setCategory(std::optional<CategoryId> categoryId) {
+    mHidden = false;
+    mCategoryId = categoryId;
+    invalidateFilter();
+}
+
+bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
+    if (mHidden)
+        return false;
+    if (!mCategoryId)
+        return true;
+
+    auto playerId = mModel->getPlayer(sourceRow);
+    const auto &player = mStoreHandler.getTournament().getPlayer(playerId);
+    return player.containsCategory(*mCategoryId);
 }
 

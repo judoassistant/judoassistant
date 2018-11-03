@@ -54,7 +54,6 @@ void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
         mActions.push(std::move(action));
     }
 
-
     for (auto playerId : mErasedPlayerIds)
         mPlayers.push(std::move(tournament.erasePlayer(playerId)));
     tournament.endErasePlayers();

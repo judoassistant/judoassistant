@@ -27,9 +27,11 @@ public slots:
     void categoriesAboutToBeErased(std::vector<CategoryId> ids);
     void categoriesAboutToBeReset();
     void categoriesReset();
+    void matchesReset(CategoryId id);
+    void categoryPlayersChanged(CategoryId categoryId);
     void tournamentReset();
 private:
-    const int COLUMN_COUNT = 4;
+    const int COLUMN_COUNT = 5;
     QStoreHandler & mStoreHandler;
     std::set<CategoryId> mIds;
 };

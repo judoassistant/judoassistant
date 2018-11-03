@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QtWidgets>
+#include <QWidget>
+#include <QTableView>
 
 #include "core.hpp"
 #include "store_handlers/qstore_handler.hpp"

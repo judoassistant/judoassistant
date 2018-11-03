@@ -1,7 +1,6 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QString>
+#include <QWidget>
 #include <QHBoxLayout>
 
 #include "core.hpp"

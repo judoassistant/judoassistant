@@ -1,12 +1,13 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QString>
-#include <QtWidgets>
+#include <QWidget>
+#include <QTableView>
 
 #include "core.hpp"
 #include "store_handlers/qstore_handler.hpp"
 #include "widgets/models/categories_model.hpp"
+#include "widgets/edit_category_widget.hpp"
+#include "widgets/edit_category_players_widget.hpp"
 
 class CategoriesWidget : public QWidget {
     Q_OBJECT
@@ -21,5 +22,7 @@ private:
     QAction *mEraseAction;
     QTableView *mTableView;
     CategoriesProxyModel *mModel;
+    EditCategoryWidget *mEditCategoryWidget;
+    EditCategoryPlayersWidget *mEditCategoryPlayersWidget;
 };
 

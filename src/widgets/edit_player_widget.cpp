@@ -65,82 +65,14 @@ EditPlayerWidget::EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent
 
 void EditPlayerWidget::tournamentReset() {
     connect(&(mStoreHandler.getTournament()), &QTournamentStore::playersChanged, this, &EditPlayerWidget::playersChanged);
+    setPlayer(std::nullopt);
 }
 
 void EditPlayerWidget::playersChanged(std::vector<PlayerId> ids) {
-    if (!mPlayerId)
+    if (!mPlayerId || std::find(ids.begin(), ids.end(), *mPlayerId) == ids.end())
         return;
 
-    for (PlayerId id : ids) {
-        if (id == *mPlayerId) {
-            playerChanged();
-            return;
-        }
-    }
-}
-
-void EditPlayerWidget::setPlayer(std::optional<PlayerId> id) { // TODO: Listen to changes in PlayerStore
-    mPlayerId = id;
-
-    if (!id) {
-        mFirstNameContent->clear();
-        mFirstNameContent->setEnabled(false);
-        mLastNameContent->clear();
-        mLastNameContent->setEnabled(false);
-        mAgeContent->clear();
-        mAgeContent->setEnabled(false);
-        mRankContent->setCurrentIndex(0);
-        mRankContent->setEnabled(false);
-        mClubContent->clear();
-        mClubContent->setEnabled(false);
-        mWeightContent->clear();
-        mWeightContent->setEnabled(false);
-        mCountryContent->setCurrentIndex(0);
-        mCountryContent->setEnabled(false);
-        mSexContent->setCurrentIndex(0);
-        mSexContent->setEnabled(false);
-    }
-
-    if (id) {
-        const PlayerStore & player = mStoreHandler.getTournament().getPlayer(*id);
-
-        mFirstNameContent->setText(QString::fromStdString(player.getFirstName()));
-        mFirstNameContent->setEnabled(true);
-
-        mLastNameContent->setText(QString::fromStdString(player.getLastName()));
-        mLastNameContent->setEnabled(true);
-
-        if (player.getAge())
-            mAgeContent->setText(QString::number(player.getAge()->toInt()));
-        else
-            mAgeContent->setText("");
-
-        mAgeContent->setEnabled(true);
-
-        mRankContent->setCurrentIndex(player.getRank() ? player.getRank()->toInt() + 1 : 0);
-        mRankContent->setEnabled(true);
-
-        mClubContent->setText(QString::fromStdString(player.getClub()));
-        mClubContent->setEnabled(true);
-
-        if (player.getWeight())
-            mWeightContent->setText(QString::number(player.getWeight()->toFloat()));
-        else
-            mWeightContent->setText("");
-        mWeightContent->setEnabled(true);
-
-        mCountryContent->setCurrentIndex(player.getCountry() ? player.getCountry()->toInt() + 1 : 0);
-        mCountryContent->setEnabled(true);
-
-        mSexContent->setCurrentIndex(player.getSex() ? player.getSex()->toInt() + 1 : 0);
-        mSexContent->setEnabled(true);
-    }
-}
-
-void EditPlayerWidget::playerChanged() {
     TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
-
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     QString firstName = QString::fromStdString(player.getFirstName());
@@ -176,10 +108,68 @@ void EditPlayerWidget::playerChanged() {
         mSexContent->setCurrentIndex(sexIndex);
 }
 
-void EditPlayerWidget::firstNameEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+void EditPlayerWidget::setPlayer(std::optional<PlayerId> id) {
+    mPlayerId = id;
 
+    if (!id) {
+        mFirstNameContent->clear();
+        mFirstNameContent->setEnabled(false);
+        mLastNameContent->clear();
+        mLastNameContent->setEnabled(false);
+        mAgeContent->clear();
+        mAgeContent->setEnabled(false);
+        mRankContent->setCurrentIndex(0);
+        mRankContent->setEnabled(false);
+        mClubContent->clear();
+        mClubContent->setEnabled(false);
+        mWeightContent->clear();
+        mWeightContent->setEnabled(false);
+        mCountryContent->setCurrentIndex(0);
+        mCountryContent->setEnabled(false);
+        mSexContent->setCurrentIndex(0);
+        mSexContent->setEnabled(false);
+    }
+    else {
+        const PlayerStore & player = mStoreHandler.getTournament().getPlayer(*id);
+
+        mFirstNameContent->setText(QString::fromStdString(player.getFirstName()));
+        mFirstNameContent->setEnabled(true);
+
+        mLastNameContent->setText(QString::fromStdString(player.getLastName()));
+        mLastNameContent->setEnabled(true);
+
+        if (player.getAge())
+            mAgeContent->setText(QString::number(player.getAge()->toInt()));
+        else
+            mAgeContent->setText("");
+
+        mAgeContent->setEnabled(true);
+
+        mRankContent->setCurrentIndex(player.getRank() ? player.getRank()->toInt() + 1 : 0);
+        mRankContent->setEnabled(true);
+
+        mClubContent->setText(QString::fromStdString(player.getClub()));
+        mClubContent->setEnabled(true);
+
+        if (player.getWeight())
+            mWeightContent->setText(QString::number(player.getWeight()->toFloat()));
+        else
+            mWeightContent->setText("");
+        mWeightContent->setEnabled(true);
+
+        mCountryContent->setCurrentIndex(player.getCountry() ? player.getCountry()->toInt() + 1 : 0);
+        mCountryContent->setEnabled(true);
+
+        mSexContent->setCurrentIndex(player.getSex() ? player.getSex()->toInt() + 1 : 0);
+        mSexContent->setEnabled(true);
+    }
+}
+
+void EditPlayerWidget::firstNameEdited() {
+    if (!mPlayerId)
+        return;
+
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::string newValue = mFirstNameContent->text().toStdString();
@@ -190,9 +180,10 @@ void EditPlayerWidget::firstNameEdited() {
 }
 
 void EditPlayerWidget::lastNameEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::string newValue = mLastNameContent->text().toStdString();
@@ -203,9 +194,10 @@ void EditPlayerWidget::lastNameEdited() {
 }
 
 void EditPlayerWidget::ageEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::optional<PlayerAge> newValue;
@@ -219,9 +211,10 @@ void EditPlayerWidget::ageEdited() {
 }
 
 void EditPlayerWidget::rankEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::optional<PlayerRank> newValue;
@@ -235,9 +228,10 @@ void EditPlayerWidget::rankEdited() {
 }
 
 void EditPlayerWidget::clubEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::string newValue = mClubContent->text().toStdString();
@@ -248,9 +242,10 @@ void EditPlayerWidget::clubEdited() {
 }
 
 void EditPlayerWidget::weightEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::optional<PlayerWeight> newValue;
@@ -264,9 +259,10 @@ void EditPlayerWidget::weightEdited() {
 }
 
 void EditPlayerWidget::countryEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::optional<PlayerCountry> newValue;
@@ -281,9 +277,10 @@ void EditPlayerWidget::countryEdited() {
 }
 
 void EditPlayerWidget::sexEdited() {
-    TournamentStore &tournament = mStoreHandler.getTournament();
-    if (!tournament.containsPlayer(*mPlayerId)) return;
+    if (!mPlayerId)
+        return;
 
+    TournamentStore &tournament = mStoreHandler.getTournament();
     PlayerStore &player = tournament.getPlayer(*mPlayerId);
 
     std::optional<PlayerSex> newValue;
@@ -296,3 +293,4 @@ void EditPlayerWidget::sexEdited() {
 
     mStoreHandler.dispatch(std::make_unique<ChangePlayerSexAction>(tournament, *mPlayerId, newValue));
 }
+

@@ -27,7 +27,7 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vec
     return std::move(actions);
 }
 
-std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(TournamentStore & tournament, CategoryStore & category) {
+std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(TournamentStore & tournament, CategoryStore & category) const {
     return {};
 }
 

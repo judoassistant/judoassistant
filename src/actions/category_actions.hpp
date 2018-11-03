@@ -8,6 +8,8 @@
 #include "stores/category_store.hpp"
 #include "stores/player_store.hpp"
 #include "stores/tatami_store.hpp"
+#include "rulesets/ruleset.hpp"
+#include "draw_systems/draw_system.hpp"
 
 class AddCategoryAction : public Action {
 public:
@@ -102,3 +104,45 @@ private:
     std::vector<CategoryId> mCategoryIds;
     std::string mBaseName;
 };
+
+class ChangeCategoryNameAction : public Action {
+public:
+    ChangeCategoryNameAction(TournamentStore &tournament, CategoryId categoryId, const std::string &value);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    CategoryId mCategoryId;
+    std::string mValue;
+
+    // undo members
+    std::string mOldValue;
+};
+
+class ChangeCategoryRulesetAction : public Action {
+public:
+    ChangeCategoryRulesetAction (TournamentStore &tournament, CategoryId categoryId, uint8_t ruleset);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    CategoryId mCategoryId;
+    uint8_t mRuleset;
+
+    // undo members
+    std::unique_ptr<Ruleset> mOldRuleset;
+    std::unique_ptr<DrawCategoryAction> mDrawAction;
+};
+
+class ChangeCategoryDrawSystemAction : public Action {
+public:
+    ChangeCategoryDrawSystemAction (TournamentStore &tournament, CategoryId categoryId, uint8_t drawSystem);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+private:
+    CategoryId mCategoryId;
+    uint8_t mDrawSystem;
+
+    // undo members
+    std::unique_ptr<DrawSystem> mOldDrawSystem;
+    std::unique_ptr<DrawCategoryAction> mDrawAction;
+};
+

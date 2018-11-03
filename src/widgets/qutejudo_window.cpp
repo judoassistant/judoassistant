@@ -4,9 +4,10 @@
 #include <QAction>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QtDebug>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <QStatusBar>
+#include <QCoreApplication>
 
 #include <fstream>
 
@@ -140,7 +141,7 @@ void QutejudoWindow::createEditMenu() {
 }
 
 void QutejudoWindow::createViewMenu() {
-    QMenu *menu = menuBar()->addMenu(tr("View"));
+    // QMenu *menu = menuBar()->addMenu(tr("View"));
 }
 
 void QutejudoWindow::createPreferencesMenu() {

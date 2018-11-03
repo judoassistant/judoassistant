@@ -42,8 +42,14 @@ class PlayersProxyModel : public QSortFilterProxyModel {
 public:
     PlayersProxyModel(QStoreHandler &storeHandler, QObject *parent);
     std::vector<PlayerId> getPlayers(const QItemSelection &selection) const;
+    void setCategory(std::optional<CategoryId> categoryId);
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    void hideAll();
 
 private:
+    QStoreHandler & mStoreHandler;
     PlayersModel *mModel;
+    std::optional<CategoryId> mCategoryId;
+    bool mHidden;
 };
 
