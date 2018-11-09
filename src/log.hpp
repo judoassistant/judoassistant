@@ -73,6 +73,7 @@ std::ostream & operator<<(std::ostream & o, const QString &str);
 
 Log & log_info();
 Log & log_debug(); // TODO: make this a null sink in production builds and have support for file output
+Log & log_warning();
 Log & log_error();
 Log & log_fatal();
 

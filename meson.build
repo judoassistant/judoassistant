@@ -7,6 +7,9 @@ qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
 # Boost dependency
 boost_dep = dependency('boost', modules: ['system'])
 
+# Threads dependency
+thread_dep = dependency('threads')
+
 # Setup configuration files
 conf_data = configuration_data()
 conf_data.set('version_major', '0')
@@ -35,4 +38,4 @@ subdir('src')
 moc_files = qt5.preprocess(moc_headers: moc_headers, include_directories: include_dirs)
 
 # Executables
-qutejudo_exe = executable('qutejudo', 'src/qutejudo.cpp', sources, moc_files, include_directories: include_dirs, dependencies: [qt5_dep, boost_dep])
+qutejudo_exe = executable('qutejudo', 'src/qutejudo.cpp', sources, moc_files, include_directories: include_dirs, dependencies: [qt5_dep, boost_dep, thread_dep])

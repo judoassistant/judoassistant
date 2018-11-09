@@ -3,27 +3,19 @@
 #include <QObject>
 #include <QString>
 #include <fstream>
+#include <list>
 
 #include "core.hpp"
 
-#include "serialize.hpp"
-#include "stores/category_store.hpp"
-#include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
-#include "stores/player_store.hpp"
-#include "stores/qtournament_store.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "serializables.hpp"
+#include "store_handlers/network_server.hpp"
 
-#include "actions/actions.hpp"
-#include "rulesets/rulesets.hpp"
-#include "draw_systems/draw_systems.hpp"
-
-// TODO: Restrict undo stack to some max size
-// TODO: Keep a copy of the tournament store without the undostack applied
 class MasterStoreHandler : public QStoreHandler {
     Q_OBJECT
 public:
     MasterStoreHandler();
+    ~MasterStoreHandler();
+
     QTournamentStore & getTournament() override;
     const QTournamentStore & getTournament() const override;
     void dispatch(std::unique_ptr<Action> && action) override;
@@ -35,9 +27,20 @@ public:
     bool write(const QString &path);
     void reset();
     bool isDirty() const;
+
+protected slots:
+    void receiveAction(ActionId id, std::shared_ptr<Action> action);
+    void receiveActionConfirm(ActionId id);
+    void receiveSyncConfirm();
+
 private:
     std::unique_ptr<QTournamentStore> mTournament;
-    std::vector<std::unique_ptr<Action>> mActionStack;
-    std::vector<std::unique_ptr<Action>> mRedoStack;
+    std::list<std::pair<ActionId, std::shared_ptr<Action>>> mActionStack;
+    std::list<std::pair<ActionId, std::shared_ptr<Action>>> mUnconfirmedStack;
+    // std::vector<std::shared_ptr<Action>> mRedoStack;
     bool mIsDirty;
+    bool mSyncing;
+    NetworkServer mServer;
+    ActionId::Generator mActionIdGenerator;
 };
+

@@ -90,6 +90,12 @@ public:
     PositionId(InternalType value) : Id(value) {}
 };
 
+class ActionId : public Id<ActionId> {
+public:
+    ActionId() {}
+    ActionId(InternalType value) : Id(value) {}
+};
+
 namespace std {
     template<>
     class hash<MatchId> : public Id<MatchId>::Hasher {};
@@ -102,5 +108,8 @@ namespace std {
 
     template<>
     class hash<PositionId> : public Id<PositionId>::Hasher {};
+
+    template<>
+    class hash<ActionId> : public Id<ActionId>::Hasher {};
 }
 

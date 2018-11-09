@@ -4,25 +4,30 @@
 MasterStoreHandler::MasterStoreHandler()
     : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
     , mIsDirty(false)
+    , mSyncing(false)
+    , mServer(8000)
 {
-    // TODO: Remove this after testing
-    mTournament->getTatamis().pushTatami();
-    mTournament->getTatamis().pushTatami();
-    mTournament->getTatamis().pushTatami();
-    mTournament->getTatamis().pushTatami();
+    connect(&mServer, &NetworkServer::actionReceived, this, &MasterStoreHandler::receiveAction);
+    connect(&mServer, &NetworkServer::actionConfirmReceived, this, &MasterStoreHandler::receiveActionConfirm);
+    connect(&mServer, &NetworkServer::syncConfirmed, this, &MasterStoreHandler::receiveSyncConfirm);
+
+    mServer.start();
+}
+
+MasterStoreHandler::~MasterStoreHandler() {
+    mServer.postQuit();
+    mServer.quit();
+    mServer.wait();
 }
 
 void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
     mIsDirty = true;
-    log_debug().msg("Dispatching action");
-    mActionStack.push_back(std::move(action));
-    mActionStack.back()->redo(*mTournament);
-    if (mActionStack.size() == 1) // mActionStack was empty before pushing the action
-        emit undoStatusChanged(true);
-    if (!mRedoStack.empty()) {
-        mRedoStack.clear();
-        emit redoStatusChanged(false);
-    }
+
+    std::shared_ptr<Action> sharedAction = std::move(action);
+    auto actionId = mActionIdGenerator();
+    mUnconfirmedStack.push_back({actionId, sharedAction});
+    sharedAction->redo(*mTournament);
+    // mServer.postAction(actionId, sharedAction);
 }
 
 QTournamentStore & MasterStoreHandler::getTournament() {
@@ -34,16 +39,24 @@ const QTournamentStore & MasterStoreHandler::getTournament() const {
 }
 
 void MasterStoreHandler::reset() {
+    mSyncing = true;
+
     mTournament = std::make_unique<QTournamentStore>();
     mActionStack.clear();
-    mRedoStack.clear();
+    mUnconfirmedStack.clear();
+
+    mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
+
     emit tournamentReset();
     emit redoStatusChanged(false);
     emit undoStatusChanged(false);
+
     mIsDirty = false;
 }
 
 bool MasterStoreHandler::read(const QString &path) {
+    mSyncing = true;
+
     log_debug().field("path", path).msg("Reading tournament from file");
     std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
 
@@ -53,8 +66,11 @@ bool MasterStoreHandler::read(const QString &path) {
     mTournament = std::make_unique<QTournamentStore>();
     cereal::PortableBinaryInputArchive archive(file);
     archive(*mTournament);
+
+    mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
+
     mActionStack.clear();
-    mRedoStack.clear();
+    mUnconfirmedStack.clear();
     emit tournamentReset();
     emit redoStatusChanged(false);
     emit undoStatusChanged(false);
@@ -76,44 +92,47 @@ bool MasterStoreHandler::write(const QString &path) {
 }
 
 bool MasterStoreHandler::canUndo() {
-    return !mActionStack.empty();
+    return false;
 }
 
 void MasterStoreHandler::undo() {
-    log_debug().msg("Undoing last action");
-    std::unique_ptr<Action> action = std::move(mActionStack.back());
-    mActionStack.pop_back();
-
-    action->undo(*mTournament);
-    mRedoStack.push_back(std::move(action));
-    mIsDirty = true;
-
-    if (mRedoStack.size() == 1) // mRedoStack was empty before pushing the action
-        emit redoStatusChanged(true);
-    if (mActionStack.empty())
-        emit undoStatusChanged(false);
+    throw std::runtime_error("Not implemented");
 }
 
 bool MasterStoreHandler::canRedo() {
-    return !mRedoStack.empty();
+    return false;
 }
 
 void MasterStoreHandler::redo() {
-    log_debug().msg("Redoing action");
-    std::unique_ptr<Action> action = std::move(mRedoStack.back());
-    mRedoStack.pop_back();
-
-    action->redo(*mTournament);
-    mActionStack.push_back(std::move(action));
-    mIsDirty = true;
-
-    if (mRedoStack.empty())
-        emit redoStatusChanged(false);
-    if (mActionStack.size() == 1)
-        emit undoStatusChanged(true); // mActionStack was empty before pushing the action
+    throw std::runtime_error("Not implemented");
 }
 
 bool MasterStoreHandler::isDirty() const {
     return mIsDirty;
+}
+
+void MasterStoreHandler::receiveAction(ActionId actionId, std::shared_ptr<Action> action) {
+    for (auto it = mUnconfirmedStack.rbegin(); it != mUnconfirmedStack.rend(); ++it)
+        it->second->undo(*mTournament);
+
+    action->redo(*mTournament);
+    mActionStack.push_back({actionId, std::move(action)});
+
+    for (auto it = mUnconfirmedStack.begin(); it != mUnconfirmedStack.end(); ++it)
+        it->second->redo(*mTournament);
+}
+
+void MasterStoreHandler::receiveActionConfirm(ActionId actionId) {
+    auto front = std::move(mUnconfirmedStack.front());
+    mUnconfirmedStack.pop_front();
+
+    if (front.first != actionId)
+        throw std::runtime_error("Received confirmation in wrong order");
+
+    mActionStack.push_back(std::move(front));
+}
+
+void MasterStoreHandler::receiveSyncConfirm() {
+    mSyncing = false;
 }
 
