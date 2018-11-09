@@ -1,9 +1,23 @@
 #include "version.hpp"
 #include <sstream>
 
-std::string getApplicationVersion() {
-    std::stringstream ss;
-    ss << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
-    return ss.str();
+ApplicationVersion ApplicationVersion::current() {
+    ApplicationVersion res;
+    res.mVersionMajor = VERSION_MAJOR;
+    res.mVersionMinor = VERSION_MINOR;
+    res.mVersionPatch = VERSION_PATCH;
+
+    return std::move(res);
 }
 
+bool ApplicationVersion::compatible(const ApplicationVersion &other) const {
+    return mVersionMajor == other.mVersionMajor
+        && mVersionMinor == other.mVersionMinor
+        && mVersionPatch == other.mVersionPatch;
+}
+
+std::string ApplicationVersion::toString() const {
+    std::stringstream ss;
+    ss << mVersionMajor << "." << mVersionMinor << "." << mVersionPatch;
+    return ss.str();
+}

@@ -1,9 +1,30 @@
 #pragma once
 
 #include <string>
+#include "serialize.hpp"
 
-#define VERSION_MAJOR @version_major@
-#define VERSION_MINOR @version_minor@
-#define VERSION_PATCH @version_patch@
+const int VERSION_MAJOR = @version_major@;
+const int VERSION_MINOR = @version_minor@;
+const int VERSION_PATCH = @version_patch@;
 
-std::string getApplicationVersion();
+class ApplicationVersion {
+public:
+    static ApplicationVersion current();
+
+    bool compatible(const ApplicationVersion &other) const;
+
+    std::string toString() const;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::make_nvp("versionMajor", mVersionMajor));
+        ar(cereal::make_nvp("versionMinor", mVersionMinor));
+        ar(cereal::make_nvp("versionPatch", mVersionPatch));
+    }
+
+private:
+    int mVersionMajor;
+    int mVersionMinor;
+    int mVersionPatch;
+};
+

@@ -6,7 +6,7 @@
 
 QutejudoApplication::QutejudoApplication(int &argc, char *argv[]) : QApplication(argc, argv) {
     setApplicationName("Qutejudo");
-    setApplicationVersion(QString::fromStdString(getApplicationVersion()));
+    setApplicationVersion(QString::fromStdString(ApplicationVersion::current().toString()));
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Qutejudo");
