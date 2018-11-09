@@ -12,6 +12,20 @@ CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique
     , mDrawSystem(std::move(drawSystem))
 {}
 
+CategoryStore::CategoryStore(const CategoryStore &other)
+    : mId(other.mId)
+    , mName(other.mName)
+    , mPlayers(other.mPlayers)
+    , mMatchMap(other.mMatchMap)
+    , mMatchCount(other.mMatchCount)
+    , mTatamiLocation(other.mTatamiLocation)
+    , mRuleset(other.mRuleset->clone())
+    , mDrawSystem(other.mDrawSystem->clone())
+{
+    for (const auto & match : other.mMatches)
+        mMatches.push_back(std::make_unique<MatchStore>(*match));
+}
+
 const std::unordered_set<PlayerId> & CategoryStore::getPlayers() const {
     return mPlayers;
 }

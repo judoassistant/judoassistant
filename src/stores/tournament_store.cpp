@@ -112,3 +112,12 @@ TatamiList & TournamentStore::getTatamis() {
     return mTatamis;
 }
 
+TournamentStore::TournamentStore(const TournamentStore &other)
+    : mName(other.mName)
+    , mTatamis(other.mTatamis)
+{
+    for (const auto &p : other.mPlayers)
+        mPlayers[p.first] = std::make_unique<PlayerStore>(*p.second);
+    for (const auto &p : other.mCategories)
+        mCategories[p.first] = std::make_unique<CategoryStore>(*p.second);
+}

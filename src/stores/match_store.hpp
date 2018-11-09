@@ -42,6 +42,7 @@ public:
     };
 
     MatchStore() {}
+    MatchStore(const MatchStore &other);
     MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
 
     MatchId getId() const;

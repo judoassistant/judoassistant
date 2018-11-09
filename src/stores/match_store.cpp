@@ -122,3 +122,20 @@ std::ostream &operator<<(std::ostream &out, const MatchType &matchType) {
 bool MatchStore::isBye() const {
     return mBye;
 }
+
+MatchStore::MatchStore(const MatchStore &other)
+    : mId(other.mId)
+    , mCategory(other.mCategory)
+    , mType(other.mType)
+    , mTitle(other.mTitle)
+    , mBye(other.mBye)
+    , mScores(other.mScores)
+    , mPlayers(other.mPlayers)
+    , mIsStopped(other.mIsStopped)
+    , mGoldenScore(other.mGoldenScore)
+    , mTime(other.mTime)
+    , mClock(other.mClock)
+{
+    for (const auto &event : other.mEvents)
+        mEvents.push_back(event->clone());
+}

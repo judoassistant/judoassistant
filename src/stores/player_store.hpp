@@ -21,6 +21,7 @@ public:
     };
 
     PlayerCountry() {}
+    PlayerCountry(const PlayerCountry &other) = default;
     PlayerCountry(const std::string &str);
     PlayerCountry(int value);
 
@@ -72,6 +73,7 @@ public:
     };
 
     PlayerRank() {}
+    PlayerRank(const PlayerRank &other) = default;
     PlayerRank(const std::string &str);
     PlayerRank(int value);
 
@@ -112,6 +114,7 @@ public:
     };
 
     PlayerSex() {}
+    PlayerSex(const PlayerSex &other) = default;
     PlayerSex(int value);
     PlayerSex(const std::string &str);
 
@@ -142,6 +145,7 @@ std::ostream & operator<<(std::ostream &out, const PlayerSex &rank);
 class PlayerWeight {
 public:
     PlayerWeight() {}
+    PlayerWeight(const PlayerWeight &other) = default;
     PlayerWeight(float weight);
     PlayerWeight(const std::string &str);
 
@@ -172,6 +176,7 @@ std::ostream & operator<<(std::ostream &out, const PlayerWeight &weight);
 class PlayerAge {
 public:
     PlayerAge() {}
+    PlayerAge(const PlayerAge &other) = default;
     PlayerAge(int age);
     PlayerAge(const std::string &str);
 
@@ -202,6 +207,7 @@ std::ostream & operator<<(std::ostream &out, const PlayerAge &age);
 class PlayerStore {
 public:
     PlayerStore() {}
+    PlayerStore(const PlayerStore &other) = default;
     PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
 
     template<typename Archive>

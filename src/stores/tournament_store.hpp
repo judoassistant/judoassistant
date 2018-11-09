@@ -18,6 +18,7 @@ class MatchStore;
 class TournamentStore {
 public:
     TournamentStore();
+    TournamentStore(const TournamentStore &other);
     virtual ~TournamentStore();
 
     template<typename Archive>
@@ -100,7 +101,7 @@ private:
     std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> mCategories;
     TatamiList mTatamis;
 
-    PlayerId::Generator mPlayerIdGenerator;
+    PlayerId::Generator mPlayerIdGenerator; // TODO: these should not be here, but somewhere else
     CategoryId::Generator mCategoryIdGenerator;
     MatchId::Generator mMatchIdGenerator;
     PositionId::Generator mPositionIdGenerator;

@@ -21,6 +21,7 @@ public:
 
     CategoryStore() {}
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
+    CategoryStore(const CategoryStore &other);
 
     const std::string & getName() const;
     std::string getName(MatchType type) const;
@@ -72,8 +73,8 @@ private:
     std::unordered_set<PlayerId> mPlayers;
     MatchList mMatches; // order matters in this case
     std::unordered_map<MatchId, size_t> mMatchMap;
-    size_t mMatchCount[2];
-    std::optional<TatamiLocation> mTatamiLocation[2];
+    std::array<size_t, 2> mMatchCount;
+    std::array<std::optional<TatamiLocation>, 2> mTatamiLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;
 };
