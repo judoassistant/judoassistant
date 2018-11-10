@@ -8,6 +8,8 @@ PlayersModel::PlayersModel(QStoreHandler & storeHandler, QObject * parent)
     : QAbstractTableModel(parent)
     , mStoreHandler(storeHandler)
 {
+    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
+
     tournamentReset();
 }
 
@@ -154,7 +156,6 @@ void PlayersModel::tournamentReset() {
     connect(&tournament, &QTournamentStore::playersAboutToBeErased, this, &PlayersModel::playersAboutToBeErased);
     connect(&tournament, &QTournamentStore::playersAboutToBeReset, this, &PlayersModel::playersAboutToBeReset);
     connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset);
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
 
     connect(&tournament, &QTournamentStore::playersAddedToCategory, [&](CategoryId, const std::vector<PlayerId> &ids) {this->playerCategoriesChanged(ids);});
     connect(&tournament, &QTournamentStore::playersErasedFromCategory, [&](CategoryId, const std::vector<PlayerId> &ids) {this->playerCategoriesChanged(ids);});
