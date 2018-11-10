@@ -14,9 +14,14 @@
 class AddCategoryAction : public Action {
 public:
     AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem);
+    AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem);
+
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
     CategoryId getId() const;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mId;
     std::string mName;
@@ -26,9 +31,12 @@ private:
 
 class DrawCategoryAction : public Action {
 public:
-    DrawCategoryAction(TournamentStore & tournament, CategoryId categoryId);
+    DrawCategoryAction(CategoryId categoryId);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mCategoryId;
 
@@ -40,9 +48,12 @@ private:
 
 class AddPlayersToCategoryAction : public Action {
 public:
-    AddPlayersToCategoryAction(TournamentStore & tournament, CategoryId categoryId, std::vector<PlayerId> playerIds);
+    AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mCategoryId;
     std::vector<PlayerId> mPlayerIds;
@@ -54,9 +65,12 @@ private:
 
 class ErasePlayersFromCategoryAction : public Action {
 public:
-    ErasePlayersFromCategoryAction(TournamentStore & tournament, CategoryId categoryId, std::vector<PlayerId> playerIds);
+    ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mCategoryId;
     std::vector<PlayerId> mPlayerIds;
@@ -68,9 +82,12 @@ private:
 
 class EraseCategoriesAction : public Action {
 public:
-    EraseCategoriesAction(TournamentStore & tournament, std::vector<CategoryId> categoryIds);
+    EraseCategoriesAction(const std::vector<CategoryId> &categoryIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     std::vector<CategoryId> mCategoryIds;
 
@@ -83,9 +100,12 @@ private:
 
 class ErasePlayersFromAllCategoriesAction : public Action {
 public:
-    ErasePlayersFromAllCategoriesAction(TournamentStore & tournament, std::vector<PlayerId> playerIds);
+    ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     std::vector<PlayerId> mPlayerIds;
 
@@ -96,8 +116,12 @@ private:
 class AutoAddCategoriesAction : public Action {
 public:
     AutoAddCategoriesAction(TournamentStore &tournament, std::vector<PlayerId> playerIds, std::string baseName, float maxDifference, size_t maxSize);
+    AutoAddCategoriesAction(const std::vector<std::vector<PlayerId>> &playerIds, std::vector<CategoryId> categoryIds, std::string baseName);
+
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
 
 private:
     std::vector<std::vector<PlayerId>> mPlayerIds;
@@ -107,9 +131,12 @@ private:
 
 class ChangeCategoryNameAction : public Action {
 public:
-    ChangeCategoryNameAction(TournamentStore &tournament, CategoryId categoryId, const std::string &value);
+    ChangeCategoryNameAction(CategoryId categoryId, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mCategoryId;
     std::string mValue;
@@ -120,9 +147,12 @@ private:
 
 class ChangeCategoryRulesetAction : public Action {
 public:
-    ChangeCategoryRulesetAction (TournamentStore &tournament, CategoryId categoryId, uint8_t ruleset);
+    ChangeCategoryRulesetAction (CategoryId categoryId, uint8_t ruleset);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mCategoryId;
     uint8_t mRuleset;
@@ -134,9 +164,12 @@ private:
 
 class ChangeCategoryDrawSystemAction : public Action {
 public:
-    ChangeCategoryDrawSystemAction (TournamentStore &tournament, CategoryId categoryId, uint8_t drawSystem);
+    ChangeCategoryDrawSystemAction(CategoryId categoryId, uint8_t drawSystem);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     CategoryId mCategoryId;
     uint8_t mDrawSystem;

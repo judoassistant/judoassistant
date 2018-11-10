@@ -5,7 +5,11 @@
 #include "exception.hpp"
 
 AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
-    : mId(tournament.generateNextPlayerId())
+    : AddPlayerAction(tournament.generateNextPlayerId(), firstName, lastName, age, rank, club, weight, country, sex)
+{}
+
+AddPlayerAction::AddPlayerAction(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
+    : mId(id)
     , mFirstName(firstName)
     , mLastName(lastName)
     , mAge(age)
@@ -31,9 +35,13 @@ void AddPlayerAction::undoImpl(TournamentStore & tournament) {
     tournament.endErasePlayers();
 }
 
-ErasePlayersAction::ErasePlayersAction(TournamentStore & tournament, std::vector<PlayerId> playerIds)
+ErasePlayersAction::ErasePlayersAction(const std::vector<PlayerId> &playerIds)
     : mPlayerIds(playerIds) // TODO: Use std::move where appropriate
 {}
+
+std::unique_ptr<Action> ErasePlayersAction::freshClone() const {
+    return std::make_unique<ErasePlayersAction>(mPlayerIds);
+}
 
 void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
     std::unordered_set<CategoryId> categoryIds;
@@ -49,7 +57,7 @@ void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
 
     tournament.beginErasePlayers(mErasedPlayerIds);
     for (auto categoryId : categoryIds) {
-        auto action = std::make_unique<ErasePlayersFromCategoryAction>(tournament, categoryId, mErasedPlayerIds); // lazily give the action all playerIds and let it figure the rest out on its own
+        auto action = std::make_unique<ErasePlayersFromCategoryAction>(categoryId, mErasedPlayerIds); // lazily give the action all playerIds and let it figure the rest out on its own
         action->redo(tournament);
         mActions.push(std::move(action));
     }
@@ -74,10 +82,14 @@ void ErasePlayersAction::undoImpl(TournamentStore & tournament) {
     }
 }
 
-ChangePlayerFirstNameAction::ChangePlayerFirstNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value)
+ChangePlayerFirstNameAction::ChangePlayerFirstNameAction(PlayerId playerId, const std::string &value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
+
+std::unique_ptr<Action> ChangePlayerFirstNameAction::freshClone() const {
+    return std::make_unique<ChangePlayerFirstNameAction>(mPlayerId, mValue);
+}
 
 void ChangePlayerFirstNameAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsPlayer(mPlayerId))
@@ -98,7 +110,7 @@ void ChangePlayerFirstNameAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerLastNameAction::ChangePlayerLastNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value)
+ChangePlayerLastNameAction::ChangePlayerLastNameAction(PlayerId playerId, const std::string &value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -122,7 +134,7 @@ void ChangePlayerLastNameAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerClubAction::ChangePlayerClubAction(TournamentStore &tournament, PlayerId playerId, const std::string &value)
+ChangePlayerClubAction::ChangePlayerClubAction(PlayerId playerId, const std::string &value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -146,7 +158,7 @@ void ChangePlayerClubAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerAgeAction::ChangePlayerAgeAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerAge> value)
+ChangePlayerAgeAction::ChangePlayerAgeAction(PlayerId playerId, std::optional<PlayerAge> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -170,7 +182,7 @@ void ChangePlayerAgeAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerRankAction::ChangePlayerRankAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerRank> value)
+ChangePlayerRankAction::ChangePlayerRankAction(PlayerId playerId, std::optional<PlayerRank> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -194,7 +206,7 @@ void ChangePlayerRankAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerWeightAction::ChangePlayerWeightAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerWeight> value)
+ChangePlayerWeightAction::ChangePlayerWeightAction(PlayerId playerId, std::optional<PlayerWeight> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -218,7 +230,7 @@ void ChangePlayerWeightAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerCountryAction::ChangePlayerCountryAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerCountry> value)
+ChangePlayerCountryAction::ChangePlayerCountryAction(PlayerId playerId, std::optional<PlayerCountry> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -242,7 +254,7 @@ void ChangePlayerCountryAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-ChangePlayerSexAction::ChangePlayerSexAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerSex> value)
+ChangePlayerSexAction::ChangePlayerSexAction(PlayerId playerId, std::optional<PlayerSex> value)
     : mPlayerId(playerId)
     , mValue(value)
 {}
@@ -264,5 +276,37 @@ void ChangePlayerSexAction::undoImpl(TournamentStore & tournament) {
     PlayerStore & player = tournament.getPlayer(mPlayerId);
     player.setSex(mOldValue);
     tournament.changePlayers({mPlayerId});
+}
+
+std::unique_ptr<Action> AddPlayerAction::freshClone() const {
+    return std::make_unique<AddPlayerAction>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry, mSex);
+}
+
+std::unique_ptr<Action> ChangePlayerLastNameAction::freshClone() const {
+    return std::make_unique<ChangePlayerLastNameAction>(mPlayerId, mValue);
+}
+
+std::unique_ptr<Action> ChangePlayerAgeAction::freshClone() const {
+    return std::make_unique<ChangePlayerAgeAction>(mPlayerId, mValue);
+}
+
+std::unique_ptr<Action> ChangePlayerClubAction::freshClone() const {
+    return std::make_unique<ChangePlayerClubAction>(mPlayerId, mValue);
+}
+
+std::unique_ptr<Action> ChangePlayerRankAction::freshClone() const {
+    return std::make_unique<ChangePlayerRankAction>(mPlayerId, mValue);
+}
+
+std::unique_ptr<Action> ChangePlayerSexAction::freshClone() const {
+    return std::make_unique<ChangePlayerSexAction>(mPlayerId, mValue);
+}
+
+std::unique_ptr<Action> ChangePlayerWeightAction::freshClone() const {
+    return std::make_unique<ChangePlayerWeightAction>(mPlayerId, mValue);
+}
+
+std::unique_ptr<Action> ChangePlayerCountryAction::freshClone() const {
+    return std::make_unique<ChangePlayerCountryAction>(mPlayerId, mValue);
 }
 

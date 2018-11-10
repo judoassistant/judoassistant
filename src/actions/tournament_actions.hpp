@@ -9,9 +9,11 @@
 
 class ChangeTournamentNameAction : public Action {
 public:
-    ChangeTournamentNameAction(TournamentStore &tournament, const std::string &name);
+    ChangeTournamentNameAction(const std::string &name);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
 private:
     std::string mName;
 

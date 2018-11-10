@@ -1,7 +1,7 @@
 #include "actions/tatami_actions.hpp"
 #include "stores/tournament_store.hpp"
 
-SetTatamiLocationAction::SetTatamiLocationAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, std::optional<TatamiLocation> location, size_t seqIndex)
+SetTatamiLocationAction::SetTatamiLocationAction(CategoryId categoryId, MatchType type, std::optional<TatamiLocation> location, size_t seqIndex)
     : mCategoryId(categoryId)
     , mType(type)
     , mLocation(location)
@@ -55,11 +55,11 @@ void SetTatamiLocationAction::undoImpl(TournamentStore & tournament) {
     }
 }
 
-SetTatamiCount::SetTatamiCount(TournamentStore & tournament, size_t count)
+SetTatamiCountAction::SetTatamiCountAction(size_t count)
     : mCount(count)
 {}
 
-void SetTatamiCount::redoImpl(TournamentStore & tournament) {
+void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
     auto & tatamis = tournament.getTatamis();
 
     mOldCount = tatamis.tatamiCount();
@@ -87,7 +87,7 @@ void SetTatamiCount::redoImpl(TournamentStore & tournament) {
     }
 }
 
-void SetTatamiCount::undoImpl(TournamentStore & tournament) {
+void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
     auto & tatamis = tournament.getTatamis();
 
     if (tatamis.tatamiCount() > mOldCount) {
@@ -113,5 +113,13 @@ void SetTatamiCount::undoImpl(TournamentStore & tournament) {
         }
         tournament.endAddTatamis();
     }
+}
+
+std::unique_ptr<Action> SetTatamiCountAction::freshClone() const {
+    return std::make_unique<SetTatamiCountAction>(mCount);
+}
+
+std::unique_ptr<Action> SetTatamiLocationAction::freshClone() const {
+    return std::make_unique<SetTatamiLocationAction>(mCategoryId, mType, mLocation, mSeqIndex);
 }
 

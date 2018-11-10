@@ -192,7 +192,7 @@ void EmptyConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     location.concurrentGroup = pair.first;
     location.sequentialGroup = pair.second;
 
-    auto action = std::make_unique<SetTatamiLocationAction>(tournament, block.first, block.second, location, 0);
+    auto action = std::make_unique<SetTatamiLocationAction>(block.first, block.second, location, 0);
     mStoreHandler->dispatch(std::move(action));
     mDragOver = false;
     update();
@@ -289,7 +289,7 @@ void ConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     location.concurrentGroup = mHandle;
     location.sequentialGroup = group.addGroup(tournament, mSequentialGroups.size());
 
-    auto action = std::make_unique<SetTatamiLocationAction>(tournament, block.first, block.second, location, 0);
+    auto action = std::make_unique<SetTatamiLocationAction>(block.first, block.second, location, 0);
     mStoreHandler->dispatch(std::move(action));
     mDragOver = false;
     update();
@@ -360,14 +360,13 @@ void SequentialBlockItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
 void SequentialBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     const auto * mime = dynamic_cast<const QutejudoMime*>(event->mimeData());
     auto block = mime->block();
-    QTournamentStore & tournament = mStoreHandler->getTournament();
 
     TatamiLocation location;
     location.tatamiIndex = mTatamiIndex;
     location.concurrentGroup = mConcurrentHandle;
     location.sequentialGroup = mHandle;
 
-    auto action = std::make_unique<SetTatamiLocationAction>(tournament, block.first, block.second, location, mBlocks.size());
+    auto action = std::make_unique<SetTatamiLocationAction>(block.first, block.second, location, mBlocks.size());
     mStoreHandler->dispatch(std::move(action));
     mDragOver = false;
     update();

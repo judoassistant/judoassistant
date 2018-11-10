@@ -7,9 +7,11 @@
 
 class SetTatamiLocationAction : public Action {
 public:
-    SetTatamiLocationAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, std::optional<TatamiLocation> location, size_t seqIndex);
+    SetTatamiLocationAction(CategoryId categoryId, MatchType type, std::optional<TatamiLocation> location, size_t seqIndex);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
 
 private:
     CategoryId mCategoryId;
@@ -22,14 +24,18 @@ private:
     size_t mOldSeqIndex;
 };
 
-class SetTatamiCount : public Action {
+class SetTatamiCountAction : public Action {
 public:
-    SetTatamiCount(TournamentStore & tournament, size_t count);
+    SetTatamiCountAction(size_t count);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     size_t mCount;
+
+    // undo members
     size_t mOldCount;
     std::stack<std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>>> mOldContents;
 };

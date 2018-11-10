@@ -45,5 +45,5 @@ void TournamentWidget::updateTournamentName() {
     if (name == mStoreHandler.getTournament().getName())
         return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangeTournamentNameAction>(mStoreHandler.getTournament(), name));
+    mStoreHandler.dispatch(std::make_unique<ChangeTournamentNameAction>(name));
 }

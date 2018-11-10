@@ -8,7 +8,7 @@
 TatamisWidget::TatamisWidget(QStoreHandler &storeHandler)
     : mStoreHandler(storeHandler)
 {
-    QTournamentStore &tournament = mStoreHandler.getTournament();
+    // QTournamentStore &tournament = mStoreHandler.getTournament();
 
     // TODO: Handle erase and adding of tatamis
     connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &TatamisWidget::tatamisReset);

@@ -77,7 +77,7 @@ void CategoriesWidget::showCategoryCreateDialog() {
 
 void CategoriesWidget::eraseSelectedCategories() {
     auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<EraseCategoriesAction>(mStoreHandler.getTournament(), std::move(categoryIds)));
+    mStoreHandler.dispatch(std::make_unique<EraseCategoriesAction>(std::move(categoryIds)));
 }
 
 void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {

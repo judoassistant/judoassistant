@@ -2,7 +2,7 @@
 #include "stores/tournament_store.hpp"
 #include "exception.hpp"
 
-ChangeTournamentNameAction::ChangeTournamentNameAction(TournamentStore & tournament, const std::string & name)
+ChangeTournamentNameAction::ChangeTournamentNameAction(const std::string & name)
     : mName(name)
 {}
 
@@ -15,5 +15,9 @@ void ChangeTournamentNameAction::redoImpl(TournamentStore & tournament) {
 void ChangeTournamentNameAction::undoImpl(TournamentStore & tournament) {
     tournament.setName(mOldName);
     tournament.changeTournament();
+}
+
+std::unique_ptr<Action> ChangeTournamentNameAction::freshClone() const {
+    return std::make_unique<ChangeTournamentNameAction>(mName);
 }
 

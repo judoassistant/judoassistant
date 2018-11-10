@@ -161,7 +161,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
 
 void PlayersWidget::eraseSelectedPlayers() {
     auto playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersAction>(mStoreHandler.getTournament(), std::move(playerIds)));
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersAction>(std::move(playerIds)));
 }
 
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
@@ -179,16 +179,16 @@ void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItem
 void PlayersWidget::eraseSelectedPlayersFromAllCategories() {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
 
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromAllCategoriesAction>(mStoreHandler.getTournament(), std::move(playerIds)));
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromAllCategoriesAction>(std::move(playerIds)));
 }
 
 void PlayersWidget::eraseSelectedPlayersFromCategory(CategoryId categoryId) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(mStoreHandler.getTournament(), categoryId, std::move(playerIds)));
+    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds)));
 }
 
 void PlayersWidget::addSelectedPlayersToCategory(CategoryId categoryId) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<AddPlayersToCategoryAction>(mStoreHandler.getTournament(), categoryId, std::move(playerIds)));
+    mStoreHandler.dispatch(std::make_unique<AddPlayersToCategoryAction>(categoryId, std::move(playerIds)));
 }
 

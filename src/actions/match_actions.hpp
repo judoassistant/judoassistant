@@ -11,9 +11,14 @@
 class AddMatchAction : public Action {
 public:
     AddMatchAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
+    AddMatchAction(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
+
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
     MatchId getMatchId();
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     MatchId mId;
     CategoryId mCategoryId;

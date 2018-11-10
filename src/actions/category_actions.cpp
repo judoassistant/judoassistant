@@ -7,12 +7,21 @@
 
 #include "exception.hpp"
 
-AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
-    : mId(tournament.generateNextCategoryId())
+AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
+    : mId(id)
     , mName(name)
     , mRuleset(ruleset)
     , mDrawSystem(drawSystem)
 {}
+
+AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
+    : AddCategoryAction(tournament.generateNextCategoryId(), name, ruleset, drawSystem)
+{}
+
+
+std::unique_ptr<Action> AddCategoryAction::freshClone() const {
+    return std::make_unique<AddCategoryAction>(mId, mName, mRuleset, mDrawSystem);
+}
 
 CategoryId AddCategoryAction::getId() const {
     return mId;
@@ -43,10 +52,14 @@ void AddCategoryAction::undoImpl(TournamentStore & tournament) {
     tournament.endEraseCategories();
 }
 
-AddPlayersToCategoryAction::AddPlayersToCategoryAction(TournamentStore & tournament, CategoryId categoryId, std::vector<PlayerId> playerIds)
+AddPlayersToCategoryAction::AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds)
     : mCategoryId(categoryId)
     , mPlayerIds(playerIds)
 {}
+
+std::unique_ptr<Action> AddPlayersToCategoryAction::freshClone() const {
+    return std::make_unique<AddPlayersToCategoryAction>(mCategoryId, mPlayerIds);
+}
 
 void AddPlayersToCategoryAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId)) return;
@@ -67,7 +80,7 @@ void AddPlayersToCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.addPlayersToCategory(mCategoryId, mAddedPlayerIds);
 
     if (!mAddedPlayerIds.empty()) {
-        mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+        mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId);
         mDrawAction->redo(tournament);
     }
 }
@@ -92,10 +105,14 @@ void AddPlayersToCategoryAction::undoImpl(TournamentStore & tournament) {
     mAddedPlayerIds.clear();
 }
 
-ErasePlayersFromCategoryAction::ErasePlayersFromCategoryAction(TournamentStore & tournament, CategoryId categoryId, std::vector<PlayerId> playerIds)
+ErasePlayersFromCategoryAction::ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds)
     : mCategoryId(categoryId)
     , mPlayerIds(playerIds)
 {}
+
+std::unique_ptr<Action> ErasePlayersFromCategoryAction::freshClone() const {
+    return std::make_unique<ErasePlayersFromCategoryAction>(mCategoryId, mPlayerIds);
+}
 
 void ErasePlayersFromCategoryAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId)) return;
@@ -117,7 +134,7 @@ void ErasePlayersFromCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.erasePlayersFromCategory(mCategoryId, mErasedPlayerIds);
 
     if (!mErasedPlayerIds.empty()) {
-        mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+        mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId);
         mDrawAction->redo(tournament);
     }
 }
@@ -143,9 +160,13 @@ void ErasePlayersFromCategoryAction::undoImpl(TournamentStore & tournament) {
     mErasedPlayerIds.clear();
 }
 
-EraseCategoriesAction::EraseCategoriesAction(TournamentStore & tournament, std::vector<CategoryId> categoryIds)
+EraseCategoriesAction::EraseCategoriesAction(const std::vector<CategoryId> &categoryIds)
     : mCategoryIds(categoryIds)
 {}
+
+std::unique_ptr<Action> EraseCategoriesAction::freshClone() const {
+    return std::make_unique<EraseCategoriesAction>(mCategoryIds);
+}
 
 void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
     for (auto categoryId : mCategoryIds) {
@@ -254,9 +275,13 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
     mLocations.clear();
 }
 
-DrawCategoryAction::DrawCategoryAction(TournamentStore & tournament, CategoryId categoryId)
+DrawCategoryAction::DrawCategoryAction(CategoryId categoryId)
     : mCategoryId(categoryId)
 {}
+
+std::unique_ptr<Action> DrawCategoryAction::freshClone() const {
+    return std::make_unique<DrawCategoryAction>(mCategoryId);
+}
 
 void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId))
@@ -351,9 +376,13 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
         tournament.changeTatamis(changedTatamiLocations, changedBlocks);
 }
 
-ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(TournamentStore & tournament, std::vector<PlayerId> playerIds)
+ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds)
     : mPlayerIds(playerIds)
 {}
+
+std::unique_ptr<Action> ErasePlayersFromAllCategoriesAction::freshClone() const {
+    return std::make_unique<ErasePlayersFromAllCategoriesAction>(mPlayerIds);
+}
 
 void ErasePlayersFromAllCategoriesAction::redoImpl(TournamentStore & tournament) {
     std::vector<PlayerId> playerIds;
@@ -369,7 +398,7 @@ void ErasePlayersFromAllCategoriesAction::redoImpl(TournamentStore & tournament)
     }
 
     for (auto categoryId : categoryIds) {
-        auto action = std::make_unique<ErasePlayersFromCategoryAction>(tournament, categoryId, playerIds);
+        auto action = std::make_unique<ErasePlayersFromCategoryAction>(categoryId, playerIds);
         action->redo(tournament);
         mActions.push(std::move(action));
     }
@@ -479,6 +508,15 @@ AutoAddCategoriesAction::AutoAddCategoriesAction(TournamentStore &tournament, st
     }
 }
 
+AutoAddCategoriesAction::AutoAddCategoriesAction(const std::vector<std::vector<PlayerId>> &playerIds, std::vector<CategoryId> categoryIds, std::string baseName)
+    : mPlayerIds(playerIds)
+    , mCategoryIds(categoryIds)
+    , mBaseName(baseName)
+{}
+
+std::unique_ptr<Action> AutoAddCategoriesAction::freshClone() const {
+    return std::make_unique<AutoAddCategoriesAction>(mPlayerIds, mCategoryIds, mBaseName);
+}
 
 void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     for (auto categoryId : mCategoryIds) {
@@ -500,20 +538,24 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     tournament.endAddCategories();
 
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
-        AddPlayersToCategoryAction playersAction(tournament, mCategoryIds[i], mPlayerIds[i]);
+        AddPlayersToCategoryAction playersAction(mCategoryIds[i], mPlayerIds[i]);
         playersAction.redo(tournament);
     }
 }
 
 void AutoAddCategoriesAction::undoImpl(TournamentStore & tournament) {
-    EraseCategoriesAction eraseAction(tournament, mCategoryIds);
+    EraseCategoriesAction eraseAction(mCategoryIds);
     eraseAction.redo(tournament);
 }
 
-ChangeCategoryNameAction::ChangeCategoryNameAction(TournamentStore &tournament, CategoryId categoryId, const std::string &value)
+ChangeCategoryNameAction::ChangeCategoryNameAction(CategoryId categoryId, const std::string &value)
     : mCategoryId(categoryId)
     , mValue(value)
 {}
+
+std::unique_ptr<Action> ChangeCategoryNameAction::freshClone() const {
+    return std::make_unique<ChangeCategoryNameAction>(mCategoryId, mValue);
+}
 
 void ChangeCategoryNameAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId))
@@ -534,10 +576,14 @@ void ChangeCategoryNameAction::undoImpl(TournamentStore & tournament) {
     tournament.changeCategories({mCategoryId});
 }
 
-ChangeCategoryRulesetAction::ChangeCategoryRulesetAction (TournamentStore &tournament, CategoryId categoryId, uint8_t ruleset)
+ChangeCategoryRulesetAction::ChangeCategoryRulesetAction(CategoryId categoryId, uint8_t ruleset)
     : mCategoryId(categoryId)
     , mRuleset(ruleset)
 {}
+
+std::unique_ptr<Action> ChangeCategoryRulesetAction::freshClone() const {
+    return std::make_unique<ChangeCategoryRulesetAction>(mCategoryId, mRuleset);
+}
 
 void ChangeCategoryRulesetAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId))
@@ -551,7 +597,7 @@ void ChangeCategoryRulesetAction::redoImpl(TournamentStore & tournament) {
     auto ruleset = rulesets[mRuleset]->clone();
 
     mOldRuleset = category.setRuleset(std::move(ruleset));
-    mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+    mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId);
     mDrawAction->redo(tournament);
 
     tournament.changeCategories({mCategoryId});
@@ -570,10 +616,14 @@ void ChangeCategoryRulesetAction::undoImpl(TournamentStore & tournament) {
     tournament.changeCategories({mCategoryId});
 }
 
-ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction (TournamentStore &tournament, CategoryId categoryId, uint8_t drawSystem)
+ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction (CategoryId categoryId, uint8_t drawSystem)
     : mCategoryId(categoryId)
     , mDrawSystem(drawSystem)
 {}
+
+std::unique_ptr<Action> ChangeCategoryDrawSystemAction::freshClone() const {
+    return std::make_unique<ChangeCategoryDrawSystemAction>(mCategoryId, mDrawSystem);
+}
 
 void ChangeCategoryDrawSystemAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId))
@@ -588,7 +638,7 @@ void ChangeCategoryDrawSystemAction::redoImpl(TournamentStore & tournament) {
 
     mOldDrawSystem = category.setDrawSystem(std::move(drawSystem));
 
-    mDrawAction = std::make_unique<DrawCategoryAction>(tournament, mCategoryId);
+    mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId);
     mDrawAction->redo(tournament);
 
     tournament.changeCategories({mCategoryId});

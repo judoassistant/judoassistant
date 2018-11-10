@@ -12,8 +12,12 @@
 class AddPlayerAction : public Action {
 public:
     AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
+    AddPlayerAction(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
+
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
 
 private:
     PlayerId mId;
@@ -31,9 +35,12 @@ class ErasePlayersFromCategoryAction;
 
 class ErasePlayersAction : public Action {
 public:
-    ErasePlayersAction(TournamentStore & tournament, std::vector<PlayerId> playerIds);
+    ErasePlayersAction(const std::vector<PlayerId> &playerIds);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     std::vector<PlayerId> mPlayerIds;
 
@@ -45,9 +52,12 @@ private:
 
 class ChangePlayerFirstNameAction : public Action {
 public:
-    ChangePlayerFirstNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value);
+    ChangePlayerFirstNameAction(PlayerId playerId, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::string mValue;
@@ -58,9 +68,12 @@ private:
 
 class ChangePlayerLastNameAction : public Action {
 public:
-    ChangePlayerLastNameAction(TournamentStore &tournament, PlayerId playerId, const std::string &value);
+    ChangePlayerLastNameAction(PlayerId playerId, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::string mValue;
@@ -71,9 +84,12 @@ private:
 
 class ChangePlayerAgeAction : public Action {
 public:
-    ChangePlayerAgeAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerAge> value);
+    ChangePlayerAgeAction(PlayerId playerId, std::optional<PlayerAge> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::optional<PlayerAge> mValue;
@@ -84,9 +100,12 @@ private:
 
 class ChangePlayerRankAction : public Action {
 public:
-    ChangePlayerRankAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerRank> value);
+    ChangePlayerRankAction(PlayerId playerId, std::optional<PlayerRank> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::optional<PlayerRank> mValue;
@@ -97,9 +116,12 @@ private:
 
 class ChangePlayerClubAction : public Action {
 public:
-    ChangePlayerClubAction(TournamentStore &tournament, PlayerId playerId, const std::string &value);
+    ChangePlayerClubAction(PlayerId playerId, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::string mValue;
@@ -110,9 +132,12 @@ private:
 
 class ChangePlayerWeightAction : public Action {
 public:
-    ChangePlayerWeightAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerWeight> value);
+    ChangePlayerWeightAction(PlayerId playerId, std::optional<PlayerWeight> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::optional<PlayerWeight> mValue;
@@ -123,9 +148,12 @@ private:
 
 class ChangePlayerCountryAction : public Action {
 public:
-    ChangePlayerCountryAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerCountry> value);
+    ChangePlayerCountryAction(PlayerId playerId, std::optional<PlayerCountry> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::optional<PlayerCountry> mValue;
@@ -136,9 +164,12 @@ private:
 
 class ChangePlayerSexAction : public Action {
 public:
-    ChangePlayerSexAction(TournamentStore &tournament, PlayerId playerId, std::optional<PlayerSex> value);
+    ChangePlayerSexAction(PlayerId playerId, std::optional<PlayerSex> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+
 private:
     PlayerId mPlayerId;
     std::optional<PlayerSex> mValue;

@@ -176,7 +176,7 @@ void EditPlayerWidget::firstNameEdited() {
     std::string oldValue = player.getFirstName();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerFirstNameAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerFirstNameAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::lastNameEdited() {
@@ -190,7 +190,7 @@ void EditPlayerWidget::lastNameEdited() {
     std::string oldValue = player.getLastName();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerLastNameAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerLastNameAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::ageEdited() {
@@ -207,7 +207,7 @@ void EditPlayerWidget::ageEdited() {
     std::optional<PlayerAge> oldValue = player.getAge();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerAgeAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerAgeAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::rankEdited() {
@@ -224,7 +224,7 @@ void EditPlayerWidget::rankEdited() {
     std::optional<PlayerRank> oldValue = player.getRank();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerRankAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerRankAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::clubEdited() {
@@ -238,7 +238,7 @@ void EditPlayerWidget::clubEdited() {
     std::string oldValue = player.getClub();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerClubAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerClubAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::weightEdited() {
@@ -255,7 +255,7 @@ void EditPlayerWidget::weightEdited() {
     std::optional<PlayerWeight> oldValue = player.getWeight();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerWeightAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerWeightAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::countryEdited() {
@@ -273,7 +273,7 @@ void EditPlayerWidget::countryEdited() {
 
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerCountryAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerCountryAction>(*mPlayerId, newValue));
 }
 
 void EditPlayerWidget::sexEdited() {
@@ -291,6 +291,6 @@ void EditPlayerWidget::sexEdited() {
 
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangePlayerSexAction>(tournament, *mPlayerId, newValue));
+    mStoreHandler.dispatch(std::make_unique<ChangePlayerSexAction>(*mPlayerId, newValue));
 }
 
