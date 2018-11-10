@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.hpp"
+#include "serialize.hpp"
 
 // TODO: Implement serialization for all actions
 class TournamentStore;
@@ -19,6 +20,9 @@ public:
     void undo(TournamentStore & tournament);
 
     bool isDone() const;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {}
 private:
     bool mDone;
 };
