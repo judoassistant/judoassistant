@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 
 #include "core.hpp"
+#include "version.hpp"
 #include "src/store_handlers/network_message.hpp"
 
 class NetworkConnection {

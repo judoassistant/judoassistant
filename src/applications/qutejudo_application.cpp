@@ -1,7 +1,8 @@
-#include "applications/qutejudo_application.hpp"
-
 #include <QStyleFactory>
 #include <QCommandLineParser>
+
+#include "applications/qutejudo_application.hpp"
+#include "version.hpp"
 #include "widgets/qutejudo_window.hpp"
 
 QutejudoApplication::QutejudoApplication(int &argc, char *argv[]) : QApplication(argc, argv) {
