@@ -114,6 +114,17 @@ public:
         encodeHeader();
     }
 
+    void encodeUndo(ActionId actionId) {
+        mType = Type::UNDO;
+
+        std::ostringstream stream;
+        cereal::PortableBinaryOutputArchive archive(stream);
+        archive(actionId);
+
+        mBody = stream.str();
+        encodeHeader();
+    }
+
 private:
     void encodeHeader() {
         std::ostringstream stream;

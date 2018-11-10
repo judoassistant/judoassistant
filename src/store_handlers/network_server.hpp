@@ -48,15 +48,20 @@ private:
 class NetworkServer : public QThread {
     Q_OBJECT
 public:
+    typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
+
     static const size_t ACTION_STACK_MAX_SIZE = 200; // TODO: Figure out if this is sufficient
 
     NetworkServer(int port);
 
     void postSync(std::unique_ptr<TournamentStore> tournament) {
+        log_debug().msg("Posting sync");
         std::shared_ptr<TournamentStore> ptr = std::move(tournament);
         mContext.post([this, ptr]() {
+            log_debug().msg("Network syncing");
             mTournament = std::move(ptr);
             mActionStack.clear();
+            mActionMap.clear();
 
             auto message = std::make_shared<NetworkMessage>();
             message->encodeSync(mTournament, mActionStack);
@@ -65,30 +70,51 @@ public:
                 participant->setIsSyncing(true);
                 participant->deliver(message);
             }
+
+            emit syncConfirmed();
         });
     }
 
-    void postAction(ActionId id, std::shared_ptr<Action> action) {
-        mContext.post([this, id, action]() {
-            mActionStack.push_back(std::make_pair(id, action));
+    void postAction(ActionId actionId, std::unique_ptr<Action> action) {
+        std::shared_ptr<Action> sharedAction = std::move(action);
+        mContext.post([this, actionId, sharedAction]() {
+            log_debug().field("actionId", actionId).msg("Posting action to network");
+            mActionStack.push_back(std::make_pair(actionId, sharedAction));
+            mActionMap[actionId] = std::prev(mActionStack.end());
 
             if (mActionStack.size() > ACTION_STACK_MAX_SIZE) {
                 mActionStack.front().second->redo(*mTournament);
+                mActionMap.erase(mActionStack.front().first);
                 mActionStack.pop_front();
             }
 
             auto message = std::make_shared<NetworkMessage>();
-            message->encodeAction(id, action);
+            message->encodeAction(actionId, std::move(sharedAction));
 
-            for (auto & participant : mParticipants)
-                participant->deliver(message);
+            deliver(std::move(message));
 
-            emit actionConfirmReceived(id);
+            emit actionConfirmReceived(actionId);
         });
     }
 
-    void postUndo(ActionId) {
+    void postUndo(ActionId actionId) {
+        mContext.post([this, actionId]() {
+            log_debug().field("actionId", actionId).msg("Posting undo to network");
 
+            // Only deliver if action is not already undone
+            auto it = mActionMap.find(actionId);
+            if (it != mActionMap.end()) {
+                mActionStack.erase(it->second);
+                mActionMap.erase(it);
+
+                auto message = std::make_shared<NetworkMessage>();
+                message->encodeUndo(actionId);
+
+                deliver(std::move(message));
+            }
+
+            emit undoConfirmReceived(actionId);
+        });
     }
 
     void postQuit() {
@@ -106,14 +132,14 @@ public:
     }
 
     void join(std::shared_ptr<NetworkParticipant> participant) {
-        mParticipants.insert(participant);
+        mParticipants.insert(std::move(participant));
     }
 
     void leave(std::shared_ptr<NetworkParticipant> participant) {
-        mParticipants.erase(participant);
+        mParticipants.erase(std::move(participant));
     }
 
-    void deliver(std::shared_ptr<NetworkParticipant> sender, std::shared_ptr<NetworkMessage> message) {
+    void deliver(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender = nullptr) {
         // TODO: emit signal
         for (auto & participant : mParticipants) {
             if (participant == sender)
@@ -127,13 +153,15 @@ public:
         return mTournament;
     }
 
-    const std::list<std::pair<ActionId, std::shared_ptr<Action>>> & getActionStack() const {
+    const ActionList & getActionStack() const {
         return mActionStack;
     }
 
 signals:
-    void actionReceived(ActionId actionId, std::shared_ptr<Action> action);
+    void actionReceived(ActionId actionId, std::shared_ptr<const Action> action);
     void actionConfirmReceived(ActionId actionId);
+    void undoReceived(ActionId actionId);
+    void undoConfirmReceived(ActionId actionId);
     void syncConfirmed();
 
 protected:
@@ -146,6 +174,7 @@ private:
     boost::asio::ip::tcp::acceptor mAcceptor;
     std::unordered_set<std::shared_ptr<NetworkParticipant>> mParticipants;
     std::shared_ptr<TournamentStore> mTournament; // Tournament always kept behind the tournament in the UI thread
-    std::list<std::pair<ActionId, std::shared_ptr<Action>>> mActionStack;
+    ActionList mActionStack;
+    std::unordered_map<ActionId, ActionList::iterator> mActionMap;
 };
 

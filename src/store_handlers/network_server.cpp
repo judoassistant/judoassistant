@@ -103,7 +103,7 @@ void NetworkParticipant::readMessage() {
                 setIsSyncing(false);
         }
         else if (!isSyncing() && mReadMessage->getType() == NetworkMessage::Type::ACTION) {
-            mServer->deliver(shared_from_this(), std::move(mReadMessage));
+            mServer->deliver(std::move(mReadMessage), shared_from_this());
         }
 
         mReadMessage = std::make_unique<NetworkMessage>();

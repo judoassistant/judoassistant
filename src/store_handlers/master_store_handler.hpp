@@ -10,9 +10,13 @@
 #include "serializables.hpp"
 #include "store_handlers/network_server.hpp"
 
+Q_DECLARE_METATYPE(ActionId);
+
 class MasterStoreHandler : public QStoreHandler {
     Q_OBJECT
 public:
+    static const size_t REDO_LIST_MAX_SIZE = 20;
+
     MasterStoreHandler();
     ~MasterStoreHandler();
 
@@ -29,17 +33,32 @@ public:
     bool isDirty() const;
 
 protected slots:
-    void receiveAction(ActionId id, std::shared_ptr<Action> action);
-    void receiveActionConfirm(ActionId id);
+    void receiveAction(ActionId actionId, std::shared_ptr<const Action> action);
+    void receiveActionConfirm(ActionId actionId);
+    void receiveUndo(ActionId actionId);
+    void receiveUndoConfirm(ActionId actionId);
     void receiveSyncConfirm();
 
 private:
+    ActionId generateNextActionId();
+    typedef std::list<std::pair<ActionId, std::unique_ptr<Action>>> ActionList;
+
     std::unique_ptr<QTournamentStore> mTournament;
-    std::list<std::pair<ActionId, std::shared_ptr<Action>>> mActionStack;
-    std::list<std::pair<ActionId, std::shared_ptr<Action>>> mUnconfirmedStack;
-    // std::vector<std::shared_ptr<Action>> mRedoStack;
+
+    ActionList mConfirmedActionList;
+    std::unordered_map<ActionId, ActionList::iterator> mConfirmedActionMap;
+
+    ActionList mUnconfirmedActionList;
+    std::unordered_map<ActionId, ActionList::iterator> mUnconfirmedActionMap;
+
+    std::list<std::unique_ptr<Action>> mRedoList;
+    std::unordered_set<ActionId> mUnconfirmedUndos;
+
+    std::list<ActionId> mUndoList;
+    std::map<ActionId, std::list<ActionId>::iterator> mUndoListMap;
+
     bool mIsDirty;
-    bool mSyncing;
+    size_t mSyncing;
     NetworkServer mServer;
     ActionId::Generator mActionIdGenerator;
 };

@@ -4,30 +4,27 @@
 MasterStoreHandler::MasterStoreHandler()
     : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
     , mIsDirty(false)
-    , mSyncing(false)
     , mServer(8000)
 {
+    qRegisterMetaType<ActionId>();
+
     connect(&mServer, &NetworkServer::actionReceived, this, &MasterStoreHandler::receiveAction);
     connect(&mServer, &NetworkServer::actionConfirmReceived, this, &MasterStoreHandler::receiveActionConfirm);
+
+    connect(&mServer, &NetworkServer::undoReceived, this, &MasterStoreHandler::receiveUndo);
+    connect(&mServer, &NetworkServer::undoConfirmReceived, this, &MasterStoreHandler::receiveUndoConfirm);
+
     connect(&mServer, &NetworkServer::syncConfirmed, this, &MasterStoreHandler::receiveSyncConfirm);
 
     mServer.start();
+    mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
+    mSyncing = 1;
 }
 
 MasterStoreHandler::~MasterStoreHandler() {
     mServer.postQuit();
     mServer.quit();
     mServer.wait();
-}
-
-void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
-    mIsDirty = true;
-
-    std::shared_ptr<Action> sharedAction = std::move(action);
-    auto actionId = mActionIdGenerator();
-    mUnconfirmedStack.push_back({actionId, sharedAction});
-    sharedAction->redo(*mTournament);
-    // mServer.postAction(actionId, sharedAction);
 }
 
 QTournamentStore & MasterStoreHandler::getTournament() {
@@ -39,11 +36,20 @@ const QTournamentStore & MasterStoreHandler::getTournament() const {
 }
 
 void MasterStoreHandler::reset() {
-    mSyncing = true;
+    mSyncing += 1;
 
     mTournament = std::make_unique<QTournamentStore>();
-    mActionStack.clear();
-    mUnconfirmedStack.clear();
+    mConfirmedActionList.clear();
+    mConfirmedActionMap.clear();
+
+    mUnconfirmedActionList.clear();
+    mUnconfirmedActionMap.clear();
+
+    mRedoList.clear();
+
+    mUnconfirmedUndos.clear();
+    mUndoList.clear();
+    mUndoListMap.clear();
 
     mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
 
@@ -55,7 +61,7 @@ void MasterStoreHandler::reset() {
 }
 
 bool MasterStoreHandler::read(const QString &path) {
-    mSyncing = true;
+    mSyncing += 1;
 
     log_debug().field("path", path).msg("Reading tournament from file");
     std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
@@ -67,13 +73,24 @@ bool MasterStoreHandler::read(const QString &path) {
     cereal::PortableBinaryInputArchive archive(file);
     archive(*mTournament);
 
+    mConfirmedActionList.clear();
+    mConfirmedActionMap.clear();
+
+    mUnconfirmedActionList.clear();
+    mUnconfirmedActionMap.clear();
+
+    mRedoList.clear();
+    mUnconfirmedUndos.clear();
+
+    mUndoList.clear();
+    mUndoListMap.clear();
+
     mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
 
-    mActionStack.clear();
-    mUnconfirmedStack.clear();
     emit tournamentReset();
     emit redoStatusChanged(false);
     emit undoStatusChanged(false);
+
     mIsDirty = false;
     return true;
 }
@@ -92,47 +109,248 @@ bool MasterStoreHandler::write(const QString &path) {
 }
 
 bool MasterStoreHandler::canUndo() {
-    return false;
-}
-
-void MasterStoreHandler::undo() {
-    throw std::runtime_error("Not implemented");
+    return !mUndoList.empty();
 }
 
 bool MasterStoreHandler::canRedo() {
-    return false;
+    return !mRedoList.empty();
 }
 
 void MasterStoreHandler::redo() {
-    throw std::runtime_error("Not implemented");
+    assert(canRedo());
+
+    log_debug().msg("Redoing action");
+
+    auto action = std::move(mRedoList.back());
+    mRedoList.pop_back();
+
+    dispatch(std::move(action));
+
+    if (mRedoList.empty())
+        emit redoStatusChanged(false);
 }
 
 bool MasterStoreHandler::isDirty() const {
     return mIsDirty;
 }
 
-void MasterStoreHandler::receiveAction(ActionId actionId, std::shared_ptr<Action> action) {
-    for (auto it = mUnconfirmedStack.rbegin(); it != mUnconfirmedStack.rend(); ++it)
-        it->second->undo(*mTournament);
+ActionId MasterStoreHandler::generateNextActionId() {
+    ActionId id;
+    while (true) {
+        id = mActionIdGenerator();
+
+        if (mConfirmedActionMap.find(id) != mConfirmedActionMap.end())
+            continue;
+        if (mUnconfirmedActionMap.find(id) != mUnconfirmedActionMap.end())
+            continue;
+
+        return id;
+    }
+}
+
+void MasterStoreHandler::receiveSyncConfirm() {
+    mSyncing -= 1;
+    log_debug().field("mSyncing", mSyncing).msg("Sync confirmed");
+}
+
+void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
+    mIsDirty = true;
+
+    auto actionId = generateNextActionId();
+
+    log_debug().field("actionId", actionId).msg("Dispatching action");
+
+    auto clone = action->freshClone();
+    action->redo(*mTournament);
+
+    mUnconfirmedActionList.push_back({actionId, std::move(action)});
+    mUnconfirmedActionMap[actionId] = std::prev(mUnconfirmedActionList.end());
+
+    mUndoList.push_back(actionId);
+    mUndoListMap[actionId] = std::prev(mUndoList.end());
+
+    mServer.postAction(actionId, std::move(clone));
+
+    if (mUndoList.size() == 1) // undo list was empty
+        emit undoStatusChanged(true);
+}
+
+
+void MasterStoreHandler::receiveAction(ActionId actionId, std::shared_ptr<const Action> sharedAction) {
+    if (mSyncing > 0)
+        return;
+
+    auto action = sharedAction->freshClone(); // Unique ptrs can't be passed to signals, so instead a shared_ptr is used
+    log_debug().field("actionId", actionId).msg("Received action");
+
+    // TODO: Trim stack size
+    for (auto it = mUnconfirmedActionList.rbegin(); it != mUnconfirmedActionList.rend(); ++it) {
+        auto &a = *(it->second);
+        if (a.isDone())
+            a.undo(*mTournament);
+    }
 
     action->redo(*mTournament);
-    mActionStack.push_back({actionId, std::move(action)});
+    mConfirmedActionList.push_back({actionId, std::move(action)});
+    mConfirmedActionMap[actionId] = std::prev(mUnconfirmedActionList.end());
 
-    for (auto it = mUnconfirmedStack.begin(); it != mUnconfirmedStack.end(); ++it)
+    for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
+        // if the action is an unconfirmed undo then leave it undone
+        if (mUnconfirmedUndos.find(it->first) != mUnconfirmedUndos.end())
+            continue;
+
         it->second->redo(*mTournament);
+    }
+}
+
+void MasterStoreHandler::undo() {
+    assert(canUndo());
+
+    auto actionId = mUndoList.back();
+    mUndoList.pop_back();
+    mUndoListMap.erase(actionId);
+
+    log_debug().field("actionId", actionId).msg("Undo called");
+
+    mUnconfirmedUndos.insert(actionId);
+
+    std::unique_ptr<Action> clone;
+
+    // unroll unconfirmed stack
+    for (auto it = mUnconfirmedActionList.rbegin(); it != mUnconfirmedActionList.rend(); ++it) {
+        auto &a = *(it->second);
+
+        if (it->first == actionId) {
+            clone = a.freshClone();
+            break;
+        }
+
+        if (a.isDone())
+            a.undo(*mTournament);
+    }
+
+    log_debug().field("mapSize", mUnconfirmedActionMap.size()).msg("Rolling");
+    // unroll and roll back the confirmed stack if neccesary
+    if (mUnconfirmedActionMap.find(actionId) == mUnconfirmedActionMap.end()) {
+        assert(mConfirmedActionMap.find(actionId) != mConfirmedActionMap.end());
+
+        auto it = std::prev(mConfirmedActionList.end());
+        while (it->first != actionId) {
+            if (it->second->isDone())
+                it->second->undo(*mTournament);
+            it = std::prev(it);
+        }
+
+        assert(it->second->isDone());
+        it->second->undo(*mTournament);
+        clone = it->second->freshClone();
+        it = std::next(it);
+
+        while (it != mConfirmedActionList.end()) {
+            if (mUnconfirmedUndos.find(it->first) == mUnconfirmedUndos.end())
+                it->second->redo(*mTournament);
+
+            it = std::next(it);
+        }
+    }
+
+    // roll back the unconfirmed stack
+    for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
+        // if the action is an unconfirmed undo then leave it undone
+        if (mUnconfirmedUndos.find(it->first) != mUnconfirmedUndos.end())
+            continue;
+
+        auto &a = *(it->second);
+        if (a.isDone()) continue; // incase break was called in the first loop
+
+        a.redo(*mTournament);
+    }
+
+    assert(clone != nullptr);
+    mRedoList.push_back(std::move(clone));
+
+    if (mRedoList.size() > REDO_LIST_MAX_SIZE)
+        mRedoList.pop_front();
+
+    mServer.postUndo(actionId);
+
+    if (mUndoList.empty())
+        emit undoStatusChanged(false);
+    if (mRedoList.size() == 1) // list was empty before
+        emit redoStatusChanged(true);
 }
 
 void MasterStoreHandler::receiveActionConfirm(ActionId actionId) {
-    auto front = std::move(mUnconfirmedStack.front());
-    mUnconfirmedStack.pop_front();
+    if (mSyncing > 0)
+        return;
+
+    log_debug().field("actionId", actionId).msg("Received action confirm");
+
+    auto front = std::move(mUnconfirmedActionList.front());
+    mUnconfirmedActionList.pop_front();
+    mUnconfirmedActionMap.erase(actionId);
 
     if (front.first != actionId)
         throw std::runtime_error("Received confirmation in wrong order");
 
-    mActionStack.push_back(std::move(front));
+    mConfirmedActionList.push_back(std::move(front));
+    mConfirmedActionMap[actionId] = std::prev(mConfirmedActionList.end());
 }
 
-void MasterStoreHandler::receiveSyncConfirm() {
-    mSyncing = false;
+void MasterStoreHandler::receiveUndo(ActionId actionId) {
+    if (mSyncing > 0)
+        return;
+
+    log_debug().field("actionId", actionId).msg("Received undo");
+    // An action can never be unconfirmed if the server sends an undo for it
+    assert(mConfirmedActionMap.find(actionId) != mConfirmedActionMap.end());
+
+    // Undo the action above on the confirmed action list
+    auto it1 = std::prev(mConfirmedActionList.end());
+    while (it1->first != actionId) {
+        if (it1->second->isDone())
+            it1->second->undo(*mTournament);
+        it1 = std::prev(it1);
+    }
+
+    // The local client may have an unconfirmed undo for the same action
+    if (it1->second->isDone()) {
+        assert(mUnconfirmedUndos.find(actionId) == mUnconfirmedUndos.end());
+        it1->second->undo(*mTournament);
+    }
+    else {
+        assert(mUnconfirmedUndos.find(actionId) != mUnconfirmedUndos.end());
+        mUnconfirmedUndos.erase(actionId);
+    }
+
+    // Remove the action from the next
+    auto tmp = it1;
+    it1 = std::next(it1);
+
+    mConfirmedActionList.erase(tmp);
+    mConfirmedActionMap.erase(actionId);
+
+    // Update undo list if neccesary
+    auto it2 = mUndoListMap.find(actionId);
+    if (it2 != mUndoListMap.end()) {
+        mUndoList.erase(it2->second);
+        mUndoListMap.erase(it2);
+    }
+
+    // Redo the actions above on the confirmed action list
+    while (it1 != mConfirmedActionList.end()) {
+        if (mUnconfirmedUndos.find(it1->first) == mUnconfirmedUndos.end())
+            it1->second->redo(*mTournament);
+
+        it1 = std::next(it1);
+    }
+}
+
+void MasterStoreHandler::receiveUndoConfirm(ActionId actionId) {
+    if (mSyncing > 0)
+        return;
+
+    log_debug().field("actionId", actionId).msg("Received undo confirm");
+    receiveUndo(actionId);
 }
 
