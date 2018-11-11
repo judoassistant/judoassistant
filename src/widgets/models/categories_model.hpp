@@ -2,6 +2,7 @@
 
 #include <QAbstractTableModel>
 #include <QItemSelection>
+#include <QMetaObject>
 #include <QSortFilterProxyModel>
 #include <set>
 #include "store_managers/store_manager.hpp"
@@ -29,11 +30,13 @@ public slots:
     void categoriesReset();
     void matchesReset(CategoryId id);
     void categoryPlayersChanged(CategoryId categoryId);
+    void tournamentAboutToBeReset();
     void tournamentReset();
 private:
     const int COLUMN_COUNT = 5;
     StoreManager & mStoreManager;
     std::set<CategoryId> mIds;
+    std::stack<QMetaObject::Connection> mConnections;
 };
 
 class CategoriesProxyModel : public QSortFilterProxyModel {

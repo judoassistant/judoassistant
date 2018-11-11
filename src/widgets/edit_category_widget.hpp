@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QLabel>
+#include <QMetaObject>
 
 #include "core.hpp"
 #include "store_managers/store_manager.hpp"
@@ -20,6 +21,7 @@ private:
     void categoriesChanged(std::vector<CategoryId> ids);
     void resetMatches(CategoryId categoryId);
     void changePlayerCount(CategoryId categoryId, std::vector<PlayerId> playerIds);
+    void tournamentAboutToBeReset();
     void tournamentReset();
     void nameEdited();
     void rulesetEdited();
@@ -32,4 +34,5 @@ private:
     QComboBox *mDrawSystemContent;
     QLabel *mPlayerCountContent;
     QLabel *mMatchCountContent;
+    std::stack<QMetaObject::Connection> mConnections;
 };

@@ -2,6 +2,7 @@
 
 #include <QGraphicsView>
 #include <QGraphicsItem>
+#include <QMetaObject>
 #include "stores/tatami_store.hpp"
 #include "store_managers/store_manager.hpp"
 #include "widgets/misc/numerical_string_comparator.hpp"
@@ -52,6 +53,7 @@ public slots:
     void tatamisAboutToBeErased(std::vector<size_t> indices);
     void categoriesAdded(std::vector<CategoryId> categoryId);
     void categoriesAboutToBeErased(std::vector<CategoryId> categoryId);
+    void tournamentAboutToBeReset();
     void tournamentReset();
     void categoriesReset();
 
@@ -66,5 +68,6 @@ private:
     StoreManager & mStoreManager;
     std::set<std::pair<CategoryId, MatchType>, BlockComparator> mBlocks;
     std::map<std::pair<CategoryId, MatchType>, UnallocatedBlockItem*> mBlockItems;
+    std::stack<QMetaObject::Connection> mConnections;
 };
 

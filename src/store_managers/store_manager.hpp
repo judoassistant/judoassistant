@@ -41,7 +41,8 @@ protected slots:
     void receiveSyncConfirm();
 
 signals:
-    void tournamentReset(); // TODO: change to abouttobereset
+    void tournamentAboutToBeReset();
+    void tournamentReset();
     void undoStatusChanged(bool canUndo);
     void redoStatusChanged(bool canRedo);
 

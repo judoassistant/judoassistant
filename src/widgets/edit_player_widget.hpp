@@ -1,11 +1,12 @@
 #pragma once
 
-#include "core.hpp"
-#include "store_managers/store_manager.hpp"
-
+#include <QMetaObject>
 #include <QWidget>
 #include <QLineEdit>
 #include <QComboBox>
+
+#include "core.hpp"
+#include "store_managers/store_manager.hpp"
 
 class StoreManager;
 
@@ -25,6 +26,7 @@ private:
     void countryEdited();
     void sexEdited();
     void playersChanged(std::vector<PlayerId> ids);
+    void tournamentAboutToBeReset();
     void tournamentReset();
 
     StoreManager & mStoreManager;
@@ -37,4 +39,6 @@ private:
     QLineEdit *mWeightContent;
     QComboBox *mCountryContent;
     QComboBox *mSexContent;
+
+    std::stack<QMetaObject::Connection> mConnections;
 };

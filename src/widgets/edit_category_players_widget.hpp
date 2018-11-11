@@ -14,7 +14,7 @@ public:
     void setCategory(std::optional<CategoryId> categoryId);
 
 protected slots:
-    void tournamentReset();
+    void tournamentAboutToBeReset();
 
 private:
     StoreManager &mStoreManager;

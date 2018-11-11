@@ -16,7 +16,8 @@ public:
     TatamisWidget(StoreManager &storeManager);
 
 public slots:
-    void tatamisReset();
+    void tournamentAboutToBeReset();
+    void tournamentReset();
 
 private:
     StoreManager &mStoreManager;

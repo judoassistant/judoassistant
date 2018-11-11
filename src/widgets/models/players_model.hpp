@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QMetaObject>
 #include <QAbstractTableModel>
 #include <QItemSelection>
 #include <set>
@@ -27,6 +28,8 @@ public slots:
     void playersAboutToBeReset();
     void playersReset();
     void tournamentReset();
+    void tournamentAboutToBeReset();
+    void playerCategoriesChanged(CategoryId categoryId, std::vector<PlayerId> playerIds);
     void playerCategoriesChanged(std::vector<PlayerId> playerIds);
     void categoriesAboutToBeErased(std::vector<CategoryId> playerIds);
     void categoriesErased(std::vector<CategoryId> playerIds);
@@ -36,6 +39,7 @@ private:
     StoreManager & mStoreManager;
     std::set<PlayerId> mIds;
     std::unordered_set<PlayerId> mAffectedPlayers; // Used when receiving a categoriesAboutToBeErased signal
+    std::stack<QMetaObject::Connection> mConnections;
 };
 
 class PlayersProxyModel : public QSortFilterProxyModel {

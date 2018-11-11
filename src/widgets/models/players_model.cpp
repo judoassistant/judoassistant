@@ -8,9 +8,11 @@ PlayersModel::PlayersModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)
     , mStoreManager(storeManager)
 {
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &PlayersModel::tournamentReset);
-
+    tournamentAboutToBeReset();
     tournamentReset();
+
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &PlayersModel::tournamentAboutToBeReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &PlayersModel::tournamentReset);
 }
 
 int PlayersModel::rowCount(const QModelIndex &parent) const {
@@ -143,24 +145,32 @@ void PlayersModel::playersReset() {
     endResetModel();
 }
 
-void PlayersModel::tournamentReset() {
+void PlayersModel::tournamentAboutToBeReset() {
     beginResetModel();
+
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+}
+
+void PlayersModel::tournamentReset() {
     QTournamentStore & tournament = mStoreManager.getTournament();
 
     mIds.clear();
     for (const auto & p : tournament.getPlayers())
         mIds.insert(p.first);
 
-    connect(&tournament, &QTournamentStore::playersAdded, this, &PlayersModel::playersAdded);
-    connect(&tournament, &QTournamentStore::playersChanged, this, &PlayersModel::playersChanged);
-    connect(&tournament, &QTournamentStore::playersAboutToBeErased, this, &PlayersModel::playersAboutToBeErased);
-    connect(&tournament, &QTournamentStore::playersAboutToBeReset, this, &PlayersModel::playersAboutToBeReset);
-    connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset);
+    mConnections.push(connect(&tournament, &QTournamentStore::playersAdded, this, &PlayersModel::playersAdded));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersChanged, this, &PlayersModel::playersChanged));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersAboutToBeErased, this, &PlayersModel::playersAboutToBeErased));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersAboutToBeReset, this, &PlayersModel::playersAboutToBeReset));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset));
 
-    connect(&tournament, &QTournamentStore::playersAddedToCategory, [&](CategoryId, const std::vector<PlayerId> &ids) {this->playerCategoriesChanged(ids);});
-    connect(&tournament, &QTournamentStore::playersErasedFromCategory, [&](CategoryId, const std::vector<PlayerId> &ids) {this->playerCategoriesChanged(ids);});
-    connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &PlayersModel::categoriesAboutToBeErased);
-    connect(&tournament, &QTournamentStore::categoriesErased, this, &PlayersModel::categoriesErased);
+    mConnections.push(connect(&tournament, &QTournamentStore::playersAddedToCategory, this, qOverload<CategoryId, std::vector<PlayerId>>(&PlayersModel::playerCategoriesChanged)));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersErasedFromCategory, this, qOverload<CategoryId, std::vector<PlayerId>>(&PlayersModel::playerCategoriesChanged)));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &PlayersModel::categoriesAboutToBeErased));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesErased, this, &PlayersModel::categoriesErased));
 
     endResetModel();
 }
@@ -180,6 +190,10 @@ void PlayersModel::playerCategoriesChanged(std::vector<PlayerId> playerIds) {
         int row = getRow(playerId);
         emit dataChanged(createIndex(row, 7), createIndex(row, 7));
     }
+}
+
+void PlayersModel::playerCategoriesChanged(CategoryId categoryId, std::vector<PlayerId> playerIds) {
+    playerCategoriesChanged(playerIds);
 }
 
 void PlayersModel::categoriesAboutToBeErased(std::vector<CategoryId> categoryIds) {

@@ -29,6 +29,7 @@ bool MasterStoreManager::read(const QString &path) {
 }
 
 void MasterStoreManager::resetTournament() {
+    log_debug().msg("Resetting tournament");
     sync(std::make_unique<QTournamentStore>());
     mDirty = false;
 }

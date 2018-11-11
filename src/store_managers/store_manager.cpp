@@ -1,7 +1,7 @@
 #include "store_managers/store_manager.hpp"
 
 StoreManager::StoreManager()
-    : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
+    : mTournament(std::make_unique<QTournamentStore>())
     , mSyncing(0)
 {
     qRegisterMetaType<ActionId>();
@@ -45,6 +45,8 @@ const QTournamentStore & StoreManager::getTournament() const {
 
 void StoreManager::sync(std::unique_ptr<QTournamentStore> tournament) {
     mSyncing += 1;
+
+    emit tournamentAboutToBeReset();
 
     mTournament = std::move(tournament);
     mConfirmedActionList.clear();

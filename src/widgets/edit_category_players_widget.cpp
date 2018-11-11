@@ -23,7 +23,7 @@ EditCategoryPlayersWidget::EditCategoryPlayersWidget (StoreManager & storeManage
     setLayout(layout);
 
     setCategory(std::nullopt);
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &EditCategoryPlayersWidget::tournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &EditCategoryPlayersWidget::tournamentAboutToBeReset);
 }
 
 void EditCategoryPlayersWidget::setCategory(std::optional<CategoryId> categoryId) {
@@ -37,7 +37,7 @@ void EditCategoryPlayersWidget::setCategory(std::optional<CategoryId> categoryId
     }
 }
 
-void EditCategoryPlayersWidget::tournamentReset() {
+void EditCategoryPlayersWidget::tournamentAboutToBeReset() {
     setCategory(std::nullopt);
 }
 

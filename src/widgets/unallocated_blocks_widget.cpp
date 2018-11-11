@@ -24,17 +24,8 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QW
     setMaximumWidth(216);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    auto & tournament = mStoreManager.getTournament();
-
-    connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::tatamisChanged);
-    connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::tatamisAboutToBeErased);
-    connect(&tournament, &QTournamentStore::tatamisAdded, this, &UnallocatedBlocksWidget::tatamisAdded);
-    connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget::categoriesAdded);
-    connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &UnallocatedBlocksWidget::categoriesAboutToBeErased);
-    connect(&tournament, &QTournamentStore::categoriesReset, this, &UnallocatedBlocksWidget::categoriesReset);
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &UnallocatedBlocksWidget::tournamentReset);
-
-    reloadBlocks();
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &UnallocatedBlocksWidget::tournamentAboutToBeReset);
 }
 
 void UnallocatedBlocksWidget::tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
@@ -139,15 +130,24 @@ void UnallocatedBlocksWidget::categoriesAboutToBeErased(std::vector<CategoryId> 
         shiftBlocks();
 }
 
+void UnallocatedBlocksWidget::tournamentAboutToBeReset() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+
+    mBlocks.clear();
+}
+
 void UnallocatedBlocksWidget::tournamentReset() {
     auto & tournament = mStoreManager.getTournament();
 
-    connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::tatamisChanged);
-    connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::tatamisAboutToBeErased);
-    connect(&tournament, &QTournamentStore::tatamisAdded, this, &UnallocatedBlocksWidget::tatamisAdded);
-    connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget::categoriesAdded);
-    connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &UnallocatedBlocksWidget::categoriesAboutToBeErased);
-    connect(&tournament, &QTournamentStore::categoriesReset, this, &UnallocatedBlocksWidget::categoriesReset);
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::tatamisChanged));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::tatamisAboutToBeErased));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &UnallocatedBlocksWidget::tatamisAdded));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget::categoriesAdded));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &UnallocatedBlocksWidget::categoriesAboutToBeErased));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesReset, this, &UnallocatedBlocksWidget::categoriesReset));
 
     mBlocks = std::set<std::pair<CategoryId, MatchType>, BlockComparator>(BlockComparator(tournament));
     reloadBlocks();

@@ -31,8 +31,23 @@ TournamentWidget::TournamentWidget(StoreManager &storeManager)
 
     setLayout(mainLayout);
 
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TournamentWidget::tournamentChanged);
-    connect(&mStoreManager.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged);
+    tournamentAboutToBeReset();
+    tournamentReset();
+
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TournamentWidget::tournamentAboutToBeReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TournamentWidget::tournamentReset);
+}
+
+void TournamentWidget::tournamentAboutToBeReset() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+}
+
+void TournamentWidget::tournamentReset() {
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged));
+    tournamentChanged();
 }
 
 void TournamentWidget::tournamentChanged() {

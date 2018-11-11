@@ -11,7 +11,8 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
     // QTournamentStore &tournament = mStoreManager.getTournament();
 
     // TODO: Handle erase and adding of tatamis
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamisWidget::tatamisReset);
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TatamisWidget::tournamentAboutToBeReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamisWidget::tournamentReset);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -61,14 +62,16 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
     setLayout(layout);
 }
 
-void TatamisWidget::tatamisReset() {
+void TatamisWidget::tournamentAboutToBeReset() {
     for (TatamiWidget *tatami : mTatamis) {
         mTatamiLayout->removeWidget(tatami);
         delete tatami;
     }
 
     mTatamis.clear();
+}
 
+void TatamisWidget::tournamentReset() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
         auto *tatami = new TatamiWidget(mStoreManager, i, this);
@@ -76,3 +79,4 @@ void TatamisWidget::tatamisReset() {
         mTatamiLayout->addWidget(tatami);
     }
 }
+

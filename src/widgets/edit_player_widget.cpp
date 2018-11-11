@@ -63,9 +63,17 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &EditPlayerWidget::tournamentReset);
 }
 
-void EditPlayerWidget::tournamentReset() {
-    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersChanged, this, &EditPlayerWidget::playersChanged);
+void EditPlayerWidget::tournamentAboutToBeReset() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+
     setPlayer(std::nullopt);
+}
+
+void EditPlayerWidget::tournamentReset() {
+    mConnections.push(connect(&(mStoreManager.getTournament()), &QTournamentStore::playersChanged, this, &EditPlayerWidget::playersChanged));
 }
 
 void EditPlayerWidget::playersChanged(std::vector<PlayerId> ids) {

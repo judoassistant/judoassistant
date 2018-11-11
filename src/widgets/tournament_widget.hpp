@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QMetaObject>
 #include <QLineEdit>
 #include <QComboBox>
 
@@ -11,6 +12,8 @@ class TournamentWidget : public QWidget {
     Q_OBJECT
 
 public slots:
+    void tournamentAboutToBeReset();
+    void tournamentReset();
     void tournamentChanged();
     void updateTournamentName();
 public:
@@ -19,5 +22,6 @@ private:
     StoreManager &mStoreManager;
     QLineEdit *mNameContent;
     QComboBox *mLanguageContent;
+    std::stack<QMetaObject::Connection> mConnections;
 };
 

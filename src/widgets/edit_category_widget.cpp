@@ -47,13 +47,20 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &EditCategoryWidget::tournamentReset);
 }
 
-void EditCategoryWidget::tournamentReset() {
-    connect(&(mStoreManager.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged);
-    connect(&(mStoreManager.getTournament()), &QTournamentStore::matchesReset, this, &EditCategoryWidget::resetMatches);
-    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersAddedToCategory, this, &EditCategoryWidget::changePlayerCount);
-    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount);
+void EditCategoryWidget::tournamentAboutToBeReset() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
 
     setCategory(std::nullopt);
+}
+
+void EditCategoryWidget::tournamentReset() {
+    mConnections.push(connect(&(mStoreManager.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged));
+    mConnections.push(connect(&(mStoreManager.getTournament()), &QTournamentStore::matchesReset, this, &EditCategoryWidget::resetMatches));
+    mConnections.push(connect(&(mStoreManager.getTournament()), &QTournamentStore::playersAddedToCategory, this, &EditCategoryWidget::changePlayerCount));
+    mConnections.push(connect(&(mStoreManager.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount));
 }
 
 void EditCategoryWidget::setCategory(std::optional<CategoryId> id) {
