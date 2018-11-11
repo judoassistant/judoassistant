@@ -11,8 +11,8 @@
 
 #include "actions/player_actions.hpp"
 
-PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
-    : mStoreHandler(storeHandler)
+PlayersWidget::PlayersWidget(StoreManager &storeManager)
+    : mStoreManager(storeManager)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -45,7 +45,7 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 
     {
         mTableView = new QTableView(splitter);
-        mModel = new PlayersProxyModel(storeHandler, layout);
+        mModel = new PlayersProxyModel(storeManager, layout);
 
         mTableView->setModel(mModel);
         mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -62,7 +62,7 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
     }
 
     {
-        mEditPlayerWidget = new EditPlayerWidget(storeHandler, splitter);
+        mEditPlayerWidget = new EditPlayerWidget(storeManager, splitter);
         splitter->addWidget(mEditPlayerWidget);
     }
 
@@ -71,7 +71,7 @@ PlayersWidget::PlayersWidget(QStoreHandler &storeHandler)
 }
 
 void PlayersWidget::showPlayerCreateDialog() {
-    CreatePlayerDialog dialog(mStoreHandler);
+    CreatePlayerDialog dialog(mStoreManager);
 
     dialog.exec();
 }
@@ -83,7 +83,7 @@ void PlayersWidget::showAutoAddCategoriesWidget() {
 
     bool hasWeights = true;
     for (auto playerId : playerIds) {
-        const auto &player = mStoreHandler.getTournament().getPlayer(playerId);
+        const auto &player = mStoreManager.getTournament().getPlayer(playerId);
         if (!player.getWeight()) {
             hasWeights = false;
             break;
@@ -96,14 +96,14 @@ void PlayersWidget::showAutoAddCategoriesWidget() {
             return;
     }
 
-    AutoAddCategoryDialog dialog(mStoreHandler, playerIds);
+    AutoAddCategoryDialog dialog(mStoreManager, playerIds);
 
     dialog.exec();
 }
 
 void PlayersWidget::showContextMenu(const QPoint &pos) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    const TournamentStore &tournament = mStoreHandler.getTournament();
+    const TournamentStore &tournament = mStoreManager.getTournament();
 
     if (playerIds.empty())
         return;
@@ -161,7 +161,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
 
 void PlayersWidget::eraseSelectedPlayers() {
     auto playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersAction>(std::move(playerIds)));
+    mStoreManager.dispatch(std::make_unique<ErasePlayersAction>(std::move(playerIds)));
 }
 
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
@@ -179,16 +179,16 @@ void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItem
 void PlayersWidget::eraseSelectedPlayersFromAllCategories() {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
 
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromAllCategoriesAction>(std::move(playerIds)));
+    mStoreManager.dispatch(std::make_unique<ErasePlayersFromAllCategoriesAction>(std::move(playerIds)));
 }
 
 void PlayersWidget::eraseSelectedPlayersFromCategory(CategoryId categoryId) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds)));
+    mStoreManager.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds)));
 }
 
 void PlayersWidget::addSelectedPlayersToCategory(CategoryId categoryId) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<AddPlayersToCategoryAction>(categoryId, std::move(playerIds)));
+    mStoreManager.dispatch(std::make_unique<AddPlayersToCategoryAction>(categoryId, std::move(playerIds)));
 }
 

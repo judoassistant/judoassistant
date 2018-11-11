@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 #include <QDialog>
 #include <QLineEdit>
@@ -9,18 +9,18 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 
-class QStoreHandler;
+class StoreManager;
 
 class CreatePlayerDialog : public QDialog {
     Q_OBJECT
 public:
-    CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *parent = nullptr);
+    CreatePlayerDialog(StoreManager & storeManager, QWidget *parent = nullptr);
 
 public slots:
     void acceptClick();
     void cancelClick();
 private:
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     QLineEdit *mFirstNameContent;
     QLineEdit *mLastNameContent;
     QLineEdit *mAgeContent;

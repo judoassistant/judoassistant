@@ -10,9 +10,9 @@
 #include "rulesets/rulesets.hpp"
 #include "draw_systems/draw_systems.hpp"
 
-CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget *parent)
+CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
 {
     mNameContent = new QLineEdit;
 
@@ -44,7 +44,7 @@ CreateCategoryDialog::CreateCategoryDialog(QStoreHandler & storeHandler, QWidget
 }
 
 void CreateCategoryDialog::acceptClick() {
-    mStoreHandler.dispatch(std::make_unique<AddCategoryAction>(mStoreHandler.getTournament(), mNameContent->text().toStdString(), mRulesetContent->currentIndex(), mDrawSystemContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<AddCategoryAction>(mStoreManager.getTournament(), mNameContent->text().toStdString(), mRulesetContent->currentIndex(), mDrawSystemContent->currentIndex()));
     accept();
 }
 

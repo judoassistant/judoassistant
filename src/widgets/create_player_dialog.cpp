@@ -8,9 +8,9 @@
 #include "actions/player_actions.hpp"
 #include "widgets/validators/optional_validator.hpp"
 
-CreatePlayerDialog::CreatePlayerDialog(QStoreHandler & storeHandler, QWidget *parent)
+CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
 {
     mFirstNameContent = new QLineEdit;
     mLastNameContent = new QLineEdit;
@@ -88,7 +88,7 @@ void CreatePlayerDialog::acceptClick() {
     if (mSexContent->currentIndex() > 0) // account for the first index being nullopt
         sex = PlayerSex(mSexContent->currentIndex() - 1);
 
-    mStoreHandler.dispatch(std::make_unique<AddPlayerAction>(mStoreHandler.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
+    mStoreManager.dispatch(std::make_unique<AddPlayerAction>(mStoreManager.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
     accept();
 }
 

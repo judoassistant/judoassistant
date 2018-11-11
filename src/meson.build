@@ -1,9 +1,10 @@
 subdir('actions')
 subdir('applications')
 subdir('draw_systems')
+subdir('network')
 subdir('rulesets')
 subdir('stores')
-subdir('store_handlers')
+subdir('store_managers')
 subdir('widgets')
 
 sources += ['src/log.cpp']

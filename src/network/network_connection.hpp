@@ -4,7 +4,7 @@
 
 #include "core.hpp"
 #include "version.hpp"
-#include "src/store_handlers/network_message.hpp"
+#include "network/network_message.hpp"
 
 class NetworkConnection {
 public:

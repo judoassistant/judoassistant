@@ -5,13 +5,13 @@
 #include "widgets/tatamis_widget.hpp"
 #include "widgets/unallocated_blocks_widget.hpp"
 
-TatamisWidget::TatamisWidget(QStoreHandler &storeHandler)
-    : mStoreHandler(storeHandler)
+TatamisWidget::TatamisWidget(StoreManager &storeManager)
+    : mStoreManager(storeManager)
 {
-    // QTournamentStore &tournament = mStoreHandler.getTournament();
+    // QTournamentStore &tournament = mStoreManager.getTournament();
 
     // TODO: Handle erase and adding of tatamis
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &TatamisWidget::tatamisReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamisWidget::tatamisReset);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -37,15 +37,15 @@ TatamisWidget::TatamisWidget(QStoreHandler &storeHandler)
     QHBoxLayout *mainSplit = new QHBoxLayout(mainSplitWidget);
 
     {
-        mainSplit->addWidget(new UnallocatedBlocksWidget(mStoreHandler, mainSplitWidget));
+        mainSplit->addWidget(new UnallocatedBlocksWidget(mStoreManager, mainSplitWidget));
     }
 
     {
         QScrollArea *scroll = new QScrollArea(mainSplitWidget);
         mTatamiLayout = new QHBoxLayout(scroll);
-        TatamiList & tatamis = mStoreHandler.getTournament().getTatamis();
+        TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
         for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-            auto *tatami = new TatamiWidget(mStoreHandler, i, this);
+            auto *tatami = new TatamiWidget(mStoreManager, i, this);
             mTatamis.push_back(tatami);
             mTatamiLayout->addWidget(tatami);
         }
@@ -69,9 +69,9 @@ void TatamisWidget::tatamisReset() {
 
     mTatamis.clear();
 
-    TatamiList & tatamis = mStoreHandler.getTournament().getTatamis();
+    TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-        auto *tatami = new TatamiWidget(mStoreHandler, i, this);
+        auto *tatami = new TatamiWidget(mStoreManager, i, this);
         mTatamis.push_back(tatami);
         mTatamiLayout->addWidget(tatami);
     }

@@ -5,7 +5,7 @@
 #include <QComboBox>
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 class TournamentWidget : public QWidget {
     Q_OBJECT
@@ -14,9 +14,9 @@ public slots:
     void tournamentChanged();
     void updateTournamentName();
 public:
-    TournamentWidget(QStoreHandler &storeHandler);
+    TournamentWidget(StoreManager &storeManager);
 private:
-    QStoreHandler &mStoreHandler;
+    StoreManager &mStoreManager;
     QLineEdit *mNameContent;
     QComboBox *mLanguageContent;
 };

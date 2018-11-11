@@ -11,9 +11,9 @@
 #include "draw_systems/draw_systems.hpp"
 
 
-AutoAddCategoryDialog::AutoAddCategoryDialog(QStoreHandler & storeHandler, const std::vector<PlayerId> &playerIds, QWidget *parent)
+AutoAddCategoryDialog::AutoAddCategoryDialog(StoreManager & storeManager, const std::vector<PlayerId> &playerIds, QWidget *parent)
     : QDialog(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
     , mPlayerIds(playerIds)
 {
     mBaseNameContent = new QLineEdit;
@@ -49,7 +49,7 @@ AutoAddCategoryDialog::AutoAddCategoryDialog(QStoreHandler & storeHandler, const
 }
 
 void AutoAddCategoryDialog::acceptClick() {
-    mStoreHandler.dispatch(std::make_unique<AutoAddCategoriesAction>(mStoreHandler.getTournament(), mPlayerIds, mBaseNameContent->text().toStdString(), mMaxDifferenceContent->value(), mMaxSizeContent->value()));
+    mStoreManager.dispatch(std::make_unique<AutoAddCategoriesAction>(mStoreManager.getTournament(), mPlayerIds, mBaseNameContent->text().toStdString(), mMaxDifferenceContent->value(), mMaxSizeContent->value()));
     accept();
 }
 

@@ -6,16 +6,16 @@
 #include <QTableWidget>
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 #include "widgets/import_helpers/csv_reader.hpp"
 #include "widgets/import_helpers/player_table_importer.hpp"
 
-class QStoreHandler;
+class StoreManager;
 
 class ImportPlayersCSVDialog : public QDialog {
     Q_OBJECT
 public:
-    ImportPlayersCSVDialog(QStoreHandler & storeHandler, CSVReader *reader, QWidget *parent = nullptr);
+    ImportPlayersCSVDialog(StoreManager & storeManager, CSVReader *reader, QWidget *parent = nullptr);
 
 protected slots:
     void acceptClick();
@@ -38,7 +38,7 @@ private:
     void resetPreview();
     void updatePreviewColumn(size_t column);
 
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     QComboBox *mDelimiterContent;
     QCheckBox *mHeaderContent;
     CSVReader *mReader;

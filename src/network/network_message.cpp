@@ -1,4 +1,4 @@
-#include "src/store_handlers/network_message.hpp"
+#include "network/network_message.hpp"
 
 NetworkMessage::NetworkMessage() {
     mHeader.resize(HEADER_LENGTH);

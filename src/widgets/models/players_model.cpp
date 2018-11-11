@@ -4,17 +4,17 @@
 #include <QBrush>
 #include <sstream>
 
-PlayersModel::PlayersModel(QStoreHandler & storeHandler, QObject * parent)
+PlayersModel::PlayersModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
 {
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &PlayersModel::tournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &PlayersModel::tournamentReset);
 
     tournamentReset();
 }
 
 int PlayersModel::rowCount(const QModelIndex &parent) const {
-    return mStoreHandler.getTournament().getPlayers().size();
+    return mStoreManager.getTournament().getPlayers().size();
 }
 
 int PlayersModel::columnCount(const QModelIndex &parent) const {
@@ -23,7 +23,7 @@ int PlayersModel::columnCount(const QModelIndex &parent) const {
 
 QVariant PlayersModel::data(const QModelIndex &index, int role) const {
     auto playerId = getPlayer(index.row());
-    const PlayerStore &player = mStoreHandler.getTournament().getPlayer(playerId);
+    const PlayerStore &player = mStoreManager.getTournament().getPlayer(playerId);
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -138,14 +138,14 @@ void PlayersModel::playersAboutToBeReset() {
 
 void PlayersModel::playersReset() {
     mIds.clear();
-    for (const auto & p : mStoreHandler.getTournament().getPlayers())
+    for (const auto & p : mStoreManager.getTournament().getPlayers())
         mIds.insert(p.first);
     endResetModel();
 }
 
 void PlayersModel::tournamentReset() {
     beginResetModel();
-    QTournamentStore & tournament = mStoreHandler.getTournament();
+    QTournamentStore & tournament = mStoreManager.getTournament();
 
     mIds.clear();
     for (const auto & p : tournament.getPlayers())
@@ -168,7 +168,7 @@ void PlayersModel::tournamentReset() {
 std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const {
     std::stringstream res;
     for (auto categoryId : player.getCategories()) {
-        const CategoryStore &category = mStoreHandler.getTournament().getCategory(categoryId);
+        const CategoryStore &category = mStoreManager.getTournament().getCategory(categoryId);
         res << category.getName() << " ";
     }
 
@@ -185,7 +185,7 @@ void PlayersModel::playerCategoriesChanged(std::vector<PlayerId> playerIds) {
 void PlayersModel::categoriesAboutToBeErased(std::vector<CategoryId> categoryIds) {
     mAffectedPlayers.clear();
     for (auto categoryId : categoryIds) {
-        const auto & ids = mStoreHandler.getTournament().getCategory(categoryId).getPlayers();
+        const auto & ids = mStoreManager.getTournament().getCategory(categoryId).getPlayers();
         mAffectedPlayers.insert(ids.begin(), ids.end());
     }
 }
@@ -194,12 +194,12 @@ void PlayersModel::categoriesErased(std::vector<CategoryId> categoryIds) {
     playerCategoriesChanged(std::vector(mAffectedPlayers.begin(), mAffectedPlayers.end()));
 }
 
-PlayersProxyModel::PlayersProxyModel(QStoreHandler &storeHandler, QObject *parent)
+PlayersProxyModel::PlayersProxyModel(StoreManager &storeManager, QObject *parent)
     : QSortFilterProxyModel(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
     , mHidden(false)
 {
-    mModel = new PlayersModel(storeHandler, this);
+    mModel = new PlayersModel(storeManager, this);
 
     setSourceModel(mModel);
     setSortRole(Qt::UserRole);
@@ -227,7 +227,7 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
         return true;
 
     auto playerId = mModel->getPlayer(sourceRow);
-    const auto &player = mStoreHandler.getTournament().getPlayer(playerId);
+    const auto &player = mStoreManager.getTournament().getPlayer(playerId);
     return player.containsCategory(*mCategoryId);
 }
 

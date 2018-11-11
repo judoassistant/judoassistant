@@ -5,8 +5,8 @@
 #include "widgets/tournament_widget.hpp"
 #include "actions/tournament_actions.hpp"
 
-TournamentWidget::TournamentWidget(QStoreHandler &storeHandler)
-    : mStoreHandler(storeHandler)
+TournamentWidget::TournamentWidget(StoreManager &storeManager)
+    : mStoreManager(storeManager)
 {
     // Basic group fields
 
@@ -15,7 +15,7 @@ TournamentWidget::TournamentWidget(QStoreHandler &storeHandler)
     basicGroupBox->setLayout(formLayout);
 
     mNameContent = new QLineEdit;
-    mNameContent->setText(QString::fromStdString(mStoreHandler.getTournament().getName()));
+    mNameContent->setText(QString::fromStdString(mStoreManager.getTournament().getName()));
     connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
     formLayout->addRow(tr("Tournament name"), mNameContent);
 
@@ -31,19 +31,19 @@ TournamentWidget::TournamentWidget(QStoreHandler &storeHandler)
 
     setLayout(mainLayout);
 
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &TournamentWidget::tournamentChanged);
-    connect(&mStoreHandler.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TournamentWidget::tournamentChanged);
+    connect(&mStoreManager.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged);
 }
 
 void TournamentWidget::tournamentChanged() {
-    mNameContent->setText(QString::fromStdString(mStoreHandler.getTournament().getName()));
+    mNameContent->setText(QString::fromStdString(mStoreManager.getTournament().getName()));
 }
 
 void TournamentWidget::updateTournamentName() {
     std::string name = mNameContent->text().toStdString();
 
-    if (name == mStoreHandler.getTournament().getName())
+    if (name == mStoreManager.getTournament().getName())
         return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangeTournamentNameAction>(name));
+    mStoreManager.dispatch(std::make_unique<ChangeTournamentNameAction>(name));
 }

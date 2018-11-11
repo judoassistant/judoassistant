@@ -10,9 +10,9 @@
 
 #include "widgets/import_players_csv_dialog.hpp"
 
-ImportPlayersCSVDialog::ImportPlayersCSVDialog(QStoreHandler & storeHandler, CSVReader *reader, QWidget *parent)
+ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVReader *reader, QWidget *parent)
     : QDialog(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
     , mReader(reader)
     , mImporter(mReader)
 {
@@ -122,7 +122,7 @@ void ImportPlayersCSVDialog::acceptClick() {
             return;
     }
 
-    mImporter.import(mStoreHandler);
+    mImporter.import(mStoreManager);
     accept();
 }
 

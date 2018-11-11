@@ -1,18 +1,18 @@
 #pragma once
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 #include <QWidget>
 #include <QLineEdit>
 #include <QComboBox>
 
-class QStoreHandler;
+class StoreManager;
 
 class EditPlayerWidget : public QWidget {
     Q_OBJECT
 public:
-    EditPlayerWidget(QStoreHandler & storeHandler, QWidget *parent);
+    EditPlayerWidget(StoreManager & storeManager, QWidget *parent);
     void setPlayer(std::optional<PlayerId> id);
 
 private:
@@ -27,7 +27,7 @@ private:
     void playersChanged(std::vector<PlayerId> ids);
     void tournamentReset();
 
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     std::optional<PlayerId> mPlayerId;
     QLineEdit *mFirstNameContent;
     QLineEdit *mLastNameContent;

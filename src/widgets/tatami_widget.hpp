@@ -3,14 +3,14 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include "stores/tatami_store.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 class EmptyConcurrentBlockItem : public QGraphicsItem {
 public:
     static const int WIDTH = 280;
     static const int HEIGHT = 20;
 
-    EmptyConcurrentBlockItem(QStoreHandler * storeHandler, size_t tatamiIndex, size_t groupIndex);
+    EmptyConcurrentBlockItem(StoreManager * storeManager, size_t tatamiIndex, size_t groupIndex);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
@@ -19,7 +19,7 @@ public:
     void dropEvent(QGraphicsSceneDragDropEvent *event) override;
 
 private:
-    QStoreHandler *mStoreHandler;
+    StoreManager *mStoreManager;
     size_t mTatamiIndex;
     size_t mGroupIndex;
     bool mDragOver;
@@ -30,7 +30,7 @@ public:
     static const int WIDTH = 70;
     static const int PADDING = 5;
 
-    BlockItem(QStoreHandler * storeHandler, CategoryId categoryId, MatchType type, QGraphicsItem *parent = nullptr);
+    BlockItem(StoreManager * storeManager, CategoryId categoryId, MatchType type, QGraphicsItem *parent = nullptr);
     int getHeight() const;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -41,7 +41,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
-    QStoreHandler *mStoreHandler;
+    StoreManager *mStoreManager;
     CategoryStore *mCategory;
     MatchType mType;
     int mMatchCount;
@@ -53,7 +53,7 @@ public:
     static const int PADDING = 5;
     static const int BLOCK_MARGIN = 2;
 
-    SequentialBlockItem(QStoreHandler * storeHandler, size_t tatamiIndex, PositionHandle concurrentHandle, PositionHandle handle, QGraphicsItem *parent = nullptr);
+    SequentialBlockItem(StoreManager * storeManager, size_t tatamiIndex, PositionHandle concurrentHandle, PositionHandle handle, QGraphicsItem *parent = nullptr);
     int getHeight() const;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -63,7 +63,7 @@ public:
     void dropEvent(QGraphicsSceneDragDropEvent *event) override;
 
 private:
-    QStoreHandler *mStoreHandler;
+    StoreManager *mStoreManager;
     size_t mTatamiIndex;
     PositionHandle mConcurrentHandle;
     PositionHandle mHandle;
@@ -77,7 +77,7 @@ public:
     static const int WIDTH = 280;
     static const int PADDING = 5;
 
-    ConcurrentBlockItem(QStoreHandler * storeHandler, size_t tatamiIndex, PositionHandle handle);
+    ConcurrentBlockItem(StoreManager * storeManager, size_t tatamiIndex, PositionHandle handle);
     int getHeight() const;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -89,7 +89,7 @@ public:
     void dropEvent(QGraphicsSceneDragDropEvent *event) override;
 
 private:
-    QStoreHandler *mStoreHandler;
+    StoreManager *mStoreManager;
     size_t mTatamiIndex;
     int mHeight;
     bool mDragOver;
@@ -104,7 +104,7 @@ public:
     static const int PADDING = 10;
     static const int BLOCK_MARGIN = 2;
 
-    TatamiWidget(QStoreHandler & storeHandler, size_t index, QWidget *parent = nullptr);
+    TatamiWidget(StoreManager & storeManager, size_t index, QWidget *parent = nullptr);
 
     void tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void tatamisReset();
@@ -114,7 +114,7 @@ private:
     void shiftBlocks();
 
     QGraphicsScene *mScene;
-    QStoreHandler *mStoreHandler;
+    StoreManager *mStoreManager;
     std::vector<EmptyConcurrentBlockItem*> mEmptyGroups;
     std::list<ConcurrentBlockItem*> mGroups;
 

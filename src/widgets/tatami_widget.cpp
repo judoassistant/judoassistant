@@ -7,12 +7,12 @@
 #include "actions/tatami_actions.hpp"
 #include <algorithm>
 
-TatamiWidget::TatamiWidget(QStoreHandler & storeHandler, size_t index, QWidget *parent)
+TatamiWidget::TatamiWidget(StoreManager & storeManager, size_t index, QWidget *parent)
     : QGraphicsView(parent)
-    , mStoreHandler(&storeHandler)
+    , mStoreManager(&storeManager)
     , mIndex(index)
 {
-    QTournamentStore & tournament = mStoreHandler->getTournament();
+    QTournamentStore & tournament = mStoreManager->getTournament();
 
     connect(&tournament, &QTournamentStore::tatamisChanged, this, &TatamiWidget::tatamisChanged);
     connect(&tournament, &QTournamentStore::categoriesReset, this, &TatamiWidget::tatamisReset);
@@ -42,7 +42,7 @@ void TatamiWidget::tatamisChanged(std::vector<TatamiLocation> locations, std::ve
     if (affectedIds.empty())
         return;
 
-    auto & tatami = mStoreHandler->getTournament().getTatamis()[mIndex];
+    auto & tatami = mStoreManager->getTournament().getTatamis()[mIndex];
 
     for (auto i = mGroups.begin(); i != mGroups.end();) {
         auto next = std::next(i);
@@ -62,7 +62,7 @@ void TatamiWidget::tatamisChanged(std::vector<TatamiLocation> locations, std::ve
         ConcurrentBlockItem *item = nullptr;
         if (it == mGroups.end() || (*it)->getHandle().id != tatami.getHandle(i).id) {
             // insert group
-            item = new ConcurrentBlockItem(mStoreHandler, mIndex, tatami.getHandle(i));
+            item = new ConcurrentBlockItem(mStoreManager, mIndex, tatami.getHandle(i));
             mScene->addItem(item);
             mGroups.insert(it, item);
 
@@ -79,7 +79,7 @@ void TatamiWidget::tatamisChanged(std::vector<TatamiLocation> locations, std::ve
         offset += item->getHeight() + PADDING;
 
         if (mEmptyGroups.size() < i + 2) {
-            mEmptyGroups.push_back(new EmptyConcurrentBlockItem(mStoreHandler, mIndex, i+1));
+            mEmptyGroups.push_back(new EmptyConcurrentBlockItem(mStoreManager, mIndex, i+1));
             mScene->addItem(mEmptyGroups.back());
         }
 
@@ -101,7 +101,7 @@ void TatamiWidget::tatamisReset() {
 }
 
 void TatamiWidget::reloadBlocks() {
-    const TournamentStore &tournament = mStoreHandler->getTournament();
+    const TournamentStore &tournament = mStoreManager->getTournament();
     const TatamiStore &tatami = tournament.getTatamis()[mIndex];
 
     mScene->clear();
@@ -110,7 +110,7 @@ void TatamiWidget::reloadBlocks() {
     size_t offset = PADDING;
 
     {
-        auto *emptyItem = new EmptyConcurrentBlockItem(mStoreHandler, mIndex, 0);
+        auto *emptyItem = new EmptyConcurrentBlockItem(mStoreManager, mIndex, 0);
         mEmptyGroups.push_back(emptyItem);
         mScene->addItem(emptyItem);
 
@@ -119,14 +119,14 @@ void TatamiWidget::reloadBlocks() {
     }
 
     for (size_t i = 0; i < tatami.groupCount(); ++i) {
-        auto *item = new ConcurrentBlockItem(mStoreHandler, mIndex, tatami.getHandle(i));
+        auto *item = new ConcurrentBlockItem(mStoreManager, mIndex, tatami.getHandle(i));
         mScene->addItem(item);
         mGroups.push_back(item);
 
         item->setPos(PADDING, offset);
         offset += item->getHeight() + PADDING;
 
-        auto *emptyItem = new EmptyConcurrentBlockItem(mStoreHandler, mIndex, i+1);
+        auto *emptyItem = new EmptyConcurrentBlockItem(mStoreManager, mIndex, i+1);
         mEmptyGroups.push_back(emptyItem);
         mScene->addItem(emptyItem);
 
@@ -135,8 +135,8 @@ void TatamiWidget::reloadBlocks() {
     }
 }
 
-EmptyConcurrentBlockItem::EmptyConcurrentBlockItem(QStoreHandler * storeHandler, size_t tatamiIndex, size_t groupIndex)
-    : mStoreHandler(storeHandler)
+EmptyConcurrentBlockItem::EmptyConcurrentBlockItem(StoreManager * storeManager, size_t tatamiIndex, size_t groupIndex)
+    : mStoreManager(storeManager)
     , mTatamiIndex(tatamiIndex)
     , mGroupIndex(groupIndex)
     , mDragOver(false)
@@ -183,7 +183,7 @@ void EmptyConcurrentBlockItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event
 void EmptyConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     const auto * mime = dynamic_cast<const QutejudoMime*>(event->mimeData());
     auto block = mime->block();
-    QTournamentStore & tournament = mStoreHandler->getTournament();
+    QTournamentStore & tournament = mStoreManager->getTournament();
     TatamiStore & tatami = tournament.getTatamis()[mTatamiIndex];
 
     TatamiLocation location;
@@ -193,13 +193,13 @@ void EmptyConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     location.sequentialGroup = pair.second;
 
     auto action = std::make_unique<SetTatamiLocationAction>(block.first, block.second, location, 0);
-    mStoreHandler->dispatch(std::move(action));
+    mStoreManager->dispatch(std::move(action));
     mDragOver = false;
     update();
 }
 
-ConcurrentBlockItem::ConcurrentBlockItem(QStoreHandler * storeHandler, size_t tatamiIndex, PositionHandle handle)
-    : mStoreHandler(storeHandler)
+ConcurrentBlockItem::ConcurrentBlockItem(StoreManager * storeManager, size_t tatamiIndex, PositionHandle handle)
+    : mStoreManager(storeManager)
     , mTatamiIndex(tatamiIndex)
     , mDragOver(false)
     , mHandle(handle)
@@ -239,11 +239,11 @@ void ConcurrentBlockItem::reloadBlocks() {
 
     mSequentialGroups.clear();
 
-    auto & group = mStoreHandler->getTournament().getTatamis()[mTatamiIndex].getGroup(mHandle);
+    auto & group = mStoreManager->getTournament().getTatamis()[mTatamiIndex].getGroup(mHandle);
     size_t offset = PADDING;
     int newHeight = 0;
     for (size_t i = 0; i < group.groupCount(); ++i) {
-        auto * item = new SequentialBlockItem(mStoreHandler, mTatamiIndex, mHandle, group.getHandle(i), this);
+        auto * item = new SequentialBlockItem(mStoreManager, mTatamiIndex, mHandle, group.getHandle(i), this);
         item->setPos(offset, PADDING);
         offset += SequentialBlockItem::WIDTH + PADDING;
         newHeight = std::max(newHeight, item->getHeight());
@@ -281,7 +281,7 @@ void ConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     const auto * mime = dynamic_cast<const QutejudoMime*>(event->mimeData());
     auto block = mime->block();
 
-    QTournamentStore & tournament = mStoreHandler->getTournament();
+    QTournamentStore & tournament = mStoreManager->getTournament();
     ConcurrentBlockGroup & group = tournament.getTatamis()[mTatamiIndex].getGroup(mHandle);
 
     TatamiLocation location;
@@ -290,14 +290,14 @@ void ConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     location.sequentialGroup = group.addGroup(tournament, mSequentialGroups.size());
 
     auto action = std::make_unique<SetTatamiLocationAction>(block.first, block.second, location, 0);
-    mStoreHandler->dispatch(std::move(action));
+    mStoreManager->dispatch(std::move(action));
     mDragOver = false;
     update();
 }
 
-SequentialBlockItem::SequentialBlockItem(QStoreHandler * storeHandler, size_t tatamiIndex, PositionHandle concurrentHandle, PositionHandle handle, QGraphicsItem *parent)
+SequentialBlockItem::SequentialBlockItem(StoreManager * storeManager, size_t tatamiIndex, PositionHandle concurrentHandle, PositionHandle handle, QGraphicsItem *parent)
     : QGraphicsItem(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
     , mTatamiIndex(tatamiIndex)
     , mConcurrentHandle(concurrentHandle)
     , mHandle(handle)
@@ -305,11 +305,11 @@ SequentialBlockItem::SequentialBlockItem(QStoreHandler * storeHandler, size_t ta
 {
     setAcceptDrops(true);
 
-    auto & group = mStoreHandler->getTournament().getTatamis()[mTatamiIndex].getGroup(concurrentHandle).getGroup(handle);
+    auto & group = mStoreManager->getTournament().getTatamis()[mTatamiIndex].getGroup(concurrentHandle).getGroup(handle);
     size_t offset = PADDING;
     for (size_t i = 0; i < group.blockCount(); ++i) {
         auto block = group.getBlock(i);
-        auto *item = new BlockItem(mStoreHandler, block.first, block.second, this);
+        auto *item = new BlockItem(mStoreManager, block.first, block.second, this);
         item->setPos(PADDING, offset);
         offset += item->getHeight() + BLOCK_MARGIN;
     }
@@ -367,17 +367,17 @@ void SequentialBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     location.sequentialGroup = mHandle;
 
     auto action = std::make_unique<SetTatamiLocationAction>(block.first, block.second, location, mBlocks.size());
-    mStoreHandler->dispatch(std::move(action));
+    mStoreManager->dispatch(std::move(action));
     mDragOver = false;
     update();
 }
 
-BlockItem::BlockItem(QStoreHandler * storeHandler, CategoryId categoryId, MatchType type, QGraphicsItem *parent)
+BlockItem::BlockItem(StoreManager * storeManager, CategoryId categoryId, MatchType type, QGraphicsItem *parent)
     : QGraphicsItem(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
     , mType(type)
 {
-    mCategory = &mStoreHandler->getTournament().getCategory(categoryId);
+    mCategory = &mStoreManager->getTournament().getCategory(categoryId);
     mMatchCount = static_cast<int>(mCategory->getMatchCount(mType));
     setCursor(Qt::OpenHandCursor);
     setAcceptedMouseButtons(Qt::LeftButton);

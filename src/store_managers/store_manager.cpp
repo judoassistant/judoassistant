@@ -1,44 +1,52 @@
-#include "store_handlers/master_store_handler.hpp"
-#include "actions/player_actions.hpp"
+#include "store_managers/store_manager.hpp"
 
-MasterStoreHandler::MasterStoreHandler()
+StoreManager::StoreManager()
     : mTournament(std::unique_ptr<QTournamentStore>(new QTournamentStore))
-    , mIsDirty(false)
-    , mServer(8000)
+    , mSyncing(0)
 {
     qRegisterMetaType<ActionId>();
-
-    connect(&mServer, &NetworkServer::actionReceived, this, &MasterStoreHandler::receiveAction);
-    connect(&mServer, &NetworkServer::actionConfirmReceived, this, &MasterStoreHandler::receiveActionConfirm);
-
-    connect(&mServer, &NetworkServer::undoReceived, this, &MasterStoreHandler::receiveUndo);
-    connect(&mServer, &NetworkServer::undoConfirmReceived, this, &MasterStoreHandler::receiveUndoConfirm);
-
-    connect(&mServer, &NetworkServer::syncConfirmed, this, &MasterStoreHandler::receiveSyncConfirm);
-
-    mServer.start();
-    mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
-    mSyncing = 1;
 }
 
-MasterStoreHandler::~MasterStoreHandler() {
-    mServer.postQuit();
-    mServer.quit();
-    mServer.wait();
+StoreManager::~StoreManager() {
+    if (mNetworkInterface)
+        stopInterface();
 }
 
-QTournamentStore & MasterStoreHandler::getTournament() {
+void StoreManager::startInterface(std::unique_ptr<NetworkInterface> interface) {
+    if (mNetworkInterface != nullptr)
+        throw std::runtime_error("Attempted to start StoreManager interface with another one running");
+
+    mNetworkInterface = std::move(interface);
+
+    connect(mNetworkInterface.get(), &NetworkInterface::actionReceived, this, &StoreManager::receiveAction);
+    connect(mNetworkInterface.get(), &NetworkInterface::actionConfirmReceived, this, &StoreManager::receiveActionConfirm);
+
+    connect(mNetworkInterface.get(), &NetworkInterface::undoReceived, this, &StoreManager::receiveUndo);
+    connect(mNetworkInterface.get(), &NetworkInterface::undoConfirmReceived, this, &StoreManager::receiveUndoConfirm);
+
+    connect(mNetworkInterface.get(), &NetworkInterface::syncConfirmed, this, &StoreManager::receiveSyncConfirm);
+
+    mNetworkInterface->start();
+}
+
+void StoreManager::stopInterface() {
+    mNetworkInterface->quit();
+    mNetworkInterface->wait();
+    mNetworkInterface.reset();
+}
+
+QTournamentStore & StoreManager::getTournament() {
     return *mTournament;
 }
 
-const QTournamentStore & MasterStoreHandler::getTournament() const {
+const QTournamentStore & StoreManager::getTournament() const {
     return *mTournament;
 }
 
-void MasterStoreHandler::reset() {
+void StoreManager::sync(std::unique_ptr<QTournamentStore> tournament) {
     mSyncing += 1;
 
-    mTournament = std::make_unique<QTournamentStore>();
+    mTournament = std::move(tournament);
     mConfirmedActionList.clear();
     mConfirmedActionMap.clear();
 
@@ -51,72 +59,27 @@ void MasterStoreHandler::reset() {
     mUndoList.clear();
     mUndoListMap.clear();
 
-    mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
+    if (mNetworkInterface)
+        mNetworkInterface->postSync(std::make_unique<TournamentStore>(*mTournament));
 
     emit tournamentReset();
     emit redoStatusChanged(false);
     emit undoStatusChanged(false);
-
-    mIsDirty = false;
 }
 
-bool MasterStoreHandler::read(const QString &path) {
-    mSyncing += 1;
-
-    log_debug().field("path", path).msg("Reading tournament from file");
-    std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
-
-    if (!file.is_open())
-        return false;
-
-    mTournament = std::make_unique<QTournamentStore>();
-    cereal::PortableBinaryInputArchive archive(file);
-    archive(*mTournament);
-
-    mConfirmedActionList.clear();
-    mConfirmedActionMap.clear();
-
-    mUnconfirmedActionList.clear();
-    mUnconfirmedActionMap.clear();
-
-    mRedoList.clear();
-    mUnconfirmedUndos.clear();
-
-    mUndoList.clear();
-    mUndoListMap.clear();
-
-    mServer.postSync(std::make_unique<TournamentStore>(*mTournament));
-
-    emit tournamentReset();
-    emit redoStatusChanged(false);
-    emit undoStatusChanged(false);
-
-    mIsDirty = false;
-    return true;
+void StoreManager::sync() {
+    sync(std::move(mTournament));
 }
 
-bool MasterStoreHandler::write(const QString &path) {
-    log_debug().field("path", path).msg("Writing tournament to file");
-    std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
-
-    if (!file.is_open())
-        return false;
-
-    cereal::PortableBinaryOutputArchive archive(file);
-    archive(*mTournament);
-    mIsDirty = false;
-    return true;
-}
-
-bool MasterStoreHandler::canUndo() {
+bool StoreManager::canUndo() {
     return !mUndoList.empty();
 }
 
-bool MasterStoreHandler::canRedo() {
+bool StoreManager::canRedo() {
     return !mRedoList.empty();
 }
 
-void MasterStoreHandler::redo() {
+void StoreManager::redo() {
     assert(canRedo());
 
     log_debug().msg("Redoing action");
@@ -130,11 +93,7 @@ void MasterStoreHandler::redo() {
         emit redoStatusChanged(false);
 }
 
-bool MasterStoreHandler::isDirty() const {
-    return mIsDirty;
-}
-
-ActionId MasterStoreHandler::generateNextActionId() {
+ActionId StoreManager::generateNextActionId() {
     ActionId id;
     while (true) {
         id = mActionIdGenerator();
@@ -148,14 +107,12 @@ ActionId MasterStoreHandler::generateNextActionId() {
     }
 }
 
-void MasterStoreHandler::receiveSyncConfirm() {
+void StoreManager::receiveSyncConfirm() {
     mSyncing -= 1;
     log_debug().field("mSyncing", mSyncing).msg("Sync confirmed");
 }
 
-void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
-    mIsDirty = true;
-
+void StoreManager::dispatch(std::unique_ptr<Action> action) {
     auto actionId = generateNextActionId();
 
     log_debug().field("actionId", actionId).msg("Dispatching action");
@@ -169,14 +126,14 @@ void MasterStoreHandler::dispatch(std::unique_ptr<Action> && action) {
     mUndoList.push_back(actionId);
     mUndoListMap[actionId] = std::prev(mUndoList.end());
 
-    mServer.postAction(actionId, std::move(clone));
+    mNetworkInterface->postAction(actionId, std::move(clone));
 
     if (mUndoList.size() == 1) // undo list was empty
         emit undoStatusChanged(true);
 }
 
 
-void MasterStoreHandler::receiveAction(ActionId actionId, std::shared_ptr<const Action> sharedAction) {
+void StoreManager::receiveAction(ActionId actionId, std::shared_ptr<const Action> sharedAction) {
     if (mSyncing > 0)
         return;
 
@@ -203,7 +160,7 @@ void MasterStoreHandler::receiveAction(ActionId actionId, std::shared_ptr<const 
     }
 }
 
-void MasterStoreHandler::undo() {
+void StoreManager::undo() {
     assert(canUndo());
 
     auto actionId = mUndoList.back();
@@ -272,7 +229,7 @@ void MasterStoreHandler::undo() {
     if (mRedoList.size() > REDO_LIST_MAX_SIZE)
         mRedoList.pop_front();
 
-    mServer.postUndo(actionId);
+    mNetworkInterface->postUndo(actionId);
 
     if (mUndoList.empty())
         emit undoStatusChanged(false);
@@ -280,7 +237,7 @@ void MasterStoreHandler::undo() {
         emit redoStatusChanged(true);
 }
 
-void MasterStoreHandler::receiveActionConfirm(ActionId actionId) {
+void StoreManager::receiveActionConfirm(ActionId actionId) {
     if (mSyncing > 0)
         return;
 
@@ -297,7 +254,7 @@ void MasterStoreHandler::receiveActionConfirm(ActionId actionId) {
     mConfirmedActionMap[actionId] = std::prev(mConfirmedActionList.end());
 }
 
-void MasterStoreHandler::receiveUndo(ActionId actionId) {
+void StoreManager::receiveUndo(ActionId actionId) {
     if (mSyncing > 0)
         return;
 
@@ -346,7 +303,7 @@ void MasterStoreHandler::receiveUndo(ActionId actionId) {
     }
 }
 
-void MasterStoreHandler::receiveUndoConfirm(ActionId actionId) {
+void StoreManager::receiveUndoConfirm(ActionId actionId) {
     if (mSyncing > 0)
         return;
 

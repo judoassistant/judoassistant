@@ -9,8 +9,8 @@
 
 #include "actions/category_actions.hpp"
 
-CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
-    : mStoreHandler(storeHandler)
+CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
+    : mStoreManager(storeManager)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -36,7 +36,7 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
     splitter->setOrientation(Qt::Horizontal);
     {
         mTableView = new QTableView(this);
-        mModel = new CategoriesProxyModel(storeHandler, layout);
+        mModel = new CategoriesProxyModel(storeManager, layout);
 
         mTableView->setModel(mModel);
         mTableView->horizontalHeader()->setStretchLastSection(true);
@@ -53,10 +53,10 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
     {
         QTabWidget *tabWidget = new QTabWidget(this);
 
-        mEditCategoryWidget = new EditCategoryWidget(storeHandler, splitter);
+        mEditCategoryWidget = new EditCategoryWidget(storeManager, splitter);
         tabWidget->addTab(mEditCategoryWidget, tr("General"));
 
-        mEditCategoryPlayersWidget = new EditCategoryPlayersWidget(mStoreHandler, this);
+        mEditCategoryPlayersWidget = new EditCategoryPlayersWidget(mStoreManager, this);
         tabWidget->addTab(mEditCategoryPlayersWidget, tr("Players"));
 
         QWidget *c = new QWidget(this);
@@ -70,14 +70,14 @@ CategoriesWidget::CategoriesWidget(QStoreHandler & storeHandler)
 }
 
 void CategoriesWidget::showCategoryCreateDialog() {
-    CreateCategoryDialog dialog(mStoreHandler, this);
+    CreateCategoryDialog dialog(mStoreManager, this);
 
     dialog.exec();
 }
 
 void CategoriesWidget::eraseSelectedCategories() {
     auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
-    mStoreHandler.dispatch(std::make_unique<EraseCategoriesAction>(std::move(categoryIds)));
+    mStoreManager.dispatch(std::make_unique<EraseCategoriesAction>(std::move(categoryIds)));
 }
 
 void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {

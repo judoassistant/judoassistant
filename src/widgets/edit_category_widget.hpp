@@ -6,14 +6,14 @@
 #include <QLabel>
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
-class QStoreHandler;
+class StoreManager;
 
 class EditCategoryWidget : public QWidget {
     Q_OBJECT
 public:
-    EditCategoryWidget(QStoreHandler & storeHandler, QWidget *parent);
+    EditCategoryWidget(StoreManager & storeManager, QWidget *parent);
     void setCategory(std::optional<CategoryId> id);
 
 private:
@@ -25,7 +25,7 @@ private:
     void rulesetEdited();
     void drawSystemEdited();
 
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     std::optional<CategoryId> mCategoryId;
     QLineEdit *mNameContent;
     QComboBox *mRulesetContent;

@@ -4,7 +4,7 @@
 #include <QUrl>
 
 #include "core.hpp"
-#include "store_handlers/master_store_handler.hpp"
+#include "store_managers/master_store_manager.hpp"
 #include "rulesets/twentyeighteen_ruleset.hpp"
 
 class QutejudoWindow : public QMainWindow {
@@ -37,7 +37,7 @@ private:
     void createHelpMenu();
 
     void writeTournament();
-    MasterStoreHandler mStoreHandler;
+    MasterStoreManager mStoreManager;
     QString mFileName;
 };
 

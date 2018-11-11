@@ -187,7 +187,7 @@ std::string PlayerTableImporter::getHeader(size_t column) const {
     return res.substr(0, res.size() - 2); // remove the last comma
 }
 
-void PlayerTableImporter::import(StoreHandler & storeHandler) {
+void PlayerTableImporter::import(StoreManager & storeManager) {
     std::vector<std::unique_ptr<Action>> actions;
 
     size_t offset = (hasHeaderRow() ? 1 : 0);
@@ -211,9 +211,9 @@ void PlayerTableImporter::import(StoreHandler & storeHandler) {
         auto country = parseValue<PlayerCountry>(row, mCountryColumn);
         auto sex = parseValue<PlayerSex>(row, mSexColumn);
 
-        actions.push_back(std::make_unique<AddPlayerAction>(storeHandler.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
+        actions.push_back(std::make_unique<AddPlayerAction>(storeManager.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
     }
 
-    storeHandler.dispatch(std::make_unique<CompositeAction>(std::move(actions)));
+    storeManager.dispatch(std::make_unique<CompositeAction>(std::move(actions)));
 }
 

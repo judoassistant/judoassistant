@@ -2,35 +2,36 @@
 
 #include <QObject>
 #include <QString>
-#include <fstream>
 #include <list>
 
 #include "core.hpp"
-
-#include "serializables.hpp"
-#include "store_handlers/network_server.hpp"
+#include "actions/action.hpp"
+#include "network/network_interface.hpp"
+#include "stores/qtournament_store.hpp"
 
 Q_DECLARE_METATYPE(ActionId);
 
-class MasterStoreHandler : public QStoreHandler {
+class StoreManager : public QObject {
     Q_OBJECT
 public:
-    static const size_t REDO_LIST_MAX_SIZE = 20;
+    StoreManager();
+    ~StoreManager();
 
-    MasterStoreHandler();
-    ~MasterStoreHandler();
+    QTournamentStore & getTournament();
+    const QTournamentStore & getTournament() const;
 
-    QTournamentStore & getTournament() override;
-    const QTournamentStore & getTournament() const override;
-    void dispatch(std::unique_ptr<Action> && action) override;
-    bool canUndo() override;
-    void undo() override;
-    bool canRedo() override;
-    void redo() override;
-    bool read(const QString &path);
-    bool write(const QString &path);
-    void reset();
-    bool isDirty() const;
+    void dispatch(std::unique_ptr<Action> action);
+    bool canUndo();
+    void undo();
+    bool canRedo();
+    void redo();
+
+protected:
+    void startInterface(std::unique_ptr<NetworkInterface> interface);
+    void stopInterface();
+
+    void sync(std::unique_ptr<QTournamentStore> tournament);
+    void sync();
 
 protected slots:
     void receiveAction(ActionId actionId, std::shared_ptr<const Action> action);
@@ -39,7 +40,14 @@ protected slots:
     void receiveUndoConfirm(ActionId actionId);
     void receiveSyncConfirm();
 
+signals:
+    void tournamentReset(); // TODO: change to abouttobereset
+    void undoStatusChanged(bool canUndo);
+    void redoStatusChanged(bool canRedo);
+
 private:
+    static const size_t REDO_LIST_MAX_SIZE = 20;
+
     ActionId generateNextActionId();
     typedef std::list<std::pair<ActionId, std::unique_ptr<Action>>> ActionList;
 
@@ -57,9 +65,9 @@ private:
     std::list<ActionId> mUndoList;
     std::map<ActionId, std::list<ActionId>::iterator> mUndoListMap;
 
-    bool mIsDirty;
     size_t mSyncing;
-    NetworkServer mServer;
     ActionId::Generator mActionIdGenerator;
+
+    std::unique_ptr<NetworkInterface> mNetworkInterface;
 };
 

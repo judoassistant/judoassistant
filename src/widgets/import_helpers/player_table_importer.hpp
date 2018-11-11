@@ -2,7 +2,7 @@
 
 #include <optional>
 #include "widgets/import_helpers/csv_reader.hpp"
-#include "store_handlers/store_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 class PlayerTableImporter {
 public:
@@ -35,7 +35,7 @@ public:
     void guessHasHeaderRow();
     void guessColumns();
 
-    void import(StoreHandler & storeHandler);
+    void import(StoreManager & storeManager);
 
 private:
     template<typename T>

@@ -10,9 +10,9 @@
 #include "rulesets/rulesets.hpp"
 #include "draw_systems/draw_systems.hpp"
 
-EditCategoryWidget::EditCategoryWidget(QStoreHandler & storeHandler, QWidget *parent)
+EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *parent)
     : QWidget(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
 {
     mNameContent = new QLineEdit;
     connect(mNameContent, &QLineEdit::editingFinished, this, &EditCategoryWidget::nameEdited);
@@ -40,18 +40,18 @@ EditCategoryWidget::EditCategoryWidget(QStoreHandler & storeHandler, QWidget *pa
     setCategory(std::nullopt);
     setLayout(formLayout);
 
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged);
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::matchesReset, this, &EditCategoryWidget::resetMatches);
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::playersAddedToCategory, this, &EditCategoryWidget::changePlayerCount);
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount);
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &EditCategoryWidget::tournamentReset);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::matchesReset, this, &EditCategoryWidget::resetMatches);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersAddedToCategory, this, &EditCategoryWidget::changePlayerCount);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &EditCategoryWidget::tournamentReset);
 }
 
 void EditCategoryWidget::tournamentReset() {
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged);
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::matchesReset, this, &EditCategoryWidget::resetMatches);
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::playersAddedToCategory, this, &EditCategoryWidget::changePlayerCount);
-    connect(&(mStoreHandler.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::matchesReset, this, &EditCategoryWidget::resetMatches);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersAddedToCategory, this, &EditCategoryWidget::changePlayerCount);
+    connect(&(mStoreManager.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount);
 
     setCategory(std::nullopt);
 }
@@ -74,7 +74,7 @@ void EditCategoryWidget::setCategory(std::optional<CategoryId> id) {
         mMatchCountContent->setText("");
     }
     else {
-        const CategoryStore & category = mStoreHandler.getTournament().getCategory(*id);
+        const CategoryStore & category = mStoreManager.getTournament().getCategory(*id);
         mNameContent->setEnabled(true);
         mNameContent->setText(QString::fromStdString(category.getName()));
 
@@ -93,7 +93,7 @@ void EditCategoryWidget::resetMatches(CategoryId categoryId) {
     if (mCategoryId != categoryId)
         return;
 
-    const CategoryStore & category = mStoreHandler.getTournament().getCategory(*mCategoryId);
+    const CategoryStore & category = mStoreManager.getTournament().getCategory(*mCategoryId);
     mMatchCountContent->setText(QString::number(category.getMatches().size()));
 }
 
@@ -101,7 +101,7 @@ void EditCategoryWidget::changePlayerCount(CategoryId categoryId, std::vector<Pl
     if (mCategoryId != categoryId)
         return;
 
-    const CategoryStore & category = mStoreHandler.getTournament().getCategory(*mCategoryId);
+    const CategoryStore & category = mStoreManager.getTournament().getCategory(*mCategoryId);
     mPlayerCountContent->setText(QString::number(category.getPlayers().size()));
 }
 
@@ -109,7 +109,7 @@ void EditCategoryWidget::categoriesChanged(std::vector<CategoryId> ids) {
     if (!mCategoryId || std::find(ids.begin(), ids.end(), *mCategoryId) == ids.end())
         return;
 
-    TournamentStore &tournament = mStoreHandler.getTournament();
+    TournamentStore &tournament = mStoreManager.getTournament();
     CategoryStore &category = tournament.getCategory(*mCategoryId);
 
     QString name = QString::fromStdString(category.getName());
@@ -129,39 +129,39 @@ void EditCategoryWidget::nameEdited() {
     if (!mCategoryId)
         return;
 
-    TournamentStore &tournament = mStoreHandler.getTournament();
+    TournamentStore &tournament = mStoreManager.getTournament();
     CategoryStore &category = tournament.getCategory(*mCategoryId);
 
     std::string newValue = mNameContent->text().toStdString();
     std::string oldValue = category.getName();
     if (newValue == oldValue) return;
 
-    mStoreHandler.dispatch(std::make_unique<ChangeCategoryNameAction>(*mCategoryId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoryNameAction>(*mCategoryId, newValue));
 }
 
 void EditCategoryWidget::rulesetEdited() {
     if (!mCategoryId)
         return;
 
-    TournamentStore &tournament = mStoreHandler.getTournament();
+    TournamentStore &tournament = mStoreManager.getTournament();
     CategoryStore &category = tournament.getCategory(*mCategoryId);
 
     if (mRulesetContent->currentIndex() == mRulesetContent->findText(QString::fromStdString(category.getRuleset().getName())))
         return
 
-    mStoreHandler.dispatch(std::make_unique<ChangeCategoryRulesetAction>(*mCategoryId, mRulesetContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoryRulesetAction>(*mCategoryId, mRulesetContent->currentIndex()));
 }
 
 void EditCategoryWidget::drawSystemEdited() {
     if (!mCategoryId)
         return;
 
-    TournamentStore &tournament = mStoreHandler.getTournament();
+    TournamentStore &tournament = mStoreManager.getTournament();
     CategoryStore &category = tournament.getCategory(*mCategoryId);
 
     if (mDrawSystemContent->currentIndex() == mDrawSystemContent->findText(QString::fromStdString(category.getDrawSystem().getName())))
         return
 
-    mStoreHandler.dispatch(std::make_unique<ChangeCategoryDrawSystemAction>(*mCategoryId, mDrawSystemContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoryDrawSystemAction>(*mCategoryId, mDrawSystemContent->currentIndex()));
 }
 

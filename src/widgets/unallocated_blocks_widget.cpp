@@ -8,10 +8,10 @@
 #include <algorithm>
 #include "widgets/misc/qutejudo_mime.hpp"
 
-UnallocatedBlocksWidget::UnallocatedBlocksWidget(QStoreHandler & storeHandler, QWidget *parent)
+UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent)
     : QGraphicsView(parent)
-    , mStoreHandler(storeHandler)
-    , mBlocks(BlockComparator(storeHandler.getTournament()))
+    , mStoreManager(storeManager)
+    , mBlocks(BlockComparator(storeManager.getTournament()))
 {
     mScene = new QGraphicsScene(this);
     mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -24,7 +24,7 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(QStoreHandler & storeHandler, Q
     setMaximumWidth(216);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    auto & tournament = mStoreHandler.getTournament();
+    auto & tournament = mStoreManager.getTournament();
 
     connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::tatamisChanged);
     connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::tatamisAboutToBeErased);
@@ -32,13 +32,13 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(QStoreHandler & storeHandler, Q
     connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget::categoriesAdded);
     connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &UnallocatedBlocksWidget::categoriesAboutToBeErased);
     connect(&tournament, &QTournamentStore::categoriesReset, this, &UnallocatedBlocksWidget::categoriesReset);
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &UnallocatedBlocksWidget::tournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &UnallocatedBlocksWidget::tournamentReset);
 
     reloadBlocks();
 }
 
 void UnallocatedBlocksWidget::tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
-    const TournamentStore & tournament = mStoreHandler.getTournament();
+    const TournamentStore & tournament = mStoreManager.getTournament();
 
     bool shouldShift = false;
 
@@ -62,7 +62,7 @@ void UnallocatedBlocksWidget::tatamisAboutToBeErased(std::vector<size_t> indices
     bool shouldShift = false;
 
     for (size_t index : indices) {
-        TournamentStore & tournament = mStoreHandler.getTournament();
+        TournamentStore & tournament = mStoreManager.getTournament();
         TatamiStore & tatami = tournament.getTatamis()[index];
 
         for (size_t i = 0; i < tatami.groupCount(); ++i) {
@@ -90,7 +90,7 @@ void UnallocatedBlocksWidget::tatamisAdded(std::vector<size_t> indices) {
     bool shouldShift = false;
 
     for (size_t index : indices) {
-        TatamiStore & tatami = mStoreHandler.getTournament().getTatamis()[index];
+        TatamiStore & tatami = mStoreManager.getTournament().getTatamis()[index];
 
         for (size_t i = 0; i < tatami.groupCount(); ++i) {
             auto handle = tatami.getHandle(i);
@@ -113,7 +113,7 @@ void UnallocatedBlocksWidget::tatamisAdded(std::vector<size_t> indices) {
 }
 
 void UnallocatedBlocksWidget::categoriesAdded(std::vector<CategoryId> categoryIds) {
-    const TournamentStore & tournament = mStoreHandler.getTournament();
+    const TournamentStore & tournament = mStoreManager.getTournament();
 
     bool shouldShift = false;
     for (auto categoryId : categoryIds) {
@@ -140,7 +140,7 @@ void UnallocatedBlocksWidget::categoriesAboutToBeErased(std::vector<CategoryId> 
 }
 
 void UnallocatedBlocksWidget::tournamentReset() {
-    auto & tournament = mStoreHandler.getTournament();
+    auto & tournament = mStoreManager.getTournament();
 
     connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::tatamisChanged);
     connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::tatamisAboutToBeErased);
@@ -159,7 +159,7 @@ void UnallocatedBlocksWidget::categoriesReset() {
 
 void UnallocatedBlocksWidget::reloadBlocks() {
     mBlocks.clear();
-    const TournamentStore & tournament = mStoreHandler.getTournament();
+    const TournamentStore & tournament = mStoreManager.getTournament();
 
     for (auto & it : tournament.getCategories()) {
         const CategoryStore & category = *(it.second);

@@ -1,15 +1,15 @@
 #include "widgets/models/categories_model.hpp"
 #include "stores/qtournament_store.hpp"
 
-CategoriesModel::CategoriesModel(QStoreHandler & storeHandler, QObject * parent)
+CategoriesModel::CategoriesModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
 {
     tournamentReset();
 }
 
 int CategoriesModel::rowCount(const QModelIndex &parent) const {
-    return mStoreHandler.getTournament().getCategories().size();
+    return mStoreManager.getTournament().getCategories().size();
 }
 
 int CategoriesModel::columnCount(const QModelIndex &parent) const {
@@ -18,7 +18,7 @@ int CategoriesModel::columnCount(const QModelIndex &parent) const {
 
 QVariant CategoriesModel::data(const QModelIndex &index, int role) const {
     auto categoryId = getCategory(index.row());
-    const CategoryStore &category = mStoreHandler.getTournament().getCategory(categoryId);
+    const CategoryStore &category = mStoreManager.getTournament().getCategory(categoryId);
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -115,14 +115,14 @@ void CategoriesModel::categoriesAboutToBeReset() {
 
 void CategoriesModel::categoriesReset() {
     mIds.clear();
-    for (const auto & p : mStoreHandler.getTournament().getCategories())
+    for (const auto & p : mStoreManager.getTournament().getCategories())
         mIds.insert(p.first);
     endResetModel();
 }
 
 void CategoriesModel::tournamentReset() {
     beginResetModel();
-    QTournamentStore & tournament = mStoreHandler.getTournament();
+    QTournamentStore & tournament = mStoreManager.getTournament();
 
     mIds.clear();
     for (const auto & p : tournament.getCategories())
@@ -136,7 +136,7 @@ void CategoriesModel::tournamentReset() {
     connect(&tournament, &QTournamentStore::matchesReset, this, &CategoriesModel::matchesReset);
     connect(&tournament, &QTournamentStore::playersAddedToCategory, [&](CategoryId categoryId, const std::vector<PlayerId> &playerIds) {this->categoryPlayersChanged(categoryId);});
     connect(&tournament, &QTournamentStore::playersErasedFromCategory, [&](CategoryId categoryId, const std::vector<PlayerId> &playerIds) {this->categoryPlayersChanged(categoryId);});
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &CategoriesModel::tournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &CategoriesModel::tournamentReset);
 
     endResetModel();
 }
@@ -151,10 +151,10 @@ void CategoriesModel::categoryPlayersChanged(CategoryId categoryId) {
     emit dataChanged(createIndex(row, 3), createIndex(row, 3));
 }
 
-CategoriesProxyModel::CategoriesProxyModel(QStoreHandler &storeHandler, QObject *parent)
+CategoriesProxyModel::CategoriesProxyModel(StoreManager &storeManager, QObject *parent)
     : QSortFilterProxyModel(parent)
 {
-    mModel = new CategoriesModel(storeHandler, this);
+    mModel = new CategoriesModel(storeManager, this);
 
     setSourceModel(mModel);
     setSortRole(Qt::UserRole);

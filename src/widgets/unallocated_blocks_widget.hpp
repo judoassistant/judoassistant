@@ -3,7 +3,7 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include "stores/tatami_store.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 #include "widgets/misc/numerical_string_comparator.hpp"
 #include <set>
 
@@ -44,7 +44,7 @@ class UnallocatedBlocksWidget : public QGraphicsView {
 public:
     static const int ITEM_MARGIN = 3;
 
-    UnallocatedBlocksWidget(QStoreHandler & storeHandler, QWidget *parent = 0);
+    UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent = 0);
 
 public slots:
     void tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
@@ -63,7 +63,7 @@ private:
     bool eraseBlock(const CategoryStore &category, MatchType type);
 
     QGraphicsScene *mScene;
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     std::set<std::pair<CategoryId, MatchType>, BlockComparator> mBlocks;
     std::map<std::pair<CategoryId, MatchType>, UnallocatedBlockItem*> mBlockItems;
 };

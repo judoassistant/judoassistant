@@ -4,12 +4,12 @@
 #include <QString>
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 class MatchesWidget : public QWidget {
     Q_OBJECT
 
 public:
-    MatchesWidget(QStoreHandler &storeHandler);
+    MatchesWidget(StoreManager &storeManager);
 };
 

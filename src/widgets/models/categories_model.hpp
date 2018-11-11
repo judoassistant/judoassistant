@@ -4,13 +4,13 @@
 #include <QItemSelection>
 #include <QSortFilterProxyModel>
 #include <set>
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 // TODO: Correctly sort by name
 class CategoriesModel : public QAbstractTableModel {
     Q_OBJECT
 public:
-    CategoriesModel(QStoreHandler & storeHandler, QObject * parent);
+    CategoriesModel(StoreManager & storeManager, QObject * parent);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -32,13 +32,13 @@ public slots:
     void tournamentReset();
 private:
     const int COLUMN_COUNT = 5;
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     std::set<CategoryId> mIds;
 };
 
 class CategoriesProxyModel : public QSortFilterProxyModel {
 public:
-    CategoriesProxyModel(QStoreHandler &storeHandler, QObject *parent);
+    CategoriesProxyModel(StoreManager &storeManager, QObject *parent);
     std::vector<CategoryId> getCategories(const QItemSelection &selection) const;
 
 private:

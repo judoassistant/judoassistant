@@ -32,11 +32,11 @@ QutejudoWindow::QutejudoWindow() {
     createHelpMenu();
 
     QTabWidget * tabWidget = new QTabWidget(this);
-    tabWidget->addTab(new TournamentWidget(mStoreHandler), tr("Tournament"));
-    tabWidget->addTab(new PlayersWidget(mStoreHandler), tr("Players"));
-    tabWidget->addTab(new CategoriesWidget(mStoreHandler), tr("Categories"));
-    tabWidget->addTab(new TatamisWidget(mStoreHandler), tr("Tatamis"));
-    tabWidget->addTab(new MatchesWidget(mStoreHandler), tr("Matches"));
+    tabWidget->addTab(new TournamentWidget(mStoreManager), tr("Tournament"));
+    tabWidget->addTab(new PlayersWidget(mStoreManager), tr("Players"));
+    tabWidget->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
+    tabWidget->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
+    tabWidget->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
     tabWidget->setCurrentIndex(1);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
@@ -44,6 +44,8 @@ QutejudoWindow::QutejudoWindow() {
 
     resize(250,250);
     setWindowTitle(tr("Qutejudo"));
+
+    mStoreManager.startServer(8000);
 }
 
 void QutejudoWindow::createStatusBar() {
@@ -123,20 +125,20 @@ void QutejudoWindow::createEditMenu() {
         QAction *action = new QAction(tr("Undo"), this);
         action->setShortcuts(QKeySequence::Undo);
         action->setStatusTip(tr("Undo last action"));
-        action->setEnabled(mStoreHandler.canUndo());
+        action->setEnabled(mStoreManager.canUndo());
         menu->addAction(action);
-        connect(&mStoreHandler, &MasterStoreHandler::undoStatusChanged, action, &QAction::setEnabled);
-        connect(action, &QAction::triggered, &mStoreHandler, &MasterStoreHandler::undo);
+        connect(&mStoreManager, &MasterStoreManager::undoStatusChanged, action, &QAction::setEnabled);
+        connect(action, &QAction::triggered, &mStoreManager, &MasterStoreManager::undo);
     }
 
     {
         QAction *action = new QAction(tr("Redo"), this);
         action->setShortcuts(QKeySequence::Redo);
         action->setStatusTip(tr("Redo the last undone action"));
-        action->setEnabled(mStoreHandler.canRedo());
+        action->setEnabled(mStoreManager.canRedo());
         menu->addAction(action);
-        connect(&mStoreHandler, &MasterStoreHandler::redoStatusChanged, action, &QAction::setEnabled);
-        connect(action, &QAction::triggered, &mStoreHandler, &MasterStoreHandler::redo);
+        connect(&mStoreManager, &MasterStoreManager::redoStatusChanged, action, &QAction::setEnabled);
+        connect(action, &QAction::triggered, &mStoreManager, &MasterStoreManager::redo);
     }
 }
 
@@ -203,7 +205,7 @@ void QutejudoWindow::openReportIssue() {
 }
 
 void QutejudoWindow::writeTournament() {
-    if (!mStoreHandler.write(mFileName))
+    if (!mStoreManager.write(mFileName))
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
     else
         statusBar()->showMessage(tr("Saved tournament to file"));
@@ -215,25 +217,25 @@ void QutejudoWindow::readTournament() {
 
 void QutejudoWindow::readTournament(const QString &fileName) {
     mFileName = fileName;
-    if (!mStoreHandler.read(fileName))
+    if (!mStoreManager.read(fileName))
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
     else
         statusBar()->showMessage(tr("Opened tournament from file"));
 }
 
 void QutejudoWindow::newTournament() {
-    if (mStoreHandler.isDirty()) {
+    if (mStoreManager.isDirty()) {
         auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel)
             return;
     }
 
     mFileName = "";
-    mStoreHandler.reset();
+    mStoreManager.resetTournament();
 }
 
 void QutejudoWindow::openTournament() {
-    if (mStoreHandler.isDirty()) {
+    if (mStoreManager.isDirty()) {
         auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel)
             return;
@@ -247,7 +249,7 @@ void QutejudoWindow::openTournament() {
 }
 
 void QutejudoWindow::quit() {
-    if (mStoreHandler.isDirty()) {
+    if (mStoreManager.isDirty()) {
         auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to exit without saving?"), QMessageBox::Yes | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel)
             return;
@@ -291,7 +293,7 @@ void QutejudoWindow::openImportPlayers() {
     }
 
 
-    ImportPlayersCSVDialog dialog(mStoreHandler, &reader);
+    ImportPlayersCSVDialog dialog(mStoreManager, &reader);
 
     dialog.exec();
 }

@@ -1,24 +1,24 @@
 #pragma once
 
 #include "core.hpp"
-#include "store_handlers/qstore_handler.hpp"
+#include "store_managers/store_manager.hpp"
 
 #include <QDialog>
 #include <QLineEdit>
 #include <QComboBox>
 
-class QStoreHandler;
+class StoreManager;
 
 class CreateCategoryDialog : public QDialog {
     Q_OBJECT
 public:
-    CreateCategoryDialog(QStoreHandler & storeHandler, QWidget *parent);
+    CreateCategoryDialog(StoreManager & storeManager, QWidget *parent);
 
 public slots:
     void acceptClick();
     void cancelClick();
 private:
-    QStoreHandler & mStoreHandler;
+    StoreManager & mStoreManager;
     QLineEdit *mNameContent;
     QComboBox *mRulesetContent;
     QComboBox *mDrawSystemContent;

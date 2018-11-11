@@ -2,13 +2,13 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
-EditCategoryPlayersWidget::EditCategoryPlayersWidget (QStoreHandler & storeHandler, QWidget *parent)
+EditCategoryPlayersWidget::EditCategoryPlayersWidget (StoreManager & storeManager, QWidget *parent)
     : QWidget(parent)
-    , mStoreHandler(storeHandler)
+    , mStoreManager(storeManager)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     mTableView = new QTableView(this);
-    mModel = new PlayersProxyModel(mStoreHandler, this);
+    mModel = new PlayersProxyModel(mStoreManager, this);
     mTableView->setModel(mModel);
     // TODO: Make this customizeable for the user
     for (int column : {2,3,4,6,7,8})
@@ -23,7 +23,7 @@ EditCategoryPlayersWidget::EditCategoryPlayersWidget (QStoreHandler & storeHandl
     setLayout(layout);
 
     setCategory(std::nullopt);
-    connect(&mStoreHandler, &QStoreHandler::tournamentReset, this, &EditCategoryPlayersWidget::tournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &EditCategoryPlayersWidget::tournamentReset);
 }
 
 void EditCategoryPlayersWidget::setCategory(std::optional<CategoryId> categoryId) {
