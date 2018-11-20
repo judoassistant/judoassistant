@@ -14,6 +14,7 @@ void NetworkParticipant::start() {
 void NetworkParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
     bool writeInProgress = !mMessageQueue.empty();
     mMessageQueue.push(std::move(message));
+
     if (!writeInProgress)
         writeMessage();
 }
@@ -52,6 +53,15 @@ void NetworkParticipant::readMessage() {
         if (mReadMessage->getType() == NetworkMessage::Type::HANDSHAKE) {
             log_warning().msg("Received HANDSHAKE message after initial handshake");
         }
+        else if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
+            log_warning().msg("Received SYNC from client");
+        }
+        else if (mReadMessage->getType() == NetworkMessage::Type::ACTION_ACK) {
+            log_warning().msg("Received ACTION_ACK from client");
+        }
+        else if (mReadMessage->getType() == NetworkMessage::Type::UNDO_ACK) {
+            log_warning().msg("Received UNDO_ACK from client");
+        }
         else if (mReadMessage->getType() == NetworkMessage::Type::SYNC_ACK) {
             if (!isSyncing())
                 log_warning().msg("Received SYNC_ACK from non-syncing client");
@@ -59,7 +69,10 @@ void NetworkParticipant::readMessage() {
                 setIsSyncing(false);
         }
         else if (!isSyncing() && mReadMessage->getType() == NetworkMessage::Type::ACTION) {
-            mServer->deliver(std::move(mReadMessage), shared_from_this());
+            mServer->deliverAction(std::move(mReadMessage), shared_from_this());
+        }
+        else if (!isSyncing() && mReadMessage->getType() == NetworkMessage::Type::UNDO) {
+            mServer->deliverUndo(std::move(mReadMessage), shared_from_this());
         }
 
         mReadMessage = std::make_unique<NetworkMessage>();
@@ -84,7 +97,8 @@ bool NetworkParticipant::isSyncing() const {
 }
 
 NetworkServer::NetworkServer(int port)
-    : mContext()
+    : mId(ClientId::generate())
+    , mContext()
     , mEndpoint(tcp::v4(), port)
     , mAcceptor(mContext, mEndpoint)
 {
@@ -92,7 +106,6 @@ NetworkServer::NetworkServer(int port)
 }
 
 void NetworkServer::run() {
-    log_debug().msg("Running network server");
     while (true) {
         try
         {
@@ -128,10 +141,8 @@ void NetworkServer::accept() {
 }
 
 void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {
-    log_debug().msg("Posting sync");
     std::shared_ptr<TournamentStore> ptr = std::move(tournament);
     mContext.post([this, ptr]() {
-        log_debug().msg("Network syncing");
         mTournament = std::move(ptr);
         mActionStack.clear();
         mActionMap.clear();
@@ -151,7 +162,6 @@ void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {
 void NetworkServer::postAction(ActionId actionId, std::unique_ptr<Action> action) {
     std::shared_ptr<Action> sharedAction = std::move(action);
     mContext.post([this, actionId, sharedAction]() {
-        log_debug().field("actionId", actionId).msg("Posting action to network");
         mActionStack.push_back(std::make_pair(actionId, sharedAction));
         mActionMap[actionId] = std::prev(mActionStack.end());
 
@@ -161,8 +171,8 @@ void NetworkServer::postAction(ActionId actionId, std::unique_ptr<Action> action
             mActionStack.pop_front();
         }
 
-        auto message = std::make_shared<NetworkMessage>();
-        message->encodeAction(actionId, std::move(sharedAction));
+        auto message = std::make_unique<NetworkMessage>();
+        message->encodeAction(mId, actionId, std::move(sharedAction));
 
         deliver(std::move(message));
 
@@ -172,15 +182,13 @@ void NetworkServer::postAction(ActionId actionId, std::unique_ptr<Action> action
 
 void NetworkServer::postUndo(ActionId actionId) {
     mContext.post([this, actionId]() {
-        log_debug().field("actionId", actionId).msg("Posting undo to network");
-
         // Only deliver if action is not already undone
         auto it = mActionMap.find(actionId);
         if (it != mActionMap.end()) {
             mActionStack.erase(it->second);
             mActionMap.erase(it);
 
-            auto message = std::make_shared<NetworkMessage>();
+            auto message = std::make_unique<NetworkMessage>();
             message->encodeUndo(actionId);
 
             deliver(std::move(message));
@@ -212,16 +220,6 @@ void NetworkServer::leave(std::shared_ptr<NetworkParticipant> participant) {
     mParticipants.erase(std::move(participant));
 }
 
-void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
-    // TODO: emit signal
-    for (auto & participant : mParticipants) {
-        if (participant == sender)
-            continue;
-
-        participant->deliver(message);
-    }
-}
-
 const std::shared_ptr<TournamentStore> & NetworkServer::getTournament() const {
     return mTournament;
 }
@@ -237,4 +235,49 @@ void NetworkServer::start() {
 void NetworkServer::quit() {
     postQuit();
     QThread::quit();
+}
+
+void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
+    ClientId clientId;
+    ActionId actionId;
+    std::shared_ptr<Action> action;
+    message->decodeAction(clientId, actionId, action);
+
+    emit actionReceived(actionId, std::move(action));
+
+    for (auto & participant : mParticipants) {
+        if (participant == sender) {
+            auto ackMessage = std::make_shared<NetworkMessage>();
+            ackMessage->encodeActionAck(actionId);
+            participant->deliver(std::move(ackMessage));
+            continue;
+        }
+
+        participant->deliver(message);
+    }
+}
+
+void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
+    ActionId actionId;
+    message->decodeUndo(actionId);
+
+    emit undoReceived(actionId);
+
+    std::shared_ptr<NetworkMessage> sharedMessage = std::move(message);
+
+    for (auto & participant : mParticipants) {
+        if (participant == sender) {
+            auto ackMessage = std::make_unique<NetworkMessage>();
+            ackMessage->encodeUndoAck(actionId);
+            participant->deliver(std::move(ackMessage));
+            continue;
+        }
+
+        participant->deliver(sharedMessage);
+    }
+}
+
+void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message) {
+    for (auto & participant : mParticipants)
+        participant->deliver(message);
 }

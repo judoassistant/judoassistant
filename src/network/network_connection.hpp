@@ -23,13 +23,13 @@ public:
                 return;
             }
 
-            std::optional<ApplicationVersion> version;
-            if (responseMessage->getType() != NetworkMessage::Type::HANDSHAKE || !(version = responseMessage->decodeHandshake())) {
+            ApplicationVersion version;
+            if (responseMessage->getType() != NetworkMessage::Type::HANDSHAKE || responseMessage->decodeHandshake(version)) {
                 handler(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
                 return;
             }
 
-            if (!version->compatible(ApplicationVersion::current())) {
+            if (!version.isBackwardsCompatible(ApplicationVersion::current())) {
                 handler(boost::system::errc::make_error_code(boost::system::errc::protocol_not_supported));
                 return;
             }
@@ -68,13 +68,13 @@ public:
                     return;
                 }
 
-                std::optional<ApplicationVersion> version;
-                if (responseMessage->getType() != NetworkMessage::Type::HANDSHAKE || !(version = responseMessage->decodeHandshake())) {
+                ApplicationVersion version;
+                if (responseMessage->getType() != NetworkMessage::Type::HANDSHAKE || !responseMessage->decodeHandshake(version)) {
                     handler(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
                     return;
                 }
 
-                if (!version->compatible(ApplicationVersion::current())) {
+                if (!ApplicationVersion::current().isBackwardsCompatible(version)) {
                     handler(boost::system::errc::make_error_code(boost::system::errc::protocol_not_supported));
                     return;
                 }

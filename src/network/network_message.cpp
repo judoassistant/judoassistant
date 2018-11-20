@@ -47,21 +47,26 @@ void NetworkMessage::encodeHandshake() {
     encodeHeader();
 }
 
-std::optional<ApplicationVersion> NetworkMessage::decodeHandshake() {
+bool NetworkMessage::decodeHandshake(ApplicationVersion &version) {
     std::istringstream stream(mBody);
     cereal::PortableBinaryInputArchive archive(stream);
 
     try {
-        ApplicationVersion version;
         archive(version);
-        return version;
+        return true;
     }
     catch (const std::exception &e) {
-        return std::nullopt;
+        return false;
     }
 }
 
-void NetworkMessage::encodeSync(const std::shared_ptr<TournamentStore> & tournament, const std::list<std::pair<ActionId, std::shared_ptr<Action>>> &actionStack) {
+void NetworkMessage::encodeSyncAck() {
+    mType = Type::SYNC_ACK;
+    mBody.clear();
+    encodeHeader();
+}
+
+void NetworkMessage::encodeSync(const std::shared_ptr<TournamentStore> & tournament, const NetworkMessage::ActionList &actionStack) {
     mType = Type::SYNC;
 
     std::ostringstream stream;
@@ -72,16 +77,64 @@ void NetworkMessage::encodeSync(const std::shared_ptr<TournamentStore> & tournam
     encodeHeader();
 }
 
-void NetworkMessage::encodeAction(ActionId id, std::shared_ptr<Action> action) {
-    // TODO: implement
+bool NetworkMessage::decodeSync(TournamentStore & tournament, NetworkMessage::ActionList &actionStack) {
+    std::istringstream stream(mBody);
+    cereal::PortableBinaryInputArchive archive(stream);
+
+    try {
+        archive(tournament, actionStack);
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    return true;
+}
+
+void NetworkMessage::encodeAction(const ClientId &clientId, const ActionId &actionId, const std::shared_ptr<Action> &action) {
     mType = Type::ACTION;
 
     std::ostringstream stream;
     cereal::PortableBinaryOutputArchive archive(stream);
-    archive(id, action);
+    archive(clientId, actionId, action);
 
     mBody = stream.str();
     encodeHeader();
+}
+
+void NetworkMessage::encodeActionAck(const ActionId &actionId) {
+    mType = Type::ACTION_ACK;
+
+    std::ostringstream stream;
+    cereal::PortableBinaryOutputArchive archive(stream);
+    archive(actionId);
+
+    mBody = stream.str();
+    encodeHeader();
+}
+
+void NetworkMessage::encodeUndoAck(const ActionId &actionId) {
+    mType = Type::UNDO_ACK;
+
+    std::ostringstream stream;
+    cereal::PortableBinaryOutputArchive archive(stream);
+    archive(actionId);
+
+    mBody = stream.str();
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeAction(ClientId &clientId, ActionId &actionId, std::shared_ptr<Action> &action) {
+    std::istringstream stream(mBody);
+    cereal::PortableBinaryInputArchive archive(stream);
+
+    try {
+        archive(clientId, actionId, action);
+        return true;
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
 }
 
 void NetworkMessage::encodeQuit() {
@@ -90,7 +143,7 @@ void NetworkMessage::encodeQuit() {
     encodeHeader();
 }
 
-void NetworkMessage::encodeUndo(ActionId actionId) {
+void NetworkMessage::encodeUndo(const ActionId &actionId) {
     mType = Type::UNDO;
 
     std::ostringstream stream;
@@ -112,3 +165,41 @@ void NetworkMessage::encodeHeader() {
     assert(mHeader.size() == HEADER_LENGTH);
 }
 
+bool NetworkMessage::decodeUndo(ActionId &actionId) {
+    std::istringstream stream(mBody);
+    cereal::PortableBinaryInputArchive archive(stream);
+
+    try {
+        archive(actionId);
+        return true;
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+}
+
+bool NetworkMessage::decodeUndoAck(ActionId &actionId) {
+    std::istringstream stream(mBody);
+    cereal::PortableBinaryInputArchive archive(stream);
+
+    try {
+        archive(actionId);
+        return true;
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+}
+
+bool NetworkMessage::decodeActionAck(ActionId &actionId) {
+    std::istringstream stream(mBody);
+    cereal::PortableBinaryInputArchive archive(stream);
+
+    try {
+        archive(actionId);
+        return true;
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+}

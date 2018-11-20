@@ -34,12 +34,27 @@ public:
     Type getType() const;
 
     void encodeHandshake();
-    std::optional<ApplicationVersion> decodeHandshake();
+    bool decodeHandshake(ApplicationVersion &version);
 
-    void encodeSync(const std::shared_ptr<TournamentStore> & tournament, const std::list<std::pair<ActionId, std::shared_ptr<Action>>> &actionStack);
-    void encodeAction(ActionId id, std::shared_ptr<Action> action);
+    typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
+    void encodeSync(const std::shared_ptr<TournamentStore> & tournament, const ActionList &actionStack);
+    bool decodeSync(TournamentStore & tournament, ActionList &actionStack);
+
+    void encodeSyncAck();
+
+    void encodeAction(const ClientId &clientId, const ActionId &actionId, const std::shared_ptr<Action> &action);
+    bool decodeAction(ClientId &clientId, ActionId &actionId, std::shared_ptr<Action> &action);
+
+    void encodeActionAck(const ActionId &actionId);
+    bool decodeActionAck(ActionId &actionId);
+
     void encodeQuit();
-    void encodeUndo(ActionId actionId);
+
+    void encodeUndo(const ActionId &actionId);
+    bool decodeUndo(ActionId &actionId);
+
+    void encodeUndoAck(const ActionId &actionId);
+    bool decodeUndoAck(ActionId &actionId);
 
 private:
     void encodeHeader();

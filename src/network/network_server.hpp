@@ -12,7 +12,6 @@
 
 class NetworkParticipant;
 
-
 class NetworkServer : public NetworkInterface {
     Q_OBJECT
 public:
@@ -33,7 +32,9 @@ public:
 private:
     void join(std::shared_ptr<NetworkParticipant> participant);
     void leave(std::shared_ptr<NetworkParticipant> participant);
-    void deliver(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender = nullptr);
+    void deliverAction(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> participant);
+    void deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> participant);
+    void deliver(std::shared_ptr<NetworkMessage> message);
 
     const std::shared_ptr<TournamentStore> & getTournament() const;
     const ActionList & getActionStack() const;
@@ -42,6 +43,7 @@ protected:
     void postQuit();
     void accept();
 private:
+    ClientId mId;
     boost::asio::io_context mContext;
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
@@ -73,3 +75,4 @@ private:
     std::unique_ptr<NetworkMessage> mReadMessage;
     bool mIsSyncing;
 };
+
