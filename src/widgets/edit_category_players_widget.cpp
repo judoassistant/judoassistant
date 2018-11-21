@@ -1,5 +1,7 @@
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QHeaderView>
+#include <QPushButton>
 
 #include "store_managers/store_manager.hpp"
 #include "models/players_model.hpp"
@@ -23,6 +25,18 @@ EditCategoryPlayersWidget::EditCategoryPlayersWidget (StoreManager & storeManage
     mTableView->sortByColumn(1, Qt::AscendingOrder);
 
     layout->addWidget(mTableView);
+
+
+    QHBoxLayout *controlsLayout = new QHBoxLayout(this);
+
+    QPushButton *removeButton = new QPushButton("Remove player from category", this);
+    controlsLayout->addWidget(removeButton);
+
+    QWidget *buttonsWidget = new QWidget(this);
+    buttonsWidget->setLayout(controlsLayout);
+
+    layout->addWidget(buttonsWidget);
+
     setLayout(layout);
 
     setCategory(std::nullopt);
