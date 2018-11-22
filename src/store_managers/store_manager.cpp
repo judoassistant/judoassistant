@@ -95,27 +95,13 @@ void StoreManager::redo() {
         emit redoStatusChanged(false);
 }
 
-ActionId StoreManager::generateNextActionId() {
-    ActionId id;
-    while (true) {
-        id = mActionIdGenerator();
-
-        if (mConfirmedActionMap.find(id) != mConfirmedActionMap.end())
-            continue;
-        if (mUnconfirmedActionMap.find(id) != mUnconfirmedActionMap.end())
-            continue;
-
-        return id;
-    }
-}
-
 void StoreManager::receiveSyncConfirm() {
     mSyncing -= 1;
     log_debug().field("mSyncing", mSyncing).msg("Sync confirmed");
 }
 
 void StoreManager::dispatch(std::unique_ptr<Action> action) {
-    auto actionId = generateNextActionId();
+    auto actionId = ActionId::generate(*this);
 
     log_debug().field("actionId", actionId).msg("Dispatching action");
 
@@ -313,3 +299,10 @@ void StoreManager::receiveUndoConfirm(ActionId actionId) {
     receiveUndo(actionId);
 }
 
+bool StoreManager::containsConfirmedAction(ActionId action) const {
+    return mConfirmedActionMap.find(action) != mConfirmedActionMap.end();
+}
+
+bool StoreManager::containsUnconfirmedAction(ActionId action) const {
+    return mUnconfirmedActionMap.find(action) != mUnconfirmedActionMap.end();
+}

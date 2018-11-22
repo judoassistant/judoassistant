@@ -3,6 +3,13 @@
 #include <random>
 #include <limits>
 #include <ostream>
+#include <memory>
+
+class CategoryStore;
+class TournamentStore;
+class StoreManager;
+
+unsigned int getGeneratorSeed();
 
 template <typename CRTP>
 class Id {
@@ -70,30 +77,69 @@ class MatchId : public Id<MatchId> {
 public:
     MatchId() {}
     MatchId(InternalType value) : Id(value) {}
+
+    static MatchId generate(const CategoryStore &category);
 };
 
 class CategoryId : public Id<CategoryId> {
 public:
     CategoryId() {}
     CategoryId(InternalType value) : Id(value) {}
+
+    static CategoryId generate(const TournamentStore &tournament);
 };
 
 class PlayerId : public Id<PlayerId> {
 public:
     PlayerId() {}
     PlayerId(InternalType value) : Id(value) {}
+
+    static PlayerId generate(const TournamentStore &tournament);
 };
 
 class PositionId : public Id<PositionId> {
 public:
     PositionId() {}
     PositionId(InternalType value) : Id(value) {}
+
+    template <typename PositionManager>
+    static PositionId generate(const PositionManager &manager) {
+        static std::unique_ptr<PositionId::Generator> generator; // singleton
+        if (!generator)
+            generator = std::make_unique<PositionId::Generator>(getGeneratorSeed());
+
+        PositionId id;
+        do {
+            id = (*generator)();
+        } while(manager.containsId(id));
+
+        return id;
+    };
+
 };
 
 class ActionId : public Id<ActionId> {
 public:
     ActionId() {}
     ActionId(InternalType value) : Id(value) {}
+
+    static ActionId generate(const StoreManager &storeManager);
+};
+
+class ClientId : public Id<ClientId> {
+public:
+    ClientId() {}
+    ClientId(InternalType value) : Id(value) {}
+
+    static ClientId generate();
+};
+
+class TournamentId : public Id<TournamentId> {
+public:
+    TournamentId() {}
+    TournamentId(InternalType value) : Id(value) {}
+
+    static TournamentId generate();
 };
 
 namespace std {

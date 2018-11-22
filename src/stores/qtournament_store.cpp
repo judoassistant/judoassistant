@@ -1,11 +1,19 @@
 #include "stores/qtournament_store.hpp"
 
 QTournamentStore::QTournamentStore()
-    : mResettingPlayers(false)
+    : QObject()
+    , mResettingPlayers(false)
     , mResettingCategories(false)
     , mResettingMatches(false)
 {}
 
+QTournamentStore::QTournamentStore(TournamentId id)
+    : QObject()
+    , TournamentStore(id)
+    , mResettingPlayers(false)
+    , mResettingCategories(false)
+    , mResettingMatches(false)
+{}
 
 void QTournamentStore::changeTournament() {
     log_debug().msg("Emitting tournamentChanged");

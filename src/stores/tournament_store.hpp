@@ -18,12 +18,14 @@ class MatchStore;
 class TournamentStore {
 public:
     TournamentStore();
+    TournamentStore(TournamentId id);
     TournamentStore(const TournamentStore &other);
     virtual ~TournamentStore();
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::make_nvp("name", mName));
+        ar(cereal::make_nvp("id", mId));
         ar(cereal::make_nvp("players", mPlayers));
         ar(cereal::make_nvp("categories", mCategories));
         ar(cereal::make_nvp("tatamis", mTatamis));
@@ -48,19 +50,6 @@ public:
 
     const TatamiList & getTatamis() const;
     TatamiList & getTatamis();
-
-    PlayerId generateNextPlayerId();
-    CategoryId generateNextCategoryId();
-    MatchId generateNextMatchId();
-
-    template <typename T>
-    PositionId generateNextPositionId(const PositionManager<T> &manager) {
-        while (true) {
-            PositionId id = mPositionIdGenerator();
-            if (!manager.containsId(id))
-                return id;
-        }
-    };
 
     // signals used for frontends. Called by actions
     virtual void changeTournament() {}
@@ -95,15 +84,11 @@ public:
     virtual void endEraseTatamis() {}
 
 private:
+    TournamentId mId;
     std::string mName;
 
     std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> mPlayers;
     std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> mCategories;
     TatamiList mTatamis;
-
-    PlayerId::Generator mPlayerIdGenerator; // TODO: these should not be here, but somewhere else
-    CategoryId::Generator mCategoryIdGenerator;
-    MatchId::Generator mMatchIdGenerator;
-    PositionId::Generator mPositionIdGenerator;
 };
 

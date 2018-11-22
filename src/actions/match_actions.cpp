@@ -2,7 +2,7 @@
 #include "exception.hpp"
 
 AddMatchAction::AddMatchAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
-    : AddMatchAction(tournament.generateNextMatchId(), categoryId, type, title, bye, whitePlayerId, bluePlayerId)
+    : AddMatchAction(MatchId::generate(tournament.getCategory(categoryId)), categoryId, type, title, bye, whitePlayerId, bluePlayerId)
 {}
 
 AddMatchAction::AddMatchAction(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)

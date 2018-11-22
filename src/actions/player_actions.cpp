@@ -5,7 +5,7 @@
 #include "exception.hpp"
 
 AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
-    : AddPlayerAction(tournament.generateNextPlayerId(), firstName, lastName, age, rank, club, weight, country, sex)
+    : AddPlayerAction(PlayerId::generate(tournament), firstName, lastName, age, rank, club, weight, country, sex)
 {}
 
 AddPlayerAction::AddPlayerAction(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)

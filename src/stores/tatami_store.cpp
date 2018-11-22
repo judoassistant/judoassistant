@@ -124,7 +124,7 @@ void ConcurrentBlockGroup::eraseGroup(PositionHandle handle) {
 
 PositionHandle ConcurrentBlockGroup::addGroup(TournamentStore & tournament, size_t index) {
     PositionHandle handle;
-    handle.id = tournament.generateNextPositionId(mGroups);
+    handle.id = PositionId::generate(mGroups);
     handle.index = index;
     return handle;
 }
@@ -206,12 +206,12 @@ void TatamiStore::eraseGroup(PositionHandle handle) {
 
 std::pair<PositionHandle, PositionHandle> TatamiStore::addGroup(TournamentStore & tournament, size_t index) {
     PositionHandle conHandle;
-    conHandle.id = tournament.generateNextPositionId(mGroups);
+    conHandle.id = PositionId::generate(mGroups);
     conHandle.index = index;
 
     PositionHandle seqHandle;
     // the new group is empty. Just generate id based on this group
-    seqHandle.id = tournament.generateNextPositionId(mGroups);
+    seqHandle.id = PositionId::generate(mGroups);
     seqHandle.index = index;
 
     return {conHandle, seqHandle};

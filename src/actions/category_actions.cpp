@@ -15,7 +15,7 @@ AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, uin
 {}
 
 AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
-    : AddCategoryAction(tournament.generateNextCategoryId(), name, ruleset, drawSystem)
+    : AddCategoryAction(CategoryId::generate(tournament), name, ruleset, drawSystem)
 {}
 
 
@@ -501,7 +501,7 @@ AutoAddCategoriesAction::AutoAddCategoriesAction(TournamentStore &tournament, st
         for (size_t j = next; j < sol.next; ++j)
             playerIds.push_back(weights[j].second);
 
-        mCategoryIds.push_back(tournament.generateNextCategoryId());
+        mCategoryIds.push_back(CategoryId::generate(tournament));
         mPlayerIds.push_back(std::move(playerIds));
 
         next = sol.next;

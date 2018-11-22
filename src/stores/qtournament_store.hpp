@@ -10,6 +10,7 @@ class QTournamentStore : public QObject, public TournamentStore {
     Q_OBJECT
 public:
     QTournamentStore();
+    QTournamentStore(TournamentId id);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

@@ -3,6 +3,10 @@
 TournamentStore::TournamentStore()
 {}
 
+TournamentStore::TournamentStore(TournamentId id)
+    : mId(id)
+{}
+
 TournamentStore::~TournamentStore() {}
 
 const std::string & TournamentStore::getName() const {
@@ -19,39 +23,6 @@ const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> & TournamentSto
 
 const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> & TournamentStore::getCategories() const {
     return mCategories;
-}
-
-PlayerId TournamentStore::generateNextPlayerId() {
-    while (true) {
-        PlayerId id = mPlayerIdGenerator();
-        if (!containsPlayer(id))
-            return id;
-    }
-}
-
-CategoryId TournamentStore::generateNextCategoryId() {
-    while (true) {
-        CategoryId id = mCategoryIdGenerator();
-        if (!containsCategory(id))
-            return id;
-    }
-}
-
-MatchId TournamentStore::generateNextMatchId() {
-    while (true) {
-        MatchId id = mMatchIdGenerator();
-
-        bool exists = false;
-        for (const auto & it : getCategories()) {
-            if (it.second->containsMatch(id)) {
-                exists = true;
-                break;
-            }
-        }
-
-        if (!exists)
-            return id;
-    }
 }
 
 void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
@@ -113,7 +84,8 @@ TatamiList & TournamentStore::getTatamis() {
 }
 
 TournamentStore::TournamentStore(const TournamentStore &other)
-    : mName(other.mName)
+    : mId(other.mId)
+    , mName(other.mName)
     , mTatamis(other.mTatamis)
 {
     for (const auto &p : other.mPlayers)

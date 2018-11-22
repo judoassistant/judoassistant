@@ -26,6 +26,9 @@ public:
     bool canRedo();
     void redo();
 
+    bool containsConfirmedAction(ActionId action) const;
+    bool containsUnconfirmedAction(ActionId action) const;
+
 protected:
     void startInterface(std::unique_ptr<NetworkInterface> interface);
     void stopInterface();
@@ -49,7 +52,6 @@ signals:
 private:
     static const size_t REDO_LIST_MAX_SIZE = 20;
 
-    ActionId generateNextActionId();
     typedef std::list<std::pair<ActionId, std::unique_ptr<Action>>> ActionList;
 
     std::unique_ptr<QTournamentStore> mTournament;
@@ -67,7 +69,6 @@ private:
     std::map<ActionId, std::list<ActionId>::iterator> mUndoListMap;
 
     size_t mSyncing;
-    ActionId::Generator mActionIdGenerator;
 
     std::unique_ptr<NetworkInterface> mNetworkInterface;
 };
