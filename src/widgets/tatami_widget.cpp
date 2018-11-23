@@ -2,7 +2,7 @@
 #include <QDrag>
 #include <QBitmap>
 #include <QGraphicsSceneDragDropEvent>
-#include "widgets/misc/qutejudo_mime.hpp"
+#include "widgets/misc/judoassistant_mime.hpp"
 #include "widgets/tatami_widget.hpp"
 #include "actions/tatami_actions.hpp"
 #include <algorithm>
@@ -164,7 +164,7 @@ void EmptyConcurrentBlockItem::paint(QPainter *painter, const QStyleOptionGraphi
 }
 
 void EmptyConcurrentBlockItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
-    if (event->mimeData()->hasFormat("application/qutejudo-block")) {
+    if (event->mimeData()->hasFormat("application/judoassistant-block")) {
         event->setAccepted(true);
         mDragOver = true;
     }
@@ -181,7 +181,7 @@ void EmptyConcurrentBlockItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event
 }
 
 void EmptyConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
-    const auto * mime = dynamic_cast<const QutejudoMime*>(event->mimeData());
+    const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
     auto block = mime->block();
     QTournamentStore & tournament = mStoreManager->getTournament();
     TatamiStore & tatami = tournament.getTatamis()[mTatamiIndex];
@@ -261,7 +261,7 @@ PositionHandle ConcurrentBlockItem::getHandle() const {
 }
 
 void ConcurrentBlockItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
-    if (event->mimeData()->hasFormat("application/qutejudo-block")) {
+    if (event->mimeData()->hasFormat("application/judoassistant-block")) {
         event->setAccepted(true);
         mDragOver = true;
     }
@@ -278,7 +278,7 @@ void ConcurrentBlockItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
 }
 
 void ConcurrentBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
-    const auto * mime = dynamic_cast<const QutejudoMime*>(event->mimeData());
+    const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
     auto block = mime->block();
 
     QTournamentStore & tournament = mStoreManager->getTournament();
@@ -341,7 +341,7 @@ void SequentialBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
 }
 
 void SequentialBlockItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
-    if (event->mimeData()->hasFormat("application/qutejudo-block")) {
+    if (event->mimeData()->hasFormat("application/judoassistant-block")) {
         event->setAccepted(true);
         mDragOver = true;
     }
@@ -358,7 +358,7 @@ void SequentialBlockItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
 }
 
 void SequentialBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
-    const auto * mime = dynamic_cast<const QutejudoMime*>(event->mimeData());
+    const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
     auto block = mime->block();
 
     TatamiLocation location;
@@ -417,7 +417,7 @@ void BlockItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         return;
 
     QDrag *drag = new QDrag(event->widget());
-    QutejudoMime *mime = new QutejudoMime;
+    JudoassistantMime *mime = new JudoassistantMime;
     drag->setMimeData(mime);
 
     // mime->setColorData(color);

@@ -7,7 +7,6 @@
 
 class CategoryStore;
 class TournamentStore;
-class StoreManager;
 
 unsigned int getGeneratorSeed();
 
@@ -123,7 +122,7 @@ public:
     ActionId() {}
     ActionId(InternalType value) : Id(value) {}
 
-    static ActionId generate(const StoreManager &storeManager);
+    static ActionId generate();
 };
 
 class ClientId : public Id<ClientId> {

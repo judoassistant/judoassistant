@@ -11,7 +11,7 @@
 
 #include <fstream>
 
-#include "widgets/qutejudo_window.hpp"
+#include "widgets/hub_window.hpp"
 #include "widgets/tournament_widget.hpp"
 #include "widgets/players_widget.hpp"
 #include "widgets/categories_widget.hpp"
@@ -22,7 +22,7 @@
 #include "config/web.hpp"
 #include "exception.hpp"
 
-QutejudoWindow::QutejudoWindow() {
+HubWindow::HubWindow() {
     // TODO: Add todostack sidebar
     createStatusBar();
     createTournamentMenu();
@@ -43,23 +43,23 @@ QutejudoWindow::QutejudoWindow() {
     setCentralWidget(tabWidget);
 
     resize(250,250);
-    setWindowTitle(tr("Qutejudo"));
+    setWindowTitle(tr("JudoAssistant"));
 
     mStoreManager.startServer(8000);
 }
 
-void QutejudoWindow::createStatusBar() {
+void HubWindow::createStatusBar() {
     statusBar();
 }
 
-void QutejudoWindow::createTournamentMenu() {
+void HubWindow::createTournamentMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Tournament"));
 
     {
         QAction *action = new QAction(tr("New"), this);
         action->setShortcuts(QKeySequence::New);
         action->setStatusTip(tr("Create a new tournament"));
-        connect(action, &QAction::triggered, this, &QutejudoWindow::newTournament);
+        connect(action, &QAction::triggered, this, &HubWindow::newTournament);
         menu->addAction(action);
     }
 
@@ -69,7 +69,7 @@ void QutejudoWindow::createTournamentMenu() {
         QAction *action = new QAction(tr("Open.."), this);
         action->setShortcuts(QKeySequence::Open);
         action->setStatusTip(tr("Load tournament from a file"));
-        connect(action, &QAction::triggered, this, &QutejudoWindow::openTournament);
+        connect(action, &QAction::triggered, this, &HubWindow::openTournament);
         menu->addAction(action);
     }
 
@@ -84,7 +84,7 @@ void QutejudoWindow::createTournamentMenu() {
         {
             QAction *action = new QAction(tr("Import players.."), this);
             action->setStatusTip(tr("Import players from a file"));
-            connect(action, &QAction::triggered, this, &QutejudoWindow::openImportPlayers);
+            connect(action, &QAction::triggered, this, &HubWindow::openImportPlayers);
             submenu->addAction(action);
         }
     }
@@ -95,7 +95,7 @@ void QutejudoWindow::createTournamentMenu() {
         QAction *action = new QAction(tr("Save"), this);
         action->setShortcuts(QKeySequence::Save);
         action->setStatusTip(tr("Save tournament to a file"));
-        connect(action, &QAction::triggered, this, &QutejudoWindow::saveTournament);
+        connect(action, &QAction::triggered, this, &HubWindow::saveTournament);
         menu->addAction(action);
     }
 
@@ -103,7 +103,7 @@ void QutejudoWindow::createTournamentMenu() {
         QAction *action = new QAction(tr("Save As.."), this);
         action->setShortcuts(QKeySequence::SaveAs);
         action->setStatusTip(tr("Save the tournament to file"));
-        connect(action, &QAction::triggered, this, &QutejudoWindow::saveAsTournament);
+        connect(action, &QAction::triggered, this, &HubWindow::saveAsTournament);
         menu->addAction(action);
     }
 
@@ -112,13 +112,13 @@ void QutejudoWindow::createTournamentMenu() {
     {
         QAction *action = new QAction(tr("Quit"), this);
         action->setShortcuts(QKeySequence::Quit);
-        action->setStatusTip(tr("Quit Qutejudo"));
-        connect(action, &QAction::triggered, this, &QutejudoWindow::quit);
+        action->setStatusTip(tr("Quit JudoAssistant"));
+        connect(action, &QAction::triggered, this, &HubWindow::quit);
         menu->addAction(action);
     }
 }
 
-void QutejudoWindow::createEditMenu() {
+void HubWindow::createEditMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Edit"));
 
     {
@@ -142,11 +142,11 @@ void QutejudoWindow::createEditMenu() {
     }
 }
 
-void QutejudoWindow::createViewMenu() {
+void HubWindow::createViewMenu() {
     // QMenu *menu = menuBar()->addMenu(tr("View"));
 }
 
-void QutejudoWindow::createPreferencesMenu() {
+void HubWindow::createPreferencesMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Preferences"));
     {
         QMenu *submenu = menu->addMenu("Language");
@@ -155,16 +155,16 @@ void QutejudoWindow::createPreferencesMenu() {
     }
 }
 
-void QutejudoWindow::createHelpMenu() {
+void HubWindow::createHelpMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Help"));
     {
-        QAction *action = new QAction(tr("Qutejudo Home Page"), this);
-        connect(action, &QAction::triggered, this, &QutejudoWindow::openHomePage);
+        QAction *action = new QAction(tr("JudoAssistant Home Page"), this);
+        connect(action, &QAction::triggered, this, &HubWindow::openHomePage);
         menu->addAction(action);
     }
     {
-        QAction *action = new QAction(tr("Qutejudo Manual"), this);
-        connect(action, &QAction::triggered, this, &QutejudoWindow::openManual);
+        QAction *action = new QAction(tr("JudoAssistant Manual"), this);
+        connect(action, &QAction::triggered, this, &HubWindow::openManual);
         menu->addAction(action);
     }
 
@@ -172,50 +172,50 @@ void QutejudoWindow::createHelpMenu() {
 
     {
         QAction *action = new QAction(tr("Report an Issue"), this);
-        connect(action, &QAction::triggered, this, &QutejudoWindow::openReportIssue);
+        connect(action, &QAction::triggered, this, &HubWindow::openReportIssue);
 
         menu->addAction(action);
     }
     {
         QAction *action = new QAction(tr("About"), this);
-        connect(action, &QAction::triggered, this, &QutejudoWindow::showAboutDialog);
+        connect(action, &QAction::triggered, this, &HubWindow::showAboutDialog);
         menu->addAction(action);
     }
 }
 
-void QutejudoWindow::openHomePage() {
+void HubWindow::openHomePage() {
     if(QDesktopServices::openUrl(Config::HOME_PAGE_URL))
         return;
 
     // QMessageBox::warning(this, tr("Unable to open home page."));
 }
 
-void QutejudoWindow::openManual() {
+void HubWindow::openManual() {
     if(QDesktopServices::openUrl(Config::MANUAL_URL))
         return;
 
     QMessageBox::warning(this, tr("Unable to open manual."), tr("The manual is available at"));
 }
 
-void QutejudoWindow::openReportIssue() {
+void HubWindow::openReportIssue() {
     if(QDesktopServices::openUrl(Config::REPORT_ISSUE_URL))
         return;
 
     // QMessageBox::warning(this, tr("Unable to open report issue page."));
 }
 
-void QutejudoWindow::writeTournament() {
+void HubWindow::writeTournament() {
     if (!mStoreManager.write(mFileName))
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
     else
         statusBar()->showMessage(tr("Saved tournament to file"));
 }
 
-void QutejudoWindow::readTournament() {
+void HubWindow::readTournament() {
     readTournament(mFileName);
 }
 
-void QutejudoWindow::readTournament(const QString &fileName) {
+void HubWindow::readTournament(const QString &fileName) {
     mFileName = fileName;
     if (!mStoreManager.read(fileName))
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
@@ -223,7 +223,7 @@ void QutejudoWindow::readTournament(const QString &fileName) {
         statusBar()->showMessage(tr("Opened tournament from file"));
 }
 
-void QutejudoWindow::newTournament() {
+void HubWindow::newTournament() {
     if (mStoreManager.isDirty()) {
         auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel)
@@ -234,7 +234,7 @@ void QutejudoWindow::newTournament() {
     mStoreManager.resetTournament();
 }
 
-void QutejudoWindow::openTournament() {
+void HubWindow::openTournament() {
     if (mStoreManager.isDirty()) {
         auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to continue?"), QMessageBox::Yes | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel)
@@ -248,7 +248,7 @@ void QutejudoWindow::openTournament() {
     readTournament(fileName);
 }
 
-void QutejudoWindow::quit() {
+void HubWindow::quit() {
     if (mStoreManager.isDirty()) {
         auto reply = QMessageBox::question(this, tr("Unsaved changes"), tr("The current tournament has unsaved changes. Would you still like to exit without saving?"), QMessageBox::Yes | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel)
@@ -258,14 +258,14 @@ void QutejudoWindow::quit() {
     QCoreApplication::exit();
 }
 
-void QutejudoWindow::saveTournament() {
+void HubWindow::saveTournament() {
     if (mFileName.isEmpty())
         saveAsTournament();
     else
         writeTournament();
 }
 
-void QutejudoWindow::saveAsTournament() {
+void HubWindow::saveAsTournament() {
     // TODO: Append .qj if not already
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
 
@@ -276,11 +276,11 @@ void QutejudoWindow::saveAsTournament() {
     writeTournament();
 }
 
-void QutejudoWindow::showAboutDialog() {
-    QMessageBox::about(this, tr("Qutejudo - About"), tr("TODO"));
+void HubWindow::showAboutDialog() {
+    QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
 }
 
-void QutejudoWindow::openImportPlayers() {
+void HubWindow::openImportPlayers() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import players"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Comma-separated (CSV) Files (*.csv);;All Files (*)"));
 
     if (fileName.isEmpty())

@@ -49,7 +49,7 @@ Log & log_warning() {
     return instance;
 }
 
-std::ostream & operator<<(std::ostream & o, const QString &str) {
-    return o << str.toStdString();
-}
+// std::ostream & operator<<(std::ostream & o, const QString &str) {
+//     return o << str.toStdString();
+// }
 

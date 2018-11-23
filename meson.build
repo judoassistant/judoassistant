@@ -1,8 +1,8 @@
-project('qutejudo', 'cpp', default_options: ['cpp_std=c++17'])
+project('judoassistant', 'cpp', default_options: ['cpp_std=c++17'])
 
 # Qt5 dependency
 qt5 = import('qt5')
-qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
+qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
 
 # Boost dependency
 boost_dep = dependency('boost', modules: ['system'])
@@ -19,7 +19,7 @@ conf_data.set('version_patch', '0')
 configure_file(input : 'src/version.hpp.in', output: 'version.hpp', configuration: conf_data)
 
 # Copy license
-configure_file(input : 'LICENSE', output: 'qutejudo-license.txt', copy: true)
+configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
 
 # Copy icons
 configure_file(input : 'icomoon/License.txt', output: 'icomoon-license.txt', copy: true)
@@ -29,13 +29,29 @@ configure_file(input : 'icomoon/SVG/117-user-minus.svg', output: 'player-erase.s
 # Find all sources and headers
 include_dirs = include_directories(['.', 'src', 'cereal/include'])
 
-moc_headers = []
-sources = []
+core_sources = []
+
+ui_sources = []
+ui_moc_headers = []
+
+score_sources = []
+score_moc_headers = []
+
+hub_sources = []
+hub_moc_headers = []
 
 subdir('src')
 
 # Qt5 compilations
-moc_files = qt5.preprocess(moc_headers: moc_headers, include_directories: include_dirs)
+ui_moc_files = qt5.preprocess(moc_headers: ui_moc_headers, include_directories: include_dirs)
+score_moc_files = qt5.preprocess(moc_headers: score_moc_headers, include_directories: include_dirs)
+hub_moc_files = qt5.preprocess(moc_headers: hub_moc_headers, include_directories: include_dirs)
+
+# Compile static libraries
+core_lib = library('core', core_sources, include_directories: include_dirs)
+ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep])
 
 # Executables
-qutejudo_exe = executable('qutejudo', 'src/qutejudo.cpp', sources, moc_files, include_directories: include_dirs, dependencies: [qt5_dep, boost_dep, thread_dep])
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
+score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep])
+

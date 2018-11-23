@@ -5,10 +5,10 @@
 #include "id.hpp"
 #include "stores/match_store.hpp"
 
-class QutejudoMime : public QMimeData {
+class JudoassistantMime : public QMimeData {
     Q_OBJECT
 public:
-    QutejudoMime();
+    JudoassistantMime();
 
     std::pair<CategoryId,MatchType> block() const;
     void setBlock(CategoryId categoryId, MatchType matchType);

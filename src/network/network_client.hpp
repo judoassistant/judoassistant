@@ -10,6 +10,8 @@
 #include "network/network_message.hpp"
 #include "network/network_connection.hpp"
 
+class QTournamentStore;
+
 class NetworkClient : public NetworkInterface {
     Q_OBJECT
 public:

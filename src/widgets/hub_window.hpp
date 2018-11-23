@@ -7,11 +7,11 @@
 #include "store_managers/master_store_manager.hpp"
 #include "rulesets/twentyeighteen_ruleset.hpp"
 
-class QutejudoWindow : public QMainWindow {
+class HubWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    QutejudoWindow();
+    HubWindow();
 
     void readTournament();
     void readTournament(const QString &fileName);

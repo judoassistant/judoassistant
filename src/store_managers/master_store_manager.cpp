@@ -12,7 +12,7 @@ MasterStoreManager::~MasterStoreManager() {
 }
 
 bool MasterStoreManager::read(const QString &path) {
-    log_debug().field("path", path).msg("Reading tournament from file");
+    log_debug().field("path", path.toStdString()).msg("Reading tournament from file");
     std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
 
     if (!file.is_open())
@@ -35,7 +35,7 @@ void MasterStoreManager::resetTournament() {
 }
 
 bool MasterStoreManager::write(const QString &path) {
-    log_debug().field("path", path).msg("Writing tournament to file");
+    log_debug().field("path", path.toStdString()).msg("Writing tournament to file");
     std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
 
     if (!file.is_open())

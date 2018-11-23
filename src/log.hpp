@@ -6,7 +6,7 @@
 #include <set>
 #include <iostream>
 #include <optional>
-#include <QString>
+// #include <QString>
 
 class Log {
 public:
@@ -69,7 +69,7 @@ std::ostream & operator<<(std::ostream & o, std::pair<A,B> pair) {
     return o << "(" << pair.first << "; " << pair.second << ")";
 }
 
-std::ostream & operator<<(std::ostream & o, const QString &str);
+// std::ostream & operator<<(std::ostream & o, const QString &str);
 
 Log & log_info();
 Log & log_debug(); // TODO: make this a null sink in production builds and have support for file output

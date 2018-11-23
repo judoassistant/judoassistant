@@ -6,7 +6,7 @@
 #include "stores/match_store.hpp"
 #include "stores/match_event.hpp"
 #include "stores/player_store.hpp"
-#include "stores/qtournament_store.hpp"
+#include "stores/tournament_store.hpp"
 
 #include "actions/actions.hpp"
 #include "rulesets/rulesets.hpp"

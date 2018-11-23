@@ -7,7 +7,7 @@ subdir('stores')
 subdir('store_managers')
 subdir('widgets')
 
-sources += ['src/id.cpp']
-sources += ['src/log.cpp']
-sources += ['src/version.cpp']
-sources += ['src/position_manager.cpp']
+core_sources += ['src/id.cpp']
+core_sources += ['src/log.cpp']
+core_sources += ['src/version.cpp']
+core_sources += ['src/position_manager.cpp']

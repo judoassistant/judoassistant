@@ -101,7 +101,18 @@ void StoreManager::receiveSyncConfirm() {
 }
 
 void StoreManager::dispatch(std::unique_ptr<Action> action) {
-    auto actionId = ActionId::generate(*this);
+    ActionId actionId;
+
+    while (true) {
+        actionId = ActionId::generate();
+
+        if (containsConfirmedAction(actionId))
+            continue;
+        if (containsUnconfirmedAction(actionId))
+            continue;
+
+        break;
+    }
 
     log_debug().field("actionId", actionId).msg("Dispatching action");
 

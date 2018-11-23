@@ -3,7 +3,6 @@
 #include "id.hpp"
 #include "stores/tournament_store.hpp"
 #include "stores/category_store.hpp"
-#include "store_managers/store_manager.hpp"
 
 unsigned int getGeneratorSeed() {
     return std::chrono::system_clock::now().time_since_epoch().count();
@@ -48,22 +47,12 @@ CategoryId CategoryId::generate(const TournamentStore &tournament) {
     return id;
 }
 
-ActionId ActionId::generate(const StoreManager &storeManager) {
+ActionId ActionId::generate() {
     static std::unique_ptr<ActionId::Generator> generator; // singleton
     if (!generator)
         generator = std::make_unique<ActionId::Generator>(getGeneratorSeed());
 
-    ActionId id;
-    while (true) {
-        id = (*generator)();
-
-        if (storeManager.containsConfirmedAction(id))
-            continue;
-        if (storeManager.containsUnconfirmedAction(id))
-            continue;
-
-        return id;
-    }
+    return (*generator)();
 }
 
 TournamentId TournamentId::generate() {

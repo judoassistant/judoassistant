@@ -6,7 +6,7 @@
 
 #include "widgets/unallocated_blocks_widget.hpp"
 #include <algorithm>
-#include "widgets/misc/qutejudo_mime.hpp"
+#include "widgets/misc/judoassistant_mime.hpp"
 
 UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent)
     : QGraphicsView(parent)
@@ -234,7 +234,7 @@ void UnallocatedBlockItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         return;
 
     QDrag *drag = new QDrag(event->widget());
-    QutejudoMime *mime = new QutejudoMime;
+    auto *mime = new JudoassistantMime;
     drag->setMimeData(mime);
 
     // mime->setColorData(color);

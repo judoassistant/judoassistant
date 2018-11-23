@@ -4,11 +4,10 @@
 #include <QApplication>
 #include <QPalette>
 
-class QutejudoApplication : public QApplication {
+class ScoreApplication : public QApplication {
 public:
-    QutejudoApplication(int &argc, char *argv[]);
+    ScoreApplication(int &argc, char *argv[]);
     int exec();
 private:
-    QPalette mPalette;
     QStringList mArgs;
 };

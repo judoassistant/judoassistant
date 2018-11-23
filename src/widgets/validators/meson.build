@@ -1,4 +1,4 @@
-sources += ['src/widgets/validators/optional_validator.cpp']
+ui_sources += ['src/widgets/validators/optional_validator.cpp']
 
-moc_headers += ['src/widgets/validators/optional_validator.hpp']
+ui_moc_headers += ['src/widgets/validators/optional_validator.hpp']
 

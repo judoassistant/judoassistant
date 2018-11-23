@@ -135,7 +135,8 @@ void NetworkServer::accept() {
             });
         }
 
-        accept();
+        if (mAcceptor.is_open())
+            accept();
     });
 
 }
