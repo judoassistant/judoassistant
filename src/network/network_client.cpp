@@ -51,12 +51,12 @@ void NetworkClient::deliver(std::unique_ptr<NetworkMessage> message) {
         writeMessage();
 }
 
-void NetworkClient::postConnect(const std::string &host, const std::string &port) {
+void NetworkClient::postConnect(const std::string &host, unsigned int port) {
     mContext.post([this, host, port]() {
         log_debug().msg("Connecting..");
         mQuitPosted = false;
         tcp::resolver resolver(mContext);
-        auto endpoints = resolver.resolve(host, port);
+        auto endpoints = resolver.resolve(host, std::to_string(port));
 
         mSocket = tcp::socket(mContext);
 
@@ -174,14 +174,17 @@ void NetworkClient::start() {
 }
 
 void NetworkClient::quit() {
+    postDisconnect();
+    QThread::quit();
+}
+
+void NetworkClient::postDisconnect() {
     mContext.post([this]() {
         mQuitPosted = true; // writeMessage will kill the connection when finished
         auto message = std::make_unique<NetworkMessage>();
         message->encodeQuit();
         deliver(std::move(message));
     });
-
-    QThread::quit();
 }
 
 void NetworkClient::run() {

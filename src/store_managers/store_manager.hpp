@@ -30,7 +30,7 @@ public:
     bool containsUnconfirmedAction(ActionId action) const;
 
 protected:
-    void startInterface(std::unique_ptr<NetworkInterface> interface);
+    void startInterface(std::shared_ptr<NetworkInterface> interface);
     void stopInterface();
 
     void sync(std::unique_ptr<QTournamentStore> tournament);
@@ -70,6 +70,6 @@ private:
 
     size_t mSyncing;
 
-    std::unique_ptr<NetworkInterface> mNetworkInterface;
+    std::shared_ptr<NetworkInterface> mNetworkInterface;
 };
 

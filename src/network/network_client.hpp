@@ -24,7 +24,8 @@ public:
     void postAction(ActionId actionId, std::unique_ptr<Action> action) override;
     void postUndo(ActionId actionId) override;
 
-    void postConnect(const std::string &host, const std::string &port);
+    void postConnect(const std::string &host, unsigned int port);
+    void postDisconnect();
 
     void start() override;
     void quit() override;

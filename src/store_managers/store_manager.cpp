@@ -12,7 +12,7 @@ StoreManager::~StoreManager() {
         stopInterface();
 }
 
-void StoreManager::startInterface(std::unique_ptr<NetworkInterface> interface) {
+void StoreManager::startInterface(std::shared_ptr<NetworkInterface> interface) {
     if (mNetworkInterface != nullptr)
         throw std::runtime_error("Attempted to start StoreManager interface with another one running");
 

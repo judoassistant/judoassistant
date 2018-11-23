@@ -5,6 +5,7 @@
 #include "core.hpp"
 #include "version.hpp"
 #include "widgets/score_operator_window.hpp"
+#include "widgets/score_display_window.hpp"
 
 ScoreApplication::ScoreApplication(int &argc, char *argv[]) : QApplication(argc, argv) {
     setApplicationName("JudoAssistant Score");
@@ -22,13 +23,15 @@ ScoreApplication::ScoreApplication(int &argc, char *argv[]) : QApplication(argc,
 }
 
 int ScoreApplication::exec() {
-    ScoreOperatorWindow window;
+    ScoreOperatorWindow operatorWindow;
+    // ScoreDisplayWindow displayWindow;
 
     // if (mArgs.size() > 0) {
     //     window.readTournament(mArgs.at(0));
     // }
 
-    window.show();
+    operatorWindow.show();
+    // displayWindow.show();
 
     return QApplication::exec();
 }

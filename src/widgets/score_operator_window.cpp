@@ -1,26 +1,13 @@
 #include <QMenu>
 #include <QMenuBar>
-#include <QTabWidget>
 #include <QAction>
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QStandardPaths>
 #include <QMessageBox>
-#include <QStatusBar>
 #include <QCoreApplication>
+#include <QDesktopServices>
 
-#include <fstream>
-
-#include "widgets/score_operator_window.hpp"
-#include "widgets/tournament_widget.hpp"
-#include "widgets/players_widget.hpp"
-#include "widgets/categories_widget.hpp"
-#include "widgets/tatamis_widget.hpp"
-#include "widgets/matches_widget.hpp"
-#include "widgets/import_players_csv_dialog.hpp"
-#include "widgets/import_helpers/csv_reader.hpp"
 #include "config/web.hpp"
-#include "exception.hpp"
+#include "widgets/score_operator_window.hpp"
+#include "widgets/connect_dialog.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow() {
     createStatusBar();
@@ -43,10 +30,10 @@ void ScoreOperatorWindow::createTournamentMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Tournament"));
 
     {
-        QAction *action = new QAction(tr("Connect"), this);
+        QAction *action = new QAction(tr("Connect.."), this);
         action->setShortcuts(QKeySequence::New);
         action->setStatusTip(tr("Connect to hub"));
-        // connect(action, &QAction::triggered, this, &ScoreOperatorWindow::newTournament);
+        connect(action, &QAction::triggered, this, &ScoreOperatorWindow::showConnectDialog);
         menu->addAction(action);
     }
 
@@ -148,3 +135,7 @@ void ScoreOperatorWindow::showAboutDialog() {
     QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
 }
 
+void ScoreOperatorWindow::showConnectDialog() {
+    ConnectDialog dialog(std::nullopt, std::nullopt);
+    dialog.exec();
+}

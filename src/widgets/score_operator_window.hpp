@@ -1,11 +1,9 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QUrl>
 
 #include "core.hpp"
-#include "store_managers/master_store_manager.hpp"
-#include "rulesets/twentyeighteen_ruleset.hpp"
+#include "store_managers/client_store_manager.hpp"
 
 class ScoreOperatorWindow : public QMainWindow {
     Q_OBJECT
@@ -27,5 +25,9 @@ private:
     void createViewMenu();
     void createPreferencesMenu();
     void createHelpMenu();
+
+    void showConnectDialog();
+
+    ClientStoreManager mStoreManager;
 };
 

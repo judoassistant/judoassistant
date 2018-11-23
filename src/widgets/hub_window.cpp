@@ -24,6 +24,7 @@
 
 HubWindow::HubWindow() {
     // TODO: Add todostack sidebar
+    // TODO: Catch quit signal to quit gracefully 
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
