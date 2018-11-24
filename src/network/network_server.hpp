@@ -8,6 +8,7 @@
 
 #include "core.hpp"
 #include "network/network_interface.hpp"
+#include "store_managers/sync_payload.hpp"
 
 class NetworkConnection;
 class NetworkMessage;
@@ -18,7 +19,6 @@ class NetworkServer : public NetworkInterface {
 public:
 
     static const size_t ACTION_STACK_MAX_SIZE = 200; // TODO: Figure out if this is sufficient
-    typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
 
     NetworkServer(int port);
 
@@ -38,7 +38,7 @@ private:
     void deliver(std::shared_ptr<NetworkMessage> message);
 
     const std::shared_ptr<TournamentStore> & getTournament() const;
-    const ActionList & getActionStack() const;
+    const SharedActionList & getActionStack() const;
 
 protected:
     void postQuit();
@@ -50,8 +50,8 @@ private:
     boost::asio::ip::tcp::acceptor mAcceptor;
     std::unordered_set<std::shared_ptr<NetworkParticipant>> mParticipants;
     std::shared_ptr<TournamentStore> mTournament; // Tournament always kept behind the tournament in the UI thread
-    ActionList mActionStack;
-    std::unordered_map<ActionId, ActionList::iterator> mActionMap;
+    SharedActionList mActionStack;
+    std::unordered_map<ActionId, SharedActionList::iterator> mActionMap;
 
     friend class NetworkParticipant;
 };

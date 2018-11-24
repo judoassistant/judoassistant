@@ -40,7 +40,7 @@ public:
     bool decodeHandshake(ApplicationVersion &version);
 
     typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
-    void encodeSync(const std::shared_ptr<TournamentStore> & tournament, const ActionList &actionStack);
+    void encodeSync(const TournamentStore & tournament, const ActionList &actionStack);
     bool decodeSync(TournamentStore & tournament, ActionList &actionStack);
 
     void encodeSyncAck();

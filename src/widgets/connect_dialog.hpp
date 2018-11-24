@@ -5,16 +5,27 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QCheckBox>
+
+class ClientStoreManager;
 
 class ConnectDialog : public QDialog {
     Q_OBJECT
 public:
-    ConnectDialog(const std::optional<QString> &host, std::optional<unsigned int> port, QWidget *parent = nullptr);
+    ConnectDialog(ClientStoreManager &client, QWidget *parent = nullptr);
 
-public slots:
+signals:
+    void accepted(QString host, unsigned int port);
+protected:
     void acceptClick();
     void cancelClick();
+    void succeedConnectionAttempt();
+    void failConnectionAttempt();
 private:
+    ClientStoreManager &mStoreManager;
     QLineEdit *mHostContent;
     QSpinBox *mPortContent;
+    QLineEdit *mPasswordContent;
+    QCheckBox *mShouldRetryContent;
+    QSpinBox *mRetryFrequencyContent;
 };

@@ -9,13 +9,11 @@
 #include "network/network_connection.hpp"
 #include "network/network_interface.hpp"
 #include "network/network_message.hpp"
+#include "store_managers/sync_payload.hpp"
 
 class NetworkClient : public NetworkInterface {
     Q_OBJECT
 public:
-    typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
-    typedef std::list<std::pair<ActionId, std::unique_ptr<Action>>> UniqueActionList;
-
     NetworkClient();
 
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
@@ -31,21 +29,21 @@ public:
     void run() override;
 
 signals:
+    void connectionAttemptFailed();
     void connectionLost();
     void connectionShutdown();
-    void connectionAttemptFailed();
-    void connectionAttemptSuccess(QTournamentStore *tournament, UniqueActionList *actions, UniqueActionList *unconfirmedActions, std::unordered_set<ActionId> *unconfirmedUndos);
-    void syncReceived(QTournamentStore *tournament, UniqueActionList *actions);
+    void connectionAttemptSucceeded();
 
 private:
     void deliver(std::unique_ptr<NetworkMessage> message);
     void readMessage();
     void writeMessage();
     void killConnection();
-    void recoverUnconfirmed(TournamentStore *tournament, ActionList *actions);
+    void recoverUnconfirmed(TournamentStore *tournament, SharedActionList *actions);
 
     ClientId mId;
     boost::asio::io_context mContext;
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
     std::string mHost;
@@ -54,8 +52,8 @@ private:
 
     std::unique_ptr<NetworkMessage> mReadMessage;
     std::queue<std::unique_ptr<NetworkMessage>> mWriteQueue;
-    ActionList mUnconfirmedActionList;
-    std::unordered_map<ActionId, ActionList::iterator> mUnconfirmedActionMap;
+    SharedActionList mUnconfirmedActionList;
+    std::unordered_map<ActionId, SharedActionList::iterator> mUnconfirmedActionMap;
     std::unordered_set<ActionId> mUnconfirmedUndos;
 };
 

@@ -17,6 +17,10 @@ public:
     QTournamentStore();
     QTournamentStore(TournamentId id);
 
+    // Slightly hacky since QObject does not have a move constructor. Only
+    // moves TournamentStore fields
+    QTournamentStore(QTournamentStore &&other);
+
     // signals used for frontends. Called by actions
     void changeTournament() override;
 

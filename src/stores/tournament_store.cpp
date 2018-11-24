@@ -99,3 +99,7 @@ TournamentStore::TournamentStore(const TournamentStore &other)
     for (const auto &p : other.mCategories)
         mCategories[p.first] = std::make_unique<CategoryStore>(*p.second);
 }
+
+TournamentId TournamentStore::getId() const {
+    return mId;
+}

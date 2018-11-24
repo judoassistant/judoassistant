@@ -46,6 +46,7 @@ void NetworkMessage::encodeHandshake() {
     archive(ApplicationVersion::current());
 
     mBody = stream.str();
+    log_debug().field("bodysize", mBody.size()).msg("Encoding handshake");
     encodeHeader();
 }
 
@@ -68,7 +69,7 @@ void NetworkMessage::encodeSyncAck() {
     encodeHeader();
 }
 
-void NetworkMessage::encodeSync(const std::shared_ptr<TournamentStore> & tournament, const NetworkMessage::ActionList &actionStack) {
+void NetworkMessage::encodeSync(const TournamentStore & tournament, const NetworkMessage::ActionList &actionStack) {
     mType = Type::SYNC;
 
     std::ostringstream stream;

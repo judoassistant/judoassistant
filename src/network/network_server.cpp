@@ -6,9 +6,11 @@
 using boost::asio::ip::tcp;
 
 void NetworkParticipant::start() {
+    log_debug().msg("Starting participant");
     mServer->join(shared_from_this());
     auto syncMessage = std::make_unique<NetworkMessage>();
-    syncMessage->encodeSync(mServer->getTournament(), mServer->getActionStack());
+    syncMessage->encodeSync(*(mServer->getTournament()), mServer->getActionStack());
+    log_debug().field("bodysize", syncMessage->bodySize()).msg("Delivering sync message");
     deliver(std::move(syncMessage));
 
     readMessage();
@@ -152,7 +154,7 @@ void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {
         mActionMap.clear();
 
         auto message = std::make_shared<NetworkMessage>();
-        message->encodeSync(mTournament, mActionStack);
+        message->encodeSync(*mTournament, mActionStack);
 
         for (auto & participant : mParticipants) {
             participant->setIsSyncing(true);
@@ -228,7 +230,7 @@ const std::shared_ptr<TournamentStore> & NetworkServer::getTournament() const {
     return mTournament;
 }
 
-const NetworkServer::ActionList & NetworkServer::getActionStack() const {
+const SharedActionList & NetworkServer::getActionStack() const {
     return mActionStack;
 }
 

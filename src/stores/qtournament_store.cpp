@@ -2,12 +2,19 @@
 #include "stores/tatami_store.hpp"
 #include "stores/match_event.hpp"
 #include "stores/match_store.hpp"
+#include "stores/player_store.hpp"
+#include "stores/category_store.hpp"
 
 QTournamentStore::QTournamentStore()
     : QObject()
     , mResettingPlayers(false)
     , mResettingCategories(false)
     , mResettingMatches(false)
+{}
+
+QTournamentStore::QTournamentStore(QTournamentStore &&other)
+    : QObject()
+    , TournamentStore(std::move(other))
 {}
 
 QTournamentStore::QTournamentStore(TournamentId id)

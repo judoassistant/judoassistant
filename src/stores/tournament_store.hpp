@@ -18,7 +18,10 @@ public:
     TournamentStore();
     TournamentStore(TournamentId id);
     TournamentStore(const TournamentStore &other);
+    TournamentStore(TournamentStore &&other) = default;
     virtual ~TournamentStore();
+
+    TournamentId getId() const;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

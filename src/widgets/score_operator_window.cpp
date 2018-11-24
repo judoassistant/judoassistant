@@ -136,6 +136,7 @@ void ScoreOperatorWindow::showAboutDialog() {
 }
 
 void ScoreOperatorWindow::showConnectDialog() {
-    ConnectDialog dialog(std::nullopt, std::nullopt);
+    ConnectDialog dialog(mStoreManager);
     dialog.exec();
+    log_debug().msg("Dialog accepted");
 }

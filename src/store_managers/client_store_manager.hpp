@@ -1,7 +1,8 @@
 #pragma once
 
 #include "store_managers/store_manager.hpp"
-#include "network/network_client.hpp"
+
+class NetworkClient;
 
 class ClientStoreManager : public StoreManager {
     Q_OBJECT
@@ -9,7 +10,7 @@ public:
     enum class State {
         LOST_CONNECTION,
         NOT_CONNECTED,
-        CONNECTED,
+        CONNECTED
     };
 
     ClientStoreManager();
@@ -24,13 +25,17 @@ public:
     State getState() const;
 
 protected:
-    typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
-    typedef std::list<std::pair<ActionId, std::unique_ptr<Action>>> UniqueActionList;
+    void loseConnection();
+    void shutdownConnection();
+    void failConnectionAttempt();
+    void succeedConnectionAttempt();
 
+signals:
+    void connectionAttemptFailed();
     void connectionLost();
     void connectionShutdown();
-    void connectionAttemptSuccess(QTournamentStore *tournament, UniqueActionList *actions, UniqueActionList *unconfirmedActions, std::unordered_set<ActionId> *unconfirmedUndos);
-    void syncReceived(QTournamentStore *tournament, UniqueActionList *actions);
+    void connectionAttemptSucceeded();
+
 private:
     void startClient();
     void stopClient();

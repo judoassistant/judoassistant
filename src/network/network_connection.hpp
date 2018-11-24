@@ -21,17 +21,20 @@ public:
 
         asyncRead(*responseMessage, [this, responseMessage, handler](boost::system::error_code ec) {
             if (ec) {
+                log_debug().msg("Problem in asyncRead");
                 handler(ec);
                 return;
             }
 
             ApplicationVersion version;
-            if (responseMessage->getType() != NetworkMessage::Type::HANDSHAKE || responseMessage->decodeHandshake(version)) {
+            if (responseMessage->getType() != NetworkMessage::Type::HANDSHAKE || !responseMessage->decodeHandshake(version)) {
+                log_debug().field("message_type", (int) responseMessage->getType()).msg("Problem in handshake");
                 handler(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
                 return;
             }
 
             if (!version.isBackwardsCompatible(ApplicationVersion::current())) {
+                log_debug().msg("Not backwards compatible");
                 handler(boost::system::errc::make_error_code(boost::system::errc::protocol_not_supported));
                 return;
             }
@@ -148,6 +151,7 @@ private:
 
     template <typename Handler>
     void readBody(NetworkMessage &message, Handler handler) {
+        log_debug().field("bodysize", message.bodySize()).msg("Reading body");
         boost::asio::async_read(mSocket, message.bodyBuffer(),
             [this, handler](boost::system::error_code ec, size_t length) {
                 handler(ec);

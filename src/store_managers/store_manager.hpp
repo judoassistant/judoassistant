@@ -7,8 +7,7 @@
 #include "core.hpp"
 #include "id.hpp"
 #include "actions/action.hpp"
-
-Q_DECLARE_METATYPE(ActionId);
+#include "store_managers/sync_payload.hpp"
 
 class QTournamentStore;
 class NetworkInterface;
@@ -30,7 +29,6 @@ public:
 
     bool containsConfirmedAction(ActionId action) const;
     bool containsUnconfirmedAction(ActionId action) const;
-
 protected:
     void startInterface(std::shared_ptr<NetworkInterface> interface);
     void stopInterface();
@@ -38,12 +36,14 @@ protected:
     void sync(std::unique_ptr<QTournamentStore> tournament);
     void sync();
 
-protected slots:
-    void receiveAction(ActionId actionId, std::shared_ptr<const Action> action);
+protected:
+
+    void receiveAction(ActionId actionId, ActionPtr action);
     void receiveActionConfirm(ActionId actionId);
     void receiveUndo(ActionId actionId);
     void receiveUndoConfirm(ActionId actionId);
-    void receiveSyncConfirm();
+    void receiveSync(SyncPayloadPtr syncPayload);
+    void confirmSync();
 
 signals:
     void tournamentAboutToBeReset();
@@ -54,15 +54,13 @@ signals:
 private:
     static const size_t REDO_LIST_MAX_SIZE = 20;
 
-    typedef std::list<std::pair<ActionId, std::unique_ptr<Action>>> ActionList;
-
     std::unique_ptr<QTournamentStore> mTournament;
 
-    ActionList mConfirmedActionList;
-    std::unordered_map<ActionId, ActionList::iterator> mConfirmedActionMap;
+    UniqueActionList mConfirmedActionList;
+    std::unordered_map<ActionId, UniqueActionList::iterator> mConfirmedActionMap;
 
-    ActionList mUnconfirmedActionList;
-    std::unordered_map<ActionId, ActionList::iterator> mUnconfirmedActionMap;
+    UniqueActionList mUnconfirmedActionList;
+    std::unordered_map<ActionId, UniqueActionList::iterator> mUnconfirmedActionMap;
 
     std::list<std::unique_ptr<Action>> mRedoList;
     std::unordered_set<ActionId> mUnconfirmedUndos;
@@ -74,4 +72,5 @@ private:
 
     std::shared_ptr<NetworkInterface> mNetworkInterface;
 };
+
 

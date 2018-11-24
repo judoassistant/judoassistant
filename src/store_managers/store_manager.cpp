@@ -6,7 +6,7 @@ StoreManager::StoreManager()
     : mTournament(std::make_unique<QTournamentStore>())
     , mSyncing(0)
 {
-    qRegisterMetaType<ActionId>();
+    registerMetatypes();
 }
 
 StoreManager::~StoreManager() {
@@ -26,7 +26,8 @@ void StoreManager::startInterface(std::shared_ptr<NetworkInterface> interface) {
     connect(mNetworkInterface.get(), &NetworkInterface::undoReceived, this, &StoreManager::receiveUndo);
     connect(mNetworkInterface.get(), &NetworkInterface::undoConfirmReceived, this, &StoreManager::receiveUndoConfirm);
 
-    connect(mNetworkInterface.get(), &NetworkInterface::syncConfirmed, this, &StoreManager::receiveSyncConfirm);
+    connect(mNetworkInterface.get(), &NetworkInterface::syncReceived, this, &StoreManager::receiveSync);
+    connect(mNetworkInterface.get(), &NetworkInterface::syncConfirmed, this, &StoreManager::confirmSync);
 
     mNetworkInterface->start();
 }
@@ -97,7 +98,7 @@ void StoreManager::redo() {
         emit redoStatusChanged(false);
 }
 
-void StoreManager::receiveSyncConfirm() {
+void StoreManager::confirmSync() {
     mSyncing -= 1;
     log_debug().field("mSyncing", mSyncing).msg("Sync confirmed");
 }
@@ -134,7 +135,7 @@ void StoreManager::dispatch(std::unique_ptr<Action> action) {
 }
 
 
-void StoreManager::receiveAction(ActionId actionId, std::shared_ptr<const Action> sharedAction) {
+void StoreManager::receiveAction(ActionId actionId, ActionPtr sharedAction) {
     if (mSyncing > 0)
         return;
 
@@ -318,4 +319,35 @@ bool StoreManager::containsConfirmedAction(ActionId action) const {
 
 bool StoreManager::containsUnconfirmedAction(ActionId action) const {
     return mUnconfirmedActionMap.find(action) != mUnconfirmedActionMap.end();
+}
+
+void StoreManager::receiveSync(SyncPayloadPtr payload) {
+    emit tournamentAboutToBeReset();
+    log_debug().msg("Received sync");
+
+    if (mTournament->getId() != payload->tournament->getId())
+        mRedoList.clear();
+
+    mTournament = std::move(payload->tournament);
+
+    mConfirmedActionList = std::move(*(payload->confirmedActionList));
+    mConfirmedActionMap.clear();
+    for (auto it = mConfirmedActionList.begin(); it != mConfirmedActionList.end(); ++it)
+        mConfirmedActionMap[it->first] = it;
+
+    mUnconfirmedActionList = std::move(*(payload->unconfirmedActionList));
+    mUnconfirmedActionMap.clear();
+    for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it)
+        mUnconfirmedActionMap[it->first] = it;
+
+    mUnconfirmedUndos = std::move(*(payload->unconfirmedUndos));
+
+    mUndoList.clear();
+    mUndoListMap.clear();
+
+    // TODO: Update undo list correctly
+
+    emit tournamentReset();
+    emit redoStatusChanged(!mRedoList.empty());
+    emit undoStatusChanged(false);
 }

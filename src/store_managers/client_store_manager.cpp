@@ -1,6 +1,6 @@
 #include <fstream>
 #include "store_managers/client_store_manager.hpp"
-#include "network/network_server.hpp"
+#include "network/network_client.hpp"
 
 ClientStoreManager::ClientStoreManager()
     : mState(State::NOT_CONNECTED)
@@ -12,9 +12,14 @@ ClientStoreManager::~ClientStoreManager() {
     stopClient();
 }
 
-
 void ClientStoreManager::startClient() {
     mInterface = std::make_shared<NetworkClient>();
+
+    QObject::connect(mInterface.get(), &NetworkClient::connectionLost, this, &ClientStoreManager::loseConnection);
+    QObject::connect(mInterface.get(), &NetworkClient::connectionAttemptFailed, this, &ClientStoreManager::failConnectionAttempt);
+    QObject::connect(mInterface.get(), &NetworkClient::connectionShutdown, this, &ClientStoreManager::shutdownConnection);
+    QObject::connect(mInterface.get(), &NetworkClient::connectionAttemptSucceeded, this, &ClientStoreManager::succeedConnectionAttempt);
+
     startInterface(mInterface);
 }
 
@@ -49,18 +54,21 @@ ClientStoreManager::State ClientStoreManager::getState() const {
     return mState;
 }
 
-void ClientStoreManager::connectionLost() {
+void ClientStoreManager::loseConnection() {
     mState = State::LOST_CONNECTION;
+    emit connectionLost();
 }
 
-void ClientStoreManager::connectionShutdown() {
+void ClientStoreManager::shutdownConnection() {
     mState = State::NOT_CONNECTED;
+    emit connectionShutdown();
 }
 
-void ClientStoreManager::connectionAttemptSuccess(QTournamentStore *tournament, UniqueActionList *actions, UniqueActionList *unconfirmedActions, std::unordered_set<ActionId> *unconfirmedUndos) {
-    // TODO
+void ClientStoreManager::failConnectionAttempt() {
+    emit connectionAttemptFailed();
 }
 
-void ClientStoreManager::syncReceived(QTournamentStore *tournament, UniqueActionList *actions) {
-    // TODO
+void ClientStoreManager::succeedConnectionAttempt() {
+    emit connectionAttemptSucceeded();
 }
+

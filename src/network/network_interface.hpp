@@ -1,10 +1,14 @@
 #pragma once
 
-#include <memory>
 #include <QThread>
 
 #include "core.hpp"
-#include "stores/tournament_store.hpp"
+#include "id.hpp"
+#include "store_managers/sync_payload.hpp"
+
+class QTournamentStore;
+class TournamentStore;
+class Action;
 
 class NetworkInterface : public QThread {
     Q_OBJECT
@@ -17,10 +21,11 @@ public:
     virtual void quit() = 0;
 
 signals:
-    void actionReceived(ActionId actionId, std::shared_ptr<const Action> action);
+    void actionReceived(ActionId actionId, ActionPtr action);
     void actionConfirmReceived(ActionId actionId);
     void undoReceived(ActionId actionId);
     void undoConfirmReceived(ActionId actionId);
     void syncConfirmed();
+    void syncReceived(SyncPayloadPtr syncPayload);
 };
 

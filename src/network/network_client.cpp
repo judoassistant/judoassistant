@@ -6,6 +6,7 @@ using boost::asio::ip::tcp;
 NetworkClient::NetworkClient()
     : mId(ClientId::generate())
     , mContext()
+    , mWorkGuard(boost::asio::make_work_guard(mContext))
     , mReadMessage(std::make_unique<NetworkMessage>())
 {
 }
@@ -88,20 +89,21 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                         return;
                     }
 
-                    QTournamentStore *tournament = new QTournamentStore;
-                    ActionList actions;
+                    auto tournament = std::make_unique<QTournamentStore>();
+                    SharedActionList sharedActions;
 
-                    if (!mReadMessage->decodeSync(*tournament, actions)) {
+                    if (!mReadMessage->decodeSync(*tournament, sharedActions)) {
+                        log_debug().msg("Failed decoding sync");
+                        killConnection();
                         emit connectionAttemptFailed();
-                        mReadMessage = std::make_unique<NetworkMessage>();
                         return;
                     }
 
                     // apply the action list but avoid unconfirmed undos
                     std::unordered_set<ActionId> actionIds;
-                    auto *unconfirmedUndos = new std::unordered_set<ActionId>;
-                    auto *uniqueActions = new UniqueActionList;
-                    for (auto &p : actions) {
+                    auto unconfirmedUndos = std::make_unique<std::unordered_set<ActionId>>();
+                    auto uniqueActions = std::make_unique<UniqueActionList>();
+                    for (auto &p : sharedActions) {
                         auto actionId = p.first;
                         actionIds.insert(actionId);
 
@@ -131,7 +133,7 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                     }
 
                     // Copy unconfirmed set and unconfirmed action list
-                    auto *unconfirmedActionList = new UniqueActionList;
+                    auto unconfirmedActionList = std::make_unique<UniqueActionList>();
                     for (const auto &p : mUnconfirmedActionList) {
                         auto actionId = p.first;
                         auto action = p.second->freshClone();
@@ -158,9 +160,10 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                         deliver(std::move(message));
                     }
 
-                    mReadMessage = std::make_unique<NetworkMessage>();
-                    emit connectionAttemptSuccess(tournament, uniqueActions, unconfirmedActionList, unconfirmedUndos);
+                    emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::move(unconfirmedActionList), std::move(unconfirmedUndos)));
+                    emit connectionAttemptSucceeded();
 
+                    mReadMessage = std::make_unique<NetworkMessage>();
                     readMessage();
                 });
             });
@@ -175,6 +178,7 @@ void NetworkClient::start() {
 
 void NetworkClient::quit() {
     postDisconnect();
+    mWorkGuard.reset();
     QThread::quit();
 }
 
@@ -196,7 +200,7 @@ void NetworkClient::run() {
         }
         catch (std::exception& e)
         {
-            log_error().field("msg", e.what()).msg("NetworkServer caught exception");
+            log_error().field("msg", e.what()).msg("NetworkClient caught exception");
         }
     }
 
@@ -253,18 +257,18 @@ void NetworkClient::readMessage() {
             log_warning().msg("Received SYNC_ACK from server");
         }
         else if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
-            QTournamentStore *tournament = new QTournamentStore;
-            ActionList *actions = new ActionList;
+            auto tournament = std::make_unique<QTournamentStore>();
+            SharedActionList sharedActions;
 
-            if (!mReadMessage->decodeSync(*tournament, *actions)) {
+            if (!mReadMessage->decodeSync(*tournament, sharedActions)) {
                 log_error().msg("Failed to decode sync message. Disconnecting");
                 killConnection();
                 emit connectionLost();
                 return;
             }
 
-            UniqueActionList *uniqueActions = new UniqueActionList;
-            for (const auto &p : *actions) {
+            auto uniqueActions = std::make_unique<UniqueActionList>();
+            for (const auto &p : sharedActions) {
                 auto actionId = p.first;
                 auto action = p.second->freshClone();
                 action->redo(*tournament);
@@ -275,7 +279,10 @@ void NetworkClient::readMessage() {
             message->encodeSyncAck();
             deliver(std::move(message));
 
-            emit syncReceived(tournament, uniqueActions);
+            mUnconfirmedUndos.clear();
+            mUnconfirmedActionMap.clear();
+
+            emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::make_unique<UniqueActionList>(), std::make_unique<std::unordered_set<ActionId>>()));
             mUnconfirmedUndos.clear();
             mUnconfirmedActionMap.clear();
             mUnconfirmedActionList.clear();
