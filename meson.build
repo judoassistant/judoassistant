@@ -1,4 +1,4 @@
-project('judoassistant', 'cpp', default_options: ['cpp_std=c++17'])
+project('judoassistant', 'cpp', default_options: ['cpp_std=c++17'], default_library: 'static', license: 'MIT')
 
 # Qt5 dependency
 qt5 = import('qt5')
