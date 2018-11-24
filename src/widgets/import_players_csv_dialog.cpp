@@ -8,7 +8,9 @@
 #include <QHeaderView>
 #include <QMessageBox>
 
+#include "store_managers/store_manager.hpp"
 #include "widgets/import_players_csv_dialog.hpp"
+#include "widgets/import_helpers/csv_reader.hpp"
 
 ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVReader *reader, QWidget *parent)
     : QDialog(parent)

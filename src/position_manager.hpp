@@ -3,8 +3,9 @@
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
-#include "id.hpp"
+
 #include "core.hpp"
+#include "id.hpp"
 #include "serialize.hpp"
 #include "hash.hpp"
 

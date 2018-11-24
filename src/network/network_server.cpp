@@ -1,4 +1,7 @@
+#include "network/network_message.hpp"
 #include "network/network_server.hpp"
+#include "network/network_connection.hpp"
+#include "stores/qtournament_store.hpp"
 
 using boost::asio::ip::tcp;
 

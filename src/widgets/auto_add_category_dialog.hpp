@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
+#include "id.hpp"
 
 #include <QDialog>
 #include <QSpinBox>

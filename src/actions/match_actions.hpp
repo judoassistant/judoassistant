@@ -1,11 +1,15 @@
 #pragma once
 
 #include "core.hpp"
+#include "id.hpp"
 #include "serialize.hpp"
 #include "actions/action.hpp"
-#include "stores/tournament_store.hpp"
-#include "stores/category_store.hpp"
+#include "stores/match_event.hpp"
+#include "stores/match_store.hpp"
 #include "stores/player_store.hpp"
+#include "stores/tatami_store.hpp"
+
+class TournamentStore;
 
 // Only used when drawing matches and beginResetCategory has already been called
 class AddMatchAction : public Action {

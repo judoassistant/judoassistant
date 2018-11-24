@@ -3,7 +3,12 @@
 #include <QObject>
 
 #include "core.hpp"
-#include "serialize.hpp"
+#include "id.hpp"
+#include "actions/action.hpp"
+#include "draw_systems/draw_system.hpp"
+#include "rulesets/ruleset.hpp"
+#include "stores/match_event.hpp"
+#include "stores/match_store.hpp"
 #include "stores/tournament_store.hpp"
 
 class QTournamentStore : public QObject, public TournamentStore {
@@ -11,11 +16,6 @@ class QTournamentStore : public QObject, public TournamentStore {
 public:
     QTournamentStore();
     QTournamentStore(TournamentId id);
-
-    template<typename Archive>
-    void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::base_class<TournamentStore>(this));
-    }
 
     // signals used for frontends. Called by actions
     void changeTournament() override;
@@ -104,5 +104,3 @@ private:
     std::optional<std::vector<size_t>> mErasedTatamiIds;
 };
 
-CEREAL_REGISTER_TYPE(QTournamentStore)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(TournamentStore, QTournamentStore)

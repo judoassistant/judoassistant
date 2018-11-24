@@ -1,4 +1,7 @@
 #include "stores/qtournament_store.hpp"
+#include "stores/tatami_store.hpp"
+#include "stores/match_event.hpp"
+#include "stores/match_store.hpp"
 
 QTournamentStore::QTournamentStore()
     : QObject()

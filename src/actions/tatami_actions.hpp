@@ -1,7 +1,7 @@
 #pragma once
 
-#include "actions/action.hpp"
 #include "id.hpp"
+#include "actions/action.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tatami_store.hpp"
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <unordered_set>
-
 template <class T>
 void hash_combine(size_t &seed, const T& v)
 {

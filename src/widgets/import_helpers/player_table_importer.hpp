@@ -1,8 +1,11 @@
 #pragma once
 
 #include <optional>
+
+#include "core.hpp"
 #include "widgets/import_helpers/csv_reader.hpp"
-#include "store_managers/store_manager.hpp"
+
+class StoreManager;
 
 class PlayerTableImporter {
 public:

@@ -6,11 +6,9 @@
 #include <queue>
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
 
+#include "network/network_connection.hpp"
 #include "network/network_interface.hpp"
 #include "network/network_message.hpp"
-#include "network/network_connection.hpp"
-
-class QTournamentStore;
 
 class NetworkClient : public NetworkInterface {
     Q_OBJECT

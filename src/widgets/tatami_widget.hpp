@@ -2,8 +2,13 @@
 
 #include <QGraphicsView>
 #include <QGraphicsItem>
-#include "stores/tatami_store.hpp"
-#include "store_managers/store_manager.hpp"
+
+#include "id.hpp"
+#include "position_manager.hpp"
+
+class TatamiLocation;
+class StoreManager;
+enum class MatchType;
 
 class EmptyConcurrentBlockItem : public QGraphicsItem {
 public:

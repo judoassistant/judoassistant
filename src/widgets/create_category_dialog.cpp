@@ -4,11 +4,13 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "widgets/create_category_dialog.hpp"
 #include "actions/category_actions.hpp"
-
-#include "rulesets/rulesets.hpp"
 #include "draw_systems/draw_systems.hpp"
+#include "rulesets/rulesets.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
+#include "widgets/create_category_dialog.hpp"
 
 CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)

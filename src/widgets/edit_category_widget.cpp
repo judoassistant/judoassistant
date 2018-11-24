@@ -9,6 +9,9 @@
 #include "actions/category_actions.hpp"
 #include "rulesets/rulesets.hpp"
 #include "draw_systems/draw_systems.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 
 EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *parent)
     : QWidget(parent)

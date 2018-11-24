@@ -5,11 +5,13 @@
 #include <list>
 
 #include "core.hpp"
+#include "id.hpp"
 #include "actions/action.hpp"
-#include "network/network_interface.hpp"
-#include "stores/qtournament_store.hpp"
 
 Q_DECLARE_METATYPE(ActionId);
+
+class QTournamentStore;
+class NetworkInterface;
 
 class StoreManager : public QObject {
     Q_OBJECT

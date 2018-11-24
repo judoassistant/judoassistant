@@ -4,9 +4,13 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "widgets/create_player_dialog.hpp"
 #include "actions/player_actions.hpp"
+#include "actions/category_actions.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 #include "widgets/validators/optional_validator.hpp"
+#include "widgets/create_player_dialog.hpp"
 
 CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)

@@ -1,4 +1,8 @@
 #include "actions/tatami_actions.hpp"
+#include "draw_systems/draw_system.hpp"
+#include "rulesets/ruleset.hpp"
+#include "stores/category_store.hpp"
+#include "stores/match_event.hpp"
 #include "stores/tournament_store.hpp"
 
 SetTatamiLocationAction::SetTatamiLocationAction(CategoryId categoryId, MatchType type, std::optional<TatamiLocation> location, size_t seqIndex)

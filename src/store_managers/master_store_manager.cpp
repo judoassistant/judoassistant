@@ -1,7 +1,8 @@
 #include <fstream>
+#include "network/network_server.hpp"
 #include "serializables.hpp"
 #include "store_managers/master_store_manager.hpp"
-#include "network/network_server.hpp"
+#include "stores/qtournament_store.hpp"
 
 MasterStoreManager::MasterStoreManager()
     : mDirty(false)

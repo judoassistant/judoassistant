@@ -1,9 +1,11 @@
 #pragma once
 
 #include <QMimeData>
+
 #include "core.hpp"
 #include "id.hpp"
 #include "stores/match_store.hpp"
+#include "stores/match_event.hpp"
 
 class JudoassistantMime : public QMimeData {
     Q_OBJECT

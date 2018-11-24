@@ -4,9 +4,13 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
+#include "actions/player_actions.hpp"
+#include "actions/category_actions.hpp"
 #include "widgets/validators/optional_validator.hpp"
 #include "widgets/edit_player_widget.hpp"
-#include "actions/player_actions.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 
 EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     : QWidget(parent)

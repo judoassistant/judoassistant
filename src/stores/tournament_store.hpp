@@ -1,19 +1,17 @@
 #pragma once
 
 #include <unordered_map>
-#include <stack>
 
 #include "core.hpp"
+#include "id.hpp"
 #include "serialize.hpp"
-#include "stores/player_store.hpp"
-#include "stores/category_store.hpp"
-#include "stores/match_store.hpp"
-#include "stores/tatami_store.hpp"
-#include "position_manager.hpp"
+#include "tatami_store.hpp"
 
 class PlayerStore;
 class CategoryStore;
 class MatchStore;
+
+enum class MatchType;
 
 class TournamentStore {
 public:

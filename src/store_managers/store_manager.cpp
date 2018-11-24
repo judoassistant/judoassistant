@@ -1,4 +1,6 @@
+#include "network/network_interface.hpp"
 #include "store_managers/store_manager.hpp"
+#include "stores/qtournament_store.hpp"
 
 StoreManager::StoreManager()
     : mTournament(std::make_unique<QTournamentStore>())

@@ -1,12 +1,13 @@
 #pragma once
 
+#include <stack>
 #include <QMetaObject>
 #include <QWidget>
 #include <QLineEdit>
 #include <QComboBox>
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
+#include "id.hpp"
 
 class StoreManager;
 

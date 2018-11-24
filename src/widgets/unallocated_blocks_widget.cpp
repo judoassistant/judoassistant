@@ -1,11 +1,14 @@
+#include <algorithm>
 #include <QGraphicsSceneDragDropEvent>
 #include <QApplication>
 #include <QDrag>
 #include <QBitmap>
 #include <QPen>
 
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 #include "widgets/unallocated_blocks_widget.hpp"
-#include <algorithm>
 #include "widgets/misc/judoassistant_mime.hpp"
 
 UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent)

@@ -1,4 +1,5 @@
 #include "rulesets/rulesets.hpp"
+#include "stores/match_event.hpp"
 
 const std::vector<std::unique_ptr<Ruleset>> & Rulesets::getRulesets() {
     static std::vector<std::unique_ptr<Ruleset>> rulesets;

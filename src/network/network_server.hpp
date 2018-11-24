@@ -1,15 +1,16 @@
 #pragma once
 
-#include <QObject>
-#include <set>
-#include <map>
-#include <queue>
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
+#include <map>
+#include <set>
+#include <queue>
+#include <QObject>
 
+#include "core.hpp"
 #include "network/network_interface.hpp"
-#include "network/network_message.hpp"
-#include "network/network_connection.hpp"
 
+class NetworkConnection;
+class NetworkMessage;
 class NetworkParticipant;
 
 class NetworkServer : public NetworkInterface {

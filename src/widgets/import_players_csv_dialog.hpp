@@ -6,11 +6,10 @@
 #include <QTableWidget>
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
-#include "widgets/import_helpers/csv_reader.hpp"
 #include "widgets/import_helpers/player_table_importer.hpp"
 
 class StoreManager;
+class CSVReader;
 
 class ImportPlayersCSVDialog : public QDialog {
     Q_OBJECT

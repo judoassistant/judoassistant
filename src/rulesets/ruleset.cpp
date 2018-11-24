@@ -1,4 +1,5 @@
 #include "rulesets/ruleset.hpp"
+#include "stores/match_event.hpp"
 
 bool Ruleset::enterGoldenScore(MatchStore & match) const {
     if (match.isGoldenScore())

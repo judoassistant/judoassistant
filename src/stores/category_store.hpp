@@ -5,12 +5,15 @@
 #include <map>
 
 #include "core.hpp"
-#include "serialize.hpp"
-#include "stores/match_store.hpp"
-#include "stores/tatami_store.hpp"
-#include "draw_systems/draw_system.hpp"
-#include "rulesets/ruleset.hpp"
 #include "id.hpp"
+#include "serialize.hpp"
+#include "stores/tatami_store.hpp"
+
+class DrawSystem;
+class MatchStore;
+class Ruleset;
+
+enum class MatchType;
 
 // TODO: Use rvalue references for functions where appropriate
 // TODO: Make members const where appropriate

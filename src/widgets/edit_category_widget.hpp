@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stack>
 #include <QWidget>
 #include <QLineEdit>
 #include <QComboBox>
@@ -7,7 +8,7 @@
 #include <QMetaObject>
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
+#include "id.hpp"
 
 class StoreManager;
 

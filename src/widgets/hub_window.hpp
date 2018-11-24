@@ -1,11 +1,9 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QUrl>
 
 #include "core.hpp"
 #include "store_managers/master_store_manager.hpp"
-#include "rulesets/twentyeighteen_ruleset.hpp"
 
 class HubWindow : public QMainWindow {
     Q_OBJECT

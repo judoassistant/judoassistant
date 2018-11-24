@@ -1,8 +1,17 @@
-#include "widgets/models/players_model.hpp"
-#include "stores/qtournament_store.hpp"
 #include <QColor>
 #include <QBrush>
 #include <sstream>
+
+#include "id.hpp"
+#include "draw_systems/draw_system.hpp"
+#include "rulesets/ruleset.hpp"
+#include "stores/qtournament_store.hpp"
+#include "stores/player_store.hpp"
+#include "stores/match_event.hpp"
+#include "stores/match_store.hpp"
+#include "stores/category_store.hpp"
+#include "store_managers/store_manager.hpp"
+#include "widgets/models/players_model.hpp"
 
 PlayersModel::PlayersModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)

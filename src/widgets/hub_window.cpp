@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QStatusBar>
 #include <QCoreApplication>
+#include <QUrl>
 
 #include <fstream>
 

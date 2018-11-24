@@ -1,6 +1,9 @@
-#include "widgets/edit_category_players_widget.hpp"
 #include <QVBoxLayout>
 #include <QHeaderView>
+
+#include "store_managers/store_manager.hpp"
+#include "models/players_model.hpp"
+#include "widgets/edit_category_players_widget.hpp"
 
 EditCategoryPlayersWidget::EditCategoryPlayersWidget (StoreManager & storeManager, QWidget *parent)
     : QWidget(parent)

@@ -1,11 +1,17 @@
 #pragma once
 
+#include <set>
+#include <stack>
+#include <unordered_set>
 #include <QMetaObject>
 #include <QAbstractTableModel>
 #include <QItemSelection>
-#include <set>
 #include <QSortFilterProxyModel>
-#include "store_managers/store_manager.hpp"
+
+#include "id.hpp"
+
+class StoreManager;
+class PlayerStore;
 
 class PlayersModel : public QAbstractTableModel {
     Q_OBJECT

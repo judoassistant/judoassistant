@@ -6,6 +6,8 @@
 #include "version.hpp"
 #include "network/network_message.hpp"
 
+class NetworkMessage;
+
 class NetworkConnection {
 public:
     NetworkConnection(boost::asio::ip::tcp::socket socket)

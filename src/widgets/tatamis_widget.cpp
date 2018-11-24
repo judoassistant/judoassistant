@@ -1,9 +1,11 @@
 #include <QVBoxLayout>
-#include <QSplitter>
-#include <QListView>
 #include <QToolBar>
+
 #include "widgets/tatamis_widget.hpp"
+#include "widgets/tatami_widget.hpp"
 #include "widgets/unallocated_blocks_widget.hpp"
+#include "store_managers/store_manager.hpp"
+#include "stores/qtournament_store.hpp"
 
 TatamisWidget::TatamisWidget(StoreManager &storeManager)
     : mStoreManager(storeManager)

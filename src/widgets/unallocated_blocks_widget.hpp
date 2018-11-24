@@ -1,12 +1,21 @@
 #pragma once
 
+#include <set>
+#include <map>
+#include <stack>
+
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QMetaObject>
-#include "stores/tatami_store.hpp"
-#include "store_managers/store_manager.hpp"
+
+#include "id.hpp"
 #include "widgets/misc/numerical_string_comparator.hpp"
-#include <set>
+#include "stores/match_event.hpp"
+#include "stores/match_store.hpp"
+#include "stores/tatami_store.hpp"
+
+class StoreManager;
+class CategoryStore;
 
 class UnallocatedBlockItem : public QGraphicsItem
 {

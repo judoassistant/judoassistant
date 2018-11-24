@@ -1,11 +1,12 @@
 #pragma once
 
-#include "core.hpp"
 #include <vector>
-#include "actions/action.hpp"
-#include "serialize.hpp"
-#include "id.hpp"
 
+#include "core.hpp"
+#include "id.hpp"
+#include "serialize.hpp"
+
+class Action;
 class CategoryStore;
 class TournamentStore;
 

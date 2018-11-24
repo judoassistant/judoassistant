@@ -1,12 +1,13 @@
 #pragma once
 
-#include <QMainWindow>
+#include <stack>
 #include <QMetaObject>
 #include <QLineEdit>
 #include <QComboBox>
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
+
+class StoreManager;
 
 class TournamentWidget : public QWidget {
     Q_OBJECT

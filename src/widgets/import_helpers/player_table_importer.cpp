@@ -1,7 +1,13 @@
-#include "widgets/import_helpers/player_table_importer.hpp"
+#include <sstream>
+
 #include "actions/composite_action.hpp"
 #include "actions/player_actions.hpp"
-#include <sstream>
+#include "actions/category_actions.hpp"
+#include "store_managers/store_manager.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "widgets/import_helpers/csv_reader.hpp"
+#include "widgets/import_helpers/player_table_importer.hpp"
 
 PlayerTableImporter::PlayerTableImporter(CSVReader *reader)
     : mReader(reader)

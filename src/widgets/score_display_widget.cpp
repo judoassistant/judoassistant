@@ -1,4 +1,5 @@
 #include <QPainter>
+
 #include "widgets/score_display_widget.hpp"
 
 ScoreDisplayWidget::ScoreDisplayWidget(QWidget *parent)

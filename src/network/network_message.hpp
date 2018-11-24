@@ -1,13 +1,16 @@
 #pragma once
 
-#include <variant>
-#include <sstream>
 #include <boost/asio/buffer.hpp>
+#include <list>
+#include <sstream>
+#include <variant>
 
 #include "core.hpp"
 #include "id.hpp"
-#include "actions/action.hpp"
-#include "serializables.hpp"
+
+class ApplicationVersion;
+class TournamentStore;
+class Action;
 
 class NetworkMessage {
 public:

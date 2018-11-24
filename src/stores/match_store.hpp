@@ -4,15 +4,14 @@
 #include <vector>
 #include <chrono>
 
-#include "serialize.hpp"
 #include "core.hpp"
 #include "id.hpp"
+#include "serialize.hpp"
 
-#include "stores/match_event.hpp"
 
 class MatchStore;
-class MatchEvent;
 class Ruleset;
+class MatchEvent;
 
 enum class MatchType {
     KNOCKOUT, FINAL

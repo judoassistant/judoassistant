@@ -1,5 +1,7 @@
-#include "src/draw_systems/pool_draw_system.hpp"
-#include "src/actions/match_actions.hpp"
+#include "draw_systems/pool_draw_system.hpp"
+#include "actions/match_actions.hpp"
+#include "rulesets/ruleset.hpp"
+#include "stores/category_store.hpp"
 
 std::unique_ptr<DrawSystem> PoolDrawSystem::clone() const {
     return std::make_unique<PoolDrawSystem>(*this);

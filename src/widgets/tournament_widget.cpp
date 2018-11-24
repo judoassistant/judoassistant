@@ -4,6 +4,8 @@
 
 #include "widgets/tournament_widget.hpp"
 #include "actions/tournament_actions.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 
 TournamentWidget::TournamentWidget(StoreManager &storeManager)
     : mStoreManager(storeManager)

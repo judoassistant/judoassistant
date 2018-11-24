@@ -5,11 +5,16 @@
 #include <QMessageBox>
 #include <QMenu>
 
-#include "widgets/players_widget.hpp"
-#include "widgets/create_player_dialog.hpp"
-#include "widgets/auto_add_category_dialog.hpp"
-
 #include "actions/player_actions.hpp"
+#include "actions/category_actions.hpp"
+#include "widgets/auto_add_category_dialog.hpp"
+#include "widgets/create_player_dialog.hpp"
+#include "widgets/edit_player_widget.hpp"
+#include "widgets/models/players_model.hpp"
+#include "widgets/players_widget.hpp"
+#include "store_managers/store_manager.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
 
 PlayersWidget::PlayersWidget(StoreManager &storeManager)
     : mStoreManager(storeManager)

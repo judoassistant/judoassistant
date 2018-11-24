@@ -1,15 +1,17 @@
 #pragma once
 
 #include "core.hpp"
+#include "id.hpp"
 #include "serialize.hpp"
 #include "actions/action.hpp"
-#include "actions/match_actions.hpp"
-#include "stores/tournament_store.hpp"
-#include "stores/category_store.hpp"
-#include "stores/player_store.hpp"
-#include "stores/tatami_store.hpp"
-#include "rulesets/ruleset.hpp"
-#include "draw_systems/draw_system.hpp"
+
+class CategoryStore;
+class DrawSystem;
+class TournamentStore;
+class TatamiLocation;
+class MatchStore;
+enum class MatchType;
+class Ruleset;
 
 class AddCategoryAction : public Action {
 public:

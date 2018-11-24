@@ -4,8 +4,10 @@
 #include <QTableView>
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
-#include "models/players_model.hpp"
+#include "id.hpp"
+
+class StoreManager;
+class PlayersProxyModel;
 
 class EditCategoryPlayersWidget : public QWidget {
     Q_OBJECT

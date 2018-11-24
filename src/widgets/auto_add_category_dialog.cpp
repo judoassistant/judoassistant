@@ -4,12 +4,13 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "widgets/auto_add_category_dialog.hpp"
 #include "actions/category_actions.hpp"
-
-#include "rulesets/rulesets.hpp"
 #include "draw_systems/draw_systems.hpp"
-
+#include "rulesets/rulesets.hpp"
+#include "store_managers/store_manager.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "widgets/auto_add_category_dialog.hpp"
 
 AutoAddCategoryDialog::AutoAddCategoryDialog(StoreManager & storeManager, const std::vector<PlayerId> &playerIds, QWidget *parent)
     : QDialog(parent)

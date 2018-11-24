@@ -1,6 +1,10 @@
+#include "draw_systems/draw_system.hpp"
+#include "rulesets/ruleset.hpp"
+#include "stores/category_store.hpp"
+#include "stores/match_event.hpp"
+#include "stores/match_store.hpp"
 #include "stores/tatami_store.hpp"
 #include "stores/tournament_store.hpp"
-#include "stores/category_store.hpp"
 
 #include <queue>
 

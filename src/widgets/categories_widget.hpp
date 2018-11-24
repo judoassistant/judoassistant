@@ -4,10 +4,11 @@
 #include <QTableView>
 
 #include "core.hpp"
-#include "store_managers/store_manager.hpp"
-#include "widgets/models/categories_model.hpp"
-#include "widgets/edit_category_widget.hpp"
-#include "widgets/edit_category_players_widget.hpp"
+
+class StoreManager;
+class EditCategoryWidget;
+class EditCategoryPlayersWidget;
+class CategoriesProxyModel;
 
 class CategoriesWidget : public QWidget {
     Q_OBJECT

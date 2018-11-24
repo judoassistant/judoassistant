@@ -1,4 +1,5 @@
 #include "rulesets/twentyeighteen_ruleset.hpp"
+#include "stores/match_event.hpp"
 
 bool TwentyEighteenRuleset::addWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
     auto & score = match.getScore(playerIndex);

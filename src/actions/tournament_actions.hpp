@@ -1,11 +1,10 @@
 #pragma once
 
-#include <string>
-
-#include "serialize.hpp"
+#include "core.hpp"
 #include "actions/action.hpp"
-#include "stores/tournament_store.hpp"
-#include "stores/player_store.hpp"
+#include "serialize.hpp"
+
+class TournamentStore;
 
 class ChangeTournamentNameAction : public Action {
 public:

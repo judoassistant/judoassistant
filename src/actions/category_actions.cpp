@@ -2,10 +2,14 @@
 #include <set>
 
 #include "actions/category_actions.hpp"
+#include "actions/match_actions.hpp"
 #include "draw_systems/draw_systems.hpp"
-#include "rulesets/rulesets.hpp"
-
 #include "exception.hpp"
+#include "rulesets/rulesets.hpp"
+#include "stores/tournament_store.hpp"
+#include "stores/category_store.hpp"
+#include "stores/match_store.hpp"
+#include "stores/tatami_store.hpp"
 
 AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
     : mId(id)

@@ -1,4 +1,6 @@
 #include "network/network_message.hpp"
+#include "serializables.hpp"
+#include "version.hpp"
 
 NetworkMessage::NetworkMessage() {
     mHeader.resize(HEADER_LENGTH);

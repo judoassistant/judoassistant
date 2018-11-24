@@ -1,5 +1,9 @@
 #include "actions/match_actions.hpp"
 #include "exception.hpp"
+#include "stores/category_store.hpp"
+#include "stores/tournament_store.hpp"
+#include "rulesets/ruleset.hpp"
+#include "draw_systems/draw_system.hpp"
 
 AddMatchAction::AddMatchAction(TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
     : AddMatchAction(MatchId::generate(tournament.getCategory(categoryId)), categoryId, type, title, bye, whitePlayerId, bluePlayerId)

@@ -5,7 +5,11 @@
 #include <QMetaObject>
 #include <QSortFilterProxyModel>
 #include <set>
-#include "store_managers/store_manager.hpp"
+#include <stack>
+
+#include "id.hpp"
+
+class StoreManager;
 
 // TODO: Correctly sort by name
 class CategoriesModel : public QAbstractTableModel {

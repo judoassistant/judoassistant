@@ -4,10 +4,15 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
+#include "actions/category_actions.hpp"
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 #include "widgets/categories_widget.hpp"
 #include "widgets/create_category_dialog.hpp"
-
-#include "actions/category_actions.hpp"
+#include "widgets/models/categories_model.hpp"
+#include "widgets/edit_category_widget.hpp"
+#include "widgets/edit_category_players_widget.hpp"
 
 CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
     : mStoreManager(storeManager)

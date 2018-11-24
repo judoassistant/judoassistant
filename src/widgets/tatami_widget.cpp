@@ -1,11 +1,16 @@
+#include <algorithm>
+
 #include <QApplication>
 #include <QDrag>
 #include <QBitmap>
 #include <QGraphicsSceneDragDropEvent>
+
+#include "stores/category_store.hpp"
+#include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
 #include "widgets/misc/judoassistant_mime.hpp"
 #include "widgets/tatami_widget.hpp"
 #include "actions/tatami_actions.hpp"
-#include <algorithm>
 
 TatamiWidget::TatamiWidget(StoreManager & storeManager, size_t index, QWidget *parent)
     : QGraphicsView(parent)

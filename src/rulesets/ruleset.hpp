@@ -2,7 +2,6 @@
 
 #include "core.hpp"
 #include "serialize.hpp"
-
 #include "stores/match_store.hpp"
 
 class Ruleset {

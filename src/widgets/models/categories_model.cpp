@@ -1,5 +1,7 @@
-#include "widgets/models/categories_model.hpp"
+#include "stores/category_store.hpp"
 #include "stores/qtournament_store.hpp"
+#include "store_managers/store_manager.hpp"
+#include "widgets/models/categories_model.hpp"
 
 CategoriesModel::CategoriesModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)

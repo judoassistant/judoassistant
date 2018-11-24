@@ -1,11 +1,10 @@
 #pragma once
 
-#include "core.hpp"
-#include "store_managers/store_manager.hpp"
-
 #include <QDialog>
 #include <QLineEdit>
 #include <QComboBox>
+
+#include "core.hpp"
 
 class StoreManager;
 

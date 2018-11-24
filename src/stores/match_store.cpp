@@ -1,5 +1,5 @@
-#include "stores/match_store.hpp"
 #include "rulesets/ruleset.hpp"
+#include "stores/match_store.hpp"
 #include "stores/match_event.hpp"
 
 MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)

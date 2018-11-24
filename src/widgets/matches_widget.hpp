@@ -1,10 +1,8 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QString>
+#include <QWidget>
 
-#include "core.hpp"
-#include "store_managers/store_manager.hpp"
+class StoreManager;
 
 class MatchesWidget : public QWidget {
     Q_OBJECT
