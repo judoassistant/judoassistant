@@ -23,8 +23,8 @@ public:
     NetworkServer(int port);
 
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
-    void postAction(ActionId actionId, std::unique_ptr<Action> action) override;
-    void postUndo(ActionId actionId) override;
+    void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
+    void postUndo(ClientActionId actionId) override;
 
     void start() override;
     void quit() override;
@@ -44,14 +44,13 @@ protected:
     void postQuit();
     void accept();
 private:
-    ClientId mId;
     boost::asio::io_context mContext;
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
     std::unordered_set<std::shared_ptr<NetworkParticipant>> mParticipants;
     std::shared_ptr<TournamentStore> mTournament; // Tournament always kept behind the tournament in the UI thread
     SharedActionList mActionStack;
-    std::unordered_map<ActionId, SharedActionList::iterator> mActionMap;
+    std::unordered_map<ClientActionId, SharedActionList::iterator> mActionMap;
 
     friend class NetworkParticipant;
 };

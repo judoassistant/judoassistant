@@ -11,6 +11,27 @@
 
 class QTournamentStore;
 class NetworkInterface;
+class StoreManager;
+
+class ConstActionListIterator {
+public:
+    ConstActionListIterator & operator++();
+    const Action & getAction() const;
+    ClientActionId getActionId() const;
+
+    bool operator!=(const ConstActionListIterator &other) const;
+    bool operator==(const ConstActionListIterator  &other) const;
+
+private:
+    ConstActionListIterator(const StoreManager & storeManager, UniqueActionList::const_iterator it, bool iteratingConfirmedActions);
+    void makeValid();
+
+    const StoreManager & mStoreManager;
+    bool mIteratingConfirmedActions;
+    UniqueActionList::const_iterator mIt;
+
+    friend class StoreManager;
+};
 
 class StoreManager : public QObject {
     Q_OBJECT
@@ -27,23 +48,12 @@ public:
     bool canRedo();
     void redo();
 
-    bool containsConfirmedAction(ActionId action) const;
-    bool containsUnconfirmedAction(ActionId action) const;
-protected:
-    void startInterface(std::shared_ptr<NetworkInterface> interface);
-    void stopInterface();
+    bool containsConfirmedAction(ClientActionId action) const;
+    bool containsUnconfirmedAction(ClientActionId action) const;
 
-    void sync(std::unique_ptr<QTournamentStore> tournament);
-    void sync();
-
-protected:
-
-    void receiveAction(ActionId actionId, ActionPtr action);
-    void receiveActionConfirm(ActionId actionId);
-    void receiveUndo(ActionId actionId);
-    void receiveUndoConfirm(ActionId actionId);
-    void receiveSync(SyncPayloadPtr syncPayload);
-    void confirmSync();
+    const Action & getAction(ClientActionId actionId) const;
+    ConstActionListIterator actionsBegin() const;
+    ConstActionListIterator actionsEnd() const;
 
 signals:
     void tournamentAboutToBeReset();
@@ -51,26 +61,48 @@ signals:
     void undoStatusChanged(bool canUndo);
     void redoStatusChanged(bool canRedo);
 
+    void actionAboutToBeErased(ClientActionId actionId);
+    void actionErased(ClientActionId actionId);
+    void actionAboutToBeAdded(ClientActionId actionId, size_t pos);
+    void actionAdded(ClientActionId actionId, size_t pos);
+
+protected:
+    void startInterface(std::shared_ptr<NetworkInterface> interface);
+    void stopInterface();
+
+    void sync(std::unique_ptr<QTournamentStore> tournament);
+    void sync();
+
+    void receiveAction(ClientActionId actionId, ActionPtr action);
+    void receiveActionConfirm(ClientActionId actionId);
+    void receiveUndo(ClientActionId actionId);
+    void receiveUndoConfirm(ClientActionId actionId);
+    void receiveSync(SyncPayloadPtr syncPayload);
+    void confirmSync();
+
 private:
     static const size_t REDO_LIST_MAX_SIZE = 20;
 
+    ClientId mId;
     std::unique_ptr<QTournamentStore> mTournament;
 
     UniqueActionList mConfirmedActionList;
-    std::unordered_map<ActionId, UniqueActionList::iterator> mConfirmedActionMap;
+    std::unordered_map<ClientActionId, UniqueActionList::iterator> mConfirmedActionMap;
 
     UniqueActionList mUnconfirmedActionList;
-    std::unordered_map<ActionId, UniqueActionList::iterator> mUnconfirmedActionMap;
+    std::unordered_map<ClientActionId, UniqueActionList::iterator> mUnconfirmedActionMap;
 
     std::list<std::unique_ptr<Action>> mRedoList;
-    std::unordered_set<ActionId> mUnconfirmedUndos;
+    std::unordered_set<ClientActionId> mUnconfirmedUndos;
+    size_t mUndoneUnconfirmedActions;
 
-    std::list<ActionId> mUndoList;
-    std::map<ActionId, std::list<ActionId>::iterator> mUndoListMap;
+    std::optional<ClientActionId> mUndoActionId;
 
     size_t mSyncing;
 
     std::shared_ptr<NetworkInterface> mNetworkInterface;
+
+    friend class ConstActionListIterator;
 };
 
 

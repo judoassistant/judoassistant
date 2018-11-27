@@ -1,6 +1,7 @@
 #include <chrono>
 
 #include "id.hpp"
+#include "hash.hpp"
 #include "draw_systems/draw_system.hpp"
 #include "rulesets/ruleset.hpp"
 #include "stores/category_store.hpp"
@@ -73,3 +74,37 @@ ClientId ClientId::generate() {
 
     return (*generator)();
 }
+
+ClientActionId::ClientActionId() {}
+
+ClientActionId::ClientActionId(const ClientId &clientId, const ActionId &actionId)
+    : mClientId(clientId)
+    , mActionId(actionId)
+{}
+
+bool ClientActionId::operator==(const ClientActionId &other) const {
+    return mClientId == other.mClientId && mActionId == other.mActionId;
+}
+
+bool ClientActionId::operator!=(const ClientActionId &other) const {
+    return mClientId != other.mClientId || mActionId != other.mActionId;
+}
+
+bool ClientActionId::operator<(const ClientActionId &other) const {
+    if (mClientId != other.mClientId)
+        return mClientId < other.mClientId;
+    return mActionId < other.mActionId;
+}
+
+ClientId ClientActionId::getClientId() const {
+    return mClientId;
+}
+
+ActionId ClientActionId::getActionId() const {
+    return mActionId;
+}
+
+std::ostream & operator<<(std::ostream & o, ClientActionId id) {
+    return o << std::hex << "(" << id.getClientId().getValue() << "; " << id.getActionId().getValue() << ")" << std::dec;
+}
+

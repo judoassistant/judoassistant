@@ -39,25 +39,25 @@ public:
     void encodeHandshake();
     bool decodeHandshake(ApplicationVersion &version);
 
-    typedef std::list<std::pair<ActionId, std::shared_ptr<Action>>> ActionList;
-    void encodeSync(const TournamentStore & tournament, const ActionList &actionStack);
-    bool decodeSync(TournamentStore & tournament, ActionList &actionStack);
+    typedef std::list<std::pair<ClientActionId, std::shared_ptr<Action>>> SharedActionList;
+    void encodeSync(const TournamentStore & tournament, const SharedActionList &actionStack);
+    bool decodeSync(TournamentStore & tournament, SharedActionList &actionStack);
 
     void encodeSyncAck();
 
-    void encodeAction(const ClientId &clientId, const ActionId &actionId, const std::shared_ptr<Action> &action);
-    bool decodeAction(ClientId &clientId, ActionId &actionId, std::shared_ptr<Action> &action);
+    void encodeAction(const ClientActionId &actionId, const std::shared_ptr<Action> &action);
+    bool decodeAction(ClientActionId &actionId, std::shared_ptr<Action> &action);
 
-    void encodeActionAck(const ActionId &actionId);
-    bool decodeActionAck(ActionId &actionId);
+    void encodeActionAck(const ClientActionId &actionId);
+    bool decodeActionAck(ClientActionId &actionId);
 
     void encodeQuit();
 
-    void encodeUndo(const ActionId &actionId);
-    bool decodeUndo(ActionId &actionId);
+    void encodeUndo(const ClientActionId &actionId);
+    bool decodeUndo(ClientActionId &actionId);
 
-    void encodeUndoAck(const ActionId &actionId);
-    bool decodeUndoAck(ActionId &actionId);
+    void encodeUndoAck(const ClientActionId &actionId);
+    bool decodeUndoAck(ClientActionId &actionId);
 
 private:
     void encodeHeader();

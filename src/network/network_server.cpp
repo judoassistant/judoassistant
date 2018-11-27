@@ -51,6 +51,7 @@ void NetworkParticipant::readMessage() {
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
+            log_info().msg("Received QUIT message from client. Kicking client");
             mServer->leave(shared_from_this());
             return;
         }
@@ -102,8 +103,7 @@ bool NetworkParticipant::isSyncing() const {
 }
 
 NetworkServer::NetworkServer(int port)
-    : mId(ClientId::generate())
-    , mContext()
+    : mContext()
     , mEndpoint(tcp::v4(), port)
     , mAcceptor(mContext, mEndpoint)
 {
@@ -165,7 +165,7 @@ void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {
     });
 }
 
-void NetworkServer::postAction(ActionId actionId, std::unique_ptr<Action> action) {
+void NetworkServer::postAction(ClientActionId actionId, std::unique_ptr<Action> action) {
     std::shared_ptr<Action> sharedAction = std::move(action);
     mContext.post([this, actionId, sharedAction]() {
         mActionStack.push_back(std::make_pair(actionId, sharedAction));
@@ -178,7 +178,7 @@ void NetworkServer::postAction(ActionId actionId, std::unique_ptr<Action> action
         }
 
         auto message = std::make_unique<NetworkMessage>();
-        message->encodeAction(mId, actionId, std::move(sharedAction));
+        message->encodeAction(actionId, std::move(sharedAction));
 
         deliver(std::move(message));
 
@@ -186,7 +186,7 @@ void NetworkServer::postAction(ActionId actionId, std::unique_ptr<Action> action
     });
 }
 
-void NetworkServer::postUndo(ActionId actionId) {
+void NetworkServer::postUndo(ClientActionId actionId) {
     mContext.post([this, actionId]() {
         // Only deliver if action is not already undone
         auto it = mActionMap.find(actionId);
@@ -244,10 +244,9 @@ void NetworkServer::quit() {
 }
 
 void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
-    ClientId clientId;
-    ActionId actionId;
+    ClientActionId actionId;
     std::shared_ptr<Action> action;
-    message->decodeAction(clientId, actionId, action);
+    message->decodeAction(actionId, action);
 
     emit actionReceived(actionId, std::move(action));
 
@@ -264,7 +263,7 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
 }
 
 void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
-    ActionId actionId;
+    ClientActionId actionId;
     message->decodeUndo(actionId);
 
     emit undoReceived(actionId);

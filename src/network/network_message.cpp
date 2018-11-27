@@ -69,7 +69,7 @@ void NetworkMessage::encodeSyncAck() {
     encodeHeader();
 }
 
-void NetworkMessage::encodeSync(const TournamentStore & tournament, const NetworkMessage::ActionList &actionStack) {
+void NetworkMessage::encodeSync(const TournamentStore & tournament, const NetworkMessage::SharedActionList &actionStack) {
     mType = Type::SYNC;
 
     std::ostringstream stream;
@@ -80,7 +80,7 @@ void NetworkMessage::encodeSync(const TournamentStore & tournament, const Networ
     encodeHeader();
 }
 
-bool NetworkMessage::decodeSync(TournamentStore & tournament, NetworkMessage::ActionList &actionStack) {
+bool NetworkMessage::decodeSync(TournamentStore & tournament, NetworkMessage::SharedActionList &actionStack) {
     std::istringstream stream(mBody);
     cereal::PortableBinaryInputArchive archive(stream);
 
@@ -94,18 +94,18 @@ bool NetworkMessage::decodeSync(TournamentStore & tournament, NetworkMessage::Ac
     return true;
 }
 
-void NetworkMessage::encodeAction(const ClientId &clientId, const ActionId &actionId, const std::shared_ptr<Action> &action) {
+void NetworkMessage::encodeAction(const ClientActionId &actionId, const std::shared_ptr<Action> &action) {
     mType = Type::ACTION;
 
     std::ostringstream stream;
     cereal::PortableBinaryOutputArchive archive(stream);
-    archive(clientId, actionId, action);
+    archive(actionId, action);
 
     mBody = stream.str();
     encodeHeader();
 }
 
-void NetworkMessage::encodeActionAck(const ActionId &actionId) {
+void NetworkMessage::encodeActionAck(const ClientActionId &actionId) {
     mType = Type::ACTION_ACK;
 
     std::ostringstream stream;
@@ -116,7 +116,7 @@ void NetworkMessage::encodeActionAck(const ActionId &actionId) {
     encodeHeader();
 }
 
-void NetworkMessage::encodeUndoAck(const ActionId &actionId) {
+void NetworkMessage::encodeUndoAck(const ClientActionId &actionId) {
     mType = Type::UNDO_ACK;
 
     std::ostringstream stream;
@@ -127,12 +127,12 @@ void NetworkMessage::encodeUndoAck(const ActionId &actionId) {
     encodeHeader();
 }
 
-bool NetworkMessage::decodeAction(ClientId &clientId, ActionId &actionId, std::shared_ptr<Action> &action) {
+bool NetworkMessage::decodeAction(ClientActionId &actionId, std::shared_ptr<Action> &action) {
     std::istringstream stream(mBody);
     cereal::PortableBinaryInputArchive archive(stream);
 
     try {
-        archive(clientId, actionId, action);
+        archive(actionId, action);
         return true;
     }
     catch (const std::exception &e) {
@@ -146,7 +146,7 @@ void NetworkMessage::encodeQuit() {
     encodeHeader();
 }
 
-void NetworkMessage::encodeUndo(const ActionId &actionId) {
+void NetworkMessage::encodeUndo(const ClientActionId &actionId) {
     mType = Type::UNDO;
 
     std::ostringstream stream;
@@ -168,7 +168,7 @@ void NetworkMessage::encodeHeader() {
     assert(mHeader.size() == HEADER_LENGTH);
 }
 
-bool NetworkMessage::decodeUndo(ActionId &actionId) {
+bool NetworkMessage::decodeUndo(ClientActionId &actionId) {
     std::istringstream stream(mBody);
     cereal::PortableBinaryInputArchive archive(stream);
 
@@ -181,7 +181,7 @@ bool NetworkMessage::decodeUndo(ActionId &actionId) {
     }
 }
 
-bool NetworkMessage::decodeUndoAck(ActionId &actionId) {
+bool NetworkMessage::decodeUndoAck(ClientActionId &actionId) {
     std::istringstream stream(mBody);
     cereal::PortableBinaryInputArchive archive(stream);
 
@@ -194,7 +194,7 @@ bool NetworkMessage::decodeUndoAck(ActionId &actionId) {
     }
 }
 
-bool NetworkMessage::decodeActionAck(ActionId &actionId) {
+bool NetworkMessage::decodeActionAck(ClientActionId &actionId) {
     std::istringstream stream(mBody);
     cereal::PortableBinaryInputArchive archive(stream);
 

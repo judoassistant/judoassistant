@@ -4,8 +4,7 @@
 using boost::asio::ip::tcp;
 
 NetworkClient::NetworkClient()
-    : mId(ClientId::generate())
-    , mContext()
+    : mContext()
     , mWorkGuard(boost::asio::make_work_guard(mContext))
     , mReadMessage(std::make_unique<NetworkMessage>())
 {
@@ -15,7 +14,7 @@ void NetworkClient::postSync(std::unique_ptr<TournamentStore> tournament) {
     throw std::runtime_error("Attempted to postSync from network client");
 }
 
-void NetworkClient::postAction(ActionId actionId, std::unique_ptr<Action> action) {
+void NetworkClient::postAction(ClientActionId actionId, std::unique_ptr<Action> action) {
     std::shared_ptr<Action> sharedAction = std::move(action);
     mContext.post([this, actionId, sharedAction]() {
         log_debug().field("actionId", actionId).msg("Posting action to network");
@@ -26,12 +25,12 @@ void NetworkClient::postAction(ActionId actionId, std::unique_ptr<Action> action
             return;
 
         auto message = std::make_unique<NetworkMessage>();
-        message->encodeAction(mId, actionId, std::move(sharedAction));
+        message->encodeAction(actionId, std::move(sharedAction));
         deliver(std::move(message));
     });
 }
 
-void NetworkClient::postUndo(ActionId actionId) {
+void NetworkClient::postUndo(ClientActionId actionId) {
     mContext.post([this, actionId]() {
         log_debug().field("actionId", actionId).msg("Posting undo to network");
         mUnconfirmedUndos.insert(actionId);
@@ -100,8 +99,8 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                     }
 
                     // apply the action list but avoid unconfirmed undos
-                    std::unordered_set<ActionId> actionIds;
-                    auto unconfirmedUndos = std::make_unique<std::unordered_set<ActionId>>();
+                    std::unordered_set<ClientActionId> actionIds;
+                    auto unconfirmedUndos = std::make_unique<std::unordered_set<ClientActionId>>();
                     auto uniqueActions = std::make_unique<UniqueActionList>();
                     for (auto &p : sharedActions) {
                         auto actionId = p.first;
@@ -150,11 +149,11 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
 
                     for (const auto &p : mUnconfirmedActionList) {
                         auto message = std::make_unique<NetworkMessage>();
-                        message->encodeAction(mId, p.first, p.second);
+                        message->encodeAction(p.first, p.second);
                         deliver(std::move(message));
                     }
 
-                    for (ActionId actionId : mUnconfirmedUndos) {
+                    for (ClientActionId actionId : mUnconfirmedUndos) {
                         auto message = std::make_unique<NetworkMessage>();
                         message->encodeUndo(actionId);
                         deliver(std::move(message));
@@ -282,17 +281,16 @@ void NetworkClient::readMessage() {
             mUnconfirmedUndos.clear();
             mUnconfirmedActionMap.clear();
 
-            emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::make_unique<UniqueActionList>(), std::make_unique<std::unordered_set<ActionId>>()));
+            emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::make_unique<UniqueActionList>(), std::make_unique<std::unordered_set<ClientActionId>>()));
             mUnconfirmedUndos.clear();
             mUnconfirmedActionMap.clear();
             mUnconfirmedActionList.clear();
         }
         else if (mReadMessage->getType() == NetworkMessage::Type::ACTION) {
-            ClientId clientId;
-            ActionId actionId;
+            ClientActionId actionId;
             std::shared_ptr<Action> action;
 
-            if (!mReadMessage->decodeAction(clientId, actionId, action)) {
+            if (!mReadMessage->decodeAction(actionId, action)) {
                 log_error().msg("Failed to decode action message. Disconnecting");
                 killConnection();
                 emit connectionLost();
@@ -302,7 +300,7 @@ void NetworkClient::readMessage() {
             emit actionReceived(actionId, std::move(action));
         }
         else if (mReadMessage->getType() == NetworkMessage::Type::ACTION_ACK) {
-            ActionId actionId;
+            ClientActionId actionId;
             if (!mReadMessage->decodeActionAck(actionId)) {
                 log_error().msg("Failed to decode action ack. Disconnecting");
                 killConnection();
@@ -319,7 +317,7 @@ void NetworkClient::readMessage() {
             }
         }
         else if (mReadMessage->getType() == NetworkMessage::Type::UNDO) {
-            ActionId actionId;
+            ClientActionId actionId;
             if (!mReadMessage->decodeUndo(actionId)) {
                 log_error().msg("Failed to decode undo. Disconnecting");
                 killConnection();
@@ -330,7 +328,7 @@ void NetworkClient::readMessage() {
             emit undoReceived(actionId);
         }
         else if (mReadMessage->getType() == NetworkMessage::Type::UNDO_ACK) {
-            ActionId actionId;
+            ClientActionId actionId;
             if (!mReadMessage->decodeUndoAck(actionId)) {
                 log_error().msg("Failed to decode undo ack. Disconnecting");
                 killConnection();

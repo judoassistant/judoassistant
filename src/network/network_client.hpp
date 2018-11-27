@@ -17,8 +17,8 @@ public:
     NetworkClient();
 
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
-    void postAction(ActionId actionId, std::unique_ptr<Action> action) override;
-    void postUndo(ActionId actionId) override;
+    void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
+    void postUndo(ClientActionId actionId) override;
 
     void postConnect(const std::string &host, unsigned int port);
     void postDisconnect();
@@ -41,7 +41,6 @@ private:
     void killConnection();
     void recoverUnconfirmed(TournamentStore *tournament, SharedActionList *actions);
 
-    ClientId mId;
     boost::asio::io_context mContext;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
@@ -53,7 +52,7 @@ private:
     std::unique_ptr<NetworkMessage> mReadMessage;
     std::queue<std::unique_ptr<NetworkMessage>> mWriteQueue;
     SharedActionList mUnconfirmedActionList;
-    std::unordered_map<ActionId, SharedActionList::iterator> mUnconfirmedActionMap;
-    std::unordered_set<ActionId> mUnconfirmedUndos;
+    std::unordered_map<ClientActionId, SharedActionList::iterator> mUnconfirmedActionMap;
+    std::unordered_set<ClientActionId> mUnconfirmedUndos;
 };
 

@@ -7,12 +7,14 @@
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include <QSplitter>
-#include <QListView>
+#include <QTableView>
+#include <QHeaderView>
 
 #include "config/web.hpp"
 #include "widgets/score_display_widget.hpp"
 #include "widgets/score_operator_window.hpp"
 #include "widgets/connect_dialog.hpp"
+#include "widgets/models/actions_model.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow() {
     createStatusBar();
@@ -184,9 +186,21 @@ QWidget* ScoreOperatorWindow::createSideArea() {
     QVBoxLayout *layout = new QVBoxLayout(res);
 
     {
+        auto model = new ActionsProxyModel(mStoreManager, res);
+
         QGroupBox *actionBox = new QGroupBox("Actions", res);
         QVBoxLayout *subLayout = new QVBoxLayout(actionBox);
-        subLayout->addWidget(new QListView(actionBox));
+
+        auto tableView = new QTableView(actionBox);
+        tableView->setModel(model);
+        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableView->horizontalHeader()->setStretchLastSection(true);
+        tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+        // tableView->setSortingEnabled(false);
+        // tableView->sortByColumn(1, Qt::AscendingOrder);
+        // tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+        subLayout->addWidget(tableView);
 
         actionBox->setLayout(subLayout);
 
