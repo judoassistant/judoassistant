@@ -26,6 +26,9 @@ private:
     void createPreferencesMenu();
     void createHelpMenu();
 
+    QWidget* createMainArea();
+    QWidget* createSideArea();
+
     void showConnectDialog();
 
     ClientStoreManager mStoreManager;

@@ -24,7 +24,7 @@ ScoreApplication::ScoreApplication(int &argc, char *argv[]) : QApplication(argc,
 
 int ScoreApplication::exec() {
     ScoreOperatorWindow operatorWindow;
-    // ScoreDisplayWindow displayWindow;
+    ScoreDisplayWindow displayWindow;
 
     // if (mArgs.size() > 0) {
     //     window.readTournament(mArgs.at(0));

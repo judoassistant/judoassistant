@@ -4,8 +4,13 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 #include <QDesktopServices>
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QSplitter>
+#include <QListView>
 
 #include "config/web.hpp"
+#include "widgets/score_display_widget.hpp"
 #include "widgets/score_operator_window.hpp"
 #include "widgets/connect_dialog.hpp"
 
@@ -17,7 +22,13 @@ ScoreOperatorWindow::ScoreOperatorWindow() {
     createPreferencesMenu();
     createHelpMenu();
 
-    // setCentralWidget(tabWidget);
+    QSplitter * splitter = new QSplitter(this);
+    splitter->setChildrenCollapsible(false);
+
+    splitter->addWidget(createMainArea());
+    splitter->addWidget(createSideArea());
+
+    setCentralWidget(splitter);
 
     setWindowTitle(tr("JudoAssistant Score"));
 }
@@ -140,3 +151,55 @@ void ScoreOperatorWindow::showConnectDialog() {
     dialog.exec();
     log_debug().msg("Dialog accepted");
 }
+
+QWidget* ScoreOperatorWindow::createMainArea() {
+    QWidget *res = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(res);
+
+    {
+        QGroupBox *viewBox = new QGroupBox("Spectator View", res);
+        QVBoxLayout *subLayout = new QVBoxLayout(res);
+
+        ScoreDisplayWidget *displayWidget = new ScoreDisplayWidget(viewBox);
+        subLayout->addWidget(displayWidget);
+
+        viewBox->setLayout(subLayout);
+        layout->addWidget(viewBox);
+    }
+
+    QGroupBox *whiteBox = new QGroupBox("White Player Controls", res);
+    QGroupBox *blueBox = new QGroupBox("Blue Player Controls", res);
+    QGroupBox *matchBox = new QGroupBox("Match Controls", res);
+
+    layout->addWidget(whiteBox);
+    layout->addWidget(blueBox);
+    layout->addWidget(matchBox);
+
+    res->setLayout(layout);
+    return res;
+}
+
+QWidget* ScoreOperatorWindow::createSideArea() {
+    QWidget *res = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(res);
+
+    {
+        QGroupBox *actionBox = new QGroupBox("Actions", res);
+        QVBoxLayout *subLayout = new QVBoxLayout(actionBox);
+        subLayout->addWidget(new QListView(actionBox));
+
+        actionBox->setLayout(subLayout);
+
+        layout->addWidget(actionBox);
+    }
+
+
+
+    QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
+
+    layout->addWidget(nextMatchBox);
+
+    res->setLayout(layout);
+    return res;
+}
+

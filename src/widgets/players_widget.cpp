@@ -46,6 +46,7 @@ PlayersWidget::PlayersWidget(StoreManager &storeManager)
     }
 
     QSplitter *splitter = new QSplitter(this);
+    splitter->setChildrenCollapsible(false);
     splitter->setOrientation(Qt::Horizontal);
 
     {
