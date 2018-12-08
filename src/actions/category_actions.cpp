@@ -662,3 +662,43 @@ void ChangeCategoryDrawSystemAction::undoImpl(TournamentStore & tournament) {
     tournament.changeCategories({mCategoryId});
 }
 
+std::string AddCategoryAction::getDescription() const {
+    return "Add category";
+}
+
+std::string DrawCategoryAction::getDescription() const {
+    return "Draw category";
+}
+
+std::string AddPlayersToCategoryAction::getDescription() const {
+    return "Add players to category";
+}
+
+std::string ErasePlayersFromCategoryAction::getDescription() const {
+    return "Erase players from category";
+}
+
+std::string EraseCategoriesAction::getDescription() const {
+    return "Erase players from category";
+}
+
+std::string ErasePlayersFromAllCategoriesAction::getDescription() const {
+    return "Erase players from all categories";
+}
+
+std::string AutoAddCategoriesAction::getDescription() const {
+    return "Automatically add categories for players";
+}
+
+std::string ChangeCategoryNameAction::getDescription() const {
+    return "Change category name";
+}
+
+std::string ChangeCategoryRulesetAction::getDescription() const {
+    return "Change category ruleset";
+}
+
+std::string ChangeCategoryDrawSystemAction::getDescription() const {
+    return "Change category draw system";
+}
+

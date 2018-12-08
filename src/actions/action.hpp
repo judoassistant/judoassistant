@@ -13,7 +13,7 @@ public:
 
     virtual void redoImpl(TournamentStore & tournament) = 0;
     virtual void undoImpl(TournamentStore & tournament) = 0;
-    virtual std::string getDescription() const { return ""; };
+    virtual std::string getDescription() const = 0;
 
     virtual std::unique_ptr<Action> freshClone() const = 0;
 

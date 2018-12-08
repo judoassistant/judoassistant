@@ -23,6 +23,7 @@ public:
     MatchId getMatchId();
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

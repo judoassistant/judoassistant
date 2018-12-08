@@ -62,3 +62,7 @@ MatchId AddMatchAction::getMatchId() {
 std::unique_ptr<Action> AddMatchAction::freshClone() const {
     return std::make_unique<AddMatchAction>(mId, mCategoryId, mType, mTitle, mBye, mWhitePlayerId, mBluePlayerId);
 }
+
+std::string AddMatchAction::getDescription() const {
+    return "Add match";
+}

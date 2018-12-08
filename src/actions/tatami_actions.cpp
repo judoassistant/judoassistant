@@ -127,3 +127,11 @@ std::unique_ptr<Action> SetTatamiLocationAction::freshClone() const {
     return std::make_unique<SetTatamiLocationAction>(mCategoryId, mType, mLocation, mSeqIndex);
 }
 
+std::string SetTatamiCountAction::getDescription() const {
+    return "Set tatami count";
+}
+
+std::string SetTatamiLocationAction::getDescription() const {
+    return "Set tatami location";
+}
+

@@ -319,3 +319,43 @@ std::unique_ptr<Action> ChangePlayerCountryAction::freshClone() const {
     return std::make_unique<ChangePlayerCountryAction>(mPlayerId, mValue);
 }
 
+std::string AddPlayersAction::getDescription() const {
+    return "Add players";
+}
+
+std::string ErasePlayersAction::getDescription() const {
+    return "Erase players";
+}
+
+std::string ChangePlayerFirstNameAction::getDescription() const {
+    return "Change player first name";
+}
+
+std::string ChangePlayerLastNameAction::getDescription() const {
+    return "Change player last name";
+}
+
+std::string ChangePlayerAgeAction::getDescription() const {
+    return "Change player age";
+}
+
+std::string ChangePlayerRankAction::getDescription() const {
+    return "Change player rank";
+}
+
+std::string ChangePlayerClubAction::getDescription() const {
+    return "Change player club";
+}
+
+std::string ChangePlayerWeightAction::getDescription() const {
+    return "Change player weight";
+}
+
+std::string ChangePlayerCountryAction::getDescription() const {
+    return "Change player country";
+}
+
+std::string ChangePlayerSexAction::getDescription() const {
+    return "Change player sex";
+}
+

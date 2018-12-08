@@ -21,3 +21,7 @@ std::unique_ptr<Action> ChangeTournamentNameAction::freshClone() const {
     return std::make_unique<ChangeTournamentNameAction>(mName);
 }
 
+std::string ChangeTournamentNameAction::getDescription() const {
+    return "Change tournament name";
+}
+

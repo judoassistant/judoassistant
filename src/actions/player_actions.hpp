@@ -18,6 +18,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -43,6 +44,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -69,6 +71,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -95,6 +98,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -121,6 +125,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -147,6 +152,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -173,6 +179,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -199,6 +206,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -225,6 +233,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -251,6 +260,7 @@ public:
     void undoImpl(TournamentStore & tournament) override;
 
     std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
