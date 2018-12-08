@@ -76,10 +76,6 @@ signals:
     void categoriesReset();
 
     void matchesChanged(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void matchesAboutToBeAdded(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void matchesAdded(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void matchesAboutToBeErased(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void matchesErased(CategoryId categoryId, std::vector<MatchId> matchIds);
     void matchesAboutToBeReset(CategoryId categoryId);
     void matchesReset(CategoryId categoryId);
 
