@@ -88,7 +88,7 @@ void CreatePlayerDialog::acceptClick() {
     if (mSexContent->currentIndex() > 0) // account for the first index being nullopt
         fields.sex = PlayerSex(mSexContent->currentIndex() - 1);
 
-    mStoreManager.dispatch(std::make_unique<AddPlayerAction>(mStoreManager.getTournament(), std::move(fields)));
+    mStoreManager.dispatch(std::make_unique<AddPlayersAction>(mStoreManager.getTournament(), std::vector<PlayerFields>{std::move(fields)}));
     accept();
 }
 

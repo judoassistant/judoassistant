@@ -8,28 +8,39 @@
 #include "stores/match_event.hpp"
 #include "stores/tournament_store.hpp"
 
-AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const PlayerFields &fields)
-    : mId(PlayerId::generate(tournament))
+AddPlayersAction::AddPlayersAction(TournamentStore & tournament, const std::vector<PlayerFields> &fields)
+    : mFields(fields)
+{
+    for (size_t i = 0; i < fields.size(); ++i)
+        mIds.push_back(PlayerId::generate(tournament));
+}
+
+AddPlayersAction::AddPlayersAction(const std::vector<PlayerId> &ids, const std::vector<PlayerFields> &fields)
+    : mIds(ids)
     , mFields(fields)
-{}
+{
+    assert(mIds.size() == mFields.size());
+}
 
-AddPlayerAction::AddPlayerAction(PlayerId id, const PlayerFields &fields)
-    : mId(id)
-    , mFields(fields)
-{}
+void AddPlayersAction::redoImpl(TournamentStore & tournament) {
+    for (auto id : mIds) {
+        if (tournament.containsPlayer(id))
+            throw ActionExecutionException("Failed to redo AddPlayersAction. Player already exists.");
+    }
 
-void AddPlayerAction::redoImpl(TournamentStore & tournament) {
-    if (tournament.containsPlayer(mId))
-        throw ActionExecutionException("Failed to redo AddPlayerAction. Player already exists.");
+    tournament.beginAddPlayers(mIds);
+    auto i = mIds.begin();
+    auto j = mFields.begin();
+    for (; i != mIds.end() && j != mFields.end(); ++i, ++j)
+        tournament.addPlayer(std::make_unique<PlayerStore>(*i, *j));
 
-    tournament.beginAddPlayers({mId});
-    tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFields));
     tournament.endAddPlayers();
 }
 
-void AddPlayerAction::undoImpl(TournamentStore & tournament) {
-    tournament.beginErasePlayers({mId});
-    tournament.erasePlayer(mId);
+void AddPlayersAction::undoImpl(TournamentStore & tournament) {
+    tournament.beginErasePlayers(mIds);
+    for (auto id : mIds)
+        tournament.erasePlayer(id);
     tournament.endErasePlayers();
 }
 
@@ -276,8 +287,8 @@ void ChangePlayerSexAction::undoImpl(TournamentStore & tournament) {
     tournament.changePlayers({mPlayerId});
 }
 
-std::unique_ptr<Action> AddPlayerAction::freshClone() const {
-    return std::make_unique<AddPlayerAction>(mId, mFields);
+std::unique_ptr<Action> AddPlayersAction::freshClone() const {
+    return std::make_unique<AddPlayersAction>(mIds, mFields);
 }
 
 std::unique_ptr<Action> ChangePlayerLastNameAction::freshClone() const {

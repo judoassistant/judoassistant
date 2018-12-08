@@ -8,11 +8,11 @@
 
 class TournamentStore;
 
-class AddPlayerAction : public Action {
+class AddPlayersAction : public Action {
 public:
-    AddPlayerAction() = default;
-    AddPlayerAction(TournamentStore & tournament, const PlayerFields &fields);
-    AddPlayerAction(PlayerId id, const PlayerFields &fields);
+    AddPlayersAction() = default;
+    AddPlayersAction(TournamentStore & tournament, const std::vector<PlayerFields> &fields);
+    AddPlayersAction(const std::vector<PlayerId> &ids, const std::vector<PlayerFields> &fields);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -21,17 +21,17 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId);
+        ar(mIds);
         ar(mFields);
     }
 
 private:
-    PlayerId mId;
-    PlayerFields mFields;
+    std::vector<PlayerId> mIds;
+    std::vector<PlayerFields> mFields;
 };
 
-CEREAL_REGISTER_TYPE(AddPlayerAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddPlayerAction)
+CEREAL_REGISTER_TYPE(AddPlayersAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddPlayersAction)
 
 class ErasePlayersFromCategoryAction;
 

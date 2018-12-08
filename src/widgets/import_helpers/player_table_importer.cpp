@@ -1,6 +1,5 @@
 #include <sstream>
 
-#include "actions/composite_action.hpp"
 #include "actions/player_actions.hpp"
 #include "actions/category_actions.hpp"
 #include "store_managers/store_manager.hpp"
@@ -194,7 +193,7 @@ std::string PlayerTableImporter::getHeader(size_t column) const {
 }
 
 void PlayerTableImporter::import(StoreManager & storeManager) {
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<PlayerFields> fieldsList;
 
     size_t offset = (hasHeaderRow() ? 1 : 0);
     for (size_t row = offset; row < mReader->rowCount(); ++row) {
@@ -216,9 +215,9 @@ void PlayerTableImporter::import(StoreManager & storeManager) {
         fields.country = parseValue<PlayerCountry>(row, mCountryColumn);
         fields.sex = parseValue<PlayerSex>(row, mSexColumn);
 
-        actions.push_back(std::make_unique<AddPlayerAction>(storeManager.getTournament(), std::move(fields)));
+        fieldsList.push_back(std::move(fields));
     }
 
-    storeManager.dispatch(std::make_unique<CompositeAction>(std::move(actions)));
+    storeManager.dispatch(std::make_unique<AddPlayersAction>(storeManager.getTournament(), std::move(fieldsList)));
 }
 
