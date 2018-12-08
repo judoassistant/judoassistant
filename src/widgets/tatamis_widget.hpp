@@ -19,16 +19,16 @@ class TatamisWidget : public QWidget {
 public:
     TatamisWidget(StoreManager &storeManager);
 
-public slots:
-    void tournamentAboutToBeReset();
-    void tournamentReset();
-
-    void tatamiCountAboutToBeChanged();
-    void tatamiCountChanged();
-
 private:
+    void beginTournamentReset();
+    void endTournamentReset();
+
+    void beginTatamiCountChange();
+    void endTatamiCountChange();
+
     StoreManager &mStoreManager;
     QHBoxLayout *mTatamiLayout;
+    QWidget *mTatamiParentWidget;
     std::vector<TatamiWidget*> mTatamis;
     std::stack<QMetaObject::Connection> mConnections;
 };

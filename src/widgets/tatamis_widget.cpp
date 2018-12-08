@@ -12,9 +12,8 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
 {
     // QTournamentStore &tournament = mStoreManager.getTournament();
 
-    // TODO: Handle erase and adding of tatamis
-    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TatamisWidget::tournamentAboutToBeReset);
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamisWidget::tournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TatamisWidget::beginTournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamisWidget::endTournamentReset);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -45,47 +44,44 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
 
     {
         QScrollArea *scroll = new QScrollArea(mainSplitWidget);
-        mTatamiLayout = new QHBoxLayout(scroll);
-        TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
-        for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-            auto *tatami = new TatamiWidget(mStoreManager, i, this);
-            mTatamis.push_back(tatami);
-            mTatamiLayout->addWidget(tatami);
-        }
-        QWidget *widget = new QWidget(scroll);
-        widget->setLayout(mTatamiLayout);
-        scroll->setWidget(widget);
+        mTatamiParentWidget = new QWidget(scroll);
+        mTatamiLayout = new QHBoxLayout;
+        mTatamiParentWidget->setLayout(mTatamiLayout);
+        scroll->setWidget(mTatamiParentWidget);
         mainSplit->addWidget(scroll);
     }
 
     mainSplitWidget->setLayout(mainSplit);
     layout->addWidget(mainSplitWidget);
 
+    beginTournamentReset();
+    endTournamentReset();
+
     setLayout(layout);
 }
 
-void TatamisWidget::tournamentAboutToBeReset() {
+void TatamisWidget::beginTournamentReset() {
     while (!mConnections.empty()) {
         disconnect(mConnections.top());
         mConnections.pop();
     }
 
-    tatamiCountAboutToBeChanged();
+    beginTatamiCountChange();
 }
 
-void TatamisWidget::tournamentReset() {
+void TatamisWidget::endTournamentReset() {
     auto &tournament = mStoreManager.getTournament();
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &TatamisWidget::tatamiCountAboutToBeChanged));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &TatamisWidget::tatamiCountChanged));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &TatamisWidget::beginTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &TatamisWidget::endTatamiCountChange));
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &TatamisWidget::tatamiCountAboutToBeChanged));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &TatamisWidget::tatamiCountChanged));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &TatamisWidget::beginTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &TatamisWidget::endTatamiCountChange));
 
-    tatamiCountChanged();
+    endTatamiCountChange();
 }
 
-void TatamisWidget::tatamiCountAboutToBeChanged() {
+void TatamisWidget::beginTatamiCountChange() {
     for (TatamiWidget *tatami : mTatamis) {
         mTatamiLayout->removeWidget(tatami);
         delete tatami;
@@ -94,10 +90,11 @@ void TatamisWidget::tatamiCountAboutToBeChanged() {
     mTatamis.clear();
 }
 
-void TatamisWidget::tatamiCountChanged() {
+void TatamisWidget::endTatamiCountChange() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
+
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-        auto *tatami = new TatamiWidget(mStoreManager, i, this);
+        auto *tatami = new TatamiWidget(mStoreManager, i, mTatamiParentWidget);
         mTatamis.push_back(tatami);
         mTatamiLayout->addWidget(tatami);
     }
