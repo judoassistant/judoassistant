@@ -145,10 +145,10 @@ void PlayersModel::playersAboutToBeErased(std::vector<PlayerId> ids) {
 
 void PlayersModel::playersAboutToBeReset() {
     beginResetModel();
+    mIds.clear();
 }
 
 void PlayersModel::playersReset() {
-    mIds.clear();
     for (const auto & p : mStoreManager.getTournament().getPlayers())
         mIds.insert(p.first);
     endResetModel();

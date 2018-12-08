@@ -21,10 +21,10 @@ ActionsModel::ActionsModel(StoreManager & storeManager, QObject * parent)
 
 void ActionsModel::aboutToReset() {
     beginResetModel();
+    mIds.clear();
 }
 
 void ActionsModel::reset() {
-    mIds.clear();
     for (auto it = mStoreManager.actionsBegin(); it != mStoreManager.actionsEnd(); ++it)
         mIds.push_back(it.getActionId());
     log_debug().field("size", mIds.size()).msg("Finished resetting");
