@@ -198,26 +198,25 @@ void PlayerTableImporter::import(StoreManager & storeManager) {
 
     size_t offset = (hasHeaderRow() ? 1 : 0);
     for (size_t row = offset; row < mReader->rowCount(); ++row) {
-        std::string firstName;
+        PlayerFields fields;
+
         if (mFirstNameColumn)
-            firstName = mReader->get(row, *mFirstNameColumn);
+            fields.firstName = mReader->get(row, *mFirstNameColumn);
 
-        std::string lastName;
         if (mLastNameColumn)
-            lastName = mReader->get(row, *mLastNameColumn);
+            fields.lastName = mReader->get(row, *mLastNameColumn);
 
-        auto age = parseValue<PlayerAge>(row, mAgeColumn);
-        auto rank = parseValue<PlayerRank>(row, mRankColumn);
+        fields.age = parseValue<PlayerAge>(row, mAgeColumn);
+        fields.rank = parseValue<PlayerRank>(row, mRankColumn);
 
-        std::string club;
         if (mClubColumn)
-            club = mReader->get(row, *mClubColumn);
+            fields.club = mReader->get(row, *mClubColumn);
 
-        auto weight = parseValue<PlayerWeight>(row, mWeightColumn);
-        auto country = parseValue<PlayerCountry>(row, mCountryColumn);
-        auto sex = parseValue<PlayerSex>(row, mSexColumn);
+        fields.weight = parseValue<PlayerWeight>(row, mWeightColumn);
+        fields.country = parseValue<PlayerCountry>(row, mCountryColumn);
+        fields.sex = parseValue<PlayerSex>(row, mSexColumn);
 
-        actions.push_back(std::make_unique<AddPlayerAction>(storeManager.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
+        actions.push_back(std::make_unique<AddPlayerAction>(storeManager.getTournament(), std::move(fields)));
     }
 
     storeManager.dispatch(std::make_unique<CompositeAction>(std::move(actions)));

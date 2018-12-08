@@ -67,32 +67,28 @@ CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *par
 }
 
 void CreatePlayerDialog::acceptClick() {
-    std::string firstName = mFirstNameContent->text().toStdString();
-    std::string lastName = mLastNameContent->text().toStdString();
+    PlayerFields fields;
+    fields.firstName = mFirstNameContent->text().toStdString();
+    fields.lastName = mLastNameContent->text().toStdString();
 
-    std::optional<PlayerAge> age;
     if (!mAgeContent->text().isEmpty())
-        age = PlayerAge(mAgeContent->text().toInt());
+        fields.age = PlayerAge(mAgeContent->text().toInt());
 
-    std::optional<PlayerWeight> weight;
     if (!mWeightContent->text().isEmpty())
-        weight = PlayerWeight(mWeightContent->text().toFloat());
+        fields.weight = PlayerWeight(mWeightContent->text().toFloat());
 
-    std::optional<PlayerRank> rank;
     if (mRankContent->currentIndex() > 0) // account for the first index being nullopt
-        rank = PlayerRank(mRankContent->currentIndex() - 1);
+        fields.rank = PlayerRank(mRankContent->currentIndex() - 1);
 
-    std::string club = mClubContent->text().toStdString();
+    fields.club = mClubContent->text().toStdString();
 
-    std::optional<PlayerCountry> country;
     if (mCountryContent->currentIndex() > 0) // account for the first index being nullopt
-        country = PlayerCountry(mCountryContent->currentIndex() - 1);
+        fields.country = PlayerCountry(mCountryContent->currentIndex() - 1);
 
-    std::optional<PlayerSex> sex;
     if (mSexContent->currentIndex() > 0) // account for the first index being nullopt
-        sex = PlayerSex(mSexContent->currentIndex() - 1);
+        fields.sex = PlayerSex(mSexContent->currentIndex() - 1);
 
-    mStoreManager.dispatch(std::make_unique<AddPlayerAction>(mStoreManager.getTournament(), firstName, lastName, age, rank, club, weight, country, sex));
+    mStoreManager.dispatch(std::make_unique<AddPlayerAction>(mStoreManager.getTournament(), std::move(fields)));
     accept();
 }
 

@@ -11,8 +11,8 @@ class TournamentStore;
 class AddPlayerAction : public Action {
 public:
     AddPlayerAction() = default;
-    AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
-    AddPlayerAction(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
+    AddPlayerAction(TournamentStore & tournament, const PlayerFields &fields);
+    AddPlayerAction(PlayerId id, const PlayerFields &fields);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -22,26 +22,12 @@ public:
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(mId);
-        ar(mFirstName);
-        ar(mLastName);
-        ar(mAge);
-        ar(mRank);
-        ar(mClub);
-        ar(mWeight);
-        ar(mCountry);
-        ar(mSex);
+        ar(mFields);
     }
 
 private:
     PlayerId mId;
-    std::string mFirstName;
-    std::string mLastName;
-    std::optional<PlayerAge> mAge;
-    std::optional<PlayerRank> mRank;
-    std::string mClub;
-    std::optional<PlayerWeight> mWeight;
-    std::optional<PlayerCountry> mCountry;
-    std::optional<PlayerSex> mSex;
+    PlayerFields mFields;
 };
 
 CEREAL_REGISTER_TYPE(AddPlayerAction)

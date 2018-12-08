@@ -8,20 +8,14 @@
 #include "stores/match_event.hpp"
 #include "stores/tournament_store.hpp"
 
-AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
-    : AddPlayerAction(PlayerId::generate(tournament), firstName, lastName, age, rank, club, weight, country, sex)
+AddPlayerAction::AddPlayerAction(TournamentStore & tournament, const PlayerFields &fields)
+    : mId(PlayerId::generate(tournament))
+    , mFields(fields)
 {}
 
-AddPlayerAction::AddPlayerAction(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
+AddPlayerAction::AddPlayerAction(PlayerId id, const PlayerFields &fields)
     : mId(id)
-    , mFirstName(firstName)
-    , mLastName(lastName)
-    , mAge(age)
-    , mRank(rank)
-    , mClub(club)
-    , mWeight(weight)
-    , mCountry(country)
-    , mSex(sex)
+    , mFields(fields)
 {}
 
 void AddPlayerAction::redoImpl(TournamentStore & tournament) {
@@ -29,7 +23,7 @@ void AddPlayerAction::redoImpl(TournamentStore & tournament) {
         throw ActionExecutionException("Failed to redo AddPlayerAction. Player already exists.");
 
     tournament.beginAddPlayers({mId});
-    tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry, mSex));
+    tournament.addPlayer(std::make_unique<PlayerStore>(mId, mFields));
     tournament.endAddPlayers();
 }
 
@@ -283,7 +277,7 @@ void ChangePlayerSexAction::undoImpl(TournamentStore & tournament) {
 }
 
 std::unique_ptr<Action> AddPlayerAction::freshClone() const {
-    return std::make_unique<AddPlayerAction>(mId, mFirstName, mLastName, mAge, mRank, mClub, mWeight, mCountry, mSex);
+    return std::make_unique<AddPlayerAction>(mId, mFields);
 }
 
 std::unique_ptr<Action> ChangePlayerLastNameAction::freshClone() const {

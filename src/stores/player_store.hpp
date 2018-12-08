@@ -204,24 +204,40 @@ private:
 
 std::ostream & operator<<(std::ostream &out, const PlayerAge &age);
 
+struct PlayerFields {
+    std::string firstName;
+    std::string lastName;
+    std::optional<PlayerAge> age;
+    std::optional<PlayerRank> rank;
+    std::string club;
+    std::optional<PlayerWeight> weight;
+    std::optional<PlayerCountry> country;
+    std::optional<PlayerSex> sex;
+
+    template<typename Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar(cereal::make_nvp("firstName", firstName));
+        ar(cereal::make_nvp("lastName", lastName));
+        ar(cereal::make_nvp("age", age));
+        ar(cereal::make_nvp("rank", rank));
+        ar(cereal::make_nvp("club", club));
+        ar(cereal::make_nvp("weight", weight));
+        ar(cereal::make_nvp("country", country));
+        ar(cereal::make_nvp("sex", sex));
+    }
+};
+
 class PlayerStore {
 public:
     PlayerStore() {}
     PlayerStore(const PlayerStore &other) = default;
-    PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex);
+    PlayerStore(PlayerId id, const PlayerFields &fields);
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
         ar(cereal::make_nvp("id", mId));
-        ar(cereal::make_nvp("firstName", mFirstName));
-        ar(cereal::make_nvp("lastName", mLastName));
-        ar(cereal::make_nvp("age", mAge));
-        ar(cereal::make_nvp("rank", mRank));
-        ar(cereal::make_nvp("club", mClub));
-        ar(cereal::make_nvp("weight", mWeight));
-        ar(cereal::make_nvp("country", mCountry));
         ar(cereal::make_nvp("categories", mCategories));
-        ar(cereal::make_nvp("sex", mSex));
+        ar(cereal::make_nvp("fields", mFields));
     }
 
     const std::string & getFirstName() const;
@@ -254,14 +270,7 @@ public:
     bool containsMatch(CategoryId categoryId, MatchId matchId) const;
 private:
     PlayerId mId;
-    std::string mFirstName;
-    std::string mLastName;
-    std::optional<PlayerAge> mAge;
-    std::optional<PlayerRank> mRank;
-    std::string mClub;
-    std::optional<PlayerWeight> mWeight;
-    std::optional<PlayerCountry> mCountry;
-    std::optional<PlayerSex> mSex;
+    PlayerFields mFields;
 
     std::unordered_set<CategoryId> mCategories;
     std::unordered_set<std::pair<CategoryId,MatchId>> mMatches;

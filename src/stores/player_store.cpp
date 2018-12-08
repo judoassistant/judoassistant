@@ -1,27 +1,20 @@
 #include "stores/player_store.hpp"
 
-PlayerStore::PlayerStore(PlayerId id, const std::string & firstName, const std::string & lastName, std::optional<PlayerAge> age, std::optional<PlayerRank> rank, const std::string &club, std::optional<PlayerWeight> weight, std::optional<PlayerCountry> country, std::optional<PlayerSex> sex)
+PlayerStore::PlayerStore(PlayerId id, const PlayerFields &fields)
     : mId(id)
-    , mFirstName(firstName)
-    , mLastName(lastName)
-    , mAge(age)
-    , mRank(rank)
-    , mClub(club)
-    , mWeight(weight)
-    , mCountry(country)
-    , mSex(sex)
+    , mFields(fields)
 {}
 
 const std::string & PlayerStore::getFirstName() const {
-    return mFirstName;
+    return mFields.firstName;
 }
 
 const std::string & PlayerStore::getLastName() const {
-    return mLastName;
+    return mFields.lastName;
 }
 
 const std::optional<PlayerAge> & PlayerStore::getAge() const {
-    return mAge;
+    return mFields.age;
 }
 
 const PlayerId & PlayerStore::getId() const {
@@ -84,19 +77,19 @@ std::vector<PlayerCountry> PlayerCountry::values() {
 }
 
 const std::optional<PlayerWeight> & PlayerStore::getWeight() const {
-    return mWeight;
+    return mFields.weight;
 }
 
 const std::optional<PlayerRank> & PlayerStore::getRank() const {
-    return mRank;
+    return mFields.rank;
 }
 
 const std::optional<PlayerCountry> & PlayerStore::getCountry() const {
-    return mCountry;
+    return mFields.country;
 }
 
 const std::string & PlayerStore::getClub() const {
-    return mClub;
+    return mFields.club;
 }
 
 void PlayerStore::eraseMatch(CategoryId categoryId, MatchId matchId) {
@@ -136,31 +129,31 @@ bool PlayerStore::containsCategory(CategoryId id) const {
 }
 
 void PlayerStore::setFirstName(const std::string & firstName) {
-    mFirstName = firstName;
+    mFields.firstName = firstName;
 }
 
 void PlayerStore::setLastName(const std::string & lastName) {
-    mLastName = lastName;
+    mFields.lastName = lastName;
 }
 
 void PlayerStore::setAge(std::optional<PlayerAge> age) {
-    mAge = age;
+    mFields.age = age;
 }
 
 void PlayerStore::setWeight(std::optional<PlayerWeight> weight) {
-    mWeight = weight;
+    mFields.weight = weight;
 }
 
 void PlayerStore::setRank(std::optional<PlayerRank> rank) {
-    mRank = rank;
+    mFields.rank = rank;
 }
 
 void PlayerStore::setCountry(std::optional<PlayerCountry> country) {
-    mCountry = country;
+    mFields.country = country;
 }
 
 void PlayerStore::setClub(const std::string & club) {
-    mClub = club;
+    mFields.club = club;
 }
 
 std::ostream & operator<<(std::ostream &out, const PlayerCountry &country) {
@@ -194,11 +187,11 @@ int PlayerSex::toInt() const {
 }
 
 void PlayerStore::setSex(const std::optional<PlayerSex> sex) {
-    mSex = sex;
+    mFields.sex = sex;
 }
 
 const std::optional<PlayerSex> PlayerStore::getSex() const {
-    return mSex;
+    return mFields.sex;
 }
 
 PlayerCountry::PlayerCountry(const std::string &str) {
