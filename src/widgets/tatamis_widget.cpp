@@ -65,6 +65,27 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
 }
 
 void TatamisWidget::tournamentAboutToBeReset() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+
+    tatamiCountAboutToBeChanged();
+}
+
+void TatamisWidget::tournamentReset() {
+    auto &tournament = mStoreManager.getTournament();
+
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &TatamisWidget::tatamiCountAboutToBeChanged));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &TatamisWidget::tatamiCountChanged));
+
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &TatamisWidget::tatamiCountAboutToBeChanged));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &TatamisWidget::tatamiCountChanged));
+
+    tatamiCountChanged();
+}
+
+void TatamisWidget::tatamiCountAboutToBeChanged() {
     for (TatamiWidget *tatami : mTatamis) {
         mTatamiLayout->removeWidget(tatami);
         delete tatami;
@@ -73,7 +94,7 @@ void TatamisWidget::tournamentAboutToBeReset() {
     mTatamis.clear();
 }
 
-void TatamisWidget::tournamentReset() {
+void TatamisWidget::tatamiCountChanged() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
         auto *tatami = new TatamiWidget(mStoreManager, i, this);

@@ -8,6 +8,9 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mType(type)
     , mTitle(title)
     , mBye(bye)
+    , mIsStopped(true)
+    , mIsStarted(false)
+    , mGoldenScore(false)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
@@ -22,6 +25,7 @@ void MatchStore::stop() {
 }
 
 void MatchStore::resume() {
+    mIsStarted = true;
     mIsStopped = false;
 }
 

@@ -4,6 +4,7 @@
 
 #include "widgets/tournament_widget.hpp"
 #include "actions/tournament_actions.hpp"
+#include "actions/tatami_actions.hpp"
 #include "stores/qtournament_store.hpp"
 #include "store_managers/store_manager.hpp"
 
@@ -20,6 +21,12 @@ TournamentWidget::TournamentWidget(StoreManager &storeManager)
     mNameContent->setText(QString::fromStdString(mStoreManager.getTournament().getName()));
     connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
     formLayout->addRow(tr("Tournament name"), mNameContent);
+
+    mTatamiCountContent = new QSpinBox;
+    mTatamiCountContent->setMinimum(1);
+    mTatamiCountContent->setValue(mStoreManager.getTournament().getTatamis().tatamiCount());
+    connect(mTatamiCountContent, QOverload<int>::of(&QSpinBox::valueChanged), this, &TournamentWidget::updateTatamiCount);
+    formLayout->addRow(tr("Tatami Count"), mTatamiCountContent);
 
     mLanguageContent = new QComboBox;
     mLanguageContent->addItem("English");
@@ -49,11 +56,18 @@ void TournamentWidget::tournamentAboutToBeReset() {
 
 void TournamentWidget::tournamentReset() {
     mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged));
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisAdded, this, [this](std::vector<size_t> id) { tatamiCountChanged(); }));
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisErased, this, [this](std::vector<size_t> id) { tatamiCountChanged(); }));
     tournamentChanged();
+    tatamiCountChanged();
 }
 
 void TournamentWidget::tournamentChanged() {
     mNameContent->setText(QString::fromStdString(mStoreManager.getTournament().getName()));
+}
+
+void TournamentWidget::tatamiCountChanged() {
+    mTatamiCountContent->setValue(mStoreManager.getTournament().getTatamis().tatamiCount());
 }
 
 void TournamentWidget::updateTournamentName() {
@@ -64,3 +78,11 @@ void TournamentWidget::updateTournamentName() {
 
     mStoreManager.dispatch(std::make_unique<ChangeTournamentNameAction>(name));
 }
+
+void TournamentWidget::updateTatamiCount(int count) {
+    if (static_cast<size_t>(count) == mStoreManager.getTournament().getTatamis().tatamiCount())
+        return;
+
+    mStoreManager.dispatch(std::make_unique<SetTatamiCountAction>(static_cast<size_t>(count)));
+}
+

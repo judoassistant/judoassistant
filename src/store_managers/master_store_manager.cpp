@@ -6,7 +6,9 @@
 
 MasterStoreManager::MasterStoreManager()
     : mDirty(false)
-{}
+{
+    getTournament().getTatamis().pushTatami();
+}
 
 MasterStoreManager::~MasterStoreManager() {
 
@@ -31,7 +33,9 @@ bool MasterStoreManager::read(const QString &path) {
 
 void MasterStoreManager::resetTournament() {
     log_debug().msg("Resetting tournament");
-    sync(std::make_unique<QTournamentStore>());
+    auto tournament = std::make_unique<QTournamentStore>();
+    tournament->getTatamis().pushTatami();
+    sync(std::move(tournament));
     mDirty = false;
 }
 

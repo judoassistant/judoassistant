@@ -105,6 +105,7 @@ private:
     std::array<Score,2> mScores;
     std::array<std::optional<PlayerId>,2> mPlayers;
     bool mIsStopped;
+    bool mIsStarted;
     bool mGoldenScore; // whether the match is currently in golden score or not
     std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed
     std::chrono::high_resolution_clock::duration mClock; // the value of the clock when it was last resumed

@@ -4,6 +4,7 @@
 #include <QMetaObject>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QSpinBox>
 
 #include "core.hpp"
 
@@ -12,17 +13,21 @@ class StoreManager;
 class TournamentWidget : public QWidget {
     Q_OBJECT
 
-public slots:
+public:
+    TournamentWidget(StoreManager &storeManager);
+
+private:
     void tournamentAboutToBeReset();
     void tournamentReset();
     void tournamentChanged();
     void updateTournamentName();
-public:
-    TournamentWidget(StoreManager &storeManager);
-private:
+    void updateTatamiCount(int count);
+    void tatamiCountChanged();
+
     StoreManager &mStoreManager;
     QLineEdit *mNameContent;
     QComboBox *mLanguageContent;
+    QSpinBox *mTatamiCountContent;
     std::stack<QMetaObject::Connection> mConnections;
 };
 
