@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 
 #include "core.hpp"
+#include "widgets/fixed_scroll_area.hpp"
 
 // TODO: Display whenever two matches conflict with player
 // TODO: Consider updating more efficiently when tatami count is changed
@@ -27,9 +28,7 @@ private:
     void endTatamiCountChange();
 
     StoreManager &mStoreManager;
-    QHBoxLayout *mTatamiLayout;
-    QWidget *mTatamiParentWidget;
-    std::vector<TatamiWidget*> mTatamis;
+    FixedScrollArea *mFixedScrollArea;
     std::stack<QMetaObject::Connection> mConnections;
 };
 

@@ -44,5 +44,8 @@ score_moc_headers += ['src/widgets/score_display_widget.hpp']
 score_moc_headers += ['src/widgets/score_operator_window.hpp']
 
 ui_sources += ['src/widgets/connect_dialog.cpp']
+ui_sources += ['src/widgets/fixed_scroll_area.cpp']
+
 ui_moc_headers += ['src/widgets/connect_dialog.hpp']
+ui_moc_headers += ['src/widgets/fixed_scroll_area.hpp']
 

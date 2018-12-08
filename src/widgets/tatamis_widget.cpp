@@ -43,12 +43,8 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
     }
 
     {
-        QScrollArea *scroll = new QScrollArea(mainSplitWidget);
-        mTatamiParentWidget = new QWidget(scroll);
-        mTatamiLayout = new QHBoxLayout;
-        mTatamiParentWidget->setLayout(mTatamiLayout);
-        scroll->setWidget(mTatamiParentWidget);
-        mainSplit->addWidget(scroll);
+        mFixedScrollArea = new FixedScrollArea(300, mainSplitWidget);
+        mainSplit->addWidget(mFixedScrollArea);
     }
 
     mainSplitWidget->setLayout(mainSplit);
@@ -82,21 +78,15 @@ void TatamisWidget::endTournamentReset() {
 }
 
 void TatamisWidget::beginTatamiCountChange() {
-    for (TatamiWidget *tatami : mTatamis) {
-        mTatamiLayout->removeWidget(tatami);
-        delete tatami;
-    }
-
-    mTatamis.clear();
+    mFixedScrollArea->clear();
 }
 
 void TatamisWidget::endTatamiCountChange() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
 
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-        auto *tatami = new TatamiWidget(mStoreManager, i, mTatamiParentWidget);
-        mTatamis.push_back(tatami);
-        mTatamiLayout->addWidget(tatami);
+        auto *tatami = new TatamiWidget(mStoreManager, i, mFixedScrollArea);
+        mFixedScrollArea->addWidget(tatami);
     }
 }
 
