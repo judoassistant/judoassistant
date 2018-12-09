@@ -160,8 +160,6 @@ public:
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::make_nvp("tatamis", mTatamis));
     }
-
-    // TODO: Enable ui code for creating tatamis
 private:
     std::vector<TatamiStore> mTatamis;
 };

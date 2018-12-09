@@ -195,6 +195,7 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
 
         auto & iterator = iterators[element.index];
         auto matchId = *iterator;
+        ++iterator;
         mMatchMap[matchId] = mMatches.size();
         mMatches.push_back(matchId);
 
@@ -270,27 +271,39 @@ void TatamiList::moveBlock(const TournamentStore &tournament, CategoryId categor
         toSequentialGroup->addBlock(std::min(seqIndex, toSequentialGroup->blockCount()), categoryId, type);
     }
 
-    // Cleanup and recomputation
+    // Handle cleanup and recomputation of sequential groups
     if (from) {
-        if (fromSequentialGroup->blockCount() == 0)
+        if (fromSequentialGroup->blockCount() == 0) {
             fromConcurrentGroup->eraseGroup(from->sequentialGroup);
-        else
+        }
+        else {
             fromSequentialGroup->recompute(tournament);
+        }
+    }
 
-        if (fromConcurrentGroup->groupCount() == 0)
+    if (to) {
+        // Recompute if `from` is not the same seq group
+        if (!(from && (from->tatamiIndex == to->tatamiIndex && from->concurrentGroup.id == to->concurrentGroup.id && to->sequentialGroup.id == from->sequentialGroup.id))) {
+            toSequentialGroup->recompute(tournament);
+        }
+
+    }
+
+    // Handle cleanup and recomputation of concurrent groups
+    if (from) {
+        if (fromConcurrentGroup->groupCount() == 0) {
             fromTatami->eraseGroup(from->concurrentGroup);
-        else
+        }
+        else {
             fromConcurrentGroup->recompute(tournament);
+        }
     }
 
-    // recompute to location (avoiding recomputing twice if within same group)
-    if (from && to && from->tatamiIndex == to->tatamiIndex && from->concurrentGroup.id == to->concurrentGroup.id) {
-        if (to->sequentialGroup.id != from->sequentialGroup.id)
+    if (to) {
+        // Recompute if `from` is not the same seq group
+        if (!(from && (from->tatamiIndex == to->tatamiIndex && from->concurrentGroup.id == to->concurrentGroup.id))) {
             toConcurrentGroup->recompute(tournament);
-    }
-    else if (to && !from) {
-        toSequentialGroup->recompute(tournament);
-        toConcurrentGroup->recompute(tournament);
+        }
     }
 }
 
