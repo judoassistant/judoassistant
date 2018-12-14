@@ -143,3 +143,10 @@ MatchStore::MatchStore(const MatchStore &other)
     for (const auto &event : other.mEvents)
         mEvents.push_back(event->clone());
 }
+
+MatchStore::Score::Score()
+    : ippon(0)
+    , wazari(0)
+    , shido(0)
+    , hansokuMake(0)
+{}

@@ -26,6 +26,8 @@ public:
     };
 
     struct Score {
+        Score();
+
         uint8_t ippon;
         uint8_t wazari;
         uint8_t shido;
