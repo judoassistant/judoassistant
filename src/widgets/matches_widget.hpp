@@ -1,6 +1,10 @@
 #pragma once
 
+#include <stack>
+
 #include <QWidget>
+
+#include "widgets/fixed_scroll_area.hpp"
 
 class StoreManager;
 
@@ -9,5 +13,16 @@ class MatchesWidget : public QWidget {
 
 public:
     MatchesWidget(StoreManager &storeManager);
+
+private:
+    void beginTournamentReset();
+    void endTournamentReset();
+
+    void beginTatamiCountChange();
+    void endTatamiCountChange();
+
+    StoreManager & mStoreManager;
+    FixedScrollArea *mFixedScrollArea;
+    std::stack<QMetaObject::Connection> mConnections;
 };
 
