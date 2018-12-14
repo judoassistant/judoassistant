@@ -10,6 +10,7 @@ class TatamiLocation;
 class StoreManager;
 enum class MatchType;
 
+// TODO: Fix: A segfault occasionally occurs when moving blocks.
 class EmptyConcurrentBlockItem : public QGraphicsItem {
 public:
     static const int WIDTH = 280;

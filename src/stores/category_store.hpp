@@ -17,6 +17,7 @@ enum class MatchType;
 
 // TODO: Use rvalue references for functions where appropriate
 // TODO: Make members const where appropriate
+// TODO: Make 'magic' categories that update automatically
 
 class CategoryStore {
 public:
