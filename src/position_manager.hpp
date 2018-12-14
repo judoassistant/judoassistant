@@ -61,11 +61,22 @@ public:
     }
 
     PositionHandle getHandle(size_t index) const {
-        assert(index < mIds.size());
+        if (!(index < mIds.size()))
+            throw std::out_of_range("Requested index out of range");
+
         PositionHandle handle;
         handle.index = index;
         handle.id = mIds[index];
         return handle;
+    }
+
+    size_t getIndex(PositionHandle handle) const {
+        for (size_t i = 0; i < mIds.size(); ++i) {
+            if (mIds[i] == handle.id)
+                return i;
+        }
+
+        throw std::out_of_range("The specified does not exist");
     }
 
     size_t size() const {

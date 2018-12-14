@@ -226,6 +226,10 @@ PositionHandle TatamiStore::getHandle(size_t index) const {
     return mGroups.getHandle(index);
 }
 
+size_t TatamiStore::getIndex(PositionHandle handle) const {
+    return mGroups.getIndex(handle);
+}
+
 size_t TatamiStore::groupCount() const {
     return mGroups.size();
 }

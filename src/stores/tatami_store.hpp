@@ -130,6 +130,7 @@ public:
     std::pair<PositionHandle, PositionHandle> addGroup(TournamentStore & tournament, size_t index);
     bool containsGroup(PositionHandle handle) const;
     PositionHandle getHandle(size_t index) const;
+    size_t getIndex(PositionHandle handle) const;
     size_t groupCount() const;
 
     ConcurrentBlockGroup & getGroup(PositionHandle handle);
