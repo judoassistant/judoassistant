@@ -4,6 +4,7 @@
 #include <stack>
 #include <deque>
 #include <unordered_set>
+#include <unordered_map>
 
 #include <QMetaObject>
 #include <QAbstractTableModel>
@@ -19,6 +20,9 @@ class StoreManager;
 
 class TatamiMatchesModel : public QAbstractTableModel {
     Q_OBJECT
+private:
+    static const int COLUMN_COUNT = 1;
+    static const int TIMER_INTERVAL = 1000;
 public:
     TatamiMatchesModel(StoreManager &storeManager, size_t tatami, size_t rowCap, QObject *parent);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -33,6 +37,8 @@ public:
 private:
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
     void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void changePlayers(std::vector<PlayerId> playerIds);
+    void timerHit();
 
     void beginResetTournament();
     void endResetTournament();
@@ -44,8 +50,6 @@ private:
 
     void beginResetCategory(CategoryId categoryId);
 
-    const size_t COLUMN_COUNT = 1;
-
     StoreManager & mStoreManager;
     size_t mTatami;
     size_t mRowCap;
@@ -56,9 +60,12 @@ private:
     std::deque<std::pair<MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
     std::unordered_set<MatchId> mUnfinishedMatchesSet;
 
+    std::unordered_map<PlayerId, std::unordered_set<MatchId>> mUnfinishedMatchesPlayers;
+    std::unordered_map<MatchId, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
+    std::unordered_set<MatchId> mUnpausedMatches;
+
     std::stack<QMetaObject::Connection> mConnections;
 
     // TODO: Find an implementation of a RB-tree augmented with size
-    // TODO: Connect to begin reset matches
 };
 

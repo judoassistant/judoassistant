@@ -1,6 +1,8 @@
+#include <sstream>
+
 #include <QColor>
 #include <QBrush>
-#include <sstream>
+#include <QTimer>
 
 #include "store_managers/store_manager.hpp"
 #include "stores/qtournament_store.hpp"
@@ -20,6 +22,10 @@ TatamiMatchesModel::TatamiMatchesModel(StoreManager &storeManager, size_t tatami
 
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TatamiMatchesModel::beginResetTournament);
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamiMatchesModel::endResetTournament);
+
+    auto timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &TatamiMatchesModel::timerHit);
+    timer->start(TIMER_INTERVAL);
 }
 
 void TatamiMatchesModel::beginResetMatches() {
@@ -33,6 +39,9 @@ void TatamiMatchesModel::beginResetMatches() {
 
     mUnfinishedMatches.clear();
     mUnfinishedMatchesSet.clear();
+    mUnfinishedMatchesPlayers.clear();
+    mUnfinishedMatchesPlayersInv.clear();
+    mUnpausedMatches.clear();
 }
 
 void TatamiMatchesModel::endResetMatches() {
@@ -57,7 +66,7 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
         return;
     auto &tatami = tatamis[mTatami];
 
-    std::vector<std::pair<MatchId, bool>> newMatchIds;
+    std::vector<std::tuple<MatchId, bool, bool, std::optional<PlayerId>, std::optional<PlayerId>>> newMatchIds;
     size_t newUnfinishedMatches = 0;
 
     while (mUnfinishedMatches.size() + newMatchIds.size() < mRowCap) {
@@ -77,16 +86,19 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
             if (!isFinished)
                 ++newUnfinishedMatches;
 
-            newMatchIds.push_back({p.second, isFinished});
+            newMatchIds.push_back(std::make_tuple(p.second, isFinished, match.isStopped(), match.getWhitePlayer(), match.getBluePlayer()));
         }
     }
 
     if (!newMatchIds.empty()) {
         if (shouldSignal)
             beginInsertRows(QModelIndex(), mUnfinishedMatches.size(), mUnfinishedMatches.size() + newUnfinishedMatches - 1);
-        for (auto p : newMatchIds) {
-            const auto &matchId = p.first;
-            const auto &isFinished = p.second;
+        for (auto t : newMatchIds) {
+            const auto &matchId = std::get<0>(t);
+            const auto &isFinished = std::get<1>(t);
+            const auto &isStopped = std::get<2>(t);
+            const auto &whitePlayer = std::get<3>(t);
+            const auto &bluePlayer = std::get<4>(t);
             auto loadingTime = mLoadedMatches.size();
 
             mLoadedMatches[matchId] = loadingTime;
@@ -94,6 +106,15 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
             if (!isFinished) {
                 mUnfinishedMatches.push_back({matchId, isFinished});
                 mUnfinishedMatchesSet.insert(matchId);
+
+                if (!isStopped)
+                    mUnpausedMatches.insert(matchId);
+
+                mUnfinishedMatchesPlayersInv[matchId] = {whitePlayer, bluePlayer};
+                if (whitePlayer)
+                    mUnfinishedMatchesPlayers[*whitePlayer].insert(matchId);
+                if (bluePlayer)
+                    mUnfinishedMatchesPlayers[*bluePlayer].insert(matchId);
             }
         }
         if (shouldSignal)
@@ -105,6 +126,7 @@ void TatamiMatchesModel::endResetTournament() {
     auto &tournament = mStoreManager.getTournament();
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &TatamiMatchesModel::changeTatamis));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesChanged, this, &TatamiMatchesModel::changeMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersChanged, this, &TatamiMatchesModel::changePlayers));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &TatamiMatchesModel::beginResetCategory));
 
     endResetMatches();
@@ -116,7 +138,7 @@ int TatamiMatchesModel::rowCount(const QModelIndex &parent) const {
 }
 
 int TatamiMatchesModel::columnCount(const QModelIndex &parent) const {
-    return static_cast<int>(COLUMN_COUNT);
+    return COLUMN_COUNT;
 }
 
 QVariant TatamiMatchesModel::data(const QModelIndex &index, int role) const {
@@ -175,6 +197,21 @@ int TatamiMatchesModel::getRow(MatchId id) const {
     return row;
 }
 
+void TatamiMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
+    std::unordered_set<int> changedRows;
+
+    for (auto playerId : playerIds) {
+        auto it = mUnfinishedMatchesPlayers.find(playerId);
+        if (it != mUnfinishedMatchesPlayers.end()) {
+            for (auto matchId : it->second)
+                changedRows.insert(getRow(matchId));
+        }
+    }
+
+    for (auto row : changedRows)
+        emit dataChanged(createIndex(row, 0), createIndex(row,0));
+}
+
 void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
     bool didRemoveRows = false;
     for (auto matchId : matchIds) {
@@ -189,14 +226,84 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
         auto wasFinished = (mUnfinishedMatchesSet.find(matchId) == mUnfinishedMatchesSet.end());
         auto isFinished = ruleset.isFinished(match);
 
-        if (wasFinished == isFinished) continue; // no need to update
+        if (match.isStopped())
+            mUnpausedMatches.erase(matchId);
+        else
+            mUnpausedMatches.insert(matchId);
 
-        if (isFinished) {
+        if (!isFinished && !wasFinished) {
+            // May need to update players
+            auto it = mUnfinishedMatchesPlayersInv.find(matchId);
+            auto prevWhitePlayer = it->second.first;
+            auto prevBluePlayer = it->second.second;
+
+            if (match.getWhitePlayer() != prevWhitePlayer) {
+                if (prevWhitePlayer) {
+                    auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                    auto & set = it1->second;
+                    set.erase(matchId);
+
+                    if (set.empty())
+                        mUnfinishedMatchesPlayers.erase(it1);
+                }
+
+                if (match.getWhitePlayer()) {
+                    mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(matchId);
+                }
+            }
+
+            if (match.getBluePlayer() != prevBluePlayer) {
+                if (prevBluePlayer) {
+                    auto it1 = mUnfinishedMatchesPlayers.find(*prevBluePlayer);
+                    auto & set = it1->second;
+                    set.erase(matchId);
+
+                    if (set.empty())
+                        mUnfinishedMatchesPlayers.erase(it1);
+                }
+
+                if (match.getBluePlayer()) {
+                    mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(matchId);
+                }
+            }
+
+            if (match.getWhitePlayer() != prevWhitePlayer || match.getBluePlayer() != prevBluePlayer) {
+                mUnfinishedMatchesPlayersInv[matchId] = {match.getWhitePlayer(), match.getBluePlayer()};
+            }
+
+            auto row = getRow(matchId);
+            emit dataChanged(createIndex(row, 0), createIndex(row,0));
+        }
+        else if (isFinished) {
             didRemoveRows = true;
             auto row = getRow(matchId);
             beginRemoveRows(QModelIndex(), row, row);
+
             mUnfinishedMatches.erase(mUnfinishedMatches.begin() + row);
             mUnfinishedMatchesSet.erase(matchId);
+
+            auto it = mUnfinishedMatchesPlayersInv.find(matchId);
+            auto prevWhitePlayer = it->second.first;
+            if (prevWhitePlayer) {
+                auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                auto & set = it1->second;
+                set.erase(matchId);
+
+                if (set.empty())
+                    mUnfinishedMatchesPlayers.erase(it1);
+            }
+
+            auto prevBluePlayer = it->second.first;
+            if (prevBluePlayer) {
+                auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                auto & set = it1->second;
+                set.erase(matchId);
+
+                if (set.empty())
+                    mUnfinishedMatchesPlayers.erase(it1);
+            }
+            mUnfinishedMatchesPlayersInv.erase(it);
+
             endRemoveRows();
         }
         else { // was finished
@@ -204,11 +311,23 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
 
             // Find the first position with a higher loading time (lower bound)
             auto pos = mUnfinishedMatches.begin();
-            while (pos != mUnfinishedMatches.end() && pos->second < loadingTime)
+            int row = 0;
+            while (pos != mUnfinishedMatches.end() && pos->second < loadingTime) {
                 ++pos;
+                ++row;
+            }
 
+            beginInsertRows(QModelIndex(), row, row);
             mUnfinishedMatches.insert(pos, *it);
             mUnfinishedMatchesSet.insert(matchId);
+
+            if (match.getWhitePlayer())
+                mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(matchId);
+            if (match.getBluePlayer())
+                mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(matchId);
+            mUnfinishedMatchesPlayersInv[matchId] = {match.getWhitePlayer(), match.getBluePlayer()};
+
+            endInsertRows();
         }
     }
 
@@ -269,3 +388,11 @@ void TatamiMatchesModel::beginResetCategory(CategoryId categoryId) {
     }
 }
 
+void TatamiMatchesModel::timerHit() {
+    if (!mUnpausedMatches.empty())
+        log_debug().field("matches", mUnpausedMatches).msg("Timer hit");
+    for (auto matchId : mUnpausedMatches) {
+        auto row = getRow(matchId);
+        emit dataChanged(createIndex(row, 0), createIndex(row,0));
+    }
+}
