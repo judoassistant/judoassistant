@@ -30,9 +30,10 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    std::vector<MatchId> getMatches(const QItemSelection &selection) const;
-    MatchId getMatch(int row) const;
-    int getRow(MatchId id) const;
+    std::vector<std::pair<CategoryId, MatchId>> getMatches(const QItemSelection &selection) const;
+    std::pair<CategoryId, MatchId> getMatch(int row) const;
+    int getRow(CategoryId categoryId, MatchId matchId) const;
+    int getRow(std::pair<CategoryId, MatchId> combinedId) const;
 
 private:
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
@@ -54,15 +55,15 @@ private:
     size_t mTatami;
     size_t mRowCap;
     bool mResettingMatches;
-    std::unordered_map<MatchId, size_t> mLoadedMatches; // Matches loaded and loading time
+    std::unordered_map<std::pair<CategoryId,MatchId>, size_t> mLoadedMatches; // Matches loaded and loading time
     std::unordered_set<PositionId> mLoadedBlocks; // Blocks loaded
 
-    std::deque<std::pair<MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
-    std::unordered_set<MatchId> mUnfinishedMatchesSet;
+    std::deque<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
+    std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedMatchesSet;
 
-    std::unordered_map<PlayerId, std::unordered_set<MatchId>> mUnfinishedMatchesPlayers;
-    std::unordered_map<MatchId, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
-    std::unordered_set<MatchId> mUnpausedMatches;
+    std::unordered_map<PlayerId, std::unordered_set<std::pair<CategoryId, MatchId>>> mUnfinishedMatchesPlayers;
+    std::unordered_map<std::pair<CategoryId, MatchId>, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
+    std::unordered_set<std::pair<CategoryId, MatchId>> mUnpausedMatches;
 
     std::stack<QMetaObject::Connection> mConnections;
 

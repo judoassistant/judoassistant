@@ -1,14 +1,47 @@
 #include <QPainter>
 
+#include "stores/tournament_store.hpp"
+#include "stores/category_store.hpp"
+#include "rulesets/ruleset.hpp"
+#include "draw_systems/draw_system.hpp"
+
 #include "widgets/models/match_card.hpp"
 #include "widgets/colors.hpp"
 
-MatchCard::MatchCard(std::optional<MatchCardPlayerFields> whitePlayer, std::optional<MatchCardPlayerFields> bluePlayer)
-    : mWhitePlayer(whitePlayer)
-    , mBluePlayer(bluePlayer)
-{}
+MatchCard::MatchCard(size_t tatami, const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match)
+{
+    mTatami = tatami;
+    mCategory = QString::fromStdString(category.getName());
+    mIsStarted = match.isStarted();
+    mIsStopped = match.isStopped();
+    mBye = match.isBye();
+    mGoldenScore = match.isGoldenScore();
 
-void drawPlayer(QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) {
+    if (match.getWhitePlayer()) {
+        auto whitePlayer = tournament.getPlayer(*match.getWhitePlayer());
+        MatchCardPlayerFields fields;
+        fields.firstName = QString::fromStdString(whitePlayer.getFirstName());
+        fields.lastName = QString::fromStdString(whitePlayer.getLastName());
+        fields.club = QString::fromStdString(whitePlayer.getClub());
+        fields.country = whitePlayer.getCountry();
+        fields.score = match.getWhiteScore();
+        mWhitePlayer = std::move(fields);
+    }
+
+    if (match.getBluePlayer()) {
+        auto bluePlayer = tournament.getPlayer(*match.getBluePlayer());
+        MatchCardPlayerFields fields;
+
+        fields.firstName = QString::fromStdString(bluePlayer.getFirstName());
+        fields.lastName = QString::fromStdString(bluePlayer.getLastName());
+        fields.club = QString::fromStdString(bluePlayer.getClub());
+        fields.country = bluePlayer.getCountry();
+        fields.score = match.getBlueScore();
+        mBluePlayer = std::move(fields);
+    }
+}
+
+void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const {
     { // Draw country name and flag
         // TODO: Draw country name and flag
     }
@@ -23,11 +56,12 @@ void drawPlayer(QPainter *painter, QFont &font, int insideWidth, int insideHeigh
         painter->setFont(font);
 
         painter->setRenderHint(QPainter::Antialiasing, true);
-        painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, "SHAVDATUASHVILI L.");
+        auto text = playerFields.lastName.toUpper() + " " + playerFields.firstName.front().toUpper() + ".";
+        painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, text);
         painter->restore();
     }
 
-    { // Draw Score
+    if (mIsStarted) { // Draw Score
         int columnOffset = (insideHeight/3)/2;
 
         QRect ipponRect(columnThreeOffset, padding, insideWidth-columnThreeOffset, insideHeight/3 - padding*2);
@@ -103,7 +137,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->setPen(Qt::white);
             painter->setBrush(Qt::white);
 
-            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, "1");
+            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, QString::number(mTatami+1));
         }
 
         { // Draw Category Text
@@ -112,10 +146,10 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->setPen(COLOR_0);
             painter->setBrush(COLOR_0);
 
-            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, "Men U21 -73");
+            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, mCategory);
         }
 
-        { // Draw Time
+        if (mIsStarted) { // Draw Time
             int pauseRectSize = headerHeight/4;
             QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
             painter->setPen(Qt::NoPen);
@@ -129,7 +163,15 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
             painter->setRenderHint(QPainter::Antialiasing, true);
             // painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, "GS 01:43");
-            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, "~16 min");
+        }
+        else { // Draw ETA
+            QRect textRect(columnThreeOffset, padding, insideWidth-columnThreeOffset-padding, headerHeight-padding*2);
+
+            painter->setPen(COLOR_0);
+            painter->setBrush(COLOR_0);
+
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignRight, "~16 min");
         }
 
 
@@ -137,14 +179,14 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     }
 
     // Draw white player rect
-    {
+    if (mWhitePlayer) {
         painter->save();
         painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3)*2);
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::white);
         painter->drawRect(0, 0, insideWidth, insideHeight/3);
 
-        drawPlayer(painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
+        paintPlayer(*mWhitePlayer, painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
 
         painter->restore();
     }
@@ -152,14 +194,14 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     // painter->setBrush(COLOR_5::NoPen);
 
     // Draw blue player rect
-    {
+    if (mBluePlayer) {
         painter->save();
         painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3));
         painter->setPen(Qt::NoPen);
         painter->setBrush(COLOR_10);
         painter->drawRect(0, 0, insideWidth, insideHeight/3);
 
-        drawPlayer(painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
+        paintPlayer(*mBluePlayer, painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
 
         painter->restore();
     }

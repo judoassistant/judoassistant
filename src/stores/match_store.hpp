@@ -77,6 +77,7 @@ public:
     void stop();
     void resume();
     bool isStopped() const;
+    bool isStarted() const;
     bool isGoldenScore() const;
     void setGoldenScore(bool val);
 
@@ -85,18 +86,20 @@ public:
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::make_nvp("id", mId));
+        ar(cereal::make_nvp("categoryId", mCategory));
+        ar(cereal::make_nvp("type", mType));
+        ar(cereal::make_nvp("title", mTitle));
+        ar(cereal::make_nvp("bye", mBye));
         ar(cereal::make_nvp("scores", mScores));
         ar(cereal::make_nvp("players", mPlayers));
         ar(cereal::make_nvp("isStopped", mIsStopped));
+        ar(cereal::make_nvp("isStarted", mIsStarted));
         ar(cereal::make_nvp("goldenScore", mGoldenScore));
-        ar(cereal::make_nvp("time", mTime));
-        ar(cereal::make_nvp("clock", mClock));
-        ar(cereal::make_nvp("type", mType));
-        ar(cereal::make_nvp("bye", mBye));
-        ar(cereal::make_nvp("title", mTitle));
 
-        // TODO: serialize match events
-        // ar("events", mEvents);
+        // TODO: serialize match event and clock
+        // ar(cereal::make_nvp("time", mTime));
+        // ar(cereal::make_nvp("clock", mClock));
+        // ar(cereal::make_nvp("events", mEvents));
     }
 private:
     MatchId mId;

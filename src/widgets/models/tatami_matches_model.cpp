@@ -66,10 +66,19 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
         return;
     auto &tatami = tatamis[mTatami];
 
-    std::vector<std::tuple<MatchId, bool, bool, std::optional<PlayerId>, std::optional<PlayerId>>> newMatchIds;
+    struct MatchInfo {
+        CategoryId categoryId;
+        MatchId matchId;
+        bool isFinished;
+        bool isStopped;
+        std::optional<PlayerId> whitePlayer;
+        std::optional<PlayerId> bluePlayer;
+    };
+
+    std::vector<MatchInfo> newMatches;
     size_t newUnfinishedMatches = 0;
 
-    while (mUnfinishedMatches.size() + newMatchIds.size() < mRowCap) {
+    while (mUnfinishedMatches.size() + newMatches.size() < mRowCap) {
         if (mLoadedBlocks.size() == tatami.groupCount())
             break;
 
@@ -78,43 +87,46 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
         auto &block = tatami.getGroup(handle);
 
         for (const auto &p : block.getMatches()) {
+            MatchInfo matchInfo;
             auto &category = tournament.getCategory(p.first);
             auto &ruleset = category.getRuleset();
             auto &match = category.getMatch(p.second);
 
-            bool isFinished = ruleset.isFinished(match);
-            if (!isFinished)
+            matchInfo.categoryId = p.first;
+            matchInfo.matchId = p.second;
+            matchInfo.isFinished = ruleset.isFinished(match);
+            matchInfo.isStopped = match.isStopped();
+            matchInfo.whitePlayer = match.getWhitePlayer();
+            matchInfo.bluePlayer = match.getBluePlayer();
+
+            if (!matchInfo.isFinished)
                 ++newUnfinishedMatches;
 
-            newMatchIds.push_back(std::make_tuple(p.second, isFinished, match.isStopped(), match.getWhitePlayer(), match.getBluePlayer()));
+
+            newMatches.push_back(std::move(matchInfo));
         }
     }
 
-    if (!newMatchIds.empty()) {
+    if (!newMatches.empty()) {
         if (shouldSignal)
             beginInsertRows(QModelIndex(), mUnfinishedMatches.size(), mUnfinishedMatches.size() + newUnfinishedMatches - 1);
-        for (auto t : newMatchIds) {
-            const auto &matchId = std::get<0>(t);
-            const auto &isFinished = std::get<1>(t);
-            const auto &isStopped = std::get<2>(t);
-            const auto &whitePlayer = std::get<3>(t);
-            const auto &bluePlayer = std::get<4>(t);
+        for (const MatchInfo &matchInfo : newMatches) {
             auto loadingTime = mLoadedMatches.size();
+            auto combinedId = std::make_pair(matchInfo.categoryId, matchInfo.matchId);
+            mLoadedMatches[combinedId] = loadingTime;
 
-            mLoadedMatches[matchId] = loadingTime;
+            if (!matchInfo.isFinished) {
+                mUnfinishedMatches.push_back(std::make_tuple(matchInfo.categoryId, matchInfo.matchId, loadingTime));
+                mUnfinishedMatchesSet.insert(combinedId);
 
-            if (!isFinished) {
-                mUnfinishedMatches.push_back({matchId, isFinished});
-                mUnfinishedMatchesSet.insert(matchId);
+                if (!matchInfo.isStopped)
+                    mUnpausedMatches.insert(combinedId);
 
-                if (!isStopped)
-                    mUnpausedMatches.insert(matchId);
-
-                mUnfinishedMatchesPlayersInv[matchId] = {whitePlayer, bluePlayer};
-                if (whitePlayer)
-                    mUnfinishedMatchesPlayers[*whitePlayer].insert(matchId);
-                if (bluePlayer)
-                    mUnfinishedMatchesPlayers[*bluePlayer].insert(matchId);
+                mUnfinishedMatchesPlayersInv[combinedId] = {matchInfo.whitePlayer, matchInfo.bluePlayer};
+                if (matchInfo.whitePlayer)
+                    mUnfinishedMatchesPlayers[*matchInfo.whitePlayer].insert(combinedId);
+                if (matchInfo.bluePlayer)
+                    mUnfinishedMatchesPlayers[*matchInfo.bluePlayer].insert(combinedId);
             }
         }
         if (shouldSignal)
@@ -142,12 +154,18 @@ int TatamiMatchesModel::columnCount(const QModelIndex &parent) const {
 }
 
 QVariant TatamiMatchesModel::data(const QModelIndex &index, int role) const {
-    auto matchId = getMatch(index.row());
+    CategoryId categoryId;
+    MatchId matchId;
+    std::tie(categoryId, matchId) = getMatch(index.row());
+
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &category = tournament.getCategory(categoryId);
+    const auto &match = category.getMatch(matchId);
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
-                return QVariant::fromValue(MatchCard(std::nullopt, std::nullopt));
+                return QVariant::fromValue(MatchCard(mTatami, tournament, category, match));
         }
     }
 
@@ -170,31 +188,35 @@ QVariant TatamiMatchesModel::headerData(int section, Qt::Orientation orientation
     return QVariant();
 }
 
-std::vector<MatchId> TatamiMatchesModel::getMatches(const QItemSelection &selection) const {
+std::vector<std::pair<CategoryId, MatchId>> TatamiMatchesModel::getMatches(const QItemSelection &selection) const {
     std::unordered_set<int> rows;
     for (auto index : selection.indexes())
         rows.insert(index.row());
 
-    std::vector<MatchId> matchIds;
+    std::vector<std::pair<CategoryId, MatchId>> matchIds;
     for (auto row : rows)
         matchIds.push_back(getMatch(row));
 
     return std::move(matchIds);
 }
 
-MatchId TatamiMatchesModel::getMatch(int row) const {
-    return mUnfinishedMatches[row].first;
+std::pair<CategoryId, MatchId> TatamiMatchesModel::getMatch(int row) const {
+    return {std::get<0>(mUnfinishedMatches[row]), std::get<1>(mUnfinishedMatches[row])};
 }
 
-int TatamiMatchesModel::getRow(MatchId id) const {
+int TatamiMatchesModel::getRow(CategoryId categoryId, MatchId matchId) const {
     size_t row = 0;
     for (const auto & p : mUnfinishedMatches) {
-        if (p.first == id)
+        if (std::get<0>(p) == categoryId && std::get<1>(p) == matchId)
             break;
         ++row;
     }
 
     return row;
+}
+
+int TatamiMatchesModel::getRow(std::pair<CategoryId, MatchId> combinedId) const {
+    return getRow(std::get<0>(combinedId), std::get<1>(combinedId));
 }
 
 void TatamiMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
@@ -203,8 +225,8 @@ void TatamiMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
     for (auto playerId : playerIds) {
         auto it = mUnfinishedMatchesPlayers.find(playerId);
         if (it != mUnfinishedMatchesPlayers.end()) {
-            for (auto matchId : it->second)
-                changedRows.insert(getRow(matchId));
+            for (auto combinedId : it->second)
+                changedRows.insert(getRow(combinedId));
         }
     }
 
@@ -215,7 +237,8 @@ void TatamiMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
 void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
     bool didRemoveRows = false;
     for (auto matchId : matchIds) {
-        auto it = mLoadedMatches.find(matchId);
+        auto combinedId = std::make_pair(categoryId, matchId);
+        auto it = mLoadedMatches.find(combinedId);
         if (it == mLoadedMatches.end())
             continue;
 
@@ -223,17 +246,17 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
         const auto &match = category.getMatch(matchId);
         const auto &ruleset = category.getRuleset();
 
-        auto wasFinished = (mUnfinishedMatchesSet.find(matchId) == mUnfinishedMatchesSet.end());
+        auto wasFinished = (mUnfinishedMatchesSet.find(combinedId) == mUnfinishedMatchesSet.end());
         auto isFinished = ruleset.isFinished(match);
 
         if (match.isStopped())
-            mUnpausedMatches.erase(matchId);
+            mUnpausedMatches.erase(combinedId);
         else
-            mUnpausedMatches.insert(matchId);
+            mUnpausedMatches.insert(combinedId);
 
         if (!isFinished && !wasFinished) {
             // May need to update players
-            auto it = mUnfinishedMatchesPlayersInv.find(matchId);
+            auto it = mUnfinishedMatchesPlayersInv.find(combinedId);
             auto prevWhitePlayer = it->second.first;
             auto prevBluePlayer = it->second.second;
 
@@ -241,14 +264,14 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
                 if (prevWhitePlayer) {
                     auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
                     auto & set = it1->second;
-                    set.erase(matchId);
+                    set.erase(combinedId);
 
                     if (set.empty())
                         mUnfinishedMatchesPlayers.erase(it1);
                 }
 
                 if (match.getWhitePlayer()) {
-                    mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(matchId);
+                    mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(combinedId);
                 }
             }
 
@@ -256,38 +279,38 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
                 if (prevBluePlayer) {
                     auto it1 = mUnfinishedMatchesPlayers.find(*prevBluePlayer);
                     auto & set = it1->second;
-                    set.erase(matchId);
+                    set.erase(combinedId);
 
                     if (set.empty())
                         mUnfinishedMatchesPlayers.erase(it1);
                 }
 
                 if (match.getBluePlayer()) {
-                    mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(matchId);
+                    mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(combinedId);
                 }
             }
 
             if (match.getWhitePlayer() != prevWhitePlayer || match.getBluePlayer() != prevBluePlayer) {
-                mUnfinishedMatchesPlayersInv[matchId] = {match.getWhitePlayer(), match.getBluePlayer()};
+                mUnfinishedMatchesPlayersInv[combinedId] = {match.getWhitePlayer(), match.getBluePlayer()};
             }
 
-            auto row = getRow(matchId);
+            auto row = getRow(combinedId);
             emit dataChanged(createIndex(row, 0), createIndex(row,0));
         }
         else if (isFinished) {
             didRemoveRows = true;
-            auto row = getRow(matchId);
+            auto row = getRow(combinedId);
             beginRemoveRows(QModelIndex(), row, row);
 
             mUnfinishedMatches.erase(mUnfinishedMatches.begin() + row);
-            mUnfinishedMatchesSet.erase(matchId);
+            mUnfinishedMatchesSet.erase(combinedId);
 
-            auto it = mUnfinishedMatchesPlayersInv.find(matchId);
+            auto it = mUnfinishedMatchesPlayersInv.find(combinedId);
             auto prevWhitePlayer = it->second.first;
             if (prevWhitePlayer) {
                 auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
                 auto & set = it1->second;
-                set.erase(matchId);
+                set.erase(combinedId);
 
                 if (set.empty())
                     mUnfinishedMatchesPlayers.erase(it1);
@@ -297,7 +320,7 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
             if (prevBluePlayer) {
                 auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
                 auto & set = it1->second;
-                set.erase(matchId);
+                set.erase(combinedId);
 
                 if (set.empty())
                     mUnfinishedMatchesPlayers.erase(it1);
@@ -312,20 +335,20 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
             // Find the first position with a higher loading time (lower bound)
             auto pos = mUnfinishedMatches.begin();
             int row = 0;
-            while (pos != mUnfinishedMatches.end() && pos->second < loadingTime) {
+            while (pos != mUnfinishedMatches.end() && std::get<2>(*pos) < loadingTime) {
                 ++pos;
                 ++row;
             }
 
             beginInsertRows(QModelIndex(), row, row);
-            mUnfinishedMatches.insert(pos, *it);
-            mUnfinishedMatchesSet.insert(matchId);
+            mUnfinishedMatches.insert(pos, std::make_tuple(categoryId, matchId, loadingTime));
+            mUnfinishedMatchesSet.insert(combinedId);
 
             if (match.getWhitePlayer())
-                mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(matchId);
+                mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(combinedId);
             if (match.getBluePlayer())
-                mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(matchId);
-            mUnfinishedMatchesPlayersInv[matchId] = {match.getWhitePlayer(), match.getBluePlayer()};
+                mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(combinedId);
+            mUnfinishedMatchesPlayersInv[combinedId] = {match.getWhitePlayer(), match.getBluePlayer()};
 
             endInsertRows();
         }
@@ -381,7 +404,7 @@ void TatamiMatchesModel::beginResetCategory(CategoryId categoryId) {
     const auto &tournament = mStoreManager.getTournament();
     const auto &category = tournament.getCategory(categoryId);
     for (const auto &match : category.getMatches()) {
-        if (mLoadedMatches.find(match->getId()) != mLoadedMatches.end()) {
+        if (mLoadedMatches.find({categoryId, match->getId()}) != mLoadedMatches.end()) {
             beginResetMatches(); // Let the tatamiChanged call endResetMatches()
             return;
         }
@@ -391,8 +414,9 @@ void TatamiMatchesModel::beginResetCategory(CategoryId categoryId) {
 void TatamiMatchesModel::timerHit() {
     if (!mUnpausedMatches.empty())
         log_debug().field("matches", mUnpausedMatches).msg("Timer hit");
-    for (auto matchId : mUnpausedMatches) {
-        auto row = getRow(matchId);
+    for (auto combinedId : mUnpausedMatches) {
+        auto row = getRow(combinedId);
         emit dataChanged(createIndex(row, 0), createIndex(row,0));
     }
 }
+

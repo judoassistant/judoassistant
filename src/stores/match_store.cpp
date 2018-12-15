@@ -41,6 +41,10 @@ bool MatchStore::isStopped() const {
     return mIsStopped;
 }
 
+bool MatchStore::isStarted() const {
+    return mIsStarted;
+}
+
 std::optional<PlayerId> MatchStore::getPlayer(PlayerIndex index) const {
     return mPlayers[static_cast<size_t>(index)];
 }
