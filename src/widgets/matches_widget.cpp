@@ -51,6 +51,7 @@ void MatchesWidget::beginTatamiCountChange() {
 }
 
 void MatchesWidget::endTatamiCountChange() {
+    // TODO: Synchronize scroll bars
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
         auto *tatami = new QListView(mFixedScrollArea);
