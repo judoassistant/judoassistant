@@ -8,6 +8,58 @@ MatchCard::MatchCard(std::optional<MatchCardPlayerFields> whitePlayer, std::opti
     , mBluePlayer(bluePlayer)
 {}
 
+void drawPlayer(QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) {
+    { // Draw country name and flag
+        // TODO: Draw country name and flag
+    }
+
+    { // Draw Name Text
+        QRect rect(columnTwoOffset, padding, columnThreeOffset-columnTwoOffset, insideHeight/3 - padding*2);
+
+        painter->save();
+        painter->setPen(COLOR_0);
+        painter->setBrush(COLOR_0);
+        font.setPixelSize((insideHeight/3)/3);
+        painter->setFont(font);
+
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, "SHAVDATUASHVILI L.");
+        painter->restore();
+    }
+
+    { // Draw Score
+        int columnOffset = (insideHeight/3)/2;
+
+        QRect ipponRect(columnThreeOffset, padding, insideWidth-columnThreeOffset, insideHeight/3 - padding*2);
+        QRect wazariRect(columnThreeOffset + columnOffset, padding, insideWidth-columnThreeOffset, insideHeight/3 - padding*2);
+
+        int penaltyHeight = (insideHeight/3)/3;
+        int penaltyWidth = penaltyHeight*2/3;
+
+        QRect firstPenaltyRect(columnThreeOffset + columnOffset*2, (insideHeight/3)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
+        QRect secondPenaltyRect(columnThreeOffset + columnOffset*2 + penaltyWidth+3, (insideHeight/3)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
+
+        painter->save();
+        painter->setPen(COLOR_0);
+        painter->setBrush(COLOR_0);
+        font.setPixelSize((insideHeight/3)/3);
+        painter->setFont(font);
+
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->drawText(ipponRect, Qt::AlignVCenter | Qt::AlignLeft, "0");
+        painter->drawText(wazariRect, Qt::AlignVCenter | Qt::AlignLeft, "1");
+
+
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(COLOR_13);
+
+        painter->drawRect(firstPenaltyRect);
+        painter->drawRect(secondPenaltyRect);
+        painter->restore();
+    }
+
+}
+
 void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &palette) const {
     painter->save();
 
@@ -18,7 +70,12 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     int insideHeight = rect.height() - padding*2 - lineWidth*2;
     int insideWidth = rect.width() - padding*2 - lineWidth*2;
 
+    QFont font("Noto Sans");
+
     painter->translate(rect.x()+padding, rect.y()+padding);
+
+    int columnTwoOffset = (insideHeight/3);
+    int columnThreeOffset = insideWidth - (insideHeight/3)*2;
 
     // Draw bounding rect
     painter->setPen(COLOR_4);
@@ -27,8 +84,55 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
     // Draw header rect
     {
+        int headerHeight = insideHeight - (insideHeight/3)*2;
         painter->save();
         painter->translate(lineWidth, lineWidth);
+
+        font.setPixelSize(headerHeight/3);
+        painter->setFont(font);
+        painter->setRenderHint(QPainter::Antialiasing, true);
+
+        { // Draw tatami number
+            QRect rect(padding, padding, headerHeight-padding*2, headerHeight-padding*2);
+
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(COLOR_3);
+
+            painter->drawRect(rect);
+
+            painter->setPen(Qt::white);
+            painter->setBrush(Qt::white);
+
+            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, "1");
+        }
+
+        { // Draw Category Text
+            QRect rect(columnTwoOffset, padding, columnThreeOffset-columnTwoOffset, headerHeight-padding*2);
+
+            painter->setPen(COLOR_0);
+            painter->setBrush(COLOR_0);
+
+            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, "Men U21 -73");
+        }
+
+        { // Draw Time
+            int pauseRectSize = headerHeight/4;
+            QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(COLOR_11);
+            painter->drawRect(pauseRect);
+
+            QRect textRect(columnThreeOffset + pauseRectSize + padding, padding, insideWidth-(columnThreeOffset + pauseRectSize + padding), headerHeight-padding*2);
+
+            painter->setPen(COLOR_0);
+            painter->setBrush(COLOR_0);
+
+            painter->setRenderHint(QPainter::Antialiasing, true);
+            // painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, "GS 01:43");
+            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, "~16 min");
+        }
+
+
         painter->restore();
     }
 
@@ -39,6 +143,9 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::white);
         painter->drawRect(0, 0, insideWidth, insideHeight/3);
+
+        drawPlayer(painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
+
         painter->restore();
     }
     // painter->setPen(Qt::NoPen);
@@ -51,6 +158,9 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         painter->setPen(Qt::NoPen);
         painter->setBrush(COLOR_10);
         painter->drawRect(0, 0, insideWidth, insideHeight/3);
+
+        drawPlayer(painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
+
         painter->restore();
     }
 
