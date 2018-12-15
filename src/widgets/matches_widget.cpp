@@ -5,6 +5,7 @@
 
 #include "widgets/matches_widget.hpp"
 #include "widgets/models/tatami_matches_model.hpp"
+#include "widgets/models/match_card.hpp"
 #include "store_managers/store_manager.hpp"
 #include "stores/qtournament_store.hpp"
 
@@ -53,6 +54,7 @@ void MatchesWidget::endTatamiCountChange() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
         auto *tatami = new QListView(mFixedScrollArea);
+        tatami->setItemDelegate(new MatchCardDelegate(tatami));
         tatami->setModel(new TatamiMatchesModel(mStoreManager, i, 20, this));
         mFixedScrollArea->addWidget(tatami);
     }

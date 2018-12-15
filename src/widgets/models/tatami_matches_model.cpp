@@ -5,6 +5,7 @@
 #include "store_managers/store_manager.hpp"
 #include "stores/qtournament_store.hpp"
 #include "stores/category_store.hpp"
+#include "widgets/models/match_card.hpp"
 #include "widgets/models/tatami_matches_model.hpp"
 
 TatamiMatchesModel::TatamiMatchesModel(StoreManager &storeManager, size_t tatami, size_t rowCap, QObject *parent)
@@ -124,7 +125,7 @@ QVariant TatamiMatchesModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
-                return QString::fromStdString(matchId.toString());
+                return QVariant::fromValue(MatchCard(std::nullopt, std::nullopt));
         }
     }
 
@@ -140,7 +141,7 @@ QVariant TatamiMatchesModel::headerData(int section, Qt::Orientation orientation
         if (orientation == Qt::Horizontal) {
             switch (section) {
                 case 0:
-                    return QString(tr("Match Id"));
+                    return QString(tr("Match Card"));
             }
         }
     }
