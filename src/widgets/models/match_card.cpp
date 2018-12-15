@@ -112,7 +112,10 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     int columnThreeOffset = insideWidth - (insideHeight/3)*2;
 
     // Draw bounding rect
-    painter->setPen(COLOR_4);
+    QPen pen;
+    pen.setWidth(1);
+    pen.setColor(COLOR_3);
+    painter->setPen(pen);
     painter->setBrush(COLOR_5);
     painter->drawRect(0, 0, insideWidth+lineWidth*2, insideHeight+lineWidth*2);
 

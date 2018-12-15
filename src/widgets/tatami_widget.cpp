@@ -11,6 +11,7 @@
 #include "widgets/misc/judoassistant_mime.hpp"
 #include "widgets/tatami_widget.hpp"
 #include "actions/tatami_actions.hpp"
+#include "widgets/colors.hpp"
 
 TatamiWidget::TatamiWidget(StoreManager & storeManager, size_t index, QWidget *parent)
     : QGraphicsView(parent)
@@ -28,7 +29,7 @@ TatamiWidget::TatamiWidget(StoreManager & storeManager, size_t index, QWidget *p
     setScene(mScene);
     setCacheMode(CacheNone);
     setViewportUpdateMode(MinimalViewportUpdate);
-    setRenderHint(QPainter::Antialiasing);
+    setRenderHint(QPainter::Antialiasing, false);
     setMinimumSize(WIDTH+2, 1300);
     setMaximumWidth(WIDTH+2);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -159,9 +160,9 @@ void EmptyConcurrentBlockItem::paint(QPainter *painter, const QStyleOptionGraphi
     pen.setStyle(Qt::DashLine);
 
     if (mDragOver)
-        pen.setColor(Qt::cyan);
+        pen.setColor(COLOR_8);
     else
-        pen.setColor(Qt::darkGray);
+        pen.setColor(COLOR_4);
 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
@@ -227,9 +228,9 @@ void ConcurrentBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     pen.setStyle(Qt::DashLine);
 
     if (mDragOver)
-        pen.setColor(Qt::cyan);
+        pen.setColor(COLOR_8);
     else
-        pen.setColor(Qt::darkGray);
+        pen.setColor(COLOR_4);
 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
@@ -335,9 +336,9 @@ void SequentialBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     pen.setStyle(Qt::DashLine);
 
     if (mDragOver)
-        pen.setColor(Qt::cyan);
+        pen.setColor(COLOR_8);
     else
-        pen.setColor(Qt::darkGray);
+        pen.setColor(COLOR_4);
 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
@@ -400,12 +401,15 @@ void BlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(Qt::darkGray);
+    pen.setColor(COLOR_3);
 
     painter->setPen(pen);
-    painter->setBrush(Qt::lightGray);
+    painter->setBrush(COLOR_6);
 
     painter->drawRect(0, 0, WIDTH, getHeight());
+
+    painter->setPen(COLOR_0);
+    painter->setBrush(COLOR_0);
     painter->drawText(PADDING, PADDING+10, QString::fromStdString(mCategory->getName(mType)));
 
     QString countString = QString("(%1 matches)").arg(QString::number(mMatchCount)); // TODO: translate
