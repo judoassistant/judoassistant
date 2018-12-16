@@ -146,6 +146,8 @@ public:
     static TournamentId generate();
 };
 
+// TODO: Make a CategoryMatchId
+
 class ClientActionId {
 public:
     ClientActionId();
