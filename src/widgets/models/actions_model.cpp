@@ -27,7 +27,6 @@ void ActionsModel::aboutToReset() {
 void ActionsModel::reset() {
     for (auto it = mStoreManager.actionsBegin(); it != mStoreManager.actionsEnd(); ++it)
         mIds.push_back(it.getActionId());
-    log_debug().field("size", mIds.size()).msg("Finished resetting");
 
     endResetModel();
 }
@@ -43,7 +42,6 @@ int ActionsModel::columnCount(const QModelIndex &parent) const {
 
 QVariant ActionsModel::data(const QModelIndex &index, int role) const {
     auto actionId = getAction(index.row());
-    log_debug().field("actionId", actionId).msg("ActionsModel::data");
     const Action &action = mStoreManager.getAction(actionId);
 
     if (role == Qt::DisplayRole) {
@@ -104,7 +102,6 @@ int ActionsModel::getRow(ClientActionId id) const {
 }
 
 void ActionsModel::addAction(ClientActionId actionId, size_t pos) {
-    log_debug().field("actionId", actionId).msg("ActionsModel::addAction");
     beginInsertRows(QModelIndex(), pos, pos);
     mIds.insert(mIds.begin() + pos, actionId);
     endInsertRows();
