@@ -33,11 +33,9 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(TournamentSt
 }
 
 bool PoolDrawSystem::isFinished(TournamentStore & tournament, CategoryStore & category) const {
-    const Ruleset & ruleset = category.getRuleset();
-
     for (auto matchId : mMatchIds) {
         const MatchStore & match = category.getMatch(matchId);
-        if (!ruleset.isFinished(match))
+        if (match.getStatus() != MatchStatus::FINISHED)
             return false;
     }
 

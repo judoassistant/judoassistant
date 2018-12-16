@@ -84,7 +84,13 @@ void SequentialBlockGroup::ConstMatchIterator::loadMatch() {
             continue;
         }
 
-        if (mCurrentType != mCurrentCategory->getMatches()[mCurrentMatch]->getType()) {
+        const auto &match = *(mCurrentCategory->getMatches()[mCurrentMatch]);
+        if (match.isBye()) {
+            ++mCurrentMatch;
+            continue;
+        }
+
+        if (mCurrentType != match.getType()) {
             ++mCurrentMatch;
             continue;
         }
@@ -114,7 +120,9 @@ bool SequentialBlockGroup::ConstMatchIterator::operator==(const SequentialBlockG
     return mCurrentBlock == other.mCurrentBlock && mCurrentMatch == other.mCurrentMatch;
 }
 
-ConcurrentBlockGroup::ConcurrentBlockGroup() {
+ConcurrentBlockGroup::ConcurrentBlockGroup()
+    : mStatus(Status::NOT_STARTED)
+{
 }
 
 const ConcurrentBlockGroup::MatchList & ConcurrentBlockGroup::getMatches() const {
@@ -150,6 +158,11 @@ SequentialBlockGroup & ConcurrentBlockGroup::getGroup(PositionHandle handle) {
     return mGroups.get(handle);
 }
 
+SequentialBlockGroup & ConcurrentBlockGroup::getGroup(size_t index) {
+    assert(groupCount() > index); // TODO: Make sure the code is consistent with assert and throw usage
+    return getGroup(getHandle(index));
+}
+
 struct QueueElement { // Using custom class for queue entries to avoid floating point division potentially being inconsistent
     QueueElement(size_t index, size_t matchCount, size_t totalMatchCount)
         : index(index)
@@ -176,6 +189,7 @@ struct QueueElement { // Using custom class for queue entries to avoid floating 
 void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mMatches.clear();
     mMatchMap.clear();
+    mStatus = Status::NOT_STARTED;
 
     // Merging algorithm: Keep fetching matches from the group with smallest progress(#(matches fetched) / #(matches total))
     std::priority_queue<QueueElement> progressQueue;
@@ -194,15 +208,24 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
         progressQueue.pop();
 
         auto & iterator = iterators[element.index];
-        auto matchId = *iterator;
+        auto combinedId = *iterator;
         ++iterator;
-        mMatchMap[matchId] = mMatches.size();
-        mMatches.push_back(matchId);
+        mMatchMap[combinedId] = mMatches.size();
+        mMatches.push_back(combinedId);
 
         ++(element.matchCount);
         if (element.matchCount == element.totalMatchCount) continue;
         progressQueue.push(element);
+
+        const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+
+        if (match.getStatus() == MatchStatus::FINISHED && mStatus == Status::NOT_STARTED)
+            mStatus = Status::FINISHED;
+        else if (match.getStatus() != MatchStatus::NOT_STARTED)
+            mStatus = Status::STARTED;
     }
+
+    log_debug().field("status", (int) mStatus).msg("Done recomputing");
 }
 
 void TatamiStore::eraseGroup(PositionHandle handle) {
@@ -236,6 +259,11 @@ size_t TatamiStore::groupCount() const {
 
 ConcurrentBlockGroup & TatamiStore::getGroup(PositionHandle handle) {
     return mGroups.get(handle);
+}
+
+ConcurrentBlockGroup & TatamiStore::getGroup(size_t index) {
+    assert(groupCount() > index);
+    return getGroup(getHandle(index));
 }
 
 void TatamiList::recomputeBlock(const TournamentStore &tournament, TatamiLocation location) {
@@ -342,3 +370,10 @@ std::ostream &operator<<(std::ostream &out, const TatamiLocation &location) {
     return out << "(" << location.tatamiIndex << "; " << location.concurrentGroup << "; " << location.sequentialGroup << ")";
 }
 
+void ConcurrentBlockGroup::setStatus(ConcurrentBlockGroup::Status status) {
+    mStatus = status;
+}
+
+ConcurrentBlockGroup::Status ConcurrentBlockGroup::getStatus() const {
+    return mStatus;
+}

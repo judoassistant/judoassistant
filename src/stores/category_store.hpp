@@ -41,6 +41,8 @@ public:
     std::unique_ptr<MatchStore> popMatch();
     bool containsMatch(MatchId id) const;
     MatchList clearMatches();
+
+    // Get the number of non-bye matches of the given type
     size_t getMatchCount(MatchType type) const;
 
     const std::unordered_set<PlayerId> & getPlayers() const;

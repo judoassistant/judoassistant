@@ -11,6 +11,7 @@ class StoreManager;
 enum class MatchType;
 
 // TODO: Fix: A segfault occasionally occurs when moving blocks.
+// TODO: Disable dragging for already started blocks
 class EmptyConcurrentBlockItem : public QGraphicsItem {
 public:
     static const int WIDTH = 280;

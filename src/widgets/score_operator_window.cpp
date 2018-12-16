@@ -297,5 +297,35 @@ void ScoreOperatorWindow::changeTatamis(std::vector<TatamiLocation> locations, s
 }
 
 void ScoreOperatorWindow::findNextMatch() {
+    auto &tournament = mStoreManager.getTournament();
+    auto &tatamis = tournament.getTatamis();
+
+    mNextMatch = std::nullopt;
+
+    if (mTatami == -1 || mTatami >= static_cast<int>(tatamis.tatamiCount())) {
+        return;
+    }
+
+    auto &tatami = tatamis[mTatami];
+
+    for (size_t i = 0; i < tatami.groupCount(); ++i) {
+        const auto &group = tatami.getGroup(i);
+        if (group.getStatus() == ConcurrentBlockGroup::Status::FINISHED) continue;
+
+        for (auto combinedId : group.getMatches()) {
+            if (mCurrentMatch == combinedId) {
+                continue;
+            }
+
+            const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+
+            if (match.getStatus() != MatchStatus::FINISHED) {
+                mNextMatch = combinedId;
+                return;
+            }
+        }
+
+        assert(false); // should never reach this
+    }
 }
 

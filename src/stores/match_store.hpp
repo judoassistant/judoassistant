@@ -17,6 +17,10 @@ enum class MatchType {
     KNOCKOUT, FINAL
 };
 
+enum class MatchStatus {
+    NOT_STARTED, PAUSED, UNPAUSED, FINISHED
+};
+
 std::ostream &operator<<(std::ostream &out, const MatchType &matchType);
 
 class MatchStore {
@@ -74,12 +78,12 @@ public:
     std::chrono::high_resolution_clock::duration getCurrentClock() const;
     void setTime(const std::chrono::high_resolution_clock::time_point & time);
     void setClock(const std::chrono::high_resolution_clock::duration & clock);
-    void stop();
-    void resume();
-    bool isStopped() const;
-    bool isStarted() const;
+    void finish();
     bool isGoldenScore() const;
     void setGoldenScore(bool val);
+
+    MatchStatus getStatus() const;
+    MatchStatus setStatus(MatchStatus status);
 
     CategoryId getCategory() const;
 
@@ -92,9 +96,8 @@ public:
         ar(cereal::make_nvp("bye", mBye));
         ar(cereal::make_nvp("scores", mScores));
         ar(cereal::make_nvp("players", mPlayers));
-        ar(cereal::make_nvp("isStopped", mIsStopped));
-        ar(cereal::make_nvp("isStarted", mIsStarted));
         ar(cereal::make_nvp("goldenScore", mGoldenScore));
+        ar(cereal::make_nvp("status", mStatus));
 
         // TODO: serialize match event and clock
         // ar(cereal::make_nvp("time", mTime));
@@ -109,8 +112,7 @@ private:
     bool mBye;
     std::array<Score,2> mScores;
     std::array<std::optional<PlayerId>,2> mPlayers;
-    bool mIsStopped;
-    bool mIsStarted;
+    MatchStatus mStatus;
     bool mGoldenScore; // whether the match is currently in golden score or not
     std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed
     std::chrono::high_resolution_clock::duration mClock; // the value of the clock when it was last resumed

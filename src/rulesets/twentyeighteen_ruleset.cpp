@@ -47,7 +47,7 @@ bool TwentyEighteenRuleset::isFinished(const MatchStore & match) const {
     if (!match.getBluePlayer().has_value())
         return false;
 
-    if (!match.isStopped())
+    if (match.getStatus() == MatchStatus::NOT_STARTED || match.getStatus() == MatchStatus::UNPAUSED)
         return false;
 
     const auto & whiteScore = match.getWhiteScore();
@@ -101,23 +101,23 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const Ma
 }
 
 bool TwentyEighteenRuleset::stop(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
-    if (match.isStopped())
+    if (match.getStatus() != MatchStatus::UNPAUSED)
         return false;
     match.setTime(time);
     if (clock > NORMAL_TIME && !match.isGoldenScore())
         match.setClock(NORMAL_TIME);
     else
         match.setClock(clock);
-    match.stop();
+    match.setStatus(MatchStatus::PAUSED);
     return true;
 }
 
 bool TwentyEighteenRuleset::resume(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
-    if (!match.isStopped())
+    if (match.getStatus() == MatchStatus::UNPAUSED)
         return false;
     match.setTime(time);
     match.setClock(clock);
-    match.resume();
+    match.setStatus(MatchStatus::UNPAUSED);
     return true;
 }
 

@@ -8,8 +8,7 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mType(type)
     , mTitle(title)
     , mBye(bye)
-    , mIsStopped(true)
-    , mIsStarted(false)
+    , mStatus(MatchStatus::NOT_STARTED)
     , mGoldenScore(false)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
@@ -20,29 +19,12 @@ MatchId MatchStore::getId() const {
     return mId;
 }
 
-void MatchStore::stop() {
-    mIsStopped = true;
-}
-
-void MatchStore::resume() {
-    mIsStarted = true;
-    mIsStopped = false;
-}
-
 bool MatchStore::isGoldenScore() const {
     return mGoldenScore;
 }
 
 void MatchStore::setGoldenScore(bool val) {
     mGoldenScore = val;
-}
-
-bool MatchStore::isStopped() const {
-    return mIsStopped;
-}
-
-bool MatchStore::isStarted() const {
-    return mIsStarted;
 }
 
 std::optional<PlayerId> MatchStore::getPlayer(PlayerIndex index) const {
@@ -66,10 +48,10 @@ std::chrono::high_resolution_clock::duration MatchStore::getClock() const {
 }
 
 std::chrono::high_resolution_clock::duration MatchStore::getCurrentClock() const {
-    if (isStopped())
-        return mClock;
-    else
+    if (mStatus == MatchStatus::UNPAUSED)
         return (std::chrono::high_resolution_clock::now() - getTime()) - mClock;
+    else
+        return mClock;
 }
 
 void MatchStore::setTime(const std::chrono::high_resolution_clock::time_point & time) {
@@ -139,7 +121,7 @@ MatchStore::MatchStore(const MatchStore &other)
     , mBye(other.mBye)
     , mScores(other.mScores)
     , mPlayers(other.mPlayers)
-    , mIsStopped(other.mIsStopped)
+    , mStatus(other.mStatus)
     , mGoldenScore(other.mGoldenScore)
     , mTime(other.mTime)
     , mClock(other.mClock)
@@ -154,3 +136,16 @@ MatchStore::Score::Score()
     , shido(0)
     , hansokuMake(0)
 {}
+
+void MatchStore::finish() {
+    mStatus = MatchStatus::FINISHED;
+}
+
+MatchStatus MatchStore::getStatus() const {
+    return mStatus;
+}
+
+MatchStatus MatchStore::setStatus(MatchStatus status) {
+    mStatus = status;
+}
+

@@ -12,8 +12,7 @@ MatchCard::MatchCard(size_t tatami, const TournamentStore & tournament, const Ca
 {
     mTatami = tatami;
     mCategory = QString::fromStdString(category.getName());
-    mIsStarted = match.isStarted();
-    mIsStopped = match.isStopped();
+    mStatus = match.getStatus();
     mBye = match.isBye();
     mGoldenScore = match.isGoldenScore();
 
@@ -61,7 +60,7 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         painter->restore();
     }
 
-    if (mIsStarted) { // Draw Score
+    if (mStatus != MatchStatus::NOT_STARTED) { // Draw Score
         int columnOffset = (insideHeight/3)/2;
 
         QRect ipponRect(columnThreeOffset, padding, insideWidth-columnThreeOffset, insideHeight/3 - padding*2);
@@ -152,7 +151,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, mCategory);
         }
 
-        if (mIsStarted) { // Draw Time
+        if (mStatus != MatchStatus::NOT_STARTED) { // Draw Time
             int pauseRectSize = headerHeight/4;
             QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
             painter->setPen(Qt::NoPen);

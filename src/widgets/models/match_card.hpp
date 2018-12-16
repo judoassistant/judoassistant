@@ -37,7 +37,7 @@ private:
     std::optional<MatchCardPlayerFields> mBluePlayer;
     size_t mTatami;
     QString mCategory;
-    bool mIsStarted;
+    MatchStatus mStatus;
     bool mIsStopped;
     bool mBye;
     bool mGoldenScore;

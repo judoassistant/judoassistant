@@ -114,7 +114,8 @@ const MatchStore & CategoryStore::getMatch(MatchId id) const {
 void CategoryStore::pushMatch(std::unique_ptr<MatchStore> &&match) {
     MatchId id = match->getId();
 
-    ++(mMatchCount[static_cast<int>(match->getType())]);
+    if (!match->isBye())
+        ++(mMatchCount[static_cast<int>(match->getType())]);
 
     mMatches.push_back(std::move(match));
     mMatchMap[id] = mMatches.size() - 1;

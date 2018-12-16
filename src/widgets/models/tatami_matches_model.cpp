@@ -69,8 +69,7 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
     struct MatchInfo {
         CategoryId categoryId;
         MatchId matchId;
-        bool isFinished;
-        bool isStopped;
+        MatchStatus status;
         std::optional<PlayerId> whitePlayer;
         std::optional<PlayerId> bluePlayer;
     };
@@ -89,17 +88,15 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
         for (const auto &p : block.getMatches()) {
             MatchInfo matchInfo;
             auto &category = tournament.getCategory(p.first);
-            auto &ruleset = category.getRuleset();
             auto &match = category.getMatch(p.second);
 
             matchInfo.categoryId = p.first;
             matchInfo.matchId = p.second;
-            matchInfo.isFinished = ruleset.isFinished(match);
-            matchInfo.isStopped = match.isStopped();
+            matchInfo.status = match.getStatus();
             matchInfo.whitePlayer = match.getWhitePlayer();
             matchInfo.bluePlayer = match.getBluePlayer();
 
-            if (!matchInfo.isFinished)
+            if (matchInfo.status != MatchStatus::FINISHED)
                 ++newUnfinishedMatches;
 
 
@@ -115,11 +112,11 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
             auto combinedId = std::make_pair(matchInfo.categoryId, matchInfo.matchId);
             mLoadedMatches[combinedId] = loadingTime;
 
-            if (!matchInfo.isFinished) {
+            if (matchInfo.status != MatchStatus::FINISHED) {
                 mUnfinishedMatches.push_back(std::make_tuple(matchInfo.categoryId, matchInfo.matchId, loadingTime));
                 mUnfinishedMatchesSet.insert(combinedId);
 
-                if (!matchInfo.isStopped)
+                if (matchInfo.status == MatchStatus::UNPAUSED)
                     mUnpausedMatches.insert(combinedId);
 
                 mUnfinishedMatchesPlayersInv[combinedId] = {matchInfo.whitePlayer, matchInfo.bluePlayer};
@@ -244,15 +241,14 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
 
         const auto &category = mStoreManager.getTournament().getCategory(categoryId);
         const auto &match = category.getMatch(matchId);
-        const auto &ruleset = category.getRuleset();
 
-        auto wasFinished = (mUnfinishedMatchesSet.find(combinedId) == mUnfinishedMatchesSet.end());
-        auto isFinished = ruleset.isFinished(match);
+        bool wasFinished = (mUnfinishedMatchesSet.find(combinedId) == mUnfinishedMatchesSet.end());
+        bool isFinished = match.getStatus() == MatchStatus::FINISHED;
 
-        if (match.isStopped())
-            mUnpausedMatches.erase(combinedId);
-        else
+        if (match.getStatus() == MatchStatus::UNPAUSED)
             mUnpausedMatches.insert(combinedId);
+        else
+            mUnpausedMatches.erase(combinedId);
 
         if (!isFinished && !wasFinished) {
             // May need to update players
