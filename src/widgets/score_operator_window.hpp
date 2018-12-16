@@ -13,6 +13,7 @@ class ScoreOperatorWindow : public QMainWindow {
 
 public:
     ScoreOperatorWindow();
+    void silentConnect(QString host, int port=8000); // TODO: Setup default port in config
 
 private:
     void quit();

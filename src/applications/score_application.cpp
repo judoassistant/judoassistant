@@ -15,6 +15,8 @@ ScoreApplication::ScoreApplication(int &argc, char *argv[]) : QApplication(argc,
     parser.setApplicationDescription("JudoAssistant Score");
     parser.addHelpOption();
     parser.addVersionOption();
+    parser.addPositionalArgument("host", "Connect to the server with address <host>");
+    parser.addPositionalArgument("port", "Connect to the server on port <port>");
     // parser.addPositionalArgument("tournament", "Tournament file to open");
 
     parser.process(*this);
@@ -24,11 +26,22 @@ ScoreApplication::ScoreApplication(int &argc, char *argv[]) : QApplication(argc,
 
 int ScoreApplication::exec() {
     ScoreOperatorWindow operatorWindow;
-    ScoreDisplayWindow displayWindow;
+    // ScoreDisplayWindow displayWindow;
 
-    // if (mArgs.size() > 0) {
-    //     window.readTournament(mArgs.at(0));
-    // }
+    if (mArgs.size() > 2) {
+        bool ok = true;
+        int port = mArgs.at(1).toInt(&ok);
+
+        if (!ok) {
+            std::cerr << "Failed converting port argument to int";
+            return 1;
+        }
+
+        operatorWindow.silentConnect(mArgs.at(0), port);
+    }
+    else if (mArgs.size() > 1) {
+        operatorWindow.silentConnect(mArgs.at(0));
+    }
 
     operatorWindow.show();
     // displayWindow.show();

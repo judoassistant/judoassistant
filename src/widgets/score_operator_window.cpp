@@ -262,3 +262,7 @@ void ScoreOperatorWindow::endResetTournament() {
 std::optional<std::pair<CategoryId, MatchId>> ScoreOperatorWindow::getNextMatch() {
 
 }
+
+void ScoreOperatorWindow::silentConnect(QString host, int port) {
+    mStoreManager.connect(host, port);
+}
