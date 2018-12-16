@@ -11,13 +11,17 @@
 #include <QHeaderView>
 
 #include "config/web.hpp"
+#include "stores/category_store.hpp"
+#include "stores/match_store.hpp"
 #include "stores/qtournament_store.hpp"
 #include "widgets/score_display_widget.hpp"
 #include "widgets/score_operator_window.hpp"
 #include "widgets/connect_dialog.hpp"
 #include "widgets/models/actions_model.hpp"
 
-ScoreOperatorWindow::ScoreOperatorWindow() {
+ScoreOperatorWindow::ScoreOperatorWindow()
+    : mTatami(-1)
+{
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
@@ -37,6 +41,8 @@ ScoreOperatorWindow::ScoreOperatorWindow() {
 
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &ScoreOperatorWindow::beginResetTournament);
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &ScoreOperatorWindow::endResetTournament);
+
+    findNextMatch();
 }
 
 void ScoreOperatorWindow::createStatusBar() {
@@ -60,11 +66,12 @@ void ScoreOperatorWindow::createTournamentMenu() {
 void ScoreOperatorWindow::createEditMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Edit"));
 
+    mTatamiMenu = menu->addMenu(tr("Tatami"));
+
     {
-        mTatamiMenu = menu->addMenu("Tatami");
         // QAction *englishAction = new QAction(tr("English"), this);
         // submenu->addAction(englishAction);
-        populateTatamiMenu();
+        // populateTatamiMenu();
     }
     // {
     //     QAction *action = new QAction(tr("Undo"), this);
@@ -88,15 +95,25 @@ void ScoreOperatorWindow::createEditMenu() {
 }
 
 void ScoreOperatorWindow::clearTatamiMenu() {
+    // delete mTatamiActionGroup;
+    mTatamiActionGroup = nullptr;
     mTatamiMenu->clear();
 }
 
 void ScoreOperatorWindow::populateTatamiMenu() {
     const auto &tatamis = mStoreManager.getTournament().getTatamis();
 
-    log_debug().field("tatamiCount", tatamis.tatamiCount()).msg("Populating tatami menu");
-    for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
+    mTatamiActionGroup = new QActionGroup(this);
+    for (int i = 0; i < static_cast<int>(tatamis.tatamiCount()); ++i) {
         QAction *action = new QAction(tr("Tatami %1").arg(QString::number(i+1)), mTatamiMenu);
+        action->setCheckable(true);
+        mTatamiActionGroup->addAction(action);
+        if (i == mTatami) {
+            action->setChecked(true);
+        }
+
+        connect(action, &QAction::triggered, this, [=]() { setTatami(i); });
+
         mTatamiMenu->addAction(action);
     }
 }
@@ -175,7 +192,6 @@ void ScoreOperatorWindow::showAboutDialog() {
 void ScoreOperatorWindow::showConnectDialog() {
     ConnectDialog dialog(mStoreManager);
     dialog.exec();
-    log_debug().msg("Dialog accepted");
 }
 
 QWidget* ScoreOperatorWindow::createMainArea() {
@@ -250,19 +266,36 @@ void ScoreOperatorWindow::beginResetTournament() {
 
 void ScoreOperatorWindow::endResetTournament() {
     auto &tournament = mStoreManager.getTournament();
-    mConnections.push(connect(&tournament, &QTournamentStore::beginAddTatamis, this, &ScoreOperatorWindow::clearTatamiMenu));
-    mConnections.push(connect(&tournament, &QTournamentStore::endAddTatamis, this, &ScoreOperatorWindow::populateTatamiMenu));
-    mConnections.push(connect(&tournament, &QTournamentStore::beginEraseTatamis, this, &ScoreOperatorWindow::clearTatamiMenu));
-    mConnections.push(connect(&tournament, &QTournamentStore::endEraseTatamis, this, &ScoreOperatorWindow::populateTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &ScoreOperatorWindow::clearTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &ScoreOperatorWindow::populateTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &ScoreOperatorWindow::clearTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &ScoreOperatorWindow::populateTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &ScoreOperatorWindow::changeTatamis));
 
     clearTatamiMenu();
     populateTatamiMenu();
+    findNextMatch();
 }
 
-std::optional<std::pair<CategoryId, MatchId>> ScoreOperatorWindow::getNextMatch() {
+void ScoreOperatorWindow::setTatami(int tatami) {
+    mTatami = tatami;
 
+    findNextMatch();
 }
 
 void ScoreOperatorWindow::silentConnect(QString host, int port) {
     mStoreManager.connect(host, port);
 }
+
+void ScoreOperatorWindow::changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+    for (const auto &location: locations) {
+        if (static_cast<int>(location.tatamiIndex) == mTatami) {
+            findNextMatch();
+            return;
+        }
+    }
+}
+
+void ScoreOperatorWindow::findNextMatch() {
+}
+
