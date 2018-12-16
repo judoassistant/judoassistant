@@ -14,7 +14,6 @@
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
 #include "stores/qtournament_store.hpp"
-#include "widgets/score_display_widget.hpp"
 #include "widgets/score_operator_window.hpp"
 #include "widgets/connect_dialog.hpp"
 #include "widgets/models/actions_model.hpp"
@@ -202,8 +201,8 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         QGroupBox *viewBox = new QGroupBox("Spectator View", res);
         QVBoxLayout *subLayout = new QVBoxLayout(res);
 
-        ScoreDisplayWidget *displayWidget = new ScoreDisplayWidget(viewBox);
-        subLayout->addWidget(displayWidget);
+        mScoreDisplayWidget = new ScoreDisplayWidget(mStoreManager, viewBox);
+        subLayout->addWidget(mScoreDisplayWidget);
 
         viewBox->setLayout(subLayout);
         layout->addWidget(viewBox);
@@ -323,6 +322,7 @@ void ScoreOperatorWindow::findNextMatch() {
                     log_debug().field("combinedId", combinedId).msg("Found match");
                     mNextMatch = combinedId;
                     mNextMatchWidget->setMatch(combinedId);
+                    mScoreDisplayWidget->setMatch(combinedId); // temporary
                     return;
                 }
             }
@@ -333,5 +333,6 @@ void ScoreOperatorWindow::findNextMatch() {
 
     mNextMatch = std::nullopt;
     mNextMatchWidget->setMatch(std::nullopt);
+    mScoreDisplayWidget->setMatch(std::nullopt); // temporary
 }
 

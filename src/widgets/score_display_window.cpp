@@ -3,9 +3,10 @@
 #include "widgets/score_display_widget.hpp"
 #include "exception.hpp"
 
-ScoreDisplayWindow::ScoreDisplayWindow()
+ScoreDisplayWindow::ScoreDisplayWindow(const StoreManager &storeManager)
+    : mStoreManager(storeManager)
 {
-    mScoreWidget = new ScoreDisplayWidget(this);
+    mScoreWidget = new ScoreDisplayWidget(mStoreManager, this);
     setCentralWidget(mScoreWidget);
 
     setWindowTitle(tr("JudoAssistant Score (Display)"));
