@@ -248,10 +248,14 @@ QWidget* ScoreOperatorWindow::createSideArea() {
     }
 
 
+    {
+        QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
+        QVBoxLayout *nextMatchLayout = new QVBoxLayout(nextMatchBox);
+        mNextMatchWidget = new MatchCardWidget(mStoreManager, nextMatchBox);
+        nextMatchLayout->addWidget(mNextMatchWidget);
 
-    QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
-
-    layout->addWidget(nextMatchBox);
+        layout->addWidget(nextMatchBox);
+    }
 
     res->setLayout(layout);
     return res;
@@ -297,35 +301,37 @@ void ScoreOperatorWindow::changeTatamis(std::vector<TatamiLocation> locations, s
 }
 
 void ScoreOperatorWindow::findNextMatch() {
+    log_debug().msg("Finding next match");
     auto &tournament = mStoreManager.getTournament();
     auto &tatamis = tournament.getTatamis();
 
-    mNextMatch = std::nullopt;
+    if (mTatami != -1 && mTatami < static_cast<int>(tatamis.tatamiCount())) {
+        auto &tatami = tatamis[mTatami];
 
-    if (mTatami == -1 || mTatami >= static_cast<int>(tatamis.tatamiCount())) {
-        return;
-    }
+        for (size_t i = 0; i < tatami.groupCount(); ++i) {
+            const auto &group = tatami.getGroup(i);
+            if (group.getStatus() == ConcurrentBlockGroup::Status::FINISHED) continue;
 
-    auto &tatami = tatamis[mTatami];
+            for (auto combinedId : group.getMatches()) {
+                if (mCurrentMatch == combinedId) {
+                    continue;
+                }
 
-    for (size_t i = 0; i < tatami.groupCount(); ++i) {
-        const auto &group = tatami.getGroup(i);
-        if (group.getStatus() == ConcurrentBlockGroup::Status::FINISHED) continue;
+                const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
 
-        for (auto combinedId : group.getMatches()) {
-            if (mCurrentMatch == combinedId) {
-                continue;
+                if (match.getStatus() != MatchStatus::FINISHED) {
+                    log_debug().field("combinedId", combinedId).msg("Found match");
+                    mNextMatch = combinedId;
+                    mNextMatchWidget->setMatch(combinedId);
+                    return;
+                }
             }
 
-            const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
-
-            if (match.getStatus() != MatchStatus::FINISHED) {
-                mNextMatch = combinedId;
-                return;
-            }
+            assert(false); // should never reach this
         }
-
-        assert(false); // should never reach this
     }
+
+    mNextMatch = std::nullopt;
+    mNextMatchWidget->setMatch(std::nullopt);
 }
 

@@ -36,10 +36,12 @@ hub_moc_headers += ['src/widgets/tatami_widget.hpp']
 hub_moc_headers += ['src/widgets/unallocated_blocks_widget.hpp']
 hub_moc_headers += ['src/widgets/import_players_csv_dialog.hpp']
 
+score_sources += ['src/widgets/match_card_widget.cpp']
 score_sources += ['src/widgets/score_display_window.cpp']
 score_sources += ['src/widgets/score_display_widget.cpp']
 score_sources += ['src/widgets/score_operator_window.cpp']
 
+score_moc_headers += ['src/widgets/match_card_widget.hpp']
 score_moc_headers += ['src/widgets/score_display_window.hpp']
 score_moc_headers += ['src/widgets/score_display_widget.hpp']
 score_moc_headers += ['src/widgets/score_operator_window.hpp']

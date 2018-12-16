@@ -21,10 +21,16 @@ struct MatchCardPlayerFields {
 class MatchCard {
 public:
     MatchCard() = default;
-    MatchCard(size_t tatami, const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match);
+    MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match);
 
     void paint(QPainter *painter, const QRect &rect, const QPalette &palette) const;
-    QSize sizeHint();
+    QSize sizeHint() const;
+
+private:
+    void setCategory(const CategoryStore &category, const MatchStore &match);
+    void setWhitePlayer(const TournamentStore & tournament, const MatchStore &match);
+    void setBluePlayer(const TournamentStore & tournament, const MatchStore &match);
+    void setMatch(const MatchStore &match);
 
 private:
     static const int WIDTH_HINT = 250;
@@ -34,7 +40,7 @@ private:
 
     std::optional<MatchCardPlayerFields> mWhitePlayer;
     std::optional<MatchCardPlayerFields> mBluePlayer;
-    size_t mTatami;
+    std::optional<size_t> mTatami;
     QString mCategory;
     MatchStatus mStatus;
     bool mIsStopped;

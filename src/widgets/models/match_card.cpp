@@ -8,36 +8,12 @@
 #include "widgets/models/match_card.hpp"
 #include "widgets/colors.hpp"
 
-MatchCard::MatchCard(size_t tatami, const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match)
+MatchCard::MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match)
 {
-    mTatami = tatami;
-    mCategory = QString::fromStdString(category.getName());
-    mStatus = match.getStatus();
-    mBye = match.isBye();
-    mGoldenScore = match.isGoldenScore();
-
-    if (match.getWhitePlayer()) {
-        auto whitePlayer = tournament.getPlayer(*match.getWhitePlayer());
-        MatchCardPlayerFields fields;
-        fields.firstName = QString::fromStdString(whitePlayer.getFirstName());
-        fields.lastName = QString::fromStdString(whitePlayer.getLastName());
-        fields.club = QString::fromStdString(whitePlayer.getClub());
-        fields.country = whitePlayer.getCountry();
-        fields.score = match.getWhiteScore();
-        mWhitePlayer = std::move(fields);
-    }
-
-    if (match.getBluePlayer()) {
-        auto bluePlayer = tournament.getPlayer(*match.getBluePlayer());
-        MatchCardPlayerFields fields;
-
-        fields.firstName = QString::fromStdString(bluePlayer.getFirstName());
-        fields.lastName = QString::fromStdString(bluePlayer.getLastName());
-        fields.club = QString::fromStdString(bluePlayer.getClub());
-        fields.country = bluePlayer.getCountry();
-        fields.score = match.getBlueScore();
-        mBluePlayer = std::move(fields);
-    }
+    setCategory(category, match);
+    setWhitePlayer(tournament, match);
+    setBluePlayer(tournament, match);
+    setMatch(match);
 }
 
 void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const {
@@ -128,7 +104,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         painter->setFont(font);
         painter->setRenderHint(QPainter::Antialiasing, true);
 
-        { // Draw tatami number
+        if (mTatami) { // Draw tatami number
             QRect rect(padding, padding, headerHeight-padding*2, headerHeight-padding*2);
 
             painter->setPen(Qt::NoPen);
@@ -139,7 +115,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->setPen(Qt::white);
             painter->setBrush(Qt::white);
 
-            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, QString::number(mTatami+1));
+            painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, QString::number((*mTatami)+1));
         }
 
         { // Draw Category Text
@@ -167,13 +143,13 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             // painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, "GS 01:43");
         }
         else { // Draw ETA
-            QRect textRect(columnThreeOffset, padding, insideWidth-columnThreeOffset-padding, headerHeight-padding*2);
+            // QRect textRect(columnThreeOffset, padding, insideWidth-columnThreeOffset-padding, headerHeight-padding*2);
 
-            painter->setPen(COLOR_0);
-            painter->setBrush(COLOR_0);
+            // painter->setPen(COLOR_0);
+            // painter->setBrush(COLOR_0);
 
-            painter->setRenderHint(QPainter::Antialiasing, true);
-            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignRight, "~16 min");
+            // painter->setRenderHint(QPainter::Antialiasing, true);
+            // painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignRight, "~16 min");
         }
 
 
@@ -211,7 +187,53 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     painter->restore();
 }
 
-QSize MatchCard::sizeHint() {
+QSize MatchCard::sizeHint() const {
     return QSize(WIDTH_HINT, HEIGHT_HINT);
+}
+
+void MatchCard::setCategory(const CategoryStore &category, const MatchStore &match) {
+    mCategory = QString::fromStdString(category.getName());
+
+    auto location = category.getTatamiLocation(match.getType());
+    mTatami = (location ? std::make_optional(location->tatamiIndex) : std::nullopt);
+}
+
+void MatchCard::setWhitePlayer(const TournamentStore & tournament, const MatchStore &match) {
+    if (!match.getWhitePlayer()) {
+        mWhitePlayer = std::nullopt;
+        return;
+    }
+
+    auto whitePlayer = tournament.getPlayer(*match.getWhitePlayer());
+    MatchCardPlayerFields fields;
+    fields.firstName = QString::fromStdString(whitePlayer.getFirstName());
+    fields.lastName = QString::fromStdString(whitePlayer.getLastName());
+    fields.club = QString::fromStdString(whitePlayer.getClub());
+    fields.country = whitePlayer.getCountry();
+    fields.score = match.getWhiteScore();
+    mWhitePlayer = std::move(fields);
+}
+
+void MatchCard::setBluePlayer(const TournamentStore & tournament, const MatchStore &match) {
+    if (!match.getBluePlayer()) {
+        mBluePlayer = std::nullopt;
+        return;
+    }
+
+    auto bluePlayer = tournament.getPlayer(*match.getBluePlayer());
+    MatchCardPlayerFields fields;
+
+    fields.firstName = QString::fromStdString(bluePlayer.getFirstName());
+    fields.lastName = QString::fromStdString(bluePlayer.getLastName());
+    fields.club = QString::fromStdString(bluePlayer.getClub());
+    fields.country = bluePlayer.getCountry();
+    fields.score = match.getBlueScore();
+    mBluePlayer = std::move(fields);
+}
+
+void MatchCard::setMatch(const MatchStore &match) {
+    mStatus = match.getStatus();
+    mBye = match.isBye();
+    mGoldenScore = match.isGoldenScore();
 }
 

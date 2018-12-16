@@ -9,6 +9,7 @@
 #include "core.hpp"
 #include "store_managers/client_store_manager.hpp"
 #include "stores/tatami_store.hpp"
+#include "widgets/match_card_widget.hpp"
 
 class ScoreOperatorWindow : public QMainWindow {
     Q_OBJECT
@@ -51,6 +52,7 @@ private:
     ClientStoreManager mStoreManager;
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
+    MatchCardWidget *mNextMatchWidget;
     int mTatami;
     std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
     std::optional<std::pair<CategoryId, MatchId>> mNextMatch;

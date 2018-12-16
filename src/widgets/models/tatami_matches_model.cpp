@@ -162,7 +162,7 @@ QVariant TatamiMatchesModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
-                return QVariant::fromValue(MatchCard(mTatami, tournament, category, match));
+                return QVariant::fromValue(MatchCard(tournament, category, match));
         }
     }
 

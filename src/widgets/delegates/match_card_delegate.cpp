@@ -11,6 +11,7 @@ void MatchCardDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
         // if (option.state & QStyle::State_Selected)
         //     painter->fillRect(option.rect, option.palette.highlight());
 
+        // TODO: Add padding here instead of in match card
         matchCard.paint(painter, option.rect, option.palette);
     } else {
         QStyledItemDelegate::paint(painter, option, index);
