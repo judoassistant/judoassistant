@@ -35,6 +35,7 @@ void SetTatamiLocationAction::redoImpl(TournamentStore & tournament) {
         std::vector<std::pair<CategoryId, MatchType>> blocks = {{mCategoryId, mType}};
 
         tournament.changeTatamis(std::move(locations), std::move(blocks));
+        tournament.changeCategories({mCategoryId});
     }
 }
 
@@ -56,6 +57,7 @@ void SetTatamiLocationAction::undoImpl(TournamentStore & tournament) {
         std::vector<std::pair<CategoryId, MatchType>> blocks = {{mCategoryId, mType}};
 
         tournament.changeTatamis(std::move(locations), std::move(blocks));
+        tournament.changeCategories({mCategoryId});
     }
 }
 
