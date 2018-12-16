@@ -1,6 +1,9 @@
 #pragma once
 
+#include <stack>
+
 #include <QMainWindow>
+#include <QMetaObject>
 
 #include "core.hpp"
 #include "store_managers/client_store_manager.hpp"
@@ -11,14 +14,21 @@ class ScoreOperatorWindow : public QMainWindow {
 public:
     ScoreOperatorWindow();
 
-private slots:
+private:
     void quit();
     void openHomePage();
     void openManual();
     void openReportIssue();
     void showAboutDialog();
 
-private:
+    void clearTatamiMenu();
+    void populateTatamiMenu();
+
+    void beginResetTournament();
+    void endResetTournament();
+
+    std::optional<std::pair<CategoryId, MatchId>> getNextMatch();
+
     void createStatusBar();
     void createTournamentMenu();
     void createEditMenu();
@@ -32,5 +42,9 @@ private:
     void showConnectDialog();
 
     ClientStoreManager mStoreManager;
+    QMenu *mTatamiMenu;
+    int mTatami;
+    std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
+    std::stack<QMetaObject::Connection> mConnections;
 };
 

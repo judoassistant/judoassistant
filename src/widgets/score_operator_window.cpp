@@ -11,6 +11,7 @@
 #include <QHeaderView>
 
 #include "config/web.hpp"
+#include "stores/qtournament_store.hpp"
 #include "widgets/score_display_widget.hpp"
 #include "widgets/score_operator_window.hpp"
 #include "widgets/connect_dialog.hpp"
@@ -33,6 +34,9 @@ ScoreOperatorWindow::ScoreOperatorWindow() {
     setCentralWidget(splitter);
 
     setWindowTitle(tr("JudoAssistant Score"));
+
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &ScoreOperatorWindow::beginResetTournament);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &ScoreOperatorWindow::endResetTournament);
 }
 
 void ScoreOperatorWindow::createStatusBar() {
@@ -56,6 +60,12 @@ void ScoreOperatorWindow::createTournamentMenu() {
 void ScoreOperatorWindow::createEditMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Edit"));
 
+    {
+        mTatamiMenu = menu->addMenu("Tatami");
+        // QAction *englishAction = new QAction(tr("English"), this);
+        // submenu->addAction(englishAction);
+        populateTatamiMenu();
+    }
     // {
     //     QAction *action = new QAction(tr("Undo"), this);
     //     action->setShortcuts(QKeySequence::Undo);
@@ -75,6 +85,20 @@ void ScoreOperatorWindow::createEditMenu() {
     //     connect(&mStoreManager, &MasterStoreManager::redoStatusChanged, action, &QAction::setEnabled);
     //     connect(action, &QAction::triggered, &mStoreManager, &MasterStoreManager::redo);
     // }
+}
+
+void ScoreOperatorWindow::clearTatamiMenu() {
+    mTatamiMenu->clear();
+}
+
+void ScoreOperatorWindow::populateTatamiMenu() {
+    const auto &tatamis = mStoreManager.getTournament().getTatamis();
+
+    log_debug().field("tatamiCount", tatamis.tatamiCount()).msg("Populating tatami menu");
+    for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
+        QAction *action = new QAction(tr("Tatami %1").arg(QString::number(i+1)), mTatamiMenu);
+        mTatamiMenu->addAction(action);
+    }
 }
 
 void ScoreOperatorWindow::createViewMenu() {
@@ -217,3 +241,24 @@ QWidget* ScoreOperatorWindow::createSideArea() {
     return res;
 }
 
+void ScoreOperatorWindow::beginResetTournament() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+}
+
+void ScoreOperatorWindow::endResetTournament() {
+    auto &tournament = mStoreManager.getTournament();
+    mConnections.push(connect(&tournament, &QTournamentStore::beginAddTatamis, this, &ScoreOperatorWindow::clearTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::endAddTatamis, this, &ScoreOperatorWindow::populateTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::beginEraseTatamis, this, &ScoreOperatorWindow::clearTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::endEraseTatamis, this, &ScoreOperatorWindow::populateTatamiMenu));
+
+    clearTatamiMenu();
+    populateTatamiMenu();
+}
+
+std::optional<std::pair<CategoryId, MatchId>> ScoreOperatorWindow::getNextMatch() {
+
+}
