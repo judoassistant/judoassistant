@@ -4,6 +4,7 @@
 #include <QListView>
 
 #include "widgets/matches_widget.hpp"
+#include "widgets/delegates/match_card_delegate.hpp"
 #include "widgets/models/tatami_matches_model.hpp"
 #include "widgets/models/match_card.hpp"
 #include "store_managers/store_manager.hpp"

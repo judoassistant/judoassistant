@@ -4,7 +4,6 @@
 
 #include <QMetaType>
 #include <QString>
-#include <QStyledItemDelegate>
 
 #include "stores/player_store.hpp"
 #include "stores/match_store.hpp"
@@ -45,13 +44,4 @@ private:
 };
 
 Q_DECLARE_METATYPE(MatchCard)
-
-class MatchCardDelegate : public QStyledItemDelegate {
-    Q_OBJECT
-public:
-    MatchCardDelegate(QWidget *parent = nullptr);
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-private:
-};
 

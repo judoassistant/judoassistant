@@ -1,3 +1,4 @@
+subdir('delegates')
 subdir('import_helpers')
 subdir('misc')
 subdir('models')
