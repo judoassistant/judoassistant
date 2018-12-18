@@ -25,7 +25,7 @@ AddPlayersAction::AddPlayersAction(const std::vector<PlayerId> &ids, const std::
 void AddPlayersAction::redoImpl(TournamentStore & tournament) {
     for (auto id : mIds) {
         if (tournament.containsPlayer(id))
-            throw ActionExecutionException("Failed to redo AddPlayersAction. Player already exists.");
+            throw ActionExecutionException("Failed to redo AddPlayersAction. Player already exists."); // TODO: Make sure to catch these exceptions
     }
 
     tournament.beginAddPlayers(mIds);
