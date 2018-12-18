@@ -12,8 +12,14 @@ ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget
     , mState(ScoreDisplayState::INTRODUCTION)
     , mFont("Noto Sans")
 {
+    mIntroTimer.setSingleShot(true);
+    mWinnerTimer.setSingleShot(true);
+
     mFont.setBold(true);
     mFont.setCapitalization(QFont::AllUppercase);
+
+    connect(&mIntroTimer, &QTimer::timeout, [this](){ setState(ScoreDisplayState::NORMAL); });
+    connect(&mWinnerTimer, &QTimer::timeout, [this](){ setState(ScoreDisplayState::WINNER); });
 }
 
 void ScoreDisplayWidget::paintNullMatch(QPainter &painter) {
@@ -68,8 +74,8 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
         paintLowerNormal(lowerRect, painter, category, match);
     }
     else {
-        assert(mState == ScoreDisplayState::FINISHED);
-        log_debug().msg("Painting finished screen");
+        assert(mState == ScoreDisplayState::WINNER);
+        log_debug().msg("Painting winner screen");
         // TODO: Paint finished screen
         paintPlayerNormal(upperRect, MatchStore::PlayerIndex::WHITE, painter, match, whitePlayer);
         paintPlayerNormal(middleRect, MatchStore::PlayerIndex::BLUE, painter, match, bluePlayer);
@@ -82,9 +88,16 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     // paintLowerSection(painter);
 }
 
-void ScoreDisplayWidget::setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId) {
+void ScoreDisplayWidget::setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId, bool showIntro) {
     mCombinedId = combinedId;
-    mState = ScoreDisplayState::INTRODUCTION;
+    if (showIntro) {
+        mState = ScoreDisplayState::INTRODUCTION;
+        mIntroTimer.start(INTRO_INTERVAL);
+    }
+    else {
+        mState = ScoreDisplayState::NORMAL;
+    }
+
     update(0, 0, width(), height());
 }
 
@@ -141,7 +154,8 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
 
     font.setPixelSize(nameHeight*4/5);
     painter.setFont(font);
-    painter.drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, "SHAVDATUASHVILI L.");
+    QString nameText = QString::fromStdString(player.getLastName()) + QString(" ") + QString::fromStdString(player.getFirstName()).front() + QString(".");
+    painter.drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
 
     // Score
     QRect scoreRect(columnOne, scoreOffset, columnThree - columnOne - PADDING, scoreHeight);
@@ -149,8 +163,12 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     font.setPixelSize(scoreHeight*4/5);
     painter.setFont(font);
     painter.setBrush(COLOR_11);
-    painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, "1");
-    // painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignHCenter, "IPPON");
+
+    const auto &score = match.getScore(playerIndex);
+    if (score.ippon > 0)
+        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignHCenter, "IPPON");
+    else
+        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, QString::number(score.wazari));
 
     // Penalties
     const int penaltyHeight = scoreHeight/2;
@@ -158,10 +176,21 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     QRect firstPenaltyRect(columnThree, scoreOffset+(scoreHeight-penaltyHeight)/2, penaltyWidth, penaltyHeight);
     QRect secondPenaltyRect(columnThree + PADDING + penaltyWidth, scoreOffset+(scoreHeight-penaltyHeight)/2, penaltyWidth, penaltyHeight);
 
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(COLOR_13);
-    painter.drawRect(firstPenaltyRect);
-    painter.drawRect(secondPenaltyRect);
+    if (score.hansokuMake > 0) {
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(COLOR_11);
+        painter.drawRect(firstPenaltyRect);
+
+    }
+    else {
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(COLOR_13);
+        if (score.shido > 0)
+            painter.drawRect(firstPenaltyRect);
+        if (score.shido > 1)
+            painter.drawRect(secondPenaltyRect);
+
+    }
 
     painter.restore();
 }
@@ -192,8 +221,8 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     painter.setFont(font);
     painter.setPen(COLOR_6);
 
-    painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, "Round of 32");
-    painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, "Senior -100A");
+    painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
+    painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
 
     // Paint time left
     QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
@@ -205,13 +234,15 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, "3:56");
 
     // Paint golden score indicator
-    QRect goldenScoreRect(columnThree, PADDING, columnThree-columnTwo, rect.height()-PADDING*2);
+    if (match.isGoldenScore()) {
+        QRect goldenScoreRect(columnThree, PADDING, columnThree-columnTwo, rect.height()-PADDING*2);
 
-    font.setPixelSize(rect.height()*1/4);
-    painter.setFont(font);
+        font.setPixelSize(rect.height()*1/4);
+        painter.setFont(font);
 
-    painter.setPen(COLOR_13);
-    painter.drawText(goldenScoreRect, Qt::AlignVCenter | Qt::AlignLeft, "GS");
+        painter.setPen(COLOR_13);
+        painter.drawText(goldenScoreRect, Qt::AlignVCenter | Qt::AlignLeft, "GS");
+    }
 
     // TODO: Make font sizing more robust
     painter.restore();
@@ -263,7 +294,8 @@ void ScoreDisplayWidget::paintPlayerIntroduction(QRect rect, MatchStore::PlayerI
     QRect nameRect(columnOne, PADDING, rect.width() - PADDING - columnOne, rect.height() - 2 * PADDING);
     font.setPixelSize(rect.height()/4);
     painter.setFont(font);
-    painter.drawText(nameRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignLeft, "SHAVDATUASHVILI L.");
+    QString nameText = QString::fromStdString(player.getLastName()) + QString(" ") + QString::fromStdString(player.getFirstName()).front() + QString(".");
+    painter.drawText(nameRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignLeft, nameText);
 
     painter.restore();
 }
@@ -275,7 +307,6 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
 
     const int columnOne = flagWidth + 2 * PADDING;
     const int columnThree = columnOne + (rect.width() - columnOne) * 3 / 4;
-    const int columnTwo = columnOne + (columnThree - columnOne) / 3;
 
     painter.save();
     painter.translate(rect.x(), rect.y());
@@ -287,36 +318,24 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
     painter.drawRect(boundingRect);
 
     // Paint title and category
-    QRect titleRect(PADDING, PADDING, columnTwo-PADDING, flagHeight);
-    QRect categoryRect(PADDING, PADDING*2+flagHeight, columnTwo-PADDING, flagHeight);
+    QRect titleRect(PADDING, PADDING, rect.width() - PADDING*2, flagHeight);
+    QRect categoryRect(PADDING, PADDING*2+flagHeight, rect.width() - PADDING*2, flagHeight);
 
     auto font = mFont;
-    font.setPixelSize(flagHeight*1/2);
+    font.setPixelSize(flagHeight*2/3);
     painter.setFont(font);
     painter.setPen(COLOR_6);
 
-    painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, "Round of 32");
-    painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, "Senior -100A");
+    painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
+    painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
 
-    // Paint time left
-    QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
-
-    font.setPixelSize(rect.height()*6/8);
-    painter.setFont(font);
-
-    painter.setPen(COLOR_14);
-    painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, "3:56");
-
-    // Paint golden score indicator
-    QRect goldenScoreRect(columnThree, PADDING, columnThree-columnTwo, rect.height()-PADDING*2);
-
-    font.setPixelSize(rect.height()*1/4);
-    painter.setFont(font);
-
-    painter.setPen(COLOR_13);
-    painter.drawText(goldenScoreRect, Qt::AlignVCenter | Qt::AlignLeft, "GS");
-
+    // TODO: Show intro countdown on operator screen
     // TODO: Make font sizing more robust
     painter.restore();
+}
+
+void ScoreDisplayWidget::setState(ScoreDisplayState state) {
+    mState = state;
+    update(0, 0, width(), height());
 }
 

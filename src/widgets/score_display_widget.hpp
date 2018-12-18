@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QFont>
+#include <QTimer>
 #include "store_managers/store_manager.hpp"
 #include "stores/match_store.hpp"
 #include "stores/match_event.hpp"
@@ -11,7 +12,7 @@ class PlayerStore;
 class QPainter;
 
 enum class ScoreDisplayState {
-    INTRODUCTION, NORMAL, FINISHED
+    INTRODUCTION, NORMAL, WINNER
 };
 
 class ScoreDisplayWidget : public QWidget {
@@ -19,10 +20,13 @@ class ScoreDisplayWidget : public QWidget {
 public:
     ScoreDisplayWidget(const StoreManager &mStoreManager, QWidget *parent = nullptr);
 
-    void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId);
+    void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId, bool showIntro = true);
+    void setState(ScoreDisplayState state);
     void paintEvent(QPaintEvent *event);
 private:
     static const int PADDING = 5;
+    static const int INTRO_INTERVAL = 4000;
+    static const int WINNER_INTERVAL = 4000;
 
     void paintNullMatch(QPainter &painter);
 
@@ -43,5 +47,7 @@ private:
     std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
     ScoreDisplayState mState;
     QFont mFont;
+    QTimer mIntroTimer;
+    QTimer mWinnerTimer;
 };
 

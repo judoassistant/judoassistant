@@ -149,3 +149,6 @@ MatchStatus MatchStore::setStatus(MatchStatus status) {
     mStatus = status;
 }
 
+const std::string & MatchStore::getTitle() const {
+    return mTitle;
+}
