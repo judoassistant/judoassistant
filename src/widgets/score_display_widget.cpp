@@ -20,6 +20,9 @@ ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget
 
     connect(&mIntroTimer, &QTimer::timeout, [this](){ setState(ScoreDisplayState::NORMAL); });
     connect(&mWinnerTimer, &QTimer::timeout, [this](){ setState(ScoreDisplayState::WINNER); });
+
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &ScoreDisplayWidget::beginResetTournament);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &ScoreDisplayWidget::endResetTournament);
 }
 
 void ScoreDisplayWidget::paintNullMatch(QPainter &painter) {
@@ -43,7 +46,18 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     }
 
     const auto &tournament = mStoreManager.getTournament();
+
+    if (!tournament.containsCategory(mCombinedId->first)) {
+        paintNullMatch(painter);
+        return;
+    }
+
     const auto &category = tournament.getCategory(mCombinedId->first);
+
+    if (!category.containsMatch(mCombinedId->second)) {
+        paintNullMatch(painter);
+        return;
+    }
     const auto &match = category.getMatch(mCombinedId->second);
 
     if (!match.getWhitePlayer() || !match.getBluePlayer()) {
@@ -337,5 +351,69 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
 void ScoreDisplayWidget::setState(ScoreDisplayState state) {
     mState = state;
     update(0, 0, width(), height());
+}
+
+void ScoreDisplayWidget::beginResetTournament() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+}
+
+void ScoreDisplayWidget::endResetTournament() {
+    const QTournamentStore & tournament = mStoreManager.getTournament();
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesChanged, this, &ScoreDisplayWidget::changeMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersChanged, this, &ScoreDisplayWidget::changePlayers));
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &ScoreDisplayWidget::resetMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesChanged, this, &ScoreDisplayWidget::changeCategories));
+}
+
+void ScoreDisplayWidget::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
+    if (!mCombinedId) return;
+    if (mCombinedId->first != categoryId) return;
+
+    for (auto matchId : matchIds) {
+        if (mCombinedId->second == matchId) {
+            update(0, 0, width(), height());
+            return;
+        }
+    }
+}
+
+void ScoreDisplayWidget::changePlayers(std::vector<PlayerId> playerIds) {
+    if (!mCombinedId)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+
+    if (!tournament.containsCategory(mCombinedId->first))
+        return;
+
+    const auto &category = tournament.getCategory(mCombinedId->first);
+
+    if (!category.containsMatch(mCombinedId->second))
+        return;
+    const auto &match = category.getMatch(mCombinedId->second);
+
+    for (auto playerId : playerIds) {
+        if (match.getWhitePlayer() == playerId || match.getBluePlayer() == playerId) {
+            update(0, 0, width(), height());
+            return;
+        }
+    }
+}
+
+void ScoreDisplayWidget::resetMatches(CategoryId categoryId) {
+    if (mCombinedId && mCombinedId->first == categoryId)
+        update(0, 0, width(), height());
+}
+
+void ScoreDisplayWidget::changeCategories(std::vector<CategoryId> categoryIds) {
+    for (auto categoryId : categoryIds) {
+        if (mCombinedId && mCombinedId->first == categoryId) {
+            update(0, 0, width(), height());
+            return;
+        }
+    }
 }
 

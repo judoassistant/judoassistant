@@ -44,6 +44,7 @@ private:
     void changeCategories(std::vector<CategoryId> categoryIds);
 
     const StoreManager &mStoreManager;
+    std::stack<QMetaObject::Connection> mConnections;
     std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
     ScoreDisplayState mState;
     QFont mFont;
