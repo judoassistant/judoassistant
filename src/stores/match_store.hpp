@@ -83,7 +83,7 @@ public:
     void setGoldenScore(bool val);
 
     MatchStatus getStatus() const;
-    MatchStatus setStatus(MatchStatus status);
+    void setStatus(MatchStatus status);
 
     CategoryId getCategory() const;
 

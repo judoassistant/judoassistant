@@ -145,7 +145,7 @@ MatchStatus MatchStore::getStatus() const {
     return mStatus;
 }
 
-MatchStatus MatchStore::setStatus(MatchStatus status) {
+void MatchStore::setStatus(MatchStatus status) {
     mStatus = status;
 }
 
