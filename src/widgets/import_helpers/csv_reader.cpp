@@ -82,7 +82,7 @@ void CSVReader::parse() {
             curField.push_back(c);
         }
 
-        mFields.back().push_back(curField);
+        mFields.back().push_back(curField); // TODO: Strip of whitespace
         mColumnCount = std::max(mColumnCount, mFields.back().size());
     }
 }
