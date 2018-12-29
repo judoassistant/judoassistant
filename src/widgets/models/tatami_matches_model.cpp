@@ -408,8 +408,6 @@ void TatamiMatchesModel::beginResetCategory(CategoryId categoryId) {
 }
 
 void TatamiMatchesModel::timerHit() {
-    if (!mUnpausedMatches.empty())
-        log_debug().field("matches", mUnpausedMatches).msg("Timer hit");
     for (auto combinedId : mUnpausedMatches) {
         auto row = getRow(combinedId);
         emit dataChanged(createIndex(row, 0), createIndex(row,0));

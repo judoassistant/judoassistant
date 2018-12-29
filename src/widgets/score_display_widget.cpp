@@ -77,21 +77,18 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
 
 
     if (mState == ScoreDisplayState::INTRODUCTION) {
-        log_debug().msg("Painting intro screen");
         paintPlayerIntroduction(upperRect, MatchStore::PlayerIndex::WHITE, painter, match, whitePlayer);
         paintPlayerIntroduction(middleRect, MatchStore::PlayerIndex::BLUE, painter, match, bluePlayer);
         paintLowerIntroduction(lowerRect, painter, category, match);
         return;
     }
     else if (mState == ScoreDisplayState::NORMAL) {
-        log_debug().msg("Painting normal screen");
         paintPlayerNormal(upperRect, MatchStore::PlayerIndex::WHITE, painter, match, whitePlayer);
         paintPlayerNormal(middleRect, MatchStore::PlayerIndex::BLUE, painter, match, bluePlayer);
         paintLowerNormal(lowerRect, painter, category, match);
     }
     else {
         assert(mState == ScoreDisplayState::WINNER);
-        log_debug().msg("Painting winner screen");
         // TODO: Paint finished screen
         paintPlayerNormal(upperRect, MatchStore::PlayerIndex::WHITE, painter, match, whitePlayer);
         paintPlayerNormal(middleRect, MatchStore::PlayerIndex::BLUE, painter, match, bluePlayer);
@@ -433,7 +430,6 @@ void ScoreDisplayWidget::durationTimerHit() {
         return;
     if (mState != ScoreDisplayState::NORMAL)
         return;
-    log_debug().msg("duration timer timer hit");
     QRect lowerRect(0,2*(height()/3),width(), height() - 2*(height()/3));
     update(lowerRect);
 }
