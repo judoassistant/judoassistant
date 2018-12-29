@@ -35,6 +35,10 @@ void MatchStore::pushEvent(const MatchEvent & event) {
     mEvents.push_back(event);
 }
 
+void MatchStore::popEvent() {
+    mEvents.pop_back();
+}
+
 const std::vector<MatchEvent> & MatchStore::getEvents() const {
     return mEvents;
 }

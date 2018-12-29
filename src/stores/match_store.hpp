@@ -19,21 +19,7 @@ enum class MatchStatus {
     NOT_STARTED, PAUSED, UNPAUSED, FINISHED
 };
 
-enum class MatchEventType {
-    WHITE_IPPON, WHITE_WAZARI, WHITE_SHIDO, WHITE_HANSOKU_MAKE, BLUE_IPPON, BLUE_WAZARI, BLUE_SHIDO, BLUE_HANSOKU_MAKE,
-};
-
-struct MatchEvent {
-    MatchEventType type;
-    std::chrono::milliseconds duration; // match duration at the time of the event
-
-    template<typename Archive>
-    void serialize(Archive& ar, uint32_t const version) {
-        ar(type, duration);
-    }
-};
-
-std::ostream &operator<<(std::ostream &out, const MatchType &matchType);
+struct MatchEvent;
 
 class MatchStore {
 public:
@@ -81,6 +67,7 @@ public:
     bool isBye() const;
 
     void pushEvent(const MatchEvent & event);
+    void popEvent();
     const std::vector<MatchEvent> & getEvents() const;
 
     void finish();
@@ -130,4 +117,21 @@ private:
     std::vector<MatchEvent> mEvents;
     // TODO: Add osae komi timers
 };
+
+enum class MatchEventType {
+    IPPON, WAZARI, SHIDO, HANSOKU_MAKE
+};
+
+struct MatchEvent {
+    MatchEventType type;
+    MatchStore::PlayerIndex playerIndex;
+    std::chrono::milliseconds duration; // match duration at the time of the event
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(type, playerIndex, duration);
+    }
+};
+
+std::ostream &operator<<(std::ostream &out, const MatchType &matchType);
 
