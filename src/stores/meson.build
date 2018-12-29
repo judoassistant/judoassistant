@@ -1,5 +1,4 @@
 core_sources += ['src/stores/category_store.cpp']
-core_sources += ['src/stores/match_event.cpp']
 core_sources += ['src/stores/match_store.cpp']
 core_sources += ['src/stores/player_store.cpp']
 core_sources += ['src/stores/tatami_store.cpp']

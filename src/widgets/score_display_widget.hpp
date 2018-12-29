@@ -5,7 +5,6 @@
 #include <QTimer>
 #include "store_managers/store_manager.hpp"
 #include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
 
 class CategoryStore;
 class PlayerStore;

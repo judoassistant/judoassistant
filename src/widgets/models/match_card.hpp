@@ -7,7 +7,6 @@
 
 #include "stores/player_store.hpp"
 #include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
 
 struct MatchCardPlayerFields {
     QString firstName;

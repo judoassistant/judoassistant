@@ -7,7 +7,6 @@
 #include "actions/action.hpp"
 #include "draw_systems/draw_system.hpp"
 #include "rulesets/ruleset.hpp"
-#include "stores/match_event.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tournament_store.hpp"
 

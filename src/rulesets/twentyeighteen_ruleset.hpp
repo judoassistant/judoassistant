@@ -8,20 +8,26 @@
 // The IJF senior ruleset from January 2018
 class TwentyEighteenRuleset : public Ruleset {
 private:
-    const std::chrono::high_resolution_clock::duration NORMAL_TIME = std::chrono::minutes(4);
 public:
     std::string getName() const override;
 
-    bool addWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const override;
-    bool subtractWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const override;
-    bool subtractShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const override;
-    bool addShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const override;
-    bool isFinished(const MatchStore & match) const override;
-    bool shouldStop(const MatchStore & match) const override;
-    bool shouldEnterGoldenScore(const MatchStore & match) const override;
-    std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore & match) const override;
-    bool stop(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const override;
-    bool resume(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const override;
+    std::chrono::milliseconds getNormalTime() const override;
+
+    bool canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+
+    bool canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+
+    bool canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+
+    bool canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+
+    bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
+
+    std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}

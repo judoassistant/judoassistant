@@ -1,6 +1,5 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
 
 MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
     : mId(id)
@@ -10,6 +9,7 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mBye(bye)
     , mStatus(MatchStatus::NOT_STARTED)
     , mGoldenScore(false)
+    , mDuration(0)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
@@ -31,35 +31,12 @@ std::optional<PlayerId> MatchStore::getPlayer(PlayerIndex index) const {
     return mPlayers[static_cast<size_t>(index)];
 }
 
-void MatchStore::pushEvent(std::unique_ptr<MatchEvent> && event) {
-    mEvents.push_back(std::move(event));
+void MatchStore::pushEvent(const MatchEvent & event) {
+    mEvents.push_back(event);
 }
 
-const std::vector<std::unique_ptr<MatchEvent>> & MatchStore::getEvents() const {
+const std::vector<MatchEvent> & MatchStore::getEvents() const {
     return mEvents;
-}
-
-std::chrono::high_resolution_clock::time_point MatchStore::getTime() const {
-    return mTime;
-}
-
-std::chrono::high_resolution_clock::duration MatchStore::getClock() const {
-    return mClock;
-}
-
-std::chrono::high_resolution_clock::duration MatchStore::getCurrentClock() const {
-    if (mStatus == MatchStatus::UNPAUSED)
-        return (std::chrono::high_resolution_clock::now() - getTime()) - mClock;
-    else
-        return mClock;
-}
-
-void MatchStore::setTime(const std::chrono::high_resolution_clock::time_point & time) {
-    mTime = time;
-}
-
-void MatchStore::setClock(const std::chrono::high_resolution_clock::duration & clock) {
-    mClock = clock;
 }
 
 MatchStore::Score & MatchStore::getScore(PlayerIndex index) {
@@ -123,12 +100,10 @@ MatchStore::MatchStore(const MatchStore &other)
     , mPlayers(other.mPlayers)
     , mStatus(other.mStatus)
     , mGoldenScore(other.mGoldenScore)
-    , mTime(other.mTime)
-    , mClock(other.mClock)
-{
-    for (const auto &event : other.mEvents)
-        mEvents.push_back(event->clone());
-}
+    , mResumeTime(other.mResumeTime)
+    , mDuration(other.mDuration)
+    , mEvents(other.mEvents)
+{}
 
 MatchStore::Score::Score()
     : ippon(0)
@@ -151,4 +126,27 @@ void MatchStore::setStatus(MatchStatus status) {
 
 const std::string & MatchStore::getTitle() const {
     return mTitle;
+}
+
+void MatchStore::setDuration(std::chrono::milliseconds duration) {
+    mDuration = duration;
+}
+
+std::chrono::milliseconds MatchStore::getDuration() const {
+    return mDuration;
+}
+
+void MatchStore::setResumeTime(std::chrono::milliseconds resumeTime) {
+    mResumeTime = resumeTime;
+}
+
+std::chrono::milliseconds MatchStore::getResumeTime() const {
+    return mResumeTime;
+}
+
+std::chrono::milliseconds MatchStore::currentDuration(std::chrono::milliseconds masterTime) const {
+    if (mStatus != MatchStatus::UNPAUSED)
+        return mDuration;
+
+    return (masterTime - mResumeTime) + mDuration;
 }

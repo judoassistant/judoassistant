@@ -5,7 +5,6 @@
 #include "exception.hpp"
 #include "rulesets/ruleset.hpp"
 #include "stores/category_store.hpp"
-#include "stores/match_event.hpp"
 #include "stores/tournament_store.hpp"
 
 AddPlayersAction::AddPlayersAction(TournamentStore & tournament, const std::vector<PlayerFields> &fields)

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <list>
+#include <chrono>
+
 #include <QObject>
 #include <QString>
-#include <list>
 
 #include "core.hpp"
 #include "id.hpp"
@@ -55,6 +57,9 @@ public:
     const Action & getAction(ClientActionId actionId) const;
     ConstActionListIterator actionsBegin() const;
     ConstActionListIterator actionsEnd() const;
+
+    std::chrono::milliseconds masterTime() const;
+    std::chrono::milliseconds localTime() const;
 
 signals:
     void tournamentAboutToBeReset();

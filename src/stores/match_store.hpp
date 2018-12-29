@@ -8,10 +8,8 @@
 #include "id.hpp"
 #include "serialize.hpp"
 
-
 class MatchStore;
 class Ruleset;
-class MatchEvent;
 
 enum class MatchType {
     KNOCKOUT, FINAL
@@ -19,6 +17,20 @@ enum class MatchType {
 
 enum class MatchStatus {
     NOT_STARTED, PAUSED, UNPAUSED, FINISHED
+};
+
+enum class MatchEventType {
+    WHITE_IPPON, WHITE_WAZARI, WHITE_SHIDO, WHITE_HANSOKU_MAKE, BLUE_IPPON, BLUE_WAZARI, BLUE_SHIDO, BLUE_HANSOKU_MAKE,
+};
+
+struct MatchEvent {
+    MatchEventType type;
+    std::chrono::milliseconds duration; // match duration at the time of the event
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(type, duration);
+    }
 };
 
 std::ostream &operator<<(std::ostream &out, const MatchType &matchType);
@@ -68,16 +80,9 @@ public:
 
     bool isBye() const;
 
-    void pushEvent(std::unique_ptr<MatchEvent> && event);
-    const std::vector<std::unique_ptr<MatchEvent>> & getEvents() const;
+    void pushEvent(const MatchEvent & event);
+    const std::vector<MatchEvent> & getEvents() const;
 
-    // TODO: Make sure clock is serializeable(hint: it's probably not..)
-    // TODO: rename time and clock to something more logical
-    std::chrono::high_resolution_clock::time_point getTime() const;
-    std::chrono::high_resolution_clock::duration getClock() const;
-    std::chrono::high_resolution_clock::duration getCurrentClock() const;
-    void setTime(const std::chrono::high_resolution_clock::time_point & time);
-    void setClock(const std::chrono::high_resolution_clock::duration & clock);
     void finish();
     bool isGoldenScore() const;
     void setGoldenScore(bool val);
@@ -86,6 +91,14 @@ public:
     void setStatus(MatchStatus status);
 
     CategoryId getCategory() const;
+
+    void setDuration(std::chrono::milliseconds duration);
+    std::chrono::milliseconds getDuration() const;
+
+    std::chrono::milliseconds currentDuration(std::chrono::milliseconds masterTime) const;
+
+    void setResumeTime(std::chrono::milliseconds resumeTime);
+    std::chrono::milliseconds getResumeTime() const;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -98,11 +111,9 @@ public:
         ar(cereal::make_nvp("players", mPlayers));
         ar(cereal::make_nvp("goldenScore", mGoldenScore));
         ar(cereal::make_nvp("status", mStatus));
-
-        // TODO: serialize match event and clock
-        // ar(cereal::make_nvp("time", mTime));
-        // ar(cereal::make_nvp("clock", mClock));
-        // ar(cereal::make_nvp("events", mEvents));
+        ar(cereal::make_nvp("resumeTime", mResumeTime));
+        ar(cereal::make_nvp("duration", mDuration));
+        ar(cereal::make_nvp("events", mEvents));
     }
 private:
     MatchId mId;
@@ -114,8 +125,9 @@ private:
     std::array<std::optional<PlayerId>,2> mPlayers;
     MatchStatus mStatus;
     bool mGoldenScore; // whether the match is currently in golden score or not
-    std::chrono::high_resolution_clock::time_point mTime; // the time when clock was last resumed
-    std::chrono::high_resolution_clock::duration mClock; // the value of the clock when it was last resumed
-    std::vector<std::unique_ptr<MatchEvent>> mEvents;
+    std::chrono::milliseconds mResumeTime; // the time when the clock was last resumed
+    std::chrono::milliseconds mDuration; // the match duration when the clock was last paused
+    std::vector<MatchEvent> mEvents;
+    // TODO: Add osae komi timers
 };
 

@@ -14,7 +14,6 @@
 #include "id.hpp"
 #include "stores/tatami_store.hpp"
 #include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
 
 class StoreManager;
 

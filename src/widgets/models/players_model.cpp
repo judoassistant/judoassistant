@@ -7,7 +7,6 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/qtournament_store.hpp"
 #include "stores/player_store.hpp"
-#include "stores/match_event.hpp"
 #include "stores/match_store.hpp"
 #include "stores/category_store.hpp"
 #include "store_managers/store_manager.hpp"

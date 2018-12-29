@@ -10,7 +10,6 @@
 
 #include "id.hpp"
 #include "widgets/misc/numerical_string_comparator.hpp"
-#include "stores/match_event.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tatami_store.hpp"
 

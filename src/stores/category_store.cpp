@@ -4,7 +4,6 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
-#include "stores/match_event.hpp"
 
 CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem)
     : mId(id)

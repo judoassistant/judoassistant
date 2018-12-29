@@ -1,45 +1,59 @@
 #include "rulesets/twentyeighteen_ruleset.hpp"
-#include "stores/match_event.hpp"
 
-bool TwentyEighteenRuleset::addWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+bool TwentyEighteenRuleset::canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.ippon < 1);
+}
+
+void TwentyEighteenRuleset::addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canAddWazari(match, playerIndex));
+
     auto & score = match.getScore(playerIndex);
-    if (score.ippon == 1)
-        return false;
     score.wazari = (score.wazari + 1) % 2;
     score.ippon = (score.wazari == 0);
-    return true;
 }
 
-bool TwentyEighteenRuleset::subtractWazari(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+bool TwentyEighteenRuleset::canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.ippon > 0 || score.wazari > 0);
+}
+
+void TwentyEighteenRuleset::subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canSubtractWazari(match, playerIndex));
+
     auto & score = match.getScore(playerIndex);
-    if (score.ippon == 0 && score.wazari == 0)
-        return false;
     score.wazari = (score.wazari + 1) % 2;
     score.ippon = 0;
-
-    return true;
 }
 
-bool TwentyEighteenRuleset::addShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+bool TwentyEighteenRuleset::canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.hansokuMake == 0);
+}
+
+void TwentyEighteenRuleset::addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canAddShido(match, playerIndex));
+
     auto & score = match.getScore(playerIndex);
-    if (score.hansokuMake == 1)
-        return false;
     score.shido = (score.shido + 1) % 2;
     score.hansokuMake = (score.shido == 0);
-    return true;
 }
 
-bool TwentyEighteenRuleset::subtractShido(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
+bool TwentyEighteenRuleset::canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.hansokuMake == 1 || score.shido > 0);
+}
+
+void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canSubtractShido(match, playerIndex));
+
     auto & score = match.getScore(playerIndex);
-    if (score.hansokuMake == 0 && score.shido == 0)
-        return false;
     score.wazari = (score.wazari + 2) % 3;
     score.hansokuMake = 0;
-    return true;
 }
 
 
-bool TwentyEighteenRuleset::isFinished(const MatchStore & match) const {
+bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (match.isBye())
         return true;
     if (!match.getWhitePlayer().has_value())
@@ -55,26 +69,10 @@ bool TwentyEighteenRuleset::isFinished(const MatchStore & match) const {
 
     if (whiteScore.hansokuMake || blueScore.hansokuMake) // also handle the case when both players are disqualified
         return true;
-    return getWinner(match).has_value();
+    return getWinner(match, masterTime).has_value();
 }
 
-bool TwentyEighteenRuleset::shouldStop(const MatchStore & match) const {
-    if (match.getCurrentClock() > NORMAL_TIME && !match.isGoldenScore())
-        return true;
-    if (getWinner(match).has_value())
-        return true;
-    return false;
-}
-
-bool TwentyEighteenRuleset::shouldEnterGoldenScore(const MatchStore & match) const {
-    if (getWinner(match).has_value())
-        return false;
-    if (match.getCurrentClock() >= NORMAL_TIME && !match.isGoldenScore())
-        return true;
-    return false;
-}
-
-std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const MatchStore & match) const {
+std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (!match.getWhitePlayer().has_value())
         return MatchStore::PlayerIndex::BLUE;
     if (!match.getBluePlayer().has_value())
@@ -82,43 +80,22 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const Ma
 
     const auto & whiteScore = match.getWhiteScore();
     const auto & blueScore = match.getBlueScore();
-    auto currentClock = match.getCurrentClock();
+    auto currentDuration = match.currentDuration(masterTime);
 
     if (whiteScore.ippon == 1)
         return MatchStore::PlayerIndex::WHITE;
     if (whiteScore.hansokuMake == 0 && blueScore.hansokuMake == 1) // also handle the case when both players are disqualified
         return MatchStore::PlayerIndex::WHITE;
-    if (currentClock >= NORMAL_TIME && whiteScore.wazari > blueScore.wazari)
+    if (currentDuration >= getNormalTime() && whiteScore.wazari > blueScore.wazari)
         return MatchStore::PlayerIndex::WHITE;
 
     if (blueScore.ippon == 1)
         return MatchStore::PlayerIndex::BLUE;
     if (blueScore.hansokuMake == 0 && whiteScore.hansokuMake == 1) // also handle the case when both players are disqualified
         return MatchStore::PlayerIndex::BLUE;
-    if (currentClock >= NORMAL_TIME && blueScore.wazari > whiteScore.wazari)
+    if (currentDuration >= getNormalTime() && blueScore.wazari > whiteScore.wazari)
         return MatchStore::PlayerIndex::BLUE;
     return std::nullopt;
-}
-
-bool TwentyEighteenRuleset::stop(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
-    if (match.getStatus() != MatchStatus::UNPAUSED)
-        return false;
-    match.setTime(time);
-    if (clock > NORMAL_TIME && !match.isGoldenScore())
-        match.setClock(NORMAL_TIME);
-    else
-        match.setClock(clock);
-    match.setStatus(MatchStatus::PAUSED);
-    return true;
-}
-
-bool TwentyEighteenRuleset::resume(MatchStore & match, std::chrono::high_resolution_clock::time_point time, std::chrono::high_resolution_clock::duration clock) const {
-    if (match.getStatus() == MatchStatus::UNPAUSED)
-        return false;
-    match.setTime(time);
-    match.setClock(clock);
-    match.setStatus(MatchStatus::UNPAUSED);
-    return true;
 }
 
 std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
@@ -130,3 +107,6 @@ std::string TwentyEighteenRuleset::getName() const {
     return "2018";
 }
 
+std::chrono::milliseconds TwentyEighteenRuleset::getNormalTime() const {
+    return std::chrono::minutes(4);
+}

@@ -1,33 +1,68 @@
 #include "rulesets/ruleset.hpp"
-#include "stores/match_event.hpp"
 
-bool Ruleset::enterGoldenScore(MatchStore & match) const {
-    if (match.isGoldenScore())
-        return false;
-    match.setGoldenScore(true);
-    return true;
+bool Ruleset::canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.ippon == 0);
 }
 
-bool Ruleset::exitGoldenScore(MatchStore & match) const {
-    if (!match.isGoldenScore())
-        return false;
-    match.setGoldenScore(false);
-    return true;
-}
+void Ruleset::addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canAddIppon(match, playerIndex));
 
-bool Ruleset::subtractIppon(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
     auto & score = match.getScore(playerIndex);
-    if (score.ippon < 1)
-        return false;
-    score.ippon -= 1;
-    return true;
-}
-
-bool Ruleset::addIppon(MatchStore & match, MatchStore::PlayerIndex playerIndex) const {
-    auto & score = match.getScore(playerIndex);
-    if (score.ippon > 0)
-        return false;
     score.ippon += 1;
-    return true;
+}
+
+bool Ruleset::canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.ippon > 0);
+}
+
+void Ruleset::subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canSubtractIppon(match, playerIndex));
+
+    auto & score = match.getScore(playerIndex);
+    score.ippon -= 1;
+}
+
+bool Ruleset::shouldPause(const MatchStore &match, std::chrono::milliseconds masterTime) const {
+    if (match.getStatus() != MatchStatus::UNPAUSED)
+        return false;
+    if (match.currentDuration(masterTime) > getNormalTime() && !match.isGoldenScore())
+        return true;
+    if (getWinner(match, masterTime).has_value())
+        return true;
+    return false;
+}
+
+bool Ruleset::canPause(const MatchStore &match, std::chrono::milliseconds masterTime) const {
+    return (match.getStatus() == MatchStatus::UNPAUSED);
+}
+
+void Ruleset::pause(MatchStore &match, std::chrono::milliseconds masterTime) const {
+    assert(canPause(match, masterTime));
+
+    auto currentDuration = match.currentDuration(masterTime);
+    if (currentDuration > getNormalTime() && !match.isGoldenScore())
+        currentDuration = getNormalTime();
+
+    match.setDuration(currentDuration);
+
+    // The isFinished implementation of twentyeighteen_ruleset returns false if
+    // match is unpaused. Therefore match is first paused and then potentially
+    // marked as finished.
+    match.setStatus(MatchStatus::PAUSED);
+    if (isFinished(match, masterTime))
+        match.setStatus(MatchStatus::FINISHED);
+}
+
+bool Ruleset::canResume(const MatchStore &match, std::chrono::milliseconds masterTime) const {
+    return (match.getStatus() != MatchStatus::UNPAUSED && match.getStatus() == MatchStatus::FINISHED);
+}
+
+void Ruleset::resume(MatchStore &match, std::chrono::milliseconds masterTime) const {
+    assert(canResume(match, masterTime));
+
+    match.setResumeTime(masterTime);
+    match.setStatus(MatchStatus::UNPAUSED);
 }
 
