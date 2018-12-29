@@ -248,7 +248,16 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
     std::shared_ptr<Action> action;
     message->decodeAction(actionId, action);
 
-    emit actionReceived(actionId, std::move(action));
+    mActionStack.push_back(std::make_pair(actionId, action));
+    mActionMap[actionId] = std::prev(mActionStack.end());
+
+    if (mActionStack.size() > ACTION_STACK_MAX_SIZE) {
+        mActionStack.front().second->redo(*mTournament);
+        mActionMap.erase(mActionStack.front().first);
+        mActionStack.pop_front();
+    }
+
+    emit actionReceived(actionId, action->freshClone());
 
     for (auto & participant : mParticipants) {
         if (participant == sender) {
