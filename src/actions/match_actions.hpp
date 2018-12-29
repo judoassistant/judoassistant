@@ -106,3 +106,120 @@ private:
 
 CEREAL_REGISTER_TYPE(PauseMatchAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, PauseMatchAction)
+
+class AwardIpponAction : public Action {
+public:
+    AwardIpponAction() = default;
+    AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+    MatchStore::PlayerIndex mPlayerIndex;
+    std::chrono::milliseconds mDuration;
+
+    // undo members
+    bool mDidAward;
+};
+
+CEREAL_REGISTER_TYPE(AwardIpponAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardIpponAction)
+
+class AwardWazariAction : public Action {
+public:
+    AwardWazariAction() = default;
+    AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+    MatchStore::PlayerIndex mPlayerIndex;
+    std::chrono::milliseconds mDuration;
+
+    // undo members
+    bool mDidAward;
+};
+
+CEREAL_REGISTER_TYPE(AwardWazariAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardWazariAction)
+
+class AwardShidoAction : public Action {
+public:
+    AwardShidoAction() = default;
+    AwardShidoAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+    MatchStore::PlayerIndex mPlayerIndex;
+    std::chrono::milliseconds mDuration;
+
+    // undo members
+    bool mDidAward;
+};
+
+CEREAL_REGISTER_TYPE(AwardShidoAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardShidoAction)
+
+class AwardHansokuMakeAction : public Action {
+public:
+    AwardHansokuMakeAction() = default;
+    AwardHansokuMakeAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+    MatchStore::PlayerIndex mPlayerIndex;
+    std::chrono::milliseconds mDuration;
+
+    // undo members
+    bool mDidAward;
+};
+
+CEREAL_REGISTER_TYPE(AwardHansokuMakeAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardHansokuMakeAction)
+
