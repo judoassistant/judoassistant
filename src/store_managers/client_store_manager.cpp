@@ -34,19 +34,19 @@ void ClientStoreManager::connect(QString host, unsigned int port) {
 
 void ClientStoreManager::dispatch(std::unique_ptr<Action> action) {
     if (getState() == State::NOT_CONNECTED)
-        throw std::runtime_error("Tried to dispatch action on NOT_CONNECTED ClientStoreManager");
+        log_debug().msg("Dispatching action on NOT_CONNECTED ClientStoreManager");
     StoreManager::dispatch(std::move(action));
 }
 
 void ClientStoreManager::undo() {
     if (getState() == State::NOT_CONNECTED)
-        throw std::runtime_error("Tried to undo on NOT_CONNECTED ClientStoreManager");
+        log_debug().msg("Undoing on on NOT_CONNECTED ClientStoreManager");
     StoreManager::undo();
 }
 
 void ClientStoreManager::redo() {
     if (getState() == State::NOT_CONNECTED)
-        throw std::runtime_error("Tried to redo on NOT_CONNECTED ClientStoreManager");
+        log_debug().msg("Redoing on on NOT_CONNECTED ClientStoreManager");
     StoreManager::redo();
 }
 
@@ -69,6 +69,7 @@ void ClientStoreManager::failConnectionAttempt() {
 }
 
 void ClientStoreManager::succeedConnectionAttempt() {
+    mState = State::CONNECTED;
     emit connectionAttemptSucceeded();
 }
 

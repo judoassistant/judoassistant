@@ -101,6 +101,7 @@ void ResumeMatchAction::redoImpl(TournamentStore & tournament) {
     mPrevResumeTime = match.getResumeTime();
 
     ruleset.resume(match, mMasterTime);
+    tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
 void ResumeMatchAction::undoImpl(TournamentStore & tournament) {
@@ -115,6 +116,7 @@ void ResumeMatchAction::undoImpl(TournamentStore & tournament) {
     assert(match.getStatus() == MatchStatus::UNPAUSED);
     match.setStatus(mPrevStatus); // TODO: Perhaps have a more encapsulated way of storing state
     match.setResumeTime(mPrevResumeTime);
+    tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
 PauseMatchAction::PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
@@ -149,6 +151,7 @@ void PauseMatchAction::redoImpl(TournamentStore & tournament) {
     mPrevDuration = match.getDuration();
 
     ruleset.pause(match, mMasterTime);
+    tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
 void PauseMatchAction::undoImpl(TournamentStore & tournament) {
@@ -163,5 +166,6 @@ void PauseMatchAction::undoImpl(TournamentStore & tournament) {
     assert(match.getStatus() == MatchStatus::PAUSED);
     match.setStatus(MatchStatus::UNPAUSED);
     match.setDuration(mPrevDuration);
+    tournament.changeMatches(mCategoryId, {mMatchId});
 }
 

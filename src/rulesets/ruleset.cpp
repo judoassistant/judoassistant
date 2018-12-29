@@ -56,7 +56,7 @@ void Ruleset::pause(MatchStore &match, std::chrono::milliseconds masterTime) con
 }
 
 bool Ruleset::canResume(const MatchStore &match, std::chrono::milliseconds masterTime) const {
-    return (match.getStatus() != MatchStatus::UNPAUSED && match.getStatus() == MatchStatus::FINISHED);
+    return (match.getStatus() != MatchStatus::UNPAUSED && !isFinished(match, masterTime));
 }
 
 void Ruleset::resume(MatchStore &match, std::chrono::milliseconds masterTime) const {

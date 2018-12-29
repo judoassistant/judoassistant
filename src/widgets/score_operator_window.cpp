@@ -10,6 +10,7 @@
 #include <QTableView>
 #include <QHeaderView>
 
+#include "actions/match_actions.hpp"
 #include "config/web.hpp"
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
@@ -42,6 +43,7 @@ ScoreOperatorWindow::ScoreOperatorWindow()
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &ScoreOperatorWindow::endResetTournament);
 
     findNextMatch();
+    disableControlButtons();
 }
 
 void ScoreOperatorWindow::createStatusBar() {
@@ -221,6 +223,7 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         mNextButton = new QPushButton("Go to next match", matchBox);
         connect(mNextButton, &QPushButton::clicked, this, &ScoreOperatorWindow::goNextMatch);
         mResumeButton = new QPushButton("Resume Match", matchBox);
+        connect(mResumeButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resumeButtonClick);
 
         subLayout->addWidget(mNextButton);
         subLayout->addWidget(mResumeButton);
@@ -295,6 +298,7 @@ void ScoreOperatorWindow::endResetTournament() {
     clearTatamiMenu();
     populateTatamiMenu();
     findNextMatch();
+    updateControlButtons();
 }
 
 void ScoreOperatorWindow::setTatami(int tatami) {
@@ -364,6 +368,7 @@ void ScoreOperatorWindow::changeMatches(CategoryId categoryId, std::vector<Match
 
     if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId) {
         shouldUpdateNextButton = true;
+        updateControlButtons();
     }
 
     if (shouldUpdateNextButton)
@@ -372,13 +377,14 @@ void ScoreOperatorWindow::changeMatches(CategoryId categoryId, std::vector<Match
 
 void ScoreOperatorWindow::beginResetMatches(CategoryId categoryId) {
     // next match category resetting is handled by tatami hooks
-    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId && mNextMatch.has_value()) {
-        updateNextButton();
+    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId) {
+        disableControlButtons(); // disable controls
     }
 }
 
 void ScoreOperatorWindow::endResetMatches(CategoryId categoryId) {
     // next match category resetting is handled by tatami hooks
+    updateControlButtons();
 }
 
 void ScoreOperatorWindow::updateNextButton() {
@@ -407,5 +413,75 @@ void ScoreOperatorWindow::goNextMatch() {
     mCurrentMatch = mNextMatch;
     mScoreDisplayWidget->setMatch(mCurrentMatch);
     findNextMatch();
+    updateControlButtons();
+}
+
+void ScoreOperatorWindow::disableControlButtons() {
+    mResumeButton->setEnabled(false);
+    mResumeButton->setText("Resume Match");
+}
+
+void ScoreOperatorWindow::updateControlButtons() {
+    if (!mCurrentMatch) {
+        disableControlButtons();
+        return;
+    }
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first)) {
+        disableControlButtons();
+        return;
+    }
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second)) {
+        disableControlButtons();
+        return;
+    }
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value()) {
+        disableControlButtons();
+        return;
+    }
+
+    const auto &ruleset = category.getRuleset();
+
+    if (match.getStatus() == MatchStatus::UNPAUSED) {
+        mResumeButton->setText("Pause match");
+        mResumeButton->setEnabled(true);
+    }
+    else {
+        mResumeButton->setText("Resume Match");
+        mResumeButton->setEnabled(ruleset.canResume(match, mStoreManager.masterTime()));
+    }
+}
+
+void ScoreOperatorWindow::resumeButtonClick() {
+    if (!mCurrentMatch) {
+        return;
+    }
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    if (match.getStatus() == MatchStatus::UNPAUSED) {
+        log_debug().msg("Pausing match");
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, mStoreManager.masterTime()));
+    }
+    else {
+        auto masterTime = mStoreManager.masterTime();
+        if (!ruleset.canResume(match, masterTime))
+            return;
+        log_debug().msg("Resuming match");
+        mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
+    }
 }
 

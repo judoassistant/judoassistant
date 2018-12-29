@@ -43,6 +43,10 @@ private:
     void findNextMatch();
     void updateNextButton();
     void goNextMatch();
+    void disableControlButtons();
+    void updateControlButtons();
+
+    void resumeButtonClick();
 
     void createStatusBar();
     void createTournamentMenu();

@@ -14,12 +14,14 @@ ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget
 {
     mIntroTimer.setSingleShot(true);
     mWinnerTimer.setSingleShot(true);
+    mDurationTimer.start(DURATION_INTERVAL);
 
     mFont.setBold(true);
     mFont.setCapitalization(QFont::AllUppercase);
 
     connect(&mIntroTimer, &QTimer::timeout, [this](){ setState(ScoreDisplayState::NORMAL); });
     connect(&mWinnerTimer, &QTimer::timeout, [this](){ setState(ScoreDisplayState::WINNER); });
+    connect(&mDurationTimer, &QTimer::timeout, this, &ScoreDisplayWidget::durationTimerHit);
 
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &ScoreDisplayWidget::beginResetTournament);
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &ScoreDisplayWidget::endResetTournament);
@@ -217,6 +219,8 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     const int columnThree = columnOne + (rect.width() - columnOne) * 3 / 4;
     const int columnTwo = columnOne + (columnThree - columnOne) / 3;
 
+    const auto &ruleset = category.getRuleset();
+
     painter.save();
     painter.translate(rect.x(), rect.y());
 
@@ -239,13 +243,18 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
 
     // Paint time left
-    QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
+    {
+        QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
+        auto time = std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(mStoreManager.masterTime()));
+        QString seconds = QString::number(std::chrono::duration_cast<std::chrono::seconds>(time % std::chrono::minutes(1)).count()).rightJustified(2, '0');
+        QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(time).count());
 
-    font.setPixelSize(rect.height()*6/8);
-    painter.setFont(font);
+        font.setPixelSize(rect.height()*6/8);
+        painter.setFont(font);
 
-    painter.setPen(COLOR_14);
-    painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, "3:56");
+        painter.setPen(COLOR_14);
+        painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, QString("%1:%2").arg(minutes, seconds));
+    }
 
     // Paint golden score indicator
     if (match.isGoldenScore()) {
@@ -374,6 +383,8 @@ void ScoreDisplayWidget::changeMatches(CategoryId categoryId, std::vector<MatchI
 
     for (auto matchId : matchIds) {
         if (mCombinedId->second == matchId) {
+            if (mState == ScoreDisplayState::INTRODUCTION)
+                mState = ScoreDisplayState::NORMAL;
             update(0, 0, width(), height());
             return;
         }
@@ -415,5 +426,15 @@ void ScoreDisplayWidget::changeCategories(std::vector<CategoryId> categoryIds) {
             return;
         }
     }
+}
+
+void ScoreDisplayWidget::durationTimerHit() {
+    if (!mCombinedId)
+        return;
+    if (mState != ScoreDisplayState::NORMAL)
+        return;
+    log_debug().msg("duration timer timer hit");
+    QRect lowerRect(0,2*(height()/3),width(), height() - 2*(height()/3));
+    update(lowerRect);
 }
 

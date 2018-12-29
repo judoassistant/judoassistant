@@ -26,6 +26,9 @@ private:
     static const int PADDING = 5;
     static const int INTRO_INTERVAL = 4000;
     static const int WINNER_INTERVAL = 4000;
+    static const int DURATION_INTERVAL = 1000;
+
+    void durationTimerHit();
 
     void paintNullMatch(QPainter &painter);
 
@@ -49,5 +52,6 @@ private:
     QFont mFont;
     QTimer mIntroTimer;
     QTimer mWinnerTimer;
+    QTimer mDurationTimer;
 };
 

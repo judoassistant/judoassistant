@@ -54,13 +54,14 @@ void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerI
 
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const {
+    if (match.getStatus() == MatchStatus::FINISHED)
+        return true;
     if (match.isBye())
         return true;
     if (!match.getWhitePlayer().has_value())
         return false;
     if (!match.getBluePlayer().has_value())
         return false;
-
     if (match.getStatus() == MatchStatus::NOT_STARTED || match.getStatus() == MatchStatus::UNPAUSED)
         return false;
 
