@@ -48,6 +48,7 @@ public:
     bool canRedo();
     void redo();
 
+    // TODO: Why aren't these methods virtual?
     bool containsConfirmedAction(ClientActionId action) const;
     bool containsUnconfirmedAction(ClientActionId action) const;
 
