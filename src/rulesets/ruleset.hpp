@@ -37,6 +37,12 @@ public:
     virtual bool canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
     virtual void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
 
+    virtual bool canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+
+    virtual bool canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+
     virtual bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
 
     virtual std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;

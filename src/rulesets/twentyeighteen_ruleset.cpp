@@ -111,3 +111,29 @@ std::string TwentyEighteenRuleset::getName() const {
 std::chrono::milliseconds TwentyEighteenRuleset::getNormalTime() const {
     return std::chrono::minutes(4);
 }
+
+// TODO: Implement banning of players on direct hansoku make
+bool TwentyEighteenRuleset::canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.hansokuMake == 0);
+}
+
+void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canAddHansokuMake(match, playerIndex));
+
+    auto & score = match.getScore(playerIndex);
+    score.hansokuMake = 1;
+}
+
+bool TwentyEighteenRuleset::canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return (score.hansokuMake == 1);
+}
+
+void TwentyEighteenRuleset::subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    assert(canSubtractHansokuMake(match, playerIndex));
+
+    auto & score = match.getScore(playerIndex);
+    score.hansokuMake = 0;
+}
+

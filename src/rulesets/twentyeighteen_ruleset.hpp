@@ -25,6 +25,12 @@ public:
     bool canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
     void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
 
+    bool canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+
+    bool canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+
     bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
 
     std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
