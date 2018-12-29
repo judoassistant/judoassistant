@@ -23,7 +23,13 @@ bool MasterStoreManager::read(const QString &path) {
 
     auto tournament = std::make_unique<QTournamentStore>();
     cereal::PortableBinaryInputArchive archive(file);
-    archive(*tournament);
+    try {
+        archive(*tournament);
+    }
+    catch(const std::exception &e) {
+        return false;
+    }
+
 
     sync(std::move(tournament));
 
@@ -47,7 +53,12 @@ bool MasterStoreManager::write(const QString &path) {
         return false;
 
     cereal::PortableBinaryOutputArchive archive(file);
-    archive(getTournament());
+    try {
+        archive(getTournament());
+    }
+    catch(const std::exception &e) {
+        return false;
+    }
     mDirty = false;
     return true;
 }
