@@ -53,12 +53,12 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First name"), mFirstNameContent);
     formLayout->addRow(tr("Last name"), mLastNameContent);
+    formLayout->addRow(tr("Sex"), mSexContent);
     formLayout->addRow(tr("Age"), mAgeContent);
+    formLayout->addRow(tr("Weight"), mWeightContent);
     formLayout->addRow(tr("Rank"), mRankContent);
     formLayout->addRow(tr("Club"), mClubContent);
-    formLayout->addRow(tr("Weight"), mWeightContent);
     formLayout->addRow(tr("Country"), mCountryContent);
-    formLayout->addRow(tr("Sex"), mSexContent);
 
     setPlayer(std::nullopt);
     setLayout(formLayout);

@@ -71,12 +71,12 @@ ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVR
 
         formLayout->addRow(tr("First name"), mFirstNameContent);
         formLayout->addRow(tr("Last name"), mLastNameContent);
+        formLayout->addRow(tr("Sex"), mSexContent);
         formLayout->addRow(tr("Age"), mAgeContent);
+        formLayout->addRow(tr("Weight"), mWeightContent);
         formLayout->addRow(tr("Rank"), mRankContent);
         formLayout->addRow(tr("Club"), mClubContent);
-        formLayout->addRow(tr("Weight"), mWeightContent);
         formLayout->addRow(tr("Country"), mCountryContent);
-        formLayout->addRow(tr("Sex"), mSexContent);
         group->setLayout(formLayout);
         mainLayout->addWidget(group);
 

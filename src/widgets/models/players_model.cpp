@@ -42,24 +42,24 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString::fromStdString(player.getLastName());
             case 2:
-                return (player.getAge() ? QVariant(player.getAge()->toInt()) : QVariant(""));
-            case 3:
-                return (player.getRank() ? QVariant(QString::fromStdString(player.getRank()->toString())) : QVariant(""));
-            case 4:
-                return QString(QString::fromStdString(player.getClub()));
-            case 5:
-                return (player.getWeight() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
-            case 6:
-                return (player.getCountry() ? QVariant(QString::fromStdString(player.getCountry()->toString())) : QVariant(""));
-            case 7:
                 return (player.getSex() ? QVariant(QString::fromStdString(player.getSex()->toString())) : QVariant(""));
+            case 3:
+                return (player.getAge() ? QVariant(player.getAge()->toInt()) : QVariant(""));
+            case 4:
+                return (player.getWeight() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
+            case 5:
+                return (player.getRank() ? QVariant(QString::fromStdString(player.getRank()->toString())) : QVariant(""));
+            case 6:
+                return QString(QString::fromStdString(player.getClub()));
+            case 7:
+                return (player.getCountry() ? QVariant(QString::fromStdString(player.getCountry()->toString())) : QVariant(""));
             case 8:
                 return QString::fromStdString(listPlayerCategories(player)); // TODO: Create custom widget to show color-coded Bootstrap-style badges
         }
     }
 
     if (role == Qt::UserRole) { // Used for sorting
-        if (index.column() == 3)
+        if (index.column() == 5)
             return (player.getRank().has_value() ? QVariant(player.getRank().value().toInt()) : QVariant(""));
         return data(index, Qt::DisplayRole);
     }
@@ -76,17 +76,17 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
                 case 1:
                     return QString(tr("Last name"));
                 case 2:
-                    return QString(tr("Age"));
-                case 3:
-                    return QString(tr("Rank"));
-                case 4:
-                    return QString(tr("Club"));
-                case 5:
-                    return QString(tr("Weight"));
-                case 6:
-                    return QString(tr("Country"));
-                case 7:
                     return QString(tr("Sex"));
+                case 3:
+                    return QString(tr("Age"));
+                case 4:
+                    return QString(tr("Weight"));
+                case 5:
+                    return QString(tr("Rank"));
+                case 6:
+                    return QString(tr("Club"));
+                case 7:
+                    return QString(tr("Country"));
                 case 8:
                     return QString(tr("Categories"));
             }
