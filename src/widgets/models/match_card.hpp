@@ -20,7 +20,7 @@ struct MatchCardPlayerFields {
 class MatchCard {
 public:
     MatchCard() = default;
-    MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match);
+    MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime);
 
     void paint(QPainter *painter, const QRect &rect, const QPalette &palette) const;
     QSize sizeHint() const;
@@ -29,7 +29,7 @@ private:
     void setCategory(const CategoryStore &category, const MatchStore &match);
     void setWhitePlayer(const TournamentStore & tournament, const MatchStore &match);
     void setBluePlayer(const TournamentStore & tournament, const MatchStore &match);
-    void setMatch(const MatchStore &match);
+    void setMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime);
 
 private:
     static const int WIDTH_HINT = 250;
@@ -45,7 +45,7 @@ private:
     bool mIsStopped;
     bool mBye;
     bool mGoldenScore;
-    int time;
+    std::chrono::seconds mTime;
 };
 
 Q_DECLARE_METATYPE(MatchCard)

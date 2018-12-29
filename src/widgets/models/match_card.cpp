@@ -8,12 +8,12 @@
 #include "widgets/models/match_card.hpp"
 #include "widgets/colors.hpp"
 
-MatchCard::MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match)
+MatchCard::MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime)
 {
     setCategory(category, match);
     setWhitePlayer(tournament, match);
     setBluePlayer(tournament, match);
-    setMatch(match);
+    setMatch(category, match, masterTime);
 }
 
 void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const {
@@ -139,8 +139,14 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->setPen(COLOR_0);
             painter->setBrush(COLOR_0);
 
+            QString seconds = QString::number((mTime % std::chrono::minutes(1)).count()).rightJustified(2, '0');
+            QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(mTime).count());
+
             painter->setRenderHint(QPainter::Antialiasing, true);
-            // painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, "GS 01:43");
+            if (mGoldenScore)
+                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("GS %1:%2").arg(minutes).arg(seconds));
+            else
+                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("%1:%2").arg(minutes).arg(seconds));
         }
         else { // Draw ETA
             // QRect textRect(columnThreeOffset, padding, insideWidth-columnThreeOffset-padding, headerHeight-padding*2);
@@ -231,9 +237,10 @@ void MatchCard::setBluePlayer(const TournamentStore & tournament, const MatchSto
     mBluePlayer = std::move(fields);
 }
 
-void MatchCard::setMatch(const MatchStore &match) {
+void MatchCard::setMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime) {
     mStatus = match.getStatus();
     mBye = match.isBye();
     mGoldenScore = match.isGoldenScore();
+    mTime = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(category.getRuleset().getNormalTime() - match.currentDuration(masterTime)));
 }
 

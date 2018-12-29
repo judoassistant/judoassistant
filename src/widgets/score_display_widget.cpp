@@ -242,8 +242,8 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     // Paint time left
     {
         QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
-        auto time = std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(mStoreManager.masterTime()));
-        QString seconds = QString::number(std::chrono::duration_cast<std::chrono::seconds>(time % std::chrono::minutes(1)).count()).rightJustified(2, '0');
+        auto time = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(mStoreManager.masterTime())));
+        QString seconds = QString::number((time % std::chrono::minutes(1)).count()).rightJustified(2, '0');
         QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(time).count());
 
         font.setPixelSize(rect.height()*6/8);

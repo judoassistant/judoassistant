@@ -60,7 +60,7 @@ void MatchCardWidget::setMatch(std::optional<std::pair<CategoryId, MatchId>> com
         const auto &category = tournament.getCategory(mCombinedId->first);
         const auto &match = category.getMatch(mCombinedId->second);
 
-        mMatchCard = MatchCard(tournament, category, match);
+        mMatchCard = MatchCard(tournament, category, match, mStoreManager.masterTime());
     }
 
     update(0, 0, width(), height());
@@ -93,7 +93,7 @@ void MatchCardWidget::changeMatches(CategoryId categoryId, std::vector<MatchId> 
         const auto &category = tournament.getCategory(mCombinedId->first);
         const auto &match = category.getMatch(mCombinedId->second);
 
-        mMatchCard = MatchCard(tournament, category, match);
+        mMatchCard = MatchCard(tournament, category, match, mStoreManager.masterTime());
         update(0, 0, width(), height());
     }
 }
@@ -116,7 +116,7 @@ void MatchCardWidget::changeCategories(std::vector<CategoryId> categoryIds) {
         const auto &category = tournament.getCategory(mCombinedId->first);
         const auto &match = category.getMatch(mCombinedId->second);
 
-        mMatchCard = MatchCard(tournament, category, match);
+        mMatchCard = MatchCard(tournament, category, match, mStoreManager.masterTime());
         update(0, 0, width(), height());
     }
 }
@@ -139,7 +139,8 @@ void MatchCardWidget::changePlayers(std::vector<PlayerId> playerIds) {
         const auto &category = tournament.getCategory(mCombinedId->first);
         const auto &match = category.getMatch(mCombinedId->second);
 
-        mMatchCard = MatchCard(tournament, category, match);
+        mMatchCard = MatchCard(tournament, category, match, mStoreManager.masterTime());
         update(0, 0, width(), height());
     }
 }
+
