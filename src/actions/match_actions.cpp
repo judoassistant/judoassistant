@@ -66,3 +66,102 @@ std::unique_ptr<Action> AddMatchAction::freshClone() const {
 std::string AddMatchAction::getDescription() const {
     return "Add match";
 }
+
+ResumeMatchAction::ResumeMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
+    : mCategoryId(categoryId)
+    , mMatchId(matchId)
+    , mMasterTime(masterTime)
+{}
+
+std::unique_ptr<Action> ResumeMatchAction::freshClone() const {
+    return std::make_unique<ResumeMatchAction>(mCategoryId, mMatchId, mMasterTime);
+}
+
+std::string ResumeMatchAction::getDescription() const {
+    return "Resume match";
+}
+
+void ResumeMatchAction::redoImpl(TournamentStore & tournament) {
+    mDidResume = false;
+
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+
+    auto &match = category.getMatch(mMatchId);
+    const auto &ruleset = category.getRuleset();
+
+    if (!ruleset.canResume(match, mMasterTime))
+        return;
+
+    mDidResume = true;
+    mPrevStatus = match.getStatus();
+    mPrevResumeTime = match.getResumeTime();
+
+    ruleset.resume(match, mMasterTime);
+}
+
+void ResumeMatchAction::undoImpl(TournamentStore & tournament) {
+    if (!mDidResume)
+        return;
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+    assert(match.getStatus() == MatchStatus::UNPAUSED);
+    match.setStatus(mPrevStatus); // TODO: Perhaps have a more encapsulated way of storing state
+    match.setResumeTime(mPrevResumeTime);
+}
+
+PauseMatchAction::PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
+    : mCategoryId(categoryId)
+    , mMatchId(matchId)
+    , mMasterTime(masterTime)
+{}
+
+std::unique_ptr<Action> PauseMatchAction::freshClone() const {
+    return std::make_unique<PauseMatchAction>(mCategoryId, mMatchId, mMasterTime);
+}
+
+std::string PauseMatchAction::getDescription() const {
+    return "Pause match";
+}
+
+void PauseMatchAction::redoImpl(TournamentStore & tournament) {
+    mDidPause = false;
+
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+
+    const auto &ruleset = category.getRuleset();
+    if (!ruleset.canPause(match, mMasterTime))
+        return;
+
+    mDidPause = true;
+    mPrevDuration = match.getDuration();
+
+    ruleset.pause(match, mMasterTime);
+}
+
+void PauseMatchAction::undoImpl(TournamentStore & tournament) {
+    if (!mDidPause)
+        return;
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+    assert(match.getStatus() == MatchStatus::PAUSED);
+    match.setStatus(MatchStatus::UNPAUSED);
+    match.setDuration(mPrevDuration);
+}
+

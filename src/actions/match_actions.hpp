@@ -48,3 +48,61 @@ private:
 CEREAL_REGISTER_TYPE(AddMatchAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddMatchAction)
 
+class ResumeMatchAction : public Action {
+public:
+    ResumeMatchAction() = default;
+    ResumeMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId, mMasterTime);
+    }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+    std::chrono::milliseconds mMasterTime;
+
+    // undo members
+    bool mDidResume;
+    MatchStatus mPrevStatus;
+    std::chrono::milliseconds mPrevResumeTime;
+};
+
+CEREAL_REGISTER_TYPE(ResumeMatchAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ResumeMatchAction)
+
+class PauseMatchAction : public Action {
+public:
+    PauseMatchAction() = default;
+    PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId, mMasterTime);
+    }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+    std::chrono::milliseconds mMasterTime;
+
+    // undo members
+    bool mDidPause;
+    std::chrono::milliseconds mPrevDuration;
+};
+
+CEREAL_REGISTER_TYPE(PauseMatchAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, PauseMatchAction)
