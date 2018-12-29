@@ -5,6 +5,7 @@
 #include <QActionGroup>
 #include <QMainWindow>
 #include <QMetaObject>
+#include <QPushButton>
 
 #include "core.hpp"
 #include "store_managers/client_store_manager.hpp"
@@ -33,10 +34,15 @@ private:
     void endResetTournament();
 
     void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void beginResetMatches(CategoryId categoryId);
+    void endResetMatches(CategoryId categoryId);
 
     void setTatami(int tatami);
 
     void findNextMatch();
+    void updateNextButton();
+    void goNextMatch();
 
     void createStatusBar();
     void createTournamentMenu();
@@ -59,5 +65,8 @@ private:
     std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
     std::optional<std::pair<CategoryId, MatchId>> mNextMatch;
     std::stack<QMetaObject::Connection> mConnections;
+
+    QPushButton *mNextButton;
+    QPushButton *mResumeButton;
 };
 

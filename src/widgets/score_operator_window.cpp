@@ -209,12 +209,25 @@ QWidget* ScoreOperatorWindow::createMainArea() {
     }
 
     QGroupBox *whiteBox = new QGroupBox("White Player Controls", res);
-    QGroupBox *blueBox = new QGroupBox("Blue Player Controls", res);
-    QGroupBox *matchBox = new QGroupBox("Match Controls", res);
-
     layout->addWidget(whiteBox);
+
+    QGroupBox *blueBox = new QGroupBox("Blue Player Controls", res);
     layout->addWidget(blueBox);
-    layout->addWidget(matchBox);
+
+    {
+        QGroupBox *matchBox = new QGroupBox("Match Controls", res);
+        QVBoxLayout *subLayout = new QVBoxLayout(res);
+
+        mNextButton = new QPushButton("Go to next match", matchBox);
+        connect(mNextButton, &QPushButton::clicked, this, &ScoreOperatorWindow::goNextMatch);
+        mResumeButton = new QPushButton("Resume Match", matchBox);
+
+        subLayout->addWidget(mNextButton);
+        subLayout->addWidget(mResumeButton);
+
+        matchBox->setLayout(subLayout);
+        layout->addWidget(matchBox);
+    }
 
     res->setLayout(layout);
     return res;
@@ -275,6 +288,10 @@ void ScoreOperatorWindow::endResetTournament() {
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &ScoreOperatorWindow::populateTatamiMenu));
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &ScoreOperatorWindow::changeTatamis));
 
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesChanged, this, &ScoreOperatorWindow::changeMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &ScoreOperatorWindow::beginResetMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &ScoreOperatorWindow::endResetMatches));
+
     clearTatamiMenu();
     populateTatamiMenu();
     findNextMatch();
@@ -322,7 +339,7 @@ void ScoreOperatorWindow::findNextMatch() {
                     log_debug().field("combinedId", combinedId).msg("Found match");
                     mNextMatch = combinedId;
                     mNextMatchWidget->setMatch(combinedId);
-                    mScoreDisplayWidget->setMatch(combinedId); // temporary
+                    updateNextButton();
                     return;
                 }
             }
@@ -333,6 +350,62 @@ void ScoreOperatorWindow::findNextMatch() {
 
     mNextMatch = std::nullopt;
     mNextMatchWidget->setMatch(std::nullopt);
-    mScoreDisplayWidget->setMatch(std::nullopt); // temporary
+    updateNextButton();
+}
+
+void ScoreOperatorWindow::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
+    // handle next match changing
+    bool shouldUpdateNextButton = false;
+    if (mNextMatch.has_value() && mNextMatch->first == categoryId) {
+        if(std::find(matchIds.begin(), matchIds.end(), mNextMatch->second) != matchIds.end()) {
+            shouldUpdateNextButton = true;
+        }
+    }
+
+    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId) {
+        shouldUpdateNextButton = true;
+    }
+
+    if (shouldUpdateNextButton)
+        updateNextButton();
+}
+
+void ScoreOperatorWindow::beginResetMatches(CategoryId categoryId) {
+    // next match category resetting is handled by tatami hooks
+    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId && mNextMatch.has_value()) {
+        updateNextButton();
+    }
+}
+
+void ScoreOperatorWindow::endResetMatches(CategoryId categoryId) {
+    // next match category resetting is handled by tatami hooks
+}
+
+void ScoreOperatorWindow::updateNextButton() {
+    bool enabled = true;
+    if (!mNextMatch.has_value()) {
+        enabled = false;
+    }
+    else {
+        const auto &match = mStoreManager.getTournament().getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+        if (!match.getWhitePlayer() || !match.getBluePlayer())
+            enabled = false;
+    }
+
+    if (enabled && mCurrentMatch.has_value()) {
+        const auto &match = mStoreManager.getTournament().getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+        if (match.getStatus() != MatchStatus::FINISHED)
+            enabled = false;
+    }
+
+    mNextButton->setEnabled(enabled);
+}
+
+void ScoreOperatorWindow::goNextMatch() {
+    if (!mNextButton->isEnabled()) return;
+
+    mCurrentMatch = mNextMatch;
+    mScoreDisplayWidget->setMatch(mCurrentMatch);
+    findNextMatch();
 }
 
