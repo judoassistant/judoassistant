@@ -135,7 +135,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, mCategory);
         }
 
-        if (mStatus != MatchStatus::NOT_STARTED) { // Draw Time
+        if (mStatus != MatchStatus::NOT_STARTED && mStatus != MatchStatus::FINISHED) { // Draw Time
             int pauseRectSize = headerHeight/4;
             QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
             painter->setPen(Qt::NoPen);
