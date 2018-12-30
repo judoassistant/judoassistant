@@ -178,7 +178,8 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     painter.setBrush(COLOR_11);
 
     const auto &score = match.getScore(playerIndex);
-    if (score.ippon > 0)
+    const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+    if (score.hansokuMake == 0 && (score.ippon > 0 || otherScore.hansokuMake == 1))
         painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignHCenter, "IPPON");
     else
         painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, QString::number(score.wazari));
