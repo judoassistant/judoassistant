@@ -7,7 +7,6 @@
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include <QSplitter>
-#include <QTableView>
 #include <QHeaderView>
 
 #include "actions/match_actions.hpp"
@@ -19,7 +18,7 @@
 #include "widgets/connect_dialog.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
-    : mTatami(-1)
+    : mTatami(0)
 {
     createStatusBar();
     createTournamentMenu();
@@ -293,16 +292,21 @@ QWidget* ScoreOperatorWindow::createSideArea() {
         QGroupBox *actionBox = new QGroupBox("Actions", res);
         QVBoxLayout *subLayout = new QVBoxLayout(actionBox);
 
-        auto tableView = new QTableView(actionBox);
-        tableView->setModel(mActionsModel);
-        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        tableView->horizontalHeader()->setStretchLastSection(true);
-        tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-        // tableView->setSortingEnabled(false);
-        // tableView->sortByColumn(1, Qt::AscendingOrder);
-        // tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+        mActionsTable = new QTableView(actionBox);
+        mActionsTable->setModel(mActionsModel);
+        mActionsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        mActionsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+        mActionsTable->horizontalHeader()->setStretchLastSection(true);
+        mActionsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+        connect(mActionsTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ScoreOperatorWindow::updateUndoButton);
 
-        subLayout->addWidget(tableView);
+        subLayout->addWidget(mActionsTable);
+
+        mUndoButton = new QPushButton("Undo selected action", res);
+        mUndoButton->setEnabled(false);
+        connect(mUndoButton, &QPushButton::clicked, this, &ScoreOperatorWindow::undoSelectedAction);
+
+        subLayout->addWidget(mUndoButton);
 
         actionBox->setLayout(subLayout);
 
@@ -664,3 +668,25 @@ void ScoreOperatorWindow::pausingTimerHit() {
     if (ruleset.shouldPause(match, mStoreManager.masterTime()))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, mStoreManager.masterTime()));
 }
+
+void ScoreOperatorWindow::updateUndoButton() {
+    auto actions = mActionsModel->getActions(mActionsTable->selectionModel()->selection());
+    mUndoButton->setEnabled(actions.size() == 1);
+}
+
+void ScoreOperatorWindow::undoSelectedAction() {
+    auto actionIds = mActionsModel->getActions(mActionsTable->selectionModel()->selection());
+    if (actionIds.size() != 1)
+        return;
+
+    ClientActionId actionId = actionIds.front();
+    const Action &action = mStoreManager.getAction(actionId);
+
+    auto description = QString::fromStdString(action.getDescription());
+    auto reply = QMessageBox::question(this, tr("Would you like to undo the action?"), tr("Are you sure you would like to undo the action \"%1\"?").arg(description), QMessageBox::Yes | QMessageBox::Cancel);
+    if (reply == QMessageBox::Cancel)
+        return;
+
+    mStoreManager.undo(actionId);
+}
+

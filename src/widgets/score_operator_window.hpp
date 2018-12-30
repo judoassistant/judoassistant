@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include <QMetaObject>
 #include <QPushButton>
+#include <QTableView>
 
 #include "core.hpp"
 #include "store_managers/client_store_manager.hpp"
@@ -51,6 +52,9 @@ private:
     void disableControlButtons();
     void updateControlButtons();
 
+    void updateUndoButton();
+    void undoSelectedAction();
+
     void resumeButtonClick();
     void awardIppon(MatchStore::PlayerIndex playerIndex);
     void awardWazari(MatchStore::PlayerIndex playerIndex);
@@ -74,7 +78,11 @@ private:
     QActionGroup *mTatamiActionGroup;
     MatchCardWidget *mNextMatchWidget;
     ScoreDisplayWidget *mScoreDisplayWidget;
+
     ActionsProxyModel *mActionsModel;
+    QTableView *mActionsTable;
+    QPushButton *mUndoButton;
+
     int mTatami;
     std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
     std::optional<std::pair<CategoryId, MatchId>> mNextMatch;
