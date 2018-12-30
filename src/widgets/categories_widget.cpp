@@ -1,3 +1,4 @@
+#include <QListView>
 #include <QSplitter>
 #include <QTabWidget>
 #include <QToolBar>
@@ -65,8 +66,13 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
         mEditCategoryPlayersWidget = new EditCategoryPlayersWidget(mStoreManager, this);
         tabWidget->addTab(mEditCategoryPlayersWidget, tr("Players"));
 
-        QWidget *c = new QWidget(this);
-        tabWidget->addTab(c, tr("Matches"));
+        {
+            auto *matchesList = new QListView(this);
+            mCategoryMatchesModel = new CategoryMatchesModel(mStoreManager, this);
+            matchesList->setItemDelegate(new MatchCardDelegate(this));
+            matchesList->setModel(mCategoryMatchesModel);
+            tabWidget->addTab(matchesList, tr("Matches"));
+        }
 
         splitter->addWidget(tabWidget);
     }
@@ -94,5 +100,6 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
 
     mEditCategoryWidget->setCategory(categoryId);
     mEditCategoryPlayersWidget->setCategory(categoryId);
+    mCategoryMatchesModel->setCategory(categoryId);
 }
 

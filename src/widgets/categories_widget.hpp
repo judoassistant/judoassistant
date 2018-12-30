@@ -4,6 +4,8 @@
 #include <QTableView>
 
 #include "core.hpp"
+#include "models/category_matches_model.hpp"
+#include "delegates/match_card_delegate.hpp"
 
 class StoreManager;
 class EditCategoryWidget;
@@ -25,5 +27,6 @@ private:
     CategoriesProxyModel *mModel;
     EditCategoryWidget *mEditCategoryWidget;
     EditCategoryPlayersWidget *mEditCategoryPlayersWidget;
+    CategoryMatchesModel *mCategoryMatchesModel;
 };
 
