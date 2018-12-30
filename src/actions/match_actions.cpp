@@ -427,8 +427,8 @@ std::unique_ptr<Action> AwardHansokuMakeAction::freshClone() const {
 
 std::string AwardHansokuMakeAction::getDescription() const {
     if (mPlayerIndex == MatchStore::PlayerIndex::WHITE)
-        return "Award Hansoku Make to White";
-    return "Award Hansoku Make to Blue";
+        return "Award Hansoku-Make to White";
+    return "Award Hansoku-Make to Blue";
 }
 
 void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
