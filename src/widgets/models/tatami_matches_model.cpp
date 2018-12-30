@@ -293,7 +293,7 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
             auto row = getRow(combinedId);
             emit dataChanged(createIndex(row, 0), createIndex(row,0));
         }
-        else if (isFinished) {
+        else if (isFinished && !wasFinished) {
             didRemoveRows = true;
             auto row = getRow(combinedId);
             beginRemoveRows(QModelIndex(), row, row);
@@ -325,7 +325,7 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
 
             endRemoveRows();
         }
-        else { // was finished
+        else if (!isFinished && wasFinished) {
             auto loadingTime = it->second;
 
             // Find the first position with a higher loading time (lower bound)
