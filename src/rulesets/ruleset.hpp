@@ -13,10 +13,10 @@ public:
     virtual std::chrono::milliseconds getNormalTime() const = 0;
 
     virtual bool canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
-    virtual void addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
+    virtual void addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
 
     virtual bool canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
-    virtual void subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
+    virtual void subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
 
     virtual bool shouldPause(const MatchStore &match, std::chrono::milliseconds masterTime) const;
     virtual bool canPause(const MatchStore &match, std::chrono::milliseconds masterTime) const;
@@ -26,22 +26,22 @@ public:
     virtual void resume(MatchStore &match, std::chrono::milliseconds masterTime) const;
 
     virtual bool canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
     virtual bool canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
     virtual bool canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
     virtual bool canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
     virtual bool canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
     virtual bool canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
     virtual bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
 

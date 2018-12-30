@@ -162,15 +162,15 @@ void PauseMatchAction::undoImpl(TournamentStore & tournament) {
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
-AwardIpponAction::AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration)
+AwardIpponAction::AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
     : mCategoryId(categoryId)
     , mMatchId(matchId)
     , mPlayerIndex(playerIndex)
-    , mDuration(duration)
+    , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardIpponAction::freshClone() const {
-    return std::make_unique<AwardIpponAction>(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    return std::make_unique<AwardIpponAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
 }
 
 std::string AwardIpponAction::getDescription() const {
@@ -194,9 +194,10 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
         return;
 
     mDidAward = true;
+    mPrevStatus = match.getStatus();
 
-    ruleset.addIppon(match, mPlayerIndex);
-    match.pushEvent({MatchEventType::IPPON, mPlayerIndex, mDuration});
+    ruleset.addIppon(match, mPlayerIndex, mMasterTime);
+    match.pushEvent({MatchEventType::IPPON, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
@@ -207,7 +208,8 @@ void AwardIpponAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractIppon(match, mPlayerIndex));
-    ruleset.subtractIppon(match, mPlayerIndex);
+    ruleset.subtractIppon(match, mPlayerIndex, mMasterTime);
+    match.setStatus(mPrevStatus);
 
     assert(match.getEvents().back().type == MatchEventType::IPPON);
     match.popEvent();
@@ -215,15 +217,15 @@ void AwardIpponAction::undoImpl(TournamentStore & tournament) {
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
-AwardWazariAction::AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration)
+AwardWazariAction::AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
     : mCategoryId(categoryId)
     , mMatchId(matchId)
     , mPlayerIndex(playerIndex)
-    , mDuration(duration)
+    , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardWazariAction::freshClone() const {
-    return std::make_unique<AwardWazariAction>(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    return std::make_unique<AwardWazariAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
 }
 
 std::string AwardWazariAction::getDescription() const {
@@ -247,9 +249,10 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
         return;
 
     mDidAward = true;
+    mPrevStatus = match.getStatus();
 
-    ruleset.addWazari(match, mPlayerIndex);
-    match.pushEvent({MatchEventType::WAZARI, mPlayerIndex, mDuration});
+    ruleset.addWazari(match, mPlayerIndex, mMasterTime);
+    match.pushEvent({MatchEventType::WAZARI, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
@@ -260,7 +263,8 @@ void AwardWazariAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractWazari(match, mPlayerIndex));
-    ruleset.subtractWazari(match, mPlayerIndex);
+    ruleset.subtractWazari(match, mPlayerIndex, mMasterTime);
+    match.setStatus(mPrevStatus);
 
     assert(match.getEvents().back().type == MatchEventType::WAZARI);
     match.popEvent();
@@ -268,15 +272,15 @@ void AwardWazariAction::undoImpl(TournamentStore & tournament) {
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
-AwardShidoAction::AwardShidoAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration)
+AwardShidoAction::AwardShidoAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
     : mCategoryId(categoryId)
     , mMatchId(matchId)
     , mPlayerIndex(playerIndex)
-    , mDuration(duration)
+    , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardShidoAction::freshClone() const {
-    return std::make_unique<AwardShidoAction>(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    return std::make_unique<AwardShidoAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
 }
 
 std::string AwardShidoAction::getDescription() const {
@@ -300,9 +304,10 @@ void AwardShidoAction::redoImpl(TournamentStore & tournament) {
         return;
 
     mDidAward = true;
+    mPrevStatus = match.getStatus();
 
-    ruleset.addShido(match, mPlayerIndex);
-    match.pushEvent({MatchEventType::SHIDO, mPlayerIndex, mDuration});
+    ruleset.addShido(match, mPlayerIndex, mMasterTime);
+    match.pushEvent({MatchEventType::SHIDO, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
@@ -313,7 +318,8 @@ void AwardShidoAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractShido(match, mPlayerIndex));
-    ruleset.subtractShido(match, mPlayerIndex);
+    ruleset.subtractShido(match, mPlayerIndex, mMasterTime);
+    match.setStatus(mPrevStatus);
 
     assert(match.getEvents().back().type == MatchEventType::HANSOKU_MAKE);
     match.popEvent();
@@ -321,15 +327,15 @@ void AwardShidoAction::undoImpl(TournamentStore & tournament) {
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
-AwardHansokuMakeAction::AwardHansokuMakeAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds duration)
+AwardHansokuMakeAction::AwardHansokuMakeAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
     : mCategoryId(categoryId)
     , mMatchId(matchId)
     , mPlayerIndex(playerIndex)
-    , mDuration(duration)
+    , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardHansokuMakeAction::freshClone() const {
-    return std::make_unique<AwardHansokuMakeAction>(mCategoryId, mMatchId, mPlayerIndex, mDuration);
+    return std::make_unique<AwardHansokuMakeAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
 }
 
 std::string AwardHansokuMakeAction::getDescription() const {
@@ -353,9 +359,10 @@ void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
         return;
 
     mDidAward = true;
+    mPrevStatus = match.getStatus();
 
-    ruleset.addHansokuMake(match, mPlayerIndex);
-    match.pushEvent({MatchEventType::HANSOKU_MAKE, mPlayerIndex, mDuration});
+    ruleset.addHansokuMake(match, mPlayerIndex, mMasterTime);
+    match.pushEvent({MatchEventType::HANSOKU_MAKE, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
@@ -366,7 +373,8 @@ void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractHansokuMake(match, mPlayerIndex));
-    ruleset.subtractHansokuMake(match, mPlayerIndex);
+    ruleset.subtractHansokuMake(match, mPlayerIndex, mMasterTime);
+    match.setStatus(mPrevStatus);
 
     assert(match.getEvents().back().type == MatchEventType::SHIDO);
     match.popEvent();

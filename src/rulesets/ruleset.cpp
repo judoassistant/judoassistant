@@ -7,11 +7,14 @@ bool Ruleset::canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playe
     return (otherScore.ippon == 0 && score.ippon == 0);
 }
 
-void Ruleset::addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+void Ruleset::addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
     assert(canAddIppon(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
     score.ippon += 1;
+
+    if (isFinished(match, masterTime))
+        match.setStatus(MatchStatus::FINISHED);
 }
 
 bool Ruleset::canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
@@ -19,7 +22,7 @@ bool Ruleset::canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex 
     return (score.ippon > 0);
 }
 
-void Ruleset::subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+void Ruleset::subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
     assert(canSubtractIppon(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);

@@ -562,7 +562,7 @@ void ScoreOperatorWindow::awardIppon(MatchStore::PlayerIndex playerIndex) {
     const auto &ruleset = category.getRuleset();
 
     auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+    mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
 
     if (ruleset.shouldPause(match, masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
@@ -586,7 +586,7 @@ void ScoreOperatorWindow::awardWazari(MatchStore::PlayerIndex playerIndex) {
     const auto &ruleset = category.getRuleset();
 
     auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+    mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
 
     if (ruleset.shouldPause(match, masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
@@ -609,7 +609,7 @@ void ScoreOperatorWindow::awardShido(MatchStore::PlayerIndex playerIndex) {
     const auto &ruleset = category.getRuleset();
 
     auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardShidoAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+    mStoreManager.dispatch(std::make_unique<AwardShidoAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
 
     if (ruleset.shouldPause(match, masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
@@ -632,7 +632,7 @@ void ScoreOperatorWindow::awardHansokuMake(MatchStore::PlayerIndex playerIndex) 
     const auto &ruleset = category.getRuleset();
 
     auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+    mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
 
     if (ruleset.shouldPause(match, masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
