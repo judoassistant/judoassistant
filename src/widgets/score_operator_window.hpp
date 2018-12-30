@@ -47,6 +47,10 @@ private:
     void updateControlButtons();
 
     void resumeButtonClick();
+    void awardIppon(MatchStore::PlayerIndex playerIndex);
+    void awardWazari(MatchStore::PlayerIndex playerIndex);
+    void awardShido(MatchStore::PlayerIndex playerIndex);
+    void awardHansokuMake(MatchStore::PlayerIndex playerIndex);
 
     void createStatusBar();
     void createTournamentMenu();
@@ -72,5 +76,15 @@ private:
 
     QPushButton *mNextButton;
     QPushButton *mResumeButton;
+
+    QPushButton *mWhiteIpponButton;
+    QPushButton *mWhiteWazariButton;
+    QPushButton *mWhiteShidoButton;
+    QPushButton *mWhiteHansokuMakeButton;
+
+    QPushButton *mBlueIpponButton;
+    QPushButton *mBlueWazariButton;
+    QPushButton *mBlueShidoButton;
+    QPushButton *mBlueHansokuMakeButton;
 };
 

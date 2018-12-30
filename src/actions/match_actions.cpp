@@ -147,7 +147,7 @@ void PauseMatchAction::redoImpl(TournamentStore & tournament) {
     mDidPause = true;
     mPrevDuration = match.getDuration();
 
-    ruleset.pause(match, mMasterTime);
+    ruleset.pause(match, mMasterTime); // TODO: Update drawing etc. if neccesary
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 

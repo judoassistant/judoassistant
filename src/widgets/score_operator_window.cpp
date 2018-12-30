@@ -210,11 +210,55 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         layout->addWidget(viewBox);
     }
 
-    QGroupBox *whiteBox = new QGroupBox("White Player Controls", res);
-    layout->addWidget(whiteBox);
+    {
+        QGroupBox *whiteBox = new QGroupBox("White Player Controls", res);
+        QVBoxLayout *subLayout = new QVBoxLayout(res);
 
-    QGroupBox *blueBox = new QGroupBox("Blue Player Controls", res);
-    layout->addWidget(blueBox);
+        mWhiteIpponButton = new QPushButton("Award Ippon to White");
+        connect(mWhiteIpponButton, &QPushButton::clicked, [this](){awardIppon(MatchStore::PlayerIndex::WHITE);});
+
+        mWhiteWazariButton = new QPushButton("Award Wazari to White");
+        connect(mWhiteWazariButton, &QPushButton::clicked, [this](){awardWazari(MatchStore::PlayerIndex::WHITE);});
+
+        mWhiteShidoButton = new QPushButton("Award Shido to White");
+        connect(mWhiteShidoButton, &QPushButton::clicked, [this](){awardShido(MatchStore::PlayerIndex::WHITE);});
+
+        mWhiteHansokuMakeButton = new QPushButton("Award Hansoku Make to White");
+        connect(mWhiteHansokuMakeButton, &QPushButton::clicked, [this](){awardHansokuMake(MatchStore::PlayerIndex::WHITE);});
+
+        subLayout->addWidget(mWhiteIpponButton);
+        subLayout->addWidget(mWhiteWazariButton);
+        subLayout->addWidget(mWhiteShidoButton);
+        subLayout->addWidget(mWhiteHansokuMakeButton);
+
+        whiteBox->setLayout(subLayout);
+        layout->addWidget(whiteBox);
+    }
+
+    {
+        QGroupBox *blueBox = new QGroupBox("Blue Player Controls", res);
+        QVBoxLayout *subLayout = new QVBoxLayout(res);
+
+        mBlueIpponButton = new QPushButton("Award Ippon to Blue");
+        connect(mBlueIpponButton, &QPushButton::clicked, [this](){awardIppon(MatchStore::PlayerIndex::BLUE);});
+
+        mBlueWazariButton = new QPushButton("Award Wazari to Blue");
+        connect(mBlueWazariButton, &QPushButton::clicked, [this](){awardWazari(MatchStore::PlayerIndex::BLUE);});
+
+        mBlueShidoButton = new QPushButton("Award Shido to Blue");
+        connect(mBlueShidoButton, &QPushButton::clicked, [this](){awardShido(MatchStore::PlayerIndex::BLUE);});
+
+        mBlueHansokuMakeButton = new QPushButton("Award Hansoku Make to Blue");
+        connect(mBlueHansokuMakeButton, &QPushButton::clicked, [this](){awardHansokuMake(MatchStore::PlayerIndex::BLUE);});
+
+        subLayout->addWidget(mBlueIpponButton);
+        subLayout->addWidget(mBlueWazariButton);
+        subLayout->addWidget(mBlueShidoButton);
+        subLayout->addWidget(mBlueHansokuMakeButton);
+
+        blueBox->setLayout(subLayout);
+        layout->addWidget(blueBox);
+    }
 
     {
         QGroupBox *matchBox = new QGroupBox("Match Controls", res);
@@ -419,6 +463,16 @@ void ScoreOperatorWindow::goNextMatch() {
 void ScoreOperatorWindow::disableControlButtons() {
     mResumeButton->setEnabled(false);
     mResumeButton->setText("Resume Match");
+
+    mWhiteIpponButton->setEnabled(false);
+    mWhiteWazariButton->setEnabled(false);
+    mWhiteShidoButton->setEnabled(false);
+    mWhiteHansokuMakeButton->setEnabled(false);
+
+    mBlueIpponButton->setEnabled(false);
+    mBlueWazariButton->setEnabled(false);
+    mBlueShidoButton->setEnabled(false);
+    mBlueHansokuMakeButton->setEnabled(false);
 }
 
 void ScoreOperatorWindow::updateControlButtons() {
@@ -453,12 +507,21 @@ void ScoreOperatorWindow::updateControlButtons() {
         mResumeButton->setText("Resume Match");
         mResumeButton->setEnabled(ruleset.canResume(match, mStoreManager.masterTime()));
     }
+
+    mWhiteIpponButton->setEnabled(ruleset.canAddIppon(match, MatchStore::PlayerIndex::WHITE));
+    mWhiteWazariButton->setEnabled(ruleset.canAddWazari(match, MatchStore::PlayerIndex::WHITE));
+    mWhiteShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::WHITE));
+    mWhiteHansokuMakeButton->setEnabled(ruleset.canAddHansokuMake(match, MatchStore::PlayerIndex::WHITE));
+
+    mBlueIpponButton->setEnabled(ruleset.canAddIppon(match, MatchStore::PlayerIndex::BLUE));
+    mBlueWazariButton->setEnabled(ruleset.canAddWazari(match, MatchStore::PlayerIndex::BLUE));
+    mBlueShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::BLUE));
+    mBlueHansokuMakeButton->setEnabled(ruleset.canAddHansokuMake(match, MatchStore::PlayerIndex::BLUE));
 }
 
 void ScoreOperatorWindow::resumeButtonClick() {
-    if (!mCurrentMatch) {
+    if (!mCurrentMatch)
         return;
-    }
 
     const auto &tournament = mStoreManager.getTournament();
     if (!tournament.containsCategory(mCurrentMatch->first))
@@ -483,5 +546,99 @@ void ScoreOperatorWindow::resumeButtonClick() {
         log_debug().msg("Resuming match");
         mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
     }
+}
+
+void ScoreOperatorWindow::awardIppon(MatchStore::PlayerIndex playerIndex) {
+    // TODO: Somehow avoid repeating these 14 lines in the functions
+    if (!mCurrentMatch)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    auto masterTime = mStoreManager.masterTime();
+    mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+
+    if (ruleset.shouldPause(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
+}
+
+void ScoreOperatorWindow::awardWazari(MatchStore::PlayerIndex playerIndex) {
+    // TODO: Somehow avoid repeating these 14 lines in the functions
+    if (!mCurrentMatch)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    auto masterTime = mStoreManager.masterTime();
+    mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+
+    if (ruleset.shouldPause(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
+}
+
+void ScoreOperatorWindow::awardShido(MatchStore::PlayerIndex playerIndex) {
+    if (!mCurrentMatch)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    auto masterTime = mStoreManager.masterTime();
+    mStoreManager.dispatch(std::make_unique<AwardShidoAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+
+    if (ruleset.shouldPause(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
+}
+
+void ScoreOperatorWindow::awardHansokuMake(MatchStore::PlayerIndex playerIndex) {
+    if (!mCurrentMatch)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    auto masterTime = mStoreManager.masterTime();
+    mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, match.currentDuration(masterTime)));
+
+    if (ruleset.shouldPause(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
 }
 
