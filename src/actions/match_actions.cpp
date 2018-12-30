@@ -150,6 +150,17 @@ void PauseMatchAction::redoImpl(TournamentStore & tournament) {
 
     ruleset.pause(match, mMasterTime); // TODO: Update drawing etc. if neccesary
     tournament.changeMatches(mCategoryId, {mMatchId});
+
+    // pausing can only cause draw changes if the match went into a finished state
+    assert(mDrawActions.empty());
+    if (match.getStatus() == MatchStatus::FINISHED) {
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+    }
 }
 
 void PauseMatchAction::undoImpl(TournamentStore & tournament) {
@@ -158,6 +169,12 @@ void PauseMatchAction::undoImpl(TournamentStore & tournament) {
     auto &category = tournament.getCategory(mCategoryId);
     auto &match = category.getMatch(mMatchId);
     assert(match.getStatus() == MatchStatus::PAUSED);
+
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     match.setStatus(MatchStatus::UNPAUSED);
     match.setDuration(mPrevDuration);
     match.setGoldenScore(mPrevGoldenScore);
@@ -202,6 +219,17 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
     ruleset.addIppon(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::IPPON, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
+
+    // draw changes only occur when the match is finished or went from finished
+    assert(mDrawActions.empty());
+    if (match.getStatus() == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED) {
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+    }
 }
 
 void AwardIpponAction::undoImpl(TournamentStore & tournament) {
@@ -211,6 +239,12 @@ void AwardIpponAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractIppon(match, mPlayerIndex));
+
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     ruleset.subtractIppon(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
     match.setGoldenScore(mPrevGoldenScore);
@@ -259,6 +293,17 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
     ruleset.addWazari(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::WAZARI, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
+
+    // draw changes only occur when the match is finished or went from finished
+    assert(mDrawActions.empty());
+    if (match.getStatus() == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED) {
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+    }
 }
 
 void AwardWazariAction::undoImpl(TournamentStore & tournament) {
@@ -268,6 +313,12 @@ void AwardWazariAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractWazari(match, mPlayerIndex));
+
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     ruleset.subtractWazari(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
     match.setGoldenScore(mPrevGoldenScore);
@@ -276,6 +327,17 @@ void AwardWazariAction::undoImpl(TournamentStore & tournament) {
     match.popEvent();
 
     tournament.changeMatches(mCategoryId, {mMatchId});
+
+    // draw changes only occur when the match is finished or went from finished
+    assert(mDrawActions.empty());
+    if (match.getStatus() == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED) {
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+    }
 }
 
 AwardShidoAction::AwardShidoAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
@@ -316,6 +378,17 @@ void AwardShidoAction::redoImpl(TournamentStore & tournament) {
     ruleset.addShido(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::SHIDO, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
+
+    // draw changes only occur when the match is finished or went from finished
+    assert(mDrawActions.empty());
+    if (match.getStatus() == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED) {
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+    }
 }
 
 void AwardShidoAction::undoImpl(TournamentStore & tournament) {
@@ -325,6 +398,12 @@ void AwardShidoAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractShido(match, mPlayerIndex));
+
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     ruleset.subtractShido(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
     match.setGoldenScore(mPrevGoldenScore);
@@ -373,6 +452,17 @@ void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
     ruleset.addHansokuMake(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::HANSOKU_MAKE, mPlayerIndex, match.currentDuration(mMasterTime)});
     tournament.changeMatches(mCategoryId, {mMatchId});
+
+    // draw changes only occur when the match is finished or went from finished
+    assert(mDrawActions.empty());
+    if (match.getStatus() == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED) {
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+    }
 }
 
 void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
@@ -382,6 +472,12 @@ void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
     assert(ruleset.canSubtractHansokuMake(match, mPlayerIndex));
+
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     ruleset.subtractHansokuMake(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
     match.setGoldenScore(mPrevGoldenScore);

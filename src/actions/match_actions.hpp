@@ -103,6 +103,7 @@ private:
     bool mDidPause;
     std::chrono::milliseconds mPrevDuration;
     bool mPrevGoldenScore;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(PauseMatchAction)
@@ -134,6 +135,7 @@ private:
     bool mDidAward;
     MatchStatus mPrevStatus;
     bool mPrevGoldenScore;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardIpponAction)
@@ -165,6 +167,7 @@ private:
     bool mDidAward;
     MatchStatus mPrevStatus;
     bool mPrevGoldenScore;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardWazariAction)
@@ -196,6 +199,7 @@ private:
     bool mDidAward;
     MatchStatus mPrevStatus;
     bool mPrevGoldenScore;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardShidoAction)
@@ -227,6 +231,7 @@ private:
     bool mDidAward;
     MatchStatus mPrevStatus;
     bool mPrevGoldenScore;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardHansokuMakeAction)
