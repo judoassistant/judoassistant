@@ -55,10 +55,9 @@ void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerI
     assert(canSubtractShido(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
-    score.wazari = (score.wazari + 2) % 3;
+    score.shido = (score.shido + 2) % 3;
     score.hansokuMake = 0;
 }
-
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (match.isBye())
