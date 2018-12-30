@@ -16,7 +16,7 @@ EditCategoryPlayersWidget::EditCategoryPlayersWidget (StoreManager & storeManage
     mModel = new PlayersProxyModel(mStoreManager, this);
     mTableView->setModel(mModel);
     // TODO: Make this customizeable for the user
-    for (int column : {2,3,4,6,7,8})
+    for (int column : {2,3,5,6,7,8})
         mTableView->setColumnHidden(column, true);
     mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     mTableView->horizontalHeader()->setStretchLastSection(true);
