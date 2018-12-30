@@ -408,7 +408,7 @@ void AwardShidoAction::undoImpl(TournamentStore & tournament) {
     match.setStatus(mPrevStatus);
     match.setGoldenScore(mPrevGoldenScore);
 
-    assert(match.getEvents().back().type == MatchEventType::HANSOKU_MAKE);
+    assert(match.getEvents().back().type == MatchEventType::SHIDO);
     match.popEvent();
 
     tournament.changeMatches(mCategoryId, {mMatchId});
@@ -482,7 +482,7 @@ void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
     match.setStatus(mPrevStatus);
     match.setGoldenScore(mPrevGoldenScore);
 
-    assert(match.getEvents().back().type == MatchEventType::SHIDO);
+    assert(match.getEvents().back().type == MatchEventType::HANSOKU_MAKE);
     match.popEvent();
 
     tournament.changeMatches(mCategoryId, {mMatchId});
