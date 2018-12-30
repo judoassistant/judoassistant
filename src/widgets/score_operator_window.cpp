@@ -44,6 +44,9 @@ ScoreOperatorWindow::ScoreOperatorWindow()
 
     findNextMatch();
     disableControlButtons();
+
+    connect(&mPausingTimer, &QTimer::timeout, this, &ScoreOperatorWindow::pausingTimerHit);
+    mPausingTimer.start(PAUSING_TIMER_INTERVAL);
 }
 
 void ScoreOperatorWindow::createStatusBar() {
@@ -638,3 +641,25 @@ void ScoreOperatorWindow::awardHansokuMake(MatchStore::PlayerIndex playerIndex) 
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
 }
 
+void ScoreOperatorWindow::pausingTimerHit() {
+    if (!mCurrentMatch)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    if (match.getStatus() != MatchStatus::UNPAUSED)
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    if (ruleset.shouldPause(match, mStoreManager.masterTime()))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, mStoreManager.masterTime()));
+}

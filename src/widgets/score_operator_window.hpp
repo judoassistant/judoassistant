@@ -21,6 +21,8 @@ public:
     void silentConnect(QString host, int port=8000); // TODO: Setup default port in config
 
 private:
+    static const int PAUSING_TIMER_INTERVAL = 100;
+
     void quit();
     void openHomePage();
     void openManual();
@@ -32,6 +34,8 @@ private:
 
     void beginResetTournament();
     void endResetTournament();
+
+    void pausingTimerHit();
 
     void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
@@ -86,5 +90,7 @@ private:
     QPushButton *mBlueWazariButton;
     QPushButton *mBlueShidoButton;
     QPushButton *mBlueHansokuMakeButton;
+
+    QTimer mPausingTimer;
 };
 
