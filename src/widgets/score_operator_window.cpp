@@ -298,6 +298,7 @@ QWidget* ScoreOperatorWindow::createSideArea() {
         mActionsTable->setSelectionMode(QAbstractItemView::SingleSelection);
         mActionsTable->horizontalHeader()->setStretchLastSection(true);
         mActionsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+        mActionsTable->setColumnHidden(0, true); // hide client column
         connect(mActionsTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ScoreOperatorWindow::updateUndoButton);
 
         subLayout->addWidget(mActionsTable);
