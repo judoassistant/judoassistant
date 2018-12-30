@@ -1,4 +1,5 @@
 #include "action.hpp"
+#include "id.hpp"
 
 Action::Action() : mDone(false)
 {}
@@ -21,3 +22,6 @@ bool Action::isDone() const {
     return mDone;
 }
 
+bool Action::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
+    return false;
+}

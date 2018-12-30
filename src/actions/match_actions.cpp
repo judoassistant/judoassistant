@@ -488,3 +488,19 @@ void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
+bool AwardIpponAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
+    return (mCategoryId == categoryId && mMatchId == matchId);
+}
+
+bool AwardWazariAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
+    return (mCategoryId == categoryId && mMatchId == matchId);
+}
+
+bool AwardShidoAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
+    return (mCategoryId == categoryId && mMatchId == matchId);
+}
+
+bool AwardHansokuMakeAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
+    return (mCategoryId == categoryId && mMatchId == matchId);
+}
+

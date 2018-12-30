@@ -119,6 +119,7 @@ public:
 
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;
+    bool shouldDisplay(CategoryId categoryId, MatchId matchId) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -148,6 +149,7 @@ public:
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
+    bool shouldDisplay(CategoryId categoryId, MatchId matchId) const override;
 
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;
@@ -183,6 +185,7 @@ public:
 
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;
+    bool shouldDisplay(CategoryId categoryId, MatchId matchId) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -215,6 +218,7 @@ public:
 
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;
+    bool shouldDisplay(CategoryId categoryId, MatchId matchId) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
