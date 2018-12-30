@@ -365,7 +365,6 @@ void ScoreOperatorWindow::changeTatamis(std::vector<TatamiLocation> locations, s
 }
 
 void ScoreOperatorWindow::findNextMatch() {
-    log_debug().msg("Finding next match");
     auto &tournament = mStoreManager.getTournament();
     auto &tatamis = tournament.getTatamis();
 
@@ -384,7 +383,6 @@ void ScoreOperatorWindow::findNextMatch() {
                 const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
 
                 if (match.getStatus() != MatchStatus::FINISHED) {
-                    log_debug().field("combinedId", combinedId).msg("Found match");
                     mNextMatch = combinedId;
                     mNextMatchWidget->setMatch(combinedId);
                     updateNextButton();
@@ -443,7 +441,7 @@ void ScoreOperatorWindow::updateNextButton() {
     }
 
     if (enabled && mCurrentMatch.has_value()) {
-        const auto &match = mStoreManager.getTournament().getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+        const auto &match = mStoreManager.getTournament().getCategory(mCurrentMatch->first).getMatch(mCurrentMatch->second);
         if (match.getStatus() != MatchStatus::FINISHED)
             enabled = false;
     }
@@ -536,14 +534,12 @@ void ScoreOperatorWindow::resumeButtonClick() {
     const auto &ruleset = category.getRuleset();
 
     if (match.getStatus() == MatchStatus::UNPAUSED) {
-        log_debug().msg("Pausing match");
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, mStoreManager.masterTime()));
     }
     else {
         auto masterTime = mStoreManager.masterTime();
         if (!ruleset.canResume(match, masterTime))
             return;
-        log_debug().msg("Resuming match");
         mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
     }
 }
