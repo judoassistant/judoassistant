@@ -2,7 +2,9 @@
 
 bool TwentyEighteenRuleset::canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
-    return (score.ippon < 1);
+    const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+
+    return (otherScore.ippon == 0 && score.ippon == 0);
 }
 
 void TwentyEighteenRuleset::addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {

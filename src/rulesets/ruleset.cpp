@@ -1,8 +1,10 @@
 #include "rulesets/ruleset.hpp"
 
 bool Ruleset::canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
-    return (score.ippon == 0);
+    const auto &score = match.getScore(playerIndex);
+    const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+
+    return (otherScore.ippon == 0 && score.ippon == 0);
 }
 
 void Ruleset::addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
