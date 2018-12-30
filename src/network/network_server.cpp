@@ -261,7 +261,7 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
 
     for (auto & participant : mParticipants) {
         if (participant == sender) {
-            auto ackMessage = std::make_shared<NetworkMessage>();
+            auto ackMessage = std::make_unique<NetworkMessage>();
             ackMessage->encodeActionAck(actionId);
             participant->deliver(std::move(ackMessage));
             continue;
@@ -275,19 +275,25 @@ void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::sh
     ClientActionId actionId;
     message->decodeUndo(actionId);
 
-    emit undoReceived(actionId);
+    auto it = mActionMap.find(actionId);
+    if (it != mActionMap.end()) {
+        mActionStack.erase(it->second);
+        mActionMap.erase(it);
 
-    std::shared_ptr<NetworkMessage> sharedMessage = std::move(message);
+        emit undoReceived(actionId);
 
-    for (auto & participant : mParticipants) {
-        if (participant == sender) {
-            auto ackMessage = std::make_unique<NetworkMessage>();
-            ackMessage->encodeUndoAck(actionId);
-            participant->deliver(std::move(ackMessage));
-            continue;
+        std::shared_ptr<NetworkMessage> sharedMessage = std::move(message);
+
+        for (auto & participant : mParticipants) {
+            if (participant == sender) {
+                auto ackMessage = std::make_unique<NetworkMessage>();
+                ackMessage->encodeUndoAck(actionId);
+                participant->deliver(std::move(ackMessage));
+                continue;
+            }
+
+            participant->deliver(sharedMessage);
         }
-
-        participant->deliver(sharedMessage);
     }
 }
 
