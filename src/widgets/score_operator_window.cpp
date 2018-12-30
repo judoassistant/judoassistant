@@ -17,7 +17,6 @@
 #include "stores/qtournament_store.hpp"
 #include "widgets/score_operator_window.hpp"
 #include "widgets/connect_dialog.hpp"
-#include "widgets/models/actions_model.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
     : mTatami(-1)
@@ -288,13 +287,14 @@ QWidget* ScoreOperatorWindow::createSideArea() {
     QVBoxLayout *layout = new QVBoxLayout(res);
 
     {
-        auto model = new ActionsProxyModel(mStoreManager, res);
+        mActionsModel = new ActionsProxyModel(mStoreManager, res);
+        mActionsModel->hideAll();
 
         QGroupBox *actionBox = new QGroupBox("Actions", res);
         QVBoxLayout *subLayout = new QVBoxLayout(actionBox);
 
         auto tableView = new QTableView(actionBox);
-        tableView->setModel(model);
+        tableView->setModel(mActionsModel);
         tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         tableView->horizontalHeader()->setStretchLastSection(true);
         tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
@@ -457,6 +457,7 @@ void ScoreOperatorWindow::goNextMatch() {
 
     mCurrentMatch = mNextMatch;
     mScoreDisplayWidget->setMatch(mCurrentMatch);
+    mActionsModel->setMatch(mCurrentMatch);
     findNextMatch();
     updateControlButtons();
 }

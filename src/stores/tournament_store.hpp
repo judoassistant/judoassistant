@@ -48,6 +48,7 @@ public:
     void addCategory(std::unique_ptr<CategoryStore> ptr);
     std::unique_ptr<CategoryStore> eraseCategory(CategoryId id);
     bool containsCategory(CategoryId id) const;
+    bool containsMatch(CategoryId categoryId, MatchId matchId) const;
 
     const TatamiList & getTatamis() const;
     TatamiList & getTatamis();

@@ -39,15 +39,23 @@ class ActionsProxyModel : public QSortFilterProxyModel {
 public:
     ActionsProxyModel(StoreManager &storeManager, QObject *parent);
     std::vector<ClientActionId> getActions(const QItemSelection &selection) const;
-    void setClientId(std::optional<ClientId> clientId);
+    void setClient(std::optional<ClientId> clientId);
+    void setMatch(std::optional<std::pair<CategoryId, MatchId>> matchId);
     // void setMatchId(std::optional<MatchId> clientId);
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
     void hideAll();
 
 private:
+    void beginResetTournament();
+    void endResetTournament();
+    void beginResetMatches(CategoryId categoryId);
+    void endResetMatches(CategoryId categoryId);
+
     StoreManager & mStoreManager;
     ActionsModel *mModel;
     std::optional<ClientId> mClientId;
+    std::optional<std::pair<CategoryId, MatchId>> mMatchId;
     bool mHidden;
+    std::stack<QMetaObject::Connection> mConnections;
 };
 

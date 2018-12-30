@@ -80,6 +80,13 @@ bool TournamentStore::containsCategory(CategoryId id) const {
     return mCategories.find(id) != mCategories.end();
 }
 
+bool TournamentStore::containsMatch(CategoryId categoryId, MatchId matchId) const {
+    auto it = mCategories.find(categoryId);
+    if (it == mCategories.end())
+        return false;
+    return it->second->containsMatch(matchId);
+}
+
 const TatamiList & TournamentStore::getTatamis() const {
     return mTatamis;
 }

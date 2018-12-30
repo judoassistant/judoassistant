@@ -4,6 +4,9 @@
 
 #include "actions/action.hpp"
 #include "store_managers/store_manager.hpp"
+#include "stores/qtournament_store.hpp"
+#include "stores/category_store.hpp"
+#include "stores/match_store.hpp"
 #include "widgets/models/actions_model.hpp"
 
 ActionsModel::ActionsModel(StoreManager & storeManager, QObject * parent)
@@ -121,6 +124,9 @@ ActionsProxyModel::ActionsProxyModel(StoreManager &storeManager, QObject *parent
 {
     mModel = new ActionsModel(storeManager, this);
 
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &ActionsProxyModel::beginResetTournament);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &ActionsProxyModel::endResetTournament);
+
     setSourceModel(mModel);
     setSortRole(Qt::UserRole);
 }
@@ -134,19 +140,70 @@ void ActionsProxyModel::hideAll() {
     invalidateFilter();
 }
 
-void ActionsProxyModel::setClientId(std::optional<ClientId> clientId) {
+void ActionsProxyModel::setClient(std::optional<ClientId> clientId) {
     mHidden = false;
     mClientId = clientId;
     invalidateFilter();
 }
 
+void ActionsProxyModel::setMatch(std::optional<std::pair<CategoryId, MatchId>> matchId) {
+    mHidden = false;
+    mMatchId = matchId;;
+    invalidateFilter();
+}
+
 bool ActionsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
-    if (mHidden)
+    if (mHidden) {
         return false;
-    if (!mClientId)
-        return true;
+    }
 
     auto actionId = mModel->getAction(sourceRow);
-    return mClientId == actionId.getClientId();
+
+    if (mClientId) {
+        if (mClientId != actionId.getClientId())
+            return false;
+    }
+
+    if (mMatchId) {
+        const Action &action = mStoreManager.getAction(actionId);
+        if (!action.shouldDisplay(mMatchId->first, mMatchId->second))
+            return false;
+
+        const auto &tournament = mStoreManager.getTournament();
+        if (!tournament.containsCategory(mMatchId->first))
+            return false;
+        const auto &category = tournament.getCategory(mMatchId->first);
+        if (!category.containsMatch(mMatchId->second))
+            return false;
+        const auto &match = category.getMatch(mMatchId->second);
+        if (!match.getWhitePlayer() || !match.getBluePlayer())
+            return false;
+    }
+
+    return true;
+}
+
+void ActionsProxyModel::beginResetTournament() {
+    while (!mConnections.empty()) {
+        disconnect(mConnections.top());
+        mConnections.pop();
+    }
+}
+
+void ActionsProxyModel::endResetTournament() {
+    auto &tournament = mStoreManager.getTournament();
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &ActionsProxyModel::beginResetMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &ActionsProxyModel::endResetMatches));
+    invalidateFilter();
+}
+
+void ActionsProxyModel::beginResetMatches(CategoryId categoryId) {
+    if (mMatchId && mMatchId->first == categoryId)
+        invalidateFilter();
+}
+
+void ActionsProxyModel::endResetMatches(CategoryId categoryId) {
+    if (mMatchId && mMatchId->first == categoryId)
+        invalidateFilter();
 }
 
