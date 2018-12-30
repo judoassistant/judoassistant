@@ -168,7 +168,7 @@ void PauseMatchAction::undoImpl(TournamentStore & tournament) {
         return;
     auto &category = tournament.getCategory(mCategoryId);
     auto &match = category.getMatch(mMatchId);
-    assert(match.getStatus() == MatchStatus::PAUSED);
+    assert(match.getStatus() == MatchStatus::PAUSED || match.getStatus() == MatchStatus::FINISHED);
 
     while (!mDrawActions.empty()) {
         mDrawActions.top()->undo(tournament);
