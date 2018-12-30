@@ -55,15 +55,23 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         painter->setFont(font);
 
         painter->setRenderHint(QPainter::Antialiasing, true);
-        painter->drawText(ipponRect, Qt::AlignVCenter | Qt::AlignLeft, "0");
-        painter->drawText(wazariRect, Qt::AlignVCenter | Qt::AlignLeft, "1");
-
+        if (playerFields.score.ippon != 0)
+            painter->drawText(ipponRect, Qt::AlignVCenter | Qt::AlignLeft, QString::number(playerFields.score.ippon));
+        painter->drawText(wazariRect, Qt::AlignVCenter | Qt::AlignLeft, QString::number(playerFields.score.wazari));
 
         painter->setPen(Qt::NoPen);
-        painter->setBrush(COLOR_13);
+        if (playerFields.score.hansokuMake) {
+            painter->setBrush(COLOR_11);
+            painter->drawRect(firstPenaltyRect);
+        }
+        else {
+            painter->setBrush(COLOR_13);
+            if (playerFields.score.shido > 0)
+                painter->drawRect(firstPenaltyRect);
+            if (playerFields.score.shido > 1)
+                painter->drawRect(secondPenaltyRect);
+        }
 
-        painter->drawRect(firstPenaltyRect);
-        painter->drawRect(secondPenaltyRect);
         painter->restore();
     }
 
@@ -131,7 +139,10 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             int pauseRectSize = headerHeight/4;
             QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
             painter->setPen(Qt::NoPen);
-            painter->setBrush(COLOR_11);
+            if (mStatus != MatchStatus::UNPAUSED)
+                painter->setBrush(COLOR_13);
+            else
+                painter->setBrush(COLOR_14);
             painter->drawRect(pauseRect);
 
             QRect textRect(columnThreeOffset + pauseRectSize + padding, padding, insideWidth-(columnThreeOffset + pauseRectSize + padding), headerHeight-padding*2);
@@ -149,6 +160,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
                 painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("%1:%2").arg(minutes).arg(seconds));
         }
         else { // Draw ETA
+            // TODO: Calculate ETA for matches
             // QRect textRect(columnThreeOffset, padding, insideWidth-columnThreeOffset-padding, headerHeight-padding*2);
 
             // painter->setPen(COLOR_0);
