@@ -102,6 +102,7 @@ private:
     // undo members
     bool mDidPause;
     std::chrono::milliseconds mPrevDuration;
+    bool mPrevGoldenScore;
 };
 
 CEREAL_REGISTER_TYPE(PauseMatchAction)
@@ -132,6 +133,7 @@ private:
     // undo members
     bool mDidAward;
     MatchStatus mPrevStatus;
+    bool mPrevGoldenScore;
 };
 
 CEREAL_REGISTER_TYPE(AwardIpponAction)
@@ -162,6 +164,7 @@ private:
     // undo members
     bool mDidAward;
     MatchStatus mPrevStatus;
+    bool mPrevGoldenScore;
 };
 
 CEREAL_REGISTER_TYPE(AwardWazariAction)
@@ -192,6 +195,7 @@ private:
     // undo members
     bool mDidAward;
     MatchStatus mPrevStatus;
+    bool mPrevGoldenScore;
 };
 
 CEREAL_REGISTER_TYPE(AwardShidoAction)
@@ -222,6 +226,7 @@ private:
     // undo members
     bool mDidAward;
     MatchStatus mPrevStatus;
+    bool mPrevGoldenScore;
 };
 
 CEREAL_REGISTER_TYPE(AwardHansokuMakeAction)

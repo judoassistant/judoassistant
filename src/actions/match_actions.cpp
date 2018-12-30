@@ -146,6 +146,7 @@ void PauseMatchAction::redoImpl(TournamentStore & tournament) {
 
     mDidPause = true;
     mPrevDuration = match.getDuration();
+    mPrevGoldenScore = match.isGoldenScore();
 
     ruleset.pause(match, mMasterTime); // TODO: Update drawing etc. if neccesary
     tournament.changeMatches(mCategoryId, {mMatchId});
@@ -159,6 +160,7 @@ void PauseMatchAction::undoImpl(TournamentStore & tournament) {
     assert(match.getStatus() == MatchStatus::PAUSED);
     match.setStatus(MatchStatus::UNPAUSED);
     match.setDuration(mPrevDuration);
+    match.setGoldenScore(mPrevGoldenScore);
     tournament.changeMatches(mCategoryId, {mMatchId});
 }
 
@@ -195,6 +197,7 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
 
     mDidAward = true;
     mPrevStatus = match.getStatus();
+    mPrevGoldenScore = match.isGoldenScore();
 
     ruleset.addIppon(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::IPPON, mPlayerIndex, match.currentDuration(mMasterTime)});
@@ -210,6 +213,7 @@ void AwardIpponAction::undoImpl(TournamentStore & tournament) {
     assert(ruleset.canSubtractIppon(match, mPlayerIndex));
     ruleset.subtractIppon(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
+    match.setGoldenScore(mPrevGoldenScore);
 
     assert(match.getEvents().back().type == MatchEventType::IPPON);
     match.popEvent();
@@ -250,6 +254,7 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
 
     mDidAward = true;
     mPrevStatus = match.getStatus();
+    mPrevGoldenScore = match.isGoldenScore();
 
     ruleset.addWazari(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::WAZARI, mPlayerIndex, match.currentDuration(mMasterTime)});
@@ -265,6 +270,7 @@ void AwardWazariAction::undoImpl(TournamentStore & tournament) {
     assert(ruleset.canSubtractWazari(match, mPlayerIndex));
     ruleset.subtractWazari(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
+    match.setGoldenScore(mPrevGoldenScore);
 
     assert(match.getEvents().back().type == MatchEventType::WAZARI);
     match.popEvent();
@@ -305,6 +311,7 @@ void AwardShidoAction::redoImpl(TournamentStore & tournament) {
 
     mDidAward = true;
     mPrevStatus = match.getStatus();
+    mPrevGoldenScore = match.isGoldenScore();
 
     ruleset.addShido(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::SHIDO, mPlayerIndex, match.currentDuration(mMasterTime)});
@@ -320,6 +327,7 @@ void AwardShidoAction::undoImpl(TournamentStore & tournament) {
     assert(ruleset.canSubtractShido(match, mPlayerIndex));
     ruleset.subtractShido(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
+    match.setGoldenScore(mPrevGoldenScore);
 
     assert(match.getEvents().back().type == MatchEventType::HANSOKU_MAKE);
     match.popEvent();
@@ -360,6 +368,7 @@ void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
 
     mDidAward = true;
     mPrevStatus = match.getStatus();
+    mPrevGoldenScore = match.isGoldenScore();
 
     ruleset.addHansokuMake(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::HANSOKU_MAKE, mPlayerIndex, match.currentDuration(mMasterTime)});
@@ -375,6 +384,7 @@ void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
     assert(ruleset.canSubtractHansokuMake(match, mPlayerIndex));
     ruleset.subtractHansokuMake(match, mPlayerIndex, mMasterTime);
     match.setStatus(mPrevStatus);
+    match.setGoldenScore(mPrevGoldenScore);
 
     assert(match.getEvents().back().type == MatchEventType::SHIDO);
     match.popEvent();

@@ -51,5 +51,8 @@ public:
     void serialize(Archive& ar, uint32_t const version) {}
 
     virtual std::unique_ptr<Ruleset> clone() const = 0;
+
+protected:
+    void updateStatus(MatchStore &match, std::chrono::milliseconds masterTime) const;
 };
 

@@ -15,8 +15,7 @@ void TwentyEighteenRuleset::addWazari(MatchStore &match, MatchStore::PlayerIndex
     score.wazari = (score.wazari + 1) % 2;
     score.ippon = (score.wazari == 0);
 
-    if (isFinished(match, masterTime))
-        match.setStatus(MatchStatus::FINISHED);
+    updateStatus(match, masterTime);
 }
 
 bool TwentyEighteenRuleset::canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
@@ -44,8 +43,7 @@ void TwentyEighteenRuleset::addShido(MatchStore &match, MatchStore::PlayerIndex 
     score.shido = (score.shido + 1) % 3;
     score.hansokuMake = (score.shido == 0);
 
-    if (isFinished(match, masterTime))
-        match.setStatus(MatchStatus::FINISHED);
+    updateStatus(match, masterTime);
 }
 
 bool TwentyEighteenRuleset::canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
@@ -63,8 +61,6 @@ void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerI
 
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const {
-    if (match.getStatus() == MatchStatus::FINISHED)
-        return true;
     if (match.isBye())
         return true;
     if (!match.getWhitePlayer().has_value())
@@ -133,8 +129,7 @@ void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::Player
     auto & score = match.getScore(playerIndex);
     score.hansokuMake = 1;
 
-    if (isFinished(match, masterTime))
-        match.setStatus(MatchStatus::FINISHED);
+    updateStatus(match, masterTime);
 }
 
 bool TwentyEighteenRuleset::canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {

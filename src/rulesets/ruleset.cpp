@@ -13,8 +13,7 @@ void Ruleset::addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, s
     auto & score = match.getScore(playerIndex);
     score.ippon += 1;
 
-    if (isFinished(match, masterTime))
-        match.setStatus(MatchStatus::FINISHED);
+    updateStatus(match, masterTime);
 }
 
 bool Ruleset::canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
@@ -58,6 +57,8 @@ void Ruleset::pause(MatchStore &match, std::chrono::milliseconds masterTime) con
     match.setStatus(MatchStatus::PAUSED);
     if (isFinished(match, masterTime))
         match.setStatus(MatchStatus::FINISHED);
+    else if (currentDuration >= getNormalTime())
+        match.setGoldenScore(true);
 }
 
 bool Ruleset::canResume(const MatchStore &match, std::chrono::milliseconds masterTime) const {
@@ -71,3 +72,18 @@ void Ruleset::resume(MatchStore &match, std::chrono::milliseconds masterTime) co
     match.setStatus(MatchStatus::UNPAUSED);
 }
 
+void Ruleset::updateStatus(MatchStore &match, std::chrono::milliseconds masterTime) const {
+    if (match.getStatus() == MatchStatus::UNPAUSED)
+        return;
+
+    if (isFinished(match, masterTime)) {
+        match.setStatus(MatchStatus::FINISHED);
+        if (match.currentDuration(masterTime) <= getNormalTime())
+            match.setGoldenScore(false);
+    }
+    else {
+        match.setStatus(MatchStatus::PAUSED);
+        if (match.currentDuration(masterTime) >= getNormalTime())
+            match.setGoldenScore(true);
+    }
+}
