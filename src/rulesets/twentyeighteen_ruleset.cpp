@@ -35,7 +35,7 @@ void TwentyEighteenRuleset::addShido(MatchStore &match, MatchStore::PlayerIndex 
     assert(canAddShido(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
-    score.shido = (score.shido + 1) % 2;
+    score.shido = (score.shido + 1) % 3;
     score.hansokuMake = (score.shido == 0);
 }
 
