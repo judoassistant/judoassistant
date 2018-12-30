@@ -47,6 +47,7 @@ public:
     void dispatch(std::unique_ptr<Action> action);
     bool canUndo();
     void undo();
+    void undo(ClientActionId action);
     bool canRedo();
     void redo();
 

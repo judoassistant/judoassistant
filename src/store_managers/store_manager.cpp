@@ -174,114 +174,7 @@ void StoreManager::receiveAction(ClientActionId actionId, ActionPtr sharedAction
 void StoreManager::undo() {
     assert(canUndo());
 
-    auto actionId = *mUndoActionId;
-
-    log_debug().field("actionId", actionId).msg("Undo called");
-
-    mUnconfirmedUndos.insert(actionId);
-
-    std::unique_ptr<Action> clone;
-
-    emit actionAboutToBeErased(actionId);
-    // unroll unconfirmed stack
-    for (auto it = mUnconfirmedActionList.rbegin(); it != mUnconfirmedActionList.rend(); ++it) {
-        auto &a = *(it->second);
-
-        if (a.isDone())
-            a.undo(*mTournament);
-
-        if (it->first == actionId) {
-            clone = a.freshClone();
-            ++mUndoneUnconfirmedActions;
-            break;
-        }
-    }
-
-    log_debug().field("mapSize", mUnconfirmedActionMap.size()).msg("Rolling");
-    // unroll and roll back the confirmed stack if neccesary
-    if (mUnconfirmedActionMap.find(actionId) == mUnconfirmedActionMap.end()) {
-        assert(mConfirmedActionMap.find(actionId) != mConfirmedActionMap.end());
-
-        auto it = std::prev(mConfirmedActionList.end());
-        while (it->first != actionId) {
-            if (it->second->isDone())
-                it->second->undo(*mTournament);
-            it = std::prev(it);
-        }
-
-        assert(it->second->isDone());
-        it->second->undo(*mTournament);
-        clone = it->second->freshClone();
-        it = std::next(it);
-
-        while (it != mConfirmedActionList.end()) {
-            if (mUnconfirmedUndos.find(it->first) == mUnconfirmedUndos.end())
-                it->second->redo(*mTournament);
-
-            it = std::next(it);
-        }
-    }
-
-    // roll back the unconfirmed stack
-    for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
-        // if the action is an unconfirmed undo then leave it undone
-        if (mUnconfirmedUndos.find(it->first) != mUnconfirmedUndos.end())
-            continue;
-
-        auto &a = *(it->second);
-        if (a.isDone()) continue; // in case break was called in the first loop
-
-        a.redo(*mTournament);
-    }
-
-    emit actionErased(actionId);
-
-    // Find the new mUndoActionId
-    {
-        mUndoActionId = std::nullopt;
-
-        // Iterate over both lists using one loop
-        bool iteratingUnconfirmed = (mUnconfirmedActionMap.find(actionId) != mUnconfirmedActionMap.end());
-        auto it = (iteratingUnconfirmed ? mUnconfirmedActionMap.find(actionId)->second : mConfirmedActionMap.find(actionId)->second);
-
-        while (true) {
-            if (it->second->isDone() && it->first.getClientId() == mId) {
-                mUndoActionId = it->first;
-                break;
-            }
-
-            // Update iterator
-            if (!iteratingUnconfirmed && it == mConfirmedActionList.begin()) {
-                break;
-            }
-
-            if (iteratingUnconfirmed && it == mUnconfirmedActionList.begin()) {
-                if (mConfirmedActionList.empty())
-                    break;
-
-                it = std::prev(mConfirmedActionList.end());
-                iteratingUnconfirmed = false;
-                continue;
-            }
-
-            it = std::prev(it);
-        }
-    }
-
-
-    // Update redo list
-    assert(clone != nullptr);
-    mRedoList.push_back(std::move(clone));
-
-    if (mRedoList.size() > REDO_LIST_MAX_SIZE)
-        mRedoList.pop_front();
-
-    mNetworkInterface->postUndo(actionId);
-
-    if (!mUndoActionId.has_value())
-        emit undoStatusChanged(false);
-    if (mRedoList.size() == 1) // list was empty before
-        emit redoStatusChanged(true);
+    undo(*mUndoActionId);
 }
 
 void StoreManager::receiveActionConfirm(ClientActionId actionId) {
@@ -528,5 +421,119 @@ std::chrono::milliseconds StoreManager::masterTime() const {
     // Consider system clock vs steady_clock. What if master restarts?
     auto time = std::chrono::steady_clock::now().time_since_epoch();
     return std::chrono::duration_cast<std::chrono::milliseconds>(time);
+}
+
+void StoreManager::undo(ClientActionId actionId) {
+    log_debug().field("actionId", actionId).msg("Undo called");
+
+    // check that the action exists
+    if (mConfirmedActionMap.find(actionId) == mConfirmedActionMap.end() && mUnconfirmedActionMap.find(actionId) == mUnconfirmedActionMap.end()) {
+        log_debug().msg("Tried to undo non-existing action");
+        return;
+    }
+
+    mUnconfirmedUndos.insert(actionId);
+
+    std::unique_ptr<Action> clone;
+
+    emit actionAboutToBeErased(actionId);
+    // unroll unconfirmed stack
+    for (auto it = mUnconfirmedActionList.rbegin(); it != mUnconfirmedActionList.rend(); ++it) {
+        auto &a = *(it->second);
+
+        if (a.isDone())
+            a.undo(*mTournament);
+
+        if (it->first == actionId) {
+            clone = a.freshClone();
+            ++mUndoneUnconfirmedActions;
+            break;
+        }
+    }
+
+    // unroll and roll back the confirmed stack if neccesary
+    if (mUnconfirmedActionMap.find(actionId) == mUnconfirmedActionMap.end()) {
+        assert(mConfirmedActionMap.find(actionId) != mConfirmedActionMap.end());
+
+        auto it = std::prev(mConfirmedActionList.end());
+        while (it->first != actionId) {
+            if (it->second->isDone())
+                it->second->undo(*mTournament);
+            it = std::prev(it);
+        }
+
+        assert(it->second->isDone());
+        it->second->undo(*mTournament);
+        clone = it->second->freshClone();
+        it = std::next(it);
+
+        while (it != mConfirmedActionList.end()) {
+            if (mUnconfirmedUndos.find(it->first) == mUnconfirmedUndos.end())
+                it->second->redo(*mTournament);
+
+            it = std::next(it);
+        }
+    }
+
+    // roll back the unconfirmed stack
+    for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
+        // if the action is an unconfirmed undo then leave it undone
+        if (mUnconfirmedUndos.find(it->first) != mUnconfirmedUndos.end())
+            continue;
+
+        auto &a = *(it->second);
+        if (a.isDone()) continue; // in case break was called in the first loop
+
+        a.redo(*mTournament);
+    }
+
+    emit actionErased(actionId);
+
+    // Find the new mUndoActionId if necessary
+    if (mUndoActionId == actionId) {
+        mUndoActionId = std::nullopt;
+
+        // Iterate over both lists using one loop
+        bool iteratingUnconfirmed = (mUnconfirmedActionMap.find(actionId) != mUnconfirmedActionMap.end());
+        auto it = (iteratingUnconfirmed ? mUnconfirmedActionMap.find(actionId)->second : mConfirmedActionMap.find(actionId)->second);
+
+        while (true) {
+            if (it->second->isDone() && it->first.getClientId() == mId) {
+                mUndoActionId = it->first;
+                break;
+            }
+
+            // Update iterator
+            if (!iteratingUnconfirmed && it == mConfirmedActionList.begin()) {
+                break;
+            }
+
+            if (iteratingUnconfirmed && it == mUnconfirmedActionList.begin()) {
+                if (mConfirmedActionList.empty())
+                    break;
+
+                it = std::prev(mConfirmedActionList.end());
+                iteratingUnconfirmed = false;
+                continue;
+            }
+
+            it = std::prev(it);
+        }
+    }
+
+
+    // Update redo list
+    assert(clone != nullptr);
+    mRedoList.push_back(std::move(clone));
+
+    if (mRedoList.size() > REDO_LIST_MAX_SIZE)
+        mRedoList.pop_front();
+
+    mNetworkInterface->postUndo(actionId);
+
+    if (!mUndoActionId.has_value())
+        emit undoStatusChanged(false);
+    if (mRedoList.size() == 1) // list was empty before
+        emit redoStatusChanged(true);
 }
 

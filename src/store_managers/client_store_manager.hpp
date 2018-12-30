@@ -21,6 +21,7 @@ public:
 
     void dispatch(std::unique_ptr<Action> action);
     void undo();
+    void undo(ClientActionId action);
     void redo();
     State getState() const;
 

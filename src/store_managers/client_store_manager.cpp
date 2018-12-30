@@ -44,6 +44,12 @@ void ClientStoreManager::undo() {
     StoreManager::undo();
 }
 
+void ClientStoreManager::undo(ClientActionId actionId) {
+    if (getState() == State::NOT_CONNECTED)
+        log_debug().msg("Undoing on on NOT_CONNECTED ClientStoreManager");
+    StoreManager::undo(actionId);
+}
+
 void ClientStoreManager::redo() {
     if (getState() == State::NOT_CONNECTED)
         log_debug().msg("Redoing on on NOT_CONNECTED ClientStoreManager");
