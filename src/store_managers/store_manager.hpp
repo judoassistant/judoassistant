@@ -44,14 +44,13 @@ public:
     QTournamentStore & getTournament();
     const QTournamentStore & getTournament() const;
 
-    void dispatch(std::unique_ptr<Action> action);
-    bool canUndo();
-    void undo();
-    void undo(ClientActionId action);
-    bool canRedo();
-    void redo();
+    virtual void dispatch(std::unique_ptr<Action> action);
+    virtual bool canUndo();
+    virtual void undo();
+    virtual void undo(ClientActionId action);
+    virtual bool canRedo();
+    virtual void redo();
 
-    // TODO: Why aren't these methods virtual?
     bool containsConfirmedAction(ClientActionId action) const;
     bool containsUnconfirmedAction(ClientActionId action) const;
 

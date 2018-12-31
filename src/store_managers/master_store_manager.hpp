@@ -11,9 +11,9 @@ public:
     void startServer(int port);
     void stopServer();
 
-    void dispatch(std::unique_ptr<Action> action);
-    void undo();
-    void redo();
+    void dispatch(std::unique_ptr<Action> action) override;
+    void undo() override;
+    void redo() override;
     bool isDirty() const;
 
     bool read(const QString &path);

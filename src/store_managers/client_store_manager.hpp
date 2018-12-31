@@ -19,10 +19,10 @@ public:
     void connect(QString host, unsigned int port);
     void disconnect();
 
-    void dispatch(std::unique_ptr<Action> action);
-    void undo();
-    void undo(ClientActionId action);
-    void redo();
+    void dispatch(std::unique_ptr<Action> action) override;
+    void undo() override;
+    void undo(ClientActionId action) override;
+    void redo() override;
     State getState() const;
 
 protected:
