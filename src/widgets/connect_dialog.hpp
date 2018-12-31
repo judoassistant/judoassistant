@@ -12,12 +12,14 @@ class ClientStoreManager;
 class ConnectDialog : public QDialog {
     Q_OBJECT
 public:
-    ConnectDialog(ClientStoreManager &client, QWidget *parent = nullptr);
+    ConnectDialog(ClientStoreManager &storeManager, QString host, std::optional<int> port, std::optional<std::chrono::seconds> retryInterval, QWidget *parent = nullptr);
 
-signals:
-    void accepted(QString host, unsigned int port);
+    QString getHost() const;
+    std::optional<int> getPort() const;
+    std::optional<std::chrono::seconds> getRetryInterval() const;
+
 protected:
-    void acceptClick();
+    void connectClick();
     void cancelClick();
     void succeedConnectionAttempt();
     void failConnectionAttempt();
@@ -27,5 +29,6 @@ private:
     QSpinBox *mPortContent;
     QLineEdit *mPasswordContent;
     QCheckBox *mShouldRetryContent;
-    QSpinBox *mRetryFrequencyContent;
+    QSpinBox *mRetryIntervalContent;
+    QPushButton *mConnectButton;
 };

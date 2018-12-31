@@ -14,4 +14,8 @@ protected:
     void showConnectDialog();
 
     ClientStoreManager mStoreManager;
+private:
+    QString mPreviousHost;
+    std::optional<int> mPreviousPort;
+    std::optional<std::chrono::seconds> mRetryInterval;
 };
