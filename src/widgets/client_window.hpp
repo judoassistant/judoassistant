@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QTimer>
 
 #include "store_managers/client_store_manager.hpp"
 
@@ -12,10 +13,14 @@ public:
     ClientWindow();
 protected:
     void showConnectDialog();
+    void retryTimerHit();
+    void loseConnection();
+    void succeedConnectionAttempt();
 
     ClientStoreManager mStoreManager;
 private:
     QString mPreviousHost;
+    QTimer mRetryTimer;
     std::optional<int> mPreviousPort;
     std::optional<std::chrono::seconds> mRetryInterval;
 };

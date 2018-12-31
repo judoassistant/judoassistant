@@ -47,12 +47,12 @@ ConnectDialog::ConnectDialog(ClientStoreManager &storeManager, QString host, std
         mShouldRetryContent->setCheckState(retryInterval ? Qt::Checked : Qt::Unchecked);
 
         mRetryIntervalContent = new QSpinBox;
-        mRetryIntervalContent->setRange(30, 600);
+        mRetryIntervalContent->setRange(20, 600);
         mRetryIntervalContent->setSuffix("s");
         mRetryIntervalContent->setEnabled(false);
         if (retryInterval) {
             int val = retryInterval->count();
-            assert(30 <= val && val <= 600);
+            assert(20 <= val && val <= 600);
             mRetryIntervalContent->setValue(val);
             mRetryIntervalContent->setEnabled(true);
         }
