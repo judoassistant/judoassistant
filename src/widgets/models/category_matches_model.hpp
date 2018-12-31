@@ -21,7 +21,7 @@ class CategoryMatchesModel : public QAbstractTableModel {
     Q_OBJECT
 private:
     static const int COLUMN_COUNT = 1;
-    static const int TIMER_INTERVAL = 1000;
+    static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
 public:
     CategoryMatchesModel(StoreManager &storeManager, QObject *parent);
     void setCategory(std::optional<CategoryId> categoryId);

@@ -21,7 +21,7 @@ class TatamiMatchesModel : public QAbstractTableModel {
     Q_OBJECT
 private:
     static const int COLUMN_COUNT = 1;
-    static const int TIMER_INTERVAL = 1000;
+    static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
 public:
     TatamiMatchesModel(StoreManager &storeManager, size_t tatami, size_t rowCap, QObject *parent);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

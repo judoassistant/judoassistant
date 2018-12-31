@@ -22,7 +22,7 @@ public:
     void silentConnect(QString host, int port=8000); // TODO: Setup default port in config
 
 private:
-    static const int PAUSING_TIMER_INTERVAL = 100;
+    static constexpr auto PAUSING_TIMER_INTERVAL = std::chrono::milliseconds(100);
 
     void quit();
     void openHomePage();

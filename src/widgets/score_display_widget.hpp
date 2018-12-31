@@ -24,9 +24,9 @@ public:
     void paintEvent(QPaintEvent *event);
 private:
     static const int PADDING = 5;
-    static const int INTRO_INTERVAL = 4000;
-    static const int WINNER_INTERVAL = 4000;
-    static const int DURATION_INTERVAL = 1000;
+    static constexpr auto INTRO_INTERVAL = std::chrono::milliseconds(4000);
+    static constexpr auto WINNER_INTERVAL = std::chrono::milliseconds(4000);
+    static constexpr auto DURATION_INTERVAL = std::chrono::milliseconds(1000);
 
     void durationTimerHit();
 
