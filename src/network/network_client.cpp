@@ -56,10 +56,19 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
         log_debug().msg("Connecting..");
         mQuitPosted = false;
         tcp::resolver resolver(mContext);
-        auto endpoints = resolver.resolve(host, std::to_string(port));
+        tcp::resolver::results_type endpoints;
+        try {
+            endpoints = resolver.resolve(host, std::to_string(port));
+        }
+        catch(const std::exception &e) {
+            log_error().field("message", e.what()).msg("Encountered resolving host. Failing");
+            emit connectionAttemptFailed();
+            return;
+        }
 
         mSocket = tcp::socket(mContext);
 
+        // TODO: Somehow kill when taking too long
         boost::asio::async_connect(*mSocket, endpoints,
         [this](boost::system::error_code ec, tcp::endpoint)
         {
