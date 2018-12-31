@@ -54,11 +54,12 @@ void ScoreOperatorWindow::createTournamentMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Tournament"));
 
     {
-        QAction *action = new QAction(tr("Connect.."), this);
-        action->setShortcuts(QKeySequence::New);
-        action->setStatusTip(tr("Connect to hub"));
-        connect(action, &QAction::triggered, this, &ScoreOperatorWindow::showConnectDialog);
-        menu->addAction(action);
+        mConnectAction = new QAction(tr("Connect.."), this);
+        mConnectAction->setShortcuts(QKeySequence::New);
+        mConnectAction->setStatusTip(tr("Connect to hub"));
+        connect(mConnectAction, &QAction::triggered, this, &ScoreOperatorWindow::showConnectDialog);
+        connect(&mStoreManager, &ClientStoreManager::stateChanged, this, &ScoreOperatorWindow::connectionStateChanged);
+        menu->addAction(mConnectAction);
     }
 
     // menu->addSeparator();
@@ -685,3 +686,12 @@ void ScoreOperatorWindow::undoSelectedAction() {
     mStoreManager.undo(actionId);
 }
 
+void ScoreOperatorWindow::connectionStateChanged(ClientStoreManager::State state) {
+    bool enabled = true;
+    if (state == ClientStoreManager::State::CONNECTING)
+        enabled = false;
+    else if (state == ClientStoreManager::State::CONNECTED)
+        enabled = false;
+
+    mConnectAction->setEnabled(enabled);
+}

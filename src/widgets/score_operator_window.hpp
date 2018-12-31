@@ -70,6 +70,8 @@ private:
     QWidget* createMainArea();
     QWidget* createSideArea();
 
+    void connectionStateChanged(ClientStoreManager::State state);
+
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
     MatchCardWidget *mNextMatchWidget;
@@ -78,6 +80,8 @@ private:
     ActionsProxyModel *mActionsModel;
     QTableView *mActionsTable;
     QPushButton *mUndoButton;
+
+    QAction *mConnectAction;
 
     int mTatami;
     std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
