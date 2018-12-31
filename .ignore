@@ -1,0 +1,5 @@
+# Folders to be ignored by silver searcher
+cereal
+icomoon
+build
+
