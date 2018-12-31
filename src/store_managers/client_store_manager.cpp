@@ -29,30 +29,36 @@ void ClientStoreManager::stopClient() {
 }
 
 void ClientStoreManager::connect(QString host, unsigned int port) {
+    if (mState == State::CONNECTED || mState == State::CONNECTING) {
+        log_warning().msg("Tried to call connect when already connecting");
+        return;
+    }
+    mState = State::CONNECTING;
+    emit stateChanged(mState);
     mInterface->postConnect(host.toStdString(), port);
 }
 
 void ClientStoreManager::dispatch(std::unique_ptr<Action> action) {
-    if (getState() == State::NOT_CONNECTED)
-        log_debug().msg("Dispatching action on NOT_CONNECTED ClientStoreManager");
+    if (getState() != State::CONNECTED)
+        log_debug().msg("Dispatching action on NOT CONNECTED ClientStoreManager");
     StoreManager::dispatch(std::move(action));
 }
 
 void ClientStoreManager::undo() {
-    if (getState() == State::NOT_CONNECTED)
-        log_debug().msg("Undoing on on NOT_CONNECTED ClientStoreManager");
+    if (getState() != State::CONNECTED)
+        log_debug().msg("Undoing on NOT CONNECTED ClientStoreManager");
     StoreManager::undo();
 }
 
 void ClientStoreManager::undo(ClientActionId actionId) {
-    if (getState() == State::NOT_CONNECTED)
-        log_debug().msg("Undoing on on NOT_CONNECTED ClientStoreManager");
+    if (getState() != State::CONNECTED)
+        log_debug().msg("Undoing on on NOT CONNECTED ClientStoreManager");
     StoreManager::undo(actionId);
 }
 
 void ClientStoreManager::redo() {
-    if (getState() == State::NOT_CONNECTED)
-        log_debug().msg("Redoing on on NOT_CONNECTED ClientStoreManager");
+    if (getState() != State::CONNECTED)
+        log_debug().msg("Redoing on on NOT CONNECTED ClientStoreManager");
     StoreManager::redo();
 }
 
@@ -61,21 +67,26 @@ ClientStoreManager::State ClientStoreManager::getState() const {
 }
 
 void ClientStoreManager::loseConnection() {
-    mState = State::LOST_CONNECTION;
+    mState = State::NOT_CONNECTED;
+    emit stateChanged(mState);
     emit connectionLost();
 }
 
 void ClientStoreManager::shutdownConnection() {
     mState = State::NOT_CONNECTED;
+    emit stateChanged(mState);
     emit connectionShutdown();
 }
 
 void ClientStoreManager::failConnectionAttempt() {
+    mState = State::NOT_CONNECTED;
+    emit stateChanged(mState);
     emit connectionAttemptFailed();
 }
 
 void ClientStoreManager::succeedConnectionAttempt() {
     mState = State::CONNECTED;
+    emit stateChanged(mState);
     emit connectionAttemptSucceeded();
 }
 

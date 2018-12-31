@@ -8,9 +8,9 @@ class ClientStoreManager : public StoreManager {
     Q_OBJECT
 public:
     enum class State {
-        LOST_CONNECTION,
         NOT_CONNECTED,
-        CONNECTED
+        CONNECTED,
+        CONNECTING
     };
 
     ClientStoreManager();
@@ -36,6 +36,7 @@ signals:
     void connectionLost();
     void connectionShutdown();
     void connectionAttemptSucceeded();
+    void stateChanged(State state);
 
 private:
     void startClient();
