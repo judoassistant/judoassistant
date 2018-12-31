@@ -15,7 +15,6 @@
 #include "stores/match_store.hpp"
 #include "stores/qtournament_store.hpp"
 #include "widgets/score_operator_window.hpp"
-#include "widgets/connect_dialog.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
     : mTatami(0)
@@ -189,11 +188,6 @@ void ScoreOperatorWindow::quit() {
 
 void ScoreOperatorWindow::showAboutDialog() {
     QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
-}
-
-void ScoreOperatorWindow::showConnectDialog() {
-    ConnectDialog dialog(mStoreManager);
-    dialog.exec();
 }
 
 QWidget* ScoreOperatorWindow::createMainArea() {

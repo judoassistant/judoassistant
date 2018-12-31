@@ -3,19 +3,18 @@
 #include <stack>
 
 #include <QActionGroup>
-#include <QMainWindow>
 #include <QMetaObject>
 #include <QPushButton>
 #include <QTableView>
 
 #include "core.hpp"
-#include "store_managers/client_store_manager.hpp"
 #include "stores/tatami_store.hpp"
+#include "widgets/client_window.hpp"
 #include "widgets/match_card_widget.hpp"
 #include "widgets/score_display_widget.hpp"
 #include "widgets/models/actions_model.hpp"
 
-class ScoreOperatorWindow : public QMainWindow {
+class ScoreOperatorWindow : public ClientWindow {
     Q_OBJECT
 
 public:
@@ -71,9 +70,6 @@ private:
     QWidget* createMainArea();
     QWidget* createSideArea();
 
-    void showConnectDialog();
-
-    ClientStoreManager mStoreManager;
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
     MatchCardWidget *mNextMatchWidget;
