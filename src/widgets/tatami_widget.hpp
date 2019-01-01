@@ -51,6 +51,7 @@ private:
     StoreManager *mStoreManager;
     std::pair<CategoryId, MatchType> mBlock;
     int mMatchCount;
+    QString mName;
 };
 
 class SequentialBlockItem : public QGraphicsItem {
@@ -110,16 +111,16 @@ public:
 
     TatamiWidget(StoreManager & storeManager, TatamiLocation location, QWidget *parent = nullptr);
 
-    void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void endResetTatamis();
 
 private:
     void reloadBlocks();
     void shiftBlocks();
 
+    StoreManager *mStoreManager;
     TatamiLocation mLocation;
     QGraphicsScene *mScene;
-    StoreManager *mStoreManager;
     std::vector<EmptyConcurrentBlockItem*> mEmptyGroups;
     std::list<ConcurrentBlockItem*> mGroups;
 };

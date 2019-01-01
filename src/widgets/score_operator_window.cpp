@@ -17,7 +17,6 @@
 #include "widgets/score_operator_window.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
-    : mTatami(0)
 {
     createStatusBar();
     createTournamentMenu();
@@ -110,15 +109,17 @@ void ScoreOperatorWindow::populateTatamiMenu() {
     const auto &tatamis = mStoreManager.getTournament().getTatamis();
 
     mTatamiActionGroup = new QActionGroup(this);
-    for (int i = 0; i < static_cast<int>(tatamis.tatamiCount()); ++i) {
+    for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
+        TatamiLocation location = {tatamis.getHandle(i)};
+
         QAction *action = new QAction(tr("Tatami %1").arg(QString::number(i+1)), mTatamiMenu);
         action->setCheckable(true);
         mTatamiActionGroup->addAction(action);
-        if (i == mTatami) {
+        if (mTatami && location.equiv(*mTatami)) {
             action->setChecked(true);
         }
 
-        connect(action, &QAction::triggered, this, [=]() { setTatami(i); });
+        connect(action, &QAction::triggered, this, [=]() { setTatami(location); });
 
         mTatamiMenu->addAction(action);
     }
@@ -352,7 +353,7 @@ void ScoreOperatorWindow::endResetTournament() {
     updateControlButtons();
 }
 
-void ScoreOperatorWindow::setTatami(int tatami) {
+void ScoreOperatorWindow::setTatami(TatamiLocation tatami) {
     mTatami = tatami;
 
     findNextMatch();
@@ -362,9 +363,12 @@ void ScoreOperatorWindow::silentConnect(QString host, int port) {
     mStoreManager.connect(host, port);
 }
 
-void ScoreOperatorWindow::changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+void ScoreOperatorWindow::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+    if (!mTatami)
+        return;
+
     for (const auto &location: locations) {
-        if (static_cast<int>(location.tatamiIndex) == mTatami) {
+        if (location.getTatamiHandle().equiv(mTatami->handle)) {
             findNextMatch();
             return;
         }
@@ -372,14 +376,14 @@ void ScoreOperatorWindow::changeTatamis(std::vector<TatamiLocation> locations, s
 }
 
 void ScoreOperatorWindow::findNextMatch() {
-    auto &tournament = mStoreManager.getTournament();
-    auto &tatamis = tournament.getTatamis();
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &tatamis = tournament.getTatamis();
 
-    if (mTatami != -1 && mTatami < static_cast<int>(tatamis.tatamiCount())) {
-        auto &tatami = tatamis[mTatami];
+    if (mTatami && tatamis.containsTatami(*mTatami)) {
+        const auto &tatami = tatamis.at(*mTatami);
 
         for (size_t i = 0; i < tatami.groupCount(); ++i) {
-            const auto &group = tatami.getGroup(i);
+            const auto &group = tatami.at(i);
             if (group.getStatus() == ConcurrentBlockGroup::Status::FINISHED) continue;
 
             for (auto combinedId : group.getMatches()) {

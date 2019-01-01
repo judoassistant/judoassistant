@@ -1,5 +1,6 @@
 #include <QPainter>
 
+#include "log.hpp"
 #include "widgets/score_display_widget.hpp"
 #include "widgets/colors.hpp"
 #include "stores/qtournament_store.hpp"

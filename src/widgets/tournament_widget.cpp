@@ -55,8 +55,8 @@ void TournamentWidget::tournamentAboutToBeReset() {
 
 void TournamentWidget::tournamentReset() {
     mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged));
-    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisAdded, this, [this](std::vector<size_t> id) { tatamiCountChanged(); }));
-    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisErased, this, [this](std::vector<size_t> id) { tatamiCountChanged(); }));
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisAdded, this, [this](std::vector<TatamiLocation> id) { tatamiCountChanged(); }));
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisErased, this, [this](std::vector<TatamiLocation> id) { tatamiCountChanged(); }));
     tournamentChanged();
     tatamiCountChanged();
 }

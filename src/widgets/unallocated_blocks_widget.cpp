@@ -55,21 +55,21 @@ void UnallocatedBlocksWidget::changeTatamis(std::vector<BlockLocation> locations
 void UnallocatedBlocksWidget::beginEraseTatamis(std::vector<TatamiLocation> locations) {
     bool shouldShift = false;
 
-    TournamentStore &tournament = mStoreManager.getTournament();
-    TatamiList &tatamis = tournament.getTatamis();
+    const TournamentStore &tournament = mStoreManager.getTournament();
+    const TatamiList &tatamis = tournament.getTatamis();
 
     for (TatamiLocation location : locations) {
-        TatamiStore & tatami = tournament.getTatami(location);
+        const TatamiStore &tatami = tatamis.at(location);
 
         for (size_t i = 0; i < tatami.groupCount(); ++i) {
-            auto &group = tatami.getGroup(i);
+            const auto &group = tatami.at(i);
 
             for (size_t j = 0; j < group.groupCount(); ++j) {
-                auto &seqGroup = group.getGroup(j);
+                const auto &seqGroup = group.at(j);
 
                 for (size_t k = 0; k < seqGroup.blockCount(); ++k) {
-                    auto block = seqGroup.getBlock(k);
-                    const CategoryStore & category = tournament.getCategory(block.first);
+                    auto block = seqGroup.at(k);
+                    const CategoryStore &category = tournament.getCategory(block.first);
                     shouldShift |= insertBlock(category, block.second);
                 }
             }
@@ -83,18 +83,20 @@ void UnallocatedBlocksWidget::beginEraseTatamis(std::vector<TatamiLocation> loca
 void UnallocatedBlocksWidget::endAddTatamis(std::vector<TatamiLocation> locations) {
     bool shouldShift = false;
 
-    TournamentStore &tournament = mStoreManager.getTournament();
-    TatamiList &tatamis = tournament.getTatamis();
+    const TournamentStore &tournament = mStoreManager.getTournament();
+    const TatamiList &tatamis = tournament.getTatamis();
 
-    for (size_t index : indices) {
+    for (TatamiLocation location : locations) {
+        const auto &tatami = tatamis.at(location);
+
         for (size_t i = 0; i < tatami.groupCount(); ++i) {
-            auto &group = tatami.getGroup(i);
+            const auto &group = tatami.at(i);
 
             for (size_t j = 0; j < group.groupCount(); ++j) {
-                auto &seqGroup = group.getGroup(j);
+                const auto &seqGroup = group.at(j);
 
                 for (size_t k = 0; k < seqGroup.blockCount(); ++k) {
-                    auto block = seqGroup.getBlock(k);
+                    auto block = seqGroup.at(k);
                     shouldShift |= eraseBlock(block.first, block.second);
                 }
             }
@@ -110,7 +112,7 @@ void UnallocatedBlocksWidget::endAddCategories(std::vector<CategoryId> categoryI
 
     bool shouldShift = false;
     for (auto categoryId : categoryIds) {
-        const CategoryStore & category = tournament.getCategory(categoryId);
+        const CategoryStore &category = tournament.getCategory(categoryId);
         if (!category.getLocation(MatchType::KNOCKOUT))
             shouldShift |= insertBlock(category, MatchType::KNOCKOUT);
         if (category.getDrawSystem().hasFinalBlock() && !category.getLocation(MatchType::FINAL))
@@ -147,7 +149,7 @@ void UnallocatedBlocksWidget::endTournamentReset() {
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::changeTatamis));
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::beginEraseTatamis));
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &UnallocatedBlocksWidget::endAddTatamis));
-    mConnections.push(connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget:endAddCategories));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget::endAddCategories));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &UnallocatedBlocksWidget::beginEraseCategories));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesReset, this, &UnallocatedBlocksWidget::endCategoriesReset));
 
