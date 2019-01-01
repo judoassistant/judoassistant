@@ -79,11 +79,11 @@ public:
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
 
-    virtual void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    virtual void beginAddTatamis(std::vector<TatamiLocation> locations);
-    virtual void endAddTatamis();
-    virtual void beginEraseTatamis(std::vector<TatamiLocation> locations);
-    virtual void endEraseTatamis();
+    virtual void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {}
+    virtual void beginAddTatamis(std::vector<TatamiLocation> locations) {}
+    virtual void endAddTatamis() {}
+    virtual void beginEraseTatamis(std::vector<TatamiLocation> locations) {}
+    virtual void endEraseTatamis() {}
 
 private:
     TournamentId mId;
