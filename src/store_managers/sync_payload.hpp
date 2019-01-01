@@ -11,7 +11,6 @@
 class Action;
 class QTournamentStore;
 
-// TODO: Include ClientId in action list types
 typedef std::list<std::pair<ClientActionId, std::shared_ptr<Action>>> SharedActionList;
 typedef std::list<std::pair<ClientActionId, std::unique_ptr<Action>>> UniqueActionList;
 
