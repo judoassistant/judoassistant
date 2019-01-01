@@ -115,7 +115,7 @@ public:
         PositionId id;
         do {
             id = (*generator)();
-        } while(manager.containsId(id));
+        } while(manager.contains(id));
 
         return id;
     };
