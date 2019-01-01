@@ -53,11 +53,11 @@ void MatchesWidget::beginTatamiCountChange() {
 
 void MatchesWidget::endTatamiCountChange() {
     // TODO: Synchronize scroll bars
-    TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
+    const TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
         auto *tatami = new QListView(mFixedScrollArea);
         tatami->setItemDelegate(new MatchCardDelegate(tatami));
-        tatami->setModel(new TatamiMatchesModel(mStoreManager, i, 20, this));
+        tatami->setModel(new TatamiMatchesModel(mStoreManager, {tatamis.getHandle(i), i}, 20, this));
         mFixedScrollArea->addWidget(tatami);
     }
 }

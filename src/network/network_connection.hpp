@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 
 #include "core.hpp"
+#include "log.hpp"
 #include "version.hpp"
 #include "network/network_message.hpp"
 

@@ -5,11 +5,13 @@
 #include "actions/match_actions.hpp"
 #include "draw_systems/draw_systems.hpp"
 #include "exception.hpp"
+#include "log.hpp"
 #include "rulesets/rulesets.hpp"
 #include "stores/tournament_store.hpp"
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_list.hpp"
+#include "stores/tatami/tatami_location.hpp"
 
 AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
     : mId(id)
@@ -180,7 +182,7 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         mErasedCategoryIds.push_back(categoryId);
     }
 
-    std::unordered_set<TatamiLocation> locations;
+    std::unordered_set<BlockLocation> locations;
     std::unordered_set<std::pair<CategoryId, MatchType>> blocks;
 
     tournament.beginEraseCategories(mErasedCategoryIds);
@@ -189,20 +191,20 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         CategoryStore & category = tournament.getCategory(categoryId);
 
         {
-            auto loc = category.getTatamiLocation(MatchType::KNOCKOUT);
-            if (loc) {
-                locations.insert(*loc);
+            auto location = category.getLocation(MatchType::KNOCKOUT);
+            if (location) {
+                locations.insert(*location);
                 blocks.insert(std::make_pair(categoryId, MatchType::KNOCKOUT));
-                tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::KNOCKOUT, loc, std::nullopt, 0);
+                tournament.getTatamis().moveBlock(tournament, {categoryId, MatchType::KNOCKOUT}, location, std::nullopt);
             }
         }
 
         {
-            auto loc = category.getTatamiLocation(MatchType::FINAL);
-            if (loc) {
-                locations.insert(*loc);
+            auto location = category.getLocation(MatchType::FINAL);
+            if (location) {
+                locations.insert(*location);
                 blocks.insert(std::make_pair(categoryId, MatchType::FINAL));
-                tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::FINAL, loc, std::nullopt, 0);
+                tournament.getTatamis().moveBlock(tournament, {categoryId, MatchType::FINAL}, location, std::nullopt);
             }
         }
 
@@ -255,17 +257,18 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
         }
 
         // copy before category
+        // TODO: Fix ordering not being correctly restored when deleting multiple categories
         auto categoryId = category->getId();
-        auto knockoutLoc = category->getTatamiLocation(MatchType::KNOCKOUT);
-        auto finalLoc = category->getTatamiLocation(MatchType::FINAL);
+        auto knockoutLoc = category->getLocation(MatchType::KNOCKOUT);
+        auto finalLoc = category->getLocation(MatchType::FINAL);
 
         tournament.addCategory(std::move(category));
 
         if (knockoutLoc)
-            tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::KNOCKOUT, std::nullopt, knockoutLoc, 0);
+            tournament.getTatamis().moveBlock(tournament, {categoryId, MatchType::KNOCKOUT}, std::nullopt, knockoutLoc);
 
         if (finalLoc)
-            tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::FINAL, std::nullopt, finalLoc, 0);
+            tournament.getTatamis().moveBlock(tournament, {categoryId, MatchType::FINAL}, std::nullopt, finalLoc);
 
         mCategories.pop();
     }
@@ -318,20 +321,20 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
 
     tournament.endResetMatches(mCategoryId);
 
-    std::vector<TatamiLocation> changedTatamiLocations;
+    std::vector<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
     for (MatchType type : {MatchType::FINAL, MatchType::KNOCKOUT}) {
-        std::optional<TatamiLocation> location = category.getTatamiLocation(type);
+        std::optional<BlockLocation> location = category.getLocation(type);
         if (location) {
             tournament.getTatamis().recomputeBlock(tournament, *location);
-            changedTatamiLocations.push_back(*location);
+            changedLocations.push_back(*location);
             changedBlocks.push_back({mCategoryId, type});
         }
     }
 
-    if (!changedTatamiLocations.empty())
-        tournament.changeTatamis(changedTatamiLocations, changedBlocks);
+    if (!changedLocations.empty())
+        tournament.changeTatamis(changedLocations, changedBlocks);
 }
 
 void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
@@ -364,20 +367,20 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 
     tournament.endResetMatches(mCategoryId);
 
-    std::vector<TatamiLocation> changedTatamiLocations;
+    std::vector<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
     for (MatchType type : {MatchType::FINAL, MatchType::KNOCKOUT}) {
-        std::optional<TatamiLocation> location = category.getTatamiLocation(type);
+        std::optional<BlockLocation> location = category.getLocation(type);
         if (location) {
             tournament.getTatamis().recomputeBlock(tournament, *location);
-            changedTatamiLocations.push_back(*location);
+            changedLocations.push_back(*location);
             changedBlocks.push_back({mCategoryId, type});
         }
     }
 
-    if (!changedTatamiLocations.empty())
-        tournament.changeTatamis(changedTatamiLocations, changedBlocks);
+    if (!changedLocations.empty())
+        tournament.changeTatamis(changedLocations, changedBlocks);
 }
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds)

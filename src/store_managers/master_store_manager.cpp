@@ -1,4 +1,5 @@
 #include <fstream>
+#include "log.hpp"
 #include "network/network_server.hpp"
 #include "serializables.hpp"
 #include "store_managers/master_store_manager.hpp"
@@ -7,7 +8,7 @@
 MasterStoreManager::MasterStoreManager()
     : mDirty(false)
 {
-    getTournament().getTatamis().pushTatami();
+    getTournament().getTatamis().addTatami(0);
 }
 
 MasterStoreManager::~MasterStoreManager() {
@@ -40,7 +41,7 @@ bool MasterStoreManager::read(const QString &path) {
 void MasterStoreManager::resetTournament() {
     log_debug().msg("Resetting tournament");
     auto tournament = std::make_unique<QTournamentStore>();
-    tournament->getTatamis().pushTatami();
+    tournament->getTatamis().addTatami(0);
     sync(std::move(tournament));
     mDirty = false;
 }

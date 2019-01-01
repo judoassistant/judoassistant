@@ -11,7 +11,7 @@
 #include "id.hpp"
 #include "widgets/misc/numerical_string_comparator.hpp"
 #include "stores/match_store.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_location.hpp"
 
 class StoreManager;
 class CategoryStore;
@@ -56,14 +56,14 @@ public:
     UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent = 0);
 
 public slots:
-    void tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void tatamisAdded(std::vector<size_t> indices);
-    void tatamisAboutToBeErased(std::vector<size_t> indices);
-    void categoriesAdded(std::vector<CategoryId> categoryId);
-    void categoriesAboutToBeErased(std::vector<CategoryId> categoryId);
-    void tournamentAboutToBeReset();
-    void tournamentReset();
-    void categoriesReset();
+    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void endAddTatamis(std::vector<NewTatamiLocation> locations);
+    void beginEraseTatamis(std::vector<NewTatamiLocation> locations);
+    void endAddCategories(std::vector<CategoryId> categoryId);
+    void beginEraseCategories(std::vector<CategoryId> categoryId);
+    void beginTournamentReset();
+    void endTournamentReset();
+    void endCategoriesReset();
 
 private:
     void reloadBlocks();

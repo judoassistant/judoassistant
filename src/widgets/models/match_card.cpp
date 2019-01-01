@@ -10,7 +10,7 @@
 
 MatchCard::MatchCard(const TournamentStore & tournament, const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime)
 {
-    setCategory(category, match);
+    setCategory(tournament, category, match);
     setWhitePlayer(tournament, match);
     setBluePlayer(tournament, match);
     setMatch(category, match, masterTime);
@@ -209,11 +209,19 @@ QSize MatchCard::sizeHint() const {
     return QSize(WIDTH_HINT, HEIGHT_HINT);
 }
 
-void MatchCard::setCategory(const CategoryStore &category, const MatchStore &match) {
+void MatchCard::setCategory(const TournamentStore &tournament, const CategoryStore &category, const MatchStore &match) {
     mCategory = QString::fromStdString(category.getName());
 
-    auto location = category.getTatamiLocation(match.getType());
-    mTatami = (location ? std::make_optional(location->tatamiIndex) : std::nullopt);
+    const auto &tatamis = tournament.getTatamis();
+
+    auto location = category.getLocation(match.getType());
+    if (location) {
+        auto tatamiLocation = location->sequentialGroup.concurrentGroup.tatami;
+        mTatami = tatamis.getIndex(tatamiLocation);
+    }
+    else {
+        mTatami = std::nullopt;
+    }
 }
 
 void MatchCard::setWhitePlayer(const TournamentStore & tournament, const MatchStore &match) {

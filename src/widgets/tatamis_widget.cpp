@@ -85,7 +85,7 @@ void TatamisWidget::endTatamiCountChange() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
 
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-        auto *tatami = new TatamiWidget(mStoreManager, i, mFixedScrollArea);
+        auto *tatami = new TatamiWidget(mStoreManager, {tatamis.getHandle(i), i}, mFixedScrollArea);
         mFixedScrollArea->addWidget(tatami);
     }
 }

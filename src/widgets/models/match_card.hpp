@@ -26,7 +26,7 @@ public:
     QSize sizeHint() const;
 
 private:
-    void setCategory(const CategoryStore &category, const MatchStore &match);
+    void setCategory(const TournamentStore &tournament, const CategoryStore &category, const MatchStore &match);
     void setWhitePlayer(const TournamentStore & tournament, const MatchStore &match);
     void setBluePlayer(const TournamentStore & tournament, const MatchStore &match);
     void setMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime);

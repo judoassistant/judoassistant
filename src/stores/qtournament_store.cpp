@@ -1,5 +1,6 @@
+#include "log.hpp"
 #include "stores/qtournament_store.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_store.hpp"
 #include "stores/match_store.hpp"
 #include "stores/player_store.hpp"
 #include "stores/category_store.hpp"
@@ -205,44 +206,40 @@ void QTournamentStore::endResetMatches(CategoryId categoryId) {
     emit matchesReset(categoryId);
 }
 
-void QTournamentStore::changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+void QTournamentStore::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
     log_debug().field("locations", locations).field("blocks", blocks).msg("Emitting tatamisChanged");
     emit tatamisChanged(locations, blocks);
 }
 
-void QTournamentStore::beginAddTatamis(std::vector<size_t> id) {
-    if (mAddedTatamiIds)
-        throw std::runtime_error("beginAddTatamis called immidiately after another beginAddTatamis call.");
+void QTournamentStore::beginAddTatamis(std::vector<NewTatamiLocation> locations) {
+    assert(!mAddedTatamiLocations.has_value());
 
-    log_debug().field("ids", id).msg("Emitting tatamisAboutToBeAdded");
-    emit tatamisAboutToBeAdded(id);
-    mAddedTatamiIds = id;
+    log_debug().field("locations", locations).msg("Emitting tatamisAboutToBeAdded");
+    emit tatamisAboutToBeAdded(locations);
+    mAddedTatamiLocations = locations;
 }
 
 void QTournamentStore::endAddTatamis() {
-    if (!mAddedTatamiIds)
-        throw std::runtime_error("endAddTatamis called with calling beginAddTatamis first.");
+    assert(mAddedTatamiLocations.has_value());
 
-    log_debug().field("ids", *mAddedTatamiIds).msg("Emitting tatamisAdded");
-    emit tatamisAdded(*mAddedTatamiIds);
-    mAddedTatamiIds.reset();
+    log_debug().field("locations", *mAddedTatamiLocations).msg("Emitting tatamisAdded");
+    emit tatamisAdded(*mAddedTatamiLocations);
+    mAddedTatamiLocations.reset();
 }
 
-void QTournamentStore::beginEraseTatamis(std::vector<size_t> id) {
-    if (mErasedTatamiIds)
-        throw std::runtime_error("beginEraseTatamis called immidiately after another beginEraseTatamis call.");
+void QTournamentStore::beginEraseTatamis(std::vector<NewTatamiLocation> locations) {
+    assert(!mErasedTatamiLocations.has_value());
 
-    log_debug().field("ids", id).msg("Emitting tatamisAboutToBeErased");
-    emit tatamisAboutToBeErased(id);
-    mErasedTatamiIds = id;
+    log_debug().field("locations", locations).msg("Emitting tatamisAboutToBeErased");
+    emit tatamisAboutToBeErased(locations);
+    mErasedTatamiLocations = locations;
 }
 
 void QTournamentStore::endEraseTatamis() {
-    if (!mErasedTatamiIds)
-        throw std::runtime_error("endEraseTatamis called with calling beginEraseTatamis first.");
+    assert(mErasedTatamiLocations.has_value());
 
-    log_debug().field("ids", *mErasedTatamiIds).msg("Emitting tatamisErased");
-    emit tatamisErased(*mErasedTatamiIds);
-    mErasedTatamiIds.reset();
+    log_debug().field("locations", *mErasedTatamiLocations).msg("Emitting tatamisErased");
+    emit tatamisErased(*mErasedTatamiLocations);
+    mErasedTatamiLocations.reset();
 }
 

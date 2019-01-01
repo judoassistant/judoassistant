@@ -1,3 +1,4 @@
+#include "log.hpp"
 #include "network/network_message.hpp"
 #include "serializables.hpp"
 #include "version.hpp"

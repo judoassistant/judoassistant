@@ -12,7 +12,7 @@
 #include <QSortFilterProxyModel>
 
 #include "id.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_location.hpp"
 #include "stores/match_store.hpp"
 
 class StoreManager;
@@ -23,7 +23,7 @@ private:
     static const int COLUMN_COUNT = 1;
     static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
 public:
-    TatamiMatchesModel(StoreManager &storeManager, size_t tatami, size_t rowCap, QObject *parent);
+    TatamiMatchesModel(StoreManager &storeManager, NewTatamiLocation tatami, size_t rowCap, QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -36,7 +36,7 @@ public:
 
 private:
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void changePlayers(std::vector<PlayerId> playerIds);
     void timerHit();
 
@@ -51,11 +51,11 @@ private:
     void beginResetCategory(CategoryId categoryId);
 
     StoreManager & mStoreManager;
-    size_t mTatami;
+    NewTatamiLocation mTatami;
     size_t mRowCap;
     bool mResettingMatches;
     std::unordered_map<std::pair<CategoryId,MatchId>, size_t> mLoadedMatches; // Matches loaded and loading time
-    std::unordered_set<PositionId> mLoadedBlocks; // Blocks loaded
+    std::unordered_set<PositionId> mLoadedGroups; // Blocks loaded
 
     std::deque<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedMatchesSet;

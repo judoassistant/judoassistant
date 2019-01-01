@@ -4,13 +4,14 @@
 #include <QBrush>
 #include <QTimer>
 
+#include "log.hpp"
 #include "store_managers/store_manager.hpp"
 #include "stores/qtournament_store.hpp"
 #include "stores/category_store.hpp"
 #include "widgets/models/match_card.hpp"
 #include "widgets/models/tatami_matches_model.hpp"
 
-TatamiMatchesModel::TatamiMatchesModel(StoreManager &storeManager, size_t tatami, size_t rowCap, QObject *parent)
+TatamiMatchesModel::TatamiMatchesModel(StoreManager &storeManager, NewTatamiLocation tatami, size_t rowCap, QObject *parent)
     : QAbstractTableModel(parent)
     , mStoreManager(storeManager)
     , mTatami(tatami)
@@ -35,7 +36,7 @@ void TatamiMatchesModel::beginResetMatches() {
     beginResetModel();
 
     mLoadedMatches.clear();
-    mLoadedBlocks.clear();
+    mLoadedGroups.clear();
 
     mUnfinishedMatches.clear();
     mUnfinishedMatchesSet.clear();
@@ -60,11 +61,11 @@ void TatamiMatchesModel::beginResetTournament() {
 }
 
 void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
-    auto &tournament = mStoreManager.getTournament();
-    auto &tatamis = tournament.getTatamis();
-    if (tatamis.tatamiCount() <= mTatami)
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &tatamis = tournament.getTatamis();
+    if (!tatamis.containsTatami(mTatami))
         return;
-    auto &tatami = tatamis[mTatami];
+    const auto &tatami = tatamis.at(mTatami);
 
     struct MatchInfo {
         CategoryId categoryId;
@@ -78,14 +79,14 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
     size_t newUnfinishedMatches = 0;
 
     while (mUnfinishedMatches.size() + newMatches.size() < mRowCap) {
-        if (mLoadedBlocks.size() == tatami.groupCount())
+        if (mLoadedGroups.size() == tatami.groupCount())
             break;
 
-        auto handle = tatami.getHandle(mLoadedBlocks.size());
-        mLoadedBlocks.insert(handle.id);
-        auto &block = tatami.getGroup(handle);
+        auto handle = tatami.getHandle(mLoadedGroups.size());
+        mLoadedGroups.insert(handle.id);
+        const auto &group = tatami.at(handle);
 
-        for (const auto &p : block.getMatches()) {
+        for (const auto &p : group.getMatches()) {
             MatchInfo matchInfo;
             auto &category = tournament.getCategory(p.first);
             auto &match = category.getMatch(p.second);
@@ -354,26 +355,27 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
         loadBlocks();
 }
 
-void TatamiMatchesModel::changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
-    auto &tournament = mStoreManager.getTournament();
-    auto &tatamis = tournament.getTatamis();
-    if (tatamis.tatamiCount() <= mTatami)
+void TatamiMatchesModel::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &tatamis = tournament.getTatamis();
+    if (!tatamis.containsTatami(mTatami))
         return;
-    auto &tatami = tatamis[mTatami];
+    const auto &tatami = tatamis.at(mTatami);
 
     bool shouldReset = false;
     bool shouldLoad = false;
 
-    for (TatamiLocation location : locations) {
-        if (location.tatamiIndex != mTatami) continue;
+    for (BlockLocation location : locations) {
+        if (!mTatami.equiv(location.sequentialGroup.concurrentGroup.tatami)) continue;
 
-        if (mLoadedBlocks.find(location.concurrentGroup.id) != mLoadedBlocks.end()) {
+        auto handle = location.sequentialGroup.concurrentGroup.handle;
+        if (mLoadedGroups.find(handle.id) != mLoadedGroups.end()) {
             shouldReset = true;
             break;
         }
 
-        if (tatami.containsGroup(location.concurrentGroup)) {
-            if (tatami.getIndex(location.concurrentGroup) > mLoadedBlocks.size()) {
+        if (tatami.containsGroup(handle)) {
+            if (tatami.getIndex(handle) > mLoadedGroups.size()) {
                 shouldReset = true;
                 break;
             }
@@ -393,7 +395,6 @@ void TatamiMatchesModel::changeTatamis(std::vector<TatamiLocation> locations, st
         log_debug().field("tatami", mTatami).msg("Loading tatami matches");
         loadBlocks();
     }
-
 }
 
 void TatamiMatchesModel::beginResetCategory(CategoryId categoryId) {

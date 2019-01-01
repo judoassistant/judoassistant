@@ -6,7 +6,6 @@
 #include "actions/action.hpp"
 #include "stores/match_store.hpp"
 #include "stores/player_store.hpp"
-#include "stores/tatami_store.hpp"
 
 class TournamentStore;
 

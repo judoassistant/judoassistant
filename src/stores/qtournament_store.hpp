@@ -9,6 +9,7 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tournament_store.hpp"
+#include "stores/tatami/tatami_location.hpp"
 
 class QTournamentStore : public QObject, public TournamentStore {
     Q_OBJECT
@@ -46,10 +47,10 @@ public:
     void beginResetMatches(CategoryId categoryId) override;
     void endResetMatches(CategoryId categoryId) override;
 
-    void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) override;
-    void beginAddTatamis(std::vector<size_t> ids) override;
+    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) override;
+    void beginAddTatamis(std::vector<NewTatamiLocation> locations) override;
     void endAddTatamis() override;
-    void beginEraseTatamis(std::vector<size_t> ids) override;
+    void beginEraseTatamis(std::vector<NewTatamiLocation> locations) override;
     void endEraseTatamis() override;
 
 signals:
@@ -78,11 +79,11 @@ signals:
     void matchesAboutToBeReset(CategoryId categoryId);
     void matchesReset(CategoryId categoryId);
 
-    void tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void tatamisAboutToBeAdded(std::vector<size_t> id);
-    void tatamisAdded(std::vector<size_t> id);
-    void tatamisAboutToBeErased(std::vector<size_t> id);
-    void tatamisErased(std::vector<size_t> id);
+    void tatamisChanged(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void tatamisAboutToBeAdded(std::vector<NewTatamiLocation> locations);
+    void tatamisAdded(std::vector<NewTatamiLocation> locations);
+    void tatamisAboutToBeErased(std::vector<NewTatamiLocation> locations);
+    void tatamisErased(std::vector<NewTatamiLocation> locations);
 
 private:
     std::optional<std::vector<PlayerId>> mAddedPlayerIds;
@@ -99,7 +100,7 @@ private:
     std::optional<std::vector<MatchId>> mErasedMatchIds;
     bool mResettingMatches;
 
-    std::optional<std::vector<size_t>> mAddedTatamiIds;
-    std::optional<std::vector<size_t>> mErasedTatamiIds;
+    std::optional<std::vector<NewTatamiLocation>> mAddedTatamiLocations;
+    std::optional<std::vector<NewTatamiLocation>> mErasedTatamiLocations;
 };
 

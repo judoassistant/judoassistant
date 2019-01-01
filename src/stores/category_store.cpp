@@ -9,7 +9,7 @@ CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique
     : mId(id)
     , mName(name)
     , mMatchCount({0,0})
-    , mTatamiLocation({std::nullopt,std::nullopt})
+    , mLocation({std::nullopt,std::nullopt})
     , mRuleset(std::move(ruleset))
     , mDrawSystem(std::move(drawSystem))
 {}
@@ -20,7 +20,7 @@ CategoryStore::CategoryStore(const CategoryStore &other)
     , mPlayers(other.mPlayers)
     , mMatchMap(other.mMatchMap)
     , mMatchCount(other.mMatchCount)
-    , mTatamiLocation(other.mTatamiLocation)
+    , mLocation(other.mLocation)
     , mRuleset(other.mRuleset->clone())
     , mDrawSystem(other.mDrawSystem->clone())
 {
@@ -148,10 +148,10 @@ size_t CategoryStore::getMatchCount(MatchType type) const {
     return mMatchCount[static_cast<int>(type)];
 }
 
-std::optional<TatamiLocation> CategoryStore::getTatamiLocation(MatchType type) const {
-    return mTatamiLocation[static_cast<int>(type)];
+std::optional<BlockLocation> CategoryStore::getLocation(MatchType type) const {
+    return mLocation[static_cast<int>(type)];
 }
 
-void CategoryStore::setTatamiLocation(MatchType type, std::optional<TatamiLocation> location) {
-    mTatamiLocation[static_cast<int>(type)] = location;
+void CategoryStore::setLocation(MatchType type, std::optional<BlockLocation> location) {
+    mLocation[static_cast<int>(type)] = location;
 }
