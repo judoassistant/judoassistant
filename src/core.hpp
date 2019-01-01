@@ -6,5 +6,4 @@
 #include <assert.h>
 
 #include "exception.hpp"
-#include "log.hpp"
 
