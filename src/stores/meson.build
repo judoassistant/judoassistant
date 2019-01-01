@@ -1,7 +1,8 @@
+subdir('tatami')
+
 core_sources += ['src/stores/category_store.cpp']
 core_sources += ['src/stores/match_store.cpp']
 core_sources += ['src/stores/player_store.cpp']
-core_sources += ['src/stores/tatami_store.cpp']
 core_sources += ['src/stores/tournament_store.cpp']
 ui_sources += ['src/stores/qtournament_store.cpp']
 
