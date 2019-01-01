@@ -5,6 +5,8 @@
 
 using boost::asio::ip::tcp;
 
+// TODO: Catch exception when port already in use
+
 void NetworkParticipant::start() {
     log_debug().msg("Starting participant");
     mServer->join(shared_from_this());
