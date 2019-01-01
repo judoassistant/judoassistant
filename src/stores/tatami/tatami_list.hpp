@@ -21,6 +21,7 @@ public:
     size_t getIndex(TatamiLocation handle) const;
     size_t tatamiCount() const;
     void addTatami(size_t index);
+    BlockLocation refreshLocation(BlockLocation location) const;
 
     TatamiStore & operator[](PositionHandle handle);
 
