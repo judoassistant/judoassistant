@@ -70,7 +70,7 @@ private:
     QWidget* createMainArea();
     QWidget* createSideArea();
 
-    void connectionStateChanged(ClientStoreManager::State state);
+    void changeConnectionState(ClientStoreManager::State state);
 
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
@@ -82,6 +82,7 @@ private:
     QPushButton *mUndoButton;
 
     QAction *mConnectAction;
+    QAction *mDisconnectAction;
 
     int mTatami;
     std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;

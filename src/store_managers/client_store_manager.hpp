@@ -10,7 +10,8 @@ public:
     enum class State {
         NOT_CONNECTED,
         CONNECTED,
-        CONNECTING
+        CONNECTING,
+        DISCONNECTING
     };
 
     ClientStoreManager();

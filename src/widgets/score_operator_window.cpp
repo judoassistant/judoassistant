@@ -53,16 +53,20 @@ void ScoreOperatorWindow::createStatusBar() {
 void ScoreOperatorWindow::createTournamentMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Tournament"));
 
-    {
-        mConnectAction = new QAction(tr("Connect.."), this);
-        mConnectAction->setShortcuts(QKeySequence::New);
-        mConnectAction->setStatusTip(tr("Connect to hub"));
-        connect(mConnectAction, &QAction::triggered, this, &ScoreOperatorWindow::showConnectDialog);
-        connect(&mStoreManager, &ClientStoreManager::stateChanged, this, &ScoreOperatorWindow::connectionStateChanged);
-        menu->addAction(mConnectAction);
-    }
+    mConnectAction = new QAction(tr("Connect.."), this);
+    mConnectAction->setShortcuts(QKeySequence::New);
+    mConnectAction->setStatusTip(tr("Connect to hub"));
+    connect(mConnectAction, &QAction::triggered, this, &ScoreOperatorWindow::showConnectDialog);
+    menu->addAction(mConnectAction);
 
-    // menu->addSeparator();
+    mDisconnectAction = new QAction(tr("Disconnect"), this);
+    mDisconnectAction->setShortcuts(QKeySequence::New);
+    mDisconnectAction->setStatusTip(tr("Disconnect from hub"));
+    connect(mDisconnectAction, &QAction::triggered, this, &ScoreOperatorWindow::disconnect);
+    menu->addAction(mDisconnectAction);
+
+    changeConnectionState(mStoreManager.getState());
+    connect(&mStoreManager, &ClientStoreManager::stateChanged, this, &ScoreOperatorWindow::changeConnectionState);
 }
 
 void ScoreOperatorWindow::createEditMenu() {
@@ -325,7 +329,7 @@ QWidget* ScoreOperatorWindow::createSideArea() {
 
 void ScoreOperatorWindow::beginResetTournament() {
     while (!mConnections.empty()) {
-        disconnect(mConnections.top());
+        QMainWindow::disconnect(mConnections.top());
         mConnections.pop();
     }
 }
@@ -686,12 +690,7 @@ void ScoreOperatorWindow::undoSelectedAction() {
     mStoreManager.undo(actionId);
 }
 
-void ScoreOperatorWindow::connectionStateChanged(ClientStoreManager::State state) {
-    bool enabled = true;
-    if (state == ClientStoreManager::State::CONNECTING)
-        enabled = false;
-    else if (state == ClientStoreManager::State::CONNECTED)
-        enabled = false;
-
-    mConnectAction->setEnabled(enabled);
+void ScoreOperatorWindow::changeConnectionState(ClientStoreManager::State state) {
+    mConnectAction->setEnabled(state == ClientStoreManager::State::NOT_CONNECTED);
+    mDisconnectAction->setEnabled(state == ClientStoreManager::State::CONNECTED);
 }

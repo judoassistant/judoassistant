@@ -29,7 +29,7 @@ void ClientStoreManager::stopClient() {
 }
 
 void ClientStoreManager::connect(QString host, unsigned int port) {
-    if (mState == State::CONNECTED || mState == State::CONNECTING) {
+    if (mState != State::NOT_CONNECTED) {
         log_warning().msg("Tried to call connect when already connecting");
         return;
     }
@@ -88,5 +88,15 @@ void ClientStoreManager::succeedConnectionAttempt() {
     mState = State::CONNECTED;
     emit stateChanged(mState);
     emit connectionAttemptSucceeded();
+}
+
+void ClientStoreManager::disconnect() {
+    if (mState != State::CONNECTED) {
+        log_warning().msg("Tried to call disconnect on non-connected client");
+        return;
+    }
+    mState = State::DISCONNECTING;
+    emit stateChanged(mState);
+    mInterface->postDisconnect();
 }
 

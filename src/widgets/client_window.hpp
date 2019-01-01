@@ -11,14 +11,17 @@ class ClientWindow : public QMainWindow {
     Q_OBJECT
 public:
     ClientWindow();
+
 protected:
     void showConnectDialog();
+    void disconnect();
+    ClientStoreManager mStoreManager;
+
+private:
     void retryTimerHit();
     void loseConnection();
     void succeedConnectionAttempt();
 
-    ClientStoreManager mStoreManager;
-private:
     QString mPreviousHost;
     QTimer mRetryTimer;
     std::optional<int> mPreviousPort;

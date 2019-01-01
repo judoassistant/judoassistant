@@ -36,3 +36,8 @@ void ClientWindow::retryTimerHit() {
         return;
     mStoreManager.connect(mPreviousHost, *mPreviousPort);
 }
+
+void ClientWindow::disconnect() {
+    mStoreManager.disconnect();
+}
+
