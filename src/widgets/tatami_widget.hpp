@@ -17,7 +17,7 @@ public:
     static const int WIDTH = 280;
     static const int HEIGHT = 20;
 
-    EmptyConcurrentBlockItem(StoreManager * storeManager, NewTatamiLocation tatami, size_t index);
+    EmptyConcurrentBlockItem(StoreManager * storeManager, TatamiLocation tatami, size_t index);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
@@ -27,7 +27,7 @@ public:
 
 private:
     StoreManager *mStoreManager;
-    NewTatamiLocation mTatami;
+    TatamiLocation mTatami;
     size_t mIndex;
     bool mDragOver;
 };
@@ -108,7 +108,7 @@ public:
     static const int PADDING = 10;
     static const int BLOCK_MARGIN = 2;
 
-    TatamiWidget(StoreManager & storeManager, NewTatamiLocation location, QWidget *parent = nullptr);
+    TatamiWidget(StoreManager & storeManager, TatamiLocation location, QWidget *parent = nullptr);
 
     void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void endResetTatamis();
@@ -117,7 +117,7 @@ private:
     void reloadBlocks();
     void shiftBlocks();
 
-    NewTatamiLocation mLocation;
+    TatamiLocation mLocation;
     QGraphicsScene *mScene;
     StoreManager *mStoreManager;
     std::vector<EmptyConcurrentBlockItem*> mEmptyGroups;

@@ -11,7 +11,7 @@
 #include "widgets/models/match_card.hpp"
 #include "widgets/models/tatami_matches_model.hpp"
 
-TatamiMatchesModel::TatamiMatchesModel(StoreManager &storeManager, NewTatamiLocation tatami, size_t rowCap, QObject *parent)
+TatamiMatchesModel::TatamiMatchesModel(StoreManager &storeManager, TatamiLocation tatami, size_t rowCap, QObject *parent)
     : QAbstractTableModel(parent)
     , mStoreManager(storeManager)
     , mTatami(tatami)

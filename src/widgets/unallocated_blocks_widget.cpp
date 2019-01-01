@@ -52,13 +52,13 @@ void UnallocatedBlocksWidget::changeTatamis(std::vector<BlockLocation> locations
 }
 
 // TODO: Refactor the many nested loops for this class
-void UnallocatedBlocksWidget::beginEraseTatamis(std::vector<NewTatamiLocation> locations) {
+void UnallocatedBlocksWidget::beginEraseTatamis(std::vector<TatamiLocation> locations) {
     bool shouldShift = false;
 
     TournamentStore &tournament = mStoreManager.getTournament();
     TatamiList &tatamis = tournament.getTatamis();
 
-    for (NewTatamiLocation location : locations) {
+    for (TatamiLocation location : locations) {
         TatamiStore & tatami = tournament.getTatami(location);
 
         for (size_t i = 0; i < tatami.groupCount(); ++i) {
@@ -80,7 +80,7 @@ void UnallocatedBlocksWidget::beginEraseTatamis(std::vector<NewTatamiLocation> l
         shiftBlocks();
 }
 
-void UnallocatedBlocksWidget::endAddTatamis(std::vector<NewTatamiLocation> locations) {
+void UnallocatedBlocksWidget::endAddTatamis(std::vector<TatamiLocation> locations) {
     bool shouldShift = false;
 
     TournamentStore &tournament = mStoreManager.getTournament();

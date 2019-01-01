@@ -80,9 +80,9 @@ public:
     virtual void endResetMatches(CategoryId categoryId) {}
 
     virtual void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    virtual void beginAddTatamis(std::vector<NewTatamiLocation> locations);
+    virtual void beginAddTatamis(std::vector<TatamiLocation> locations);
     virtual void endAddTatamis();
-    virtual void beginEraseTatamis(std::vector<NewTatamiLocation> locations);
+    virtual void beginEraseTatamis(std::vector<TatamiLocation> locations);
     virtual void endEraseTatamis();
 
 private:

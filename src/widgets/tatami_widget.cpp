@@ -13,7 +13,7 @@
 #include "actions/tatami_actions.hpp"
 #include "widgets/colors.hpp"
 
-TatamiWidget::TatamiWidget(StoreManager & storeManager, NewTatamiLocation tatami, QWidget *parent)
+TatamiWidget::TatamiWidget(StoreManager & storeManager, TatamiLocation tatami, QWidget *parent)
     : mTatami(tatami)
     , QGraphicsView(parent)
     , mStoreManager(&storeManager)
@@ -144,7 +144,7 @@ void TatamiWidget::reloadBlocks() {
     }
 }
 
-EmptyConcurrentBlockItem::EmptyConcurrentBlockItem(StoreManager * storeManager, NewTatamiLocation tatami, size_t index)
+EmptyConcurrentBlockItem::EmptyConcurrentBlockItem(StoreManager * storeManager, TatamiLocation tatami, size_t index)
     : mStoreManager(storeManager)
     , mTatami(tatami)
     , mIndex(index)

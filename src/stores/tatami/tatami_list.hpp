@@ -8,7 +8,7 @@
 
 enum class MatchType;
 class TournamentStore;
-class NewTatamiLocation;
+class TatamiLocation;
 class ConcurrentGroupLocation;
 class SequentialGroupLocation;
 
@@ -18,7 +18,7 @@ public:
     bool containsTatami(PositionHandle handle) const;
     PositionHandle getHandle(size_t index) const;
     size_t getIndex(PositionHandle handle) const;
-    size_t getIndex(NewTatamiLocation handle) const;
+    size_t getIndex(TatamiLocation handle) const;
     size_t tatamiCount() const;
     void addTatami(size_t index);
 
@@ -26,11 +26,11 @@ public:
 
     TatamiStore & at(PositionHandle handle) const;
     TatamiStore & at(size_t index) const;
-    TatamiStore & at(NewTatamiLocation location) const;
+    TatamiStore & at(TatamiLocation location) const;
     ConcurrentBlockGroup & at(ConcurrentGroupLocation location) const;
     ConcurrentBlockGroup & at(SequentialGroupLocation location) const;
 
-    bool containsTatami(NewTatamiLocation location) const;
+    bool containsTatami(TatamiLocation location) const;
     void moveBlock(const TournamentStore &tournament, std::pair<CategoryId, MatchType> block, std::optional<BlockLocation> from, std::optional<BlockLocation> to);
     void recomputeBlock(const TournamentStore &tournament, BlockLocation);
 

@@ -211,7 +211,7 @@ void QTournamentStore::changeTatamis(std::vector<BlockLocation> locations, std::
     emit tatamisChanged(locations, blocks);
 }
 
-void QTournamentStore::beginAddTatamis(std::vector<NewTatamiLocation> locations) {
+void QTournamentStore::beginAddTatamis(std::vector<TatamiLocation> locations) {
     assert(!mAddedTatamiLocations.has_value());
 
     log_debug().field("locations", locations).msg("Emitting tatamisAboutToBeAdded");
@@ -227,7 +227,7 @@ void QTournamentStore::endAddTatamis() {
     mAddedTatamiLocations.reset();
 }
 
-void QTournamentStore::beginEraseTatamis(std::vector<NewTatamiLocation> locations) {
+void QTournamentStore::beginEraseTatamis(std::vector<TatamiLocation> locations) {
     assert(!mErasedTatamiLocations.has_value());
 
     log_debug().field("locations", locations).msg("Emitting tatamisAboutToBeErased");

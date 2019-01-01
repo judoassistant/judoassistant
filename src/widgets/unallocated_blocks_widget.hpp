@@ -57,8 +57,8 @@ public:
 
 public slots:
     void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void endAddTatamis(std::vector<NewTatamiLocation> locations);
-    void beginEraseTatamis(std::vector<NewTatamiLocation> locations);
+    void endAddTatamis(std::vector<TatamiLocation> locations);
+    void beginEraseTatamis(std::vector<TatamiLocation> locations);
     void endAddCategories(std::vector<CategoryId> categoryId);
     void beginEraseCategories(std::vector<CategoryId> categoryId);
     void beginTournamentReset();

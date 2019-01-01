@@ -48,9 +48,9 @@ public:
     void endResetMatches(CategoryId categoryId) override;
 
     void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) override;
-    void beginAddTatamis(std::vector<NewTatamiLocation> locations) override;
+    void beginAddTatamis(std::vector<TatamiLocation> locations) override;
     void endAddTatamis() override;
-    void beginEraseTatamis(std::vector<NewTatamiLocation> locations) override;
+    void beginEraseTatamis(std::vector<TatamiLocation> locations) override;
     void endEraseTatamis() override;
 
 signals:
@@ -80,10 +80,10 @@ signals:
     void matchesReset(CategoryId categoryId);
 
     void tatamisChanged(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void tatamisAboutToBeAdded(std::vector<NewTatamiLocation> locations);
-    void tatamisAdded(std::vector<NewTatamiLocation> locations);
-    void tatamisAboutToBeErased(std::vector<NewTatamiLocation> locations);
-    void tatamisErased(std::vector<NewTatamiLocation> locations);
+    void tatamisAboutToBeAdded(std::vector<TatamiLocation> locations);
+    void tatamisAdded(std::vector<TatamiLocation> locations);
+    void tatamisAboutToBeErased(std::vector<TatamiLocation> locations);
+    void tatamisErased(std::vector<TatamiLocation> locations);
 
 private:
     std::optional<std::vector<PlayerId>> mAddedPlayerIds;
@@ -100,7 +100,7 @@ private:
     std::optional<std::vector<MatchId>> mErasedMatchIds;
     bool mResettingMatches;
 
-    std::optional<std::vector<NewTatamiLocation>> mAddedTatamiLocations;
-    std::optional<std::vector<NewTatamiLocation>> mErasedTatamiLocations;
+    std::optional<std::vector<TatamiLocation>> mAddedTatamiLocations;
+    std::optional<std::vector<TatamiLocation>> mErasedTatamiLocations;
 };
 

@@ -3,7 +3,7 @@
 // TODO: Move into stores/tatami/location.hpp
 // TODO: Consider making compares and hashes ignore index
 
-std::ostream &operator<<(std::ostream &out, const NewTatamiLocation &location) {
+std::ostream &operator<<(std::ostream &out, const TatamiLocation &location) {
     return out << location.handle;
 }
 

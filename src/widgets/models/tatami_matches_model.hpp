@@ -23,7 +23,7 @@ private:
     static const int COLUMN_COUNT = 1;
     static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
 public:
-    TatamiMatchesModel(StoreManager &storeManager, NewTatamiLocation tatami, size_t rowCap, QObject *parent = nullptr);
+    TatamiMatchesModel(StoreManager &storeManager, TatamiLocation tatami, size_t rowCap, QObject *parent = nullptr);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -51,7 +51,7 @@ private:
     void beginResetCategory(CategoryId categoryId);
 
     StoreManager & mStoreManager;
-    NewTatamiLocation mTatami;
+    TatamiLocation mTatami;
     size_t mRowCap;
     bool mResettingMatches;
     std::unordered_map<std::pair<CategoryId,MatchId>, size_t> mLoadedMatches; // Matches loaded and loading time

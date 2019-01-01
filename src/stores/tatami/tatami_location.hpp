@@ -7,7 +7,7 @@
 #include "position_manager.hpp"
 #include "serialize.hpp"
 
-struct NewTatamiLocation { // TODO: Rename to TatamiLocation. Temporary name used for ambiguity purposes
+struct TatamiLocation { // TODO: Rename to TatamiLocation. Temporary name used for ambiguity purposes
     PositionHandle handle;
 
     template<typename Archive>
@@ -15,17 +15,17 @@ struct NewTatamiLocation { // TODO: Rename to TatamiLocation. Temporary name use
         ar(handle);
     }
 
-    bool operator==(const NewTatamiLocation &other) const {
+    bool operator==(const TatamiLocation &other) const {
         return handle == other.handle;
     }
 
-    bool equiv(const NewTatamiLocation &other) const {
+    bool equiv(const TatamiLocation &other) const {
         return handle.equiv(other.handle);
     }
 };
 
 struct ConcurrentGroupLocation {
-    NewTatamiLocation tatami;
+    TatamiLocation tatami;
     PositionHandle handle;
 
     template<typename Archive>
@@ -86,15 +86,15 @@ struct BlockLocation {
     }
 };
 
-std::ostream &operator<<(std::ostream &out, const NewTatamiLocation &location);
+std::ostream &operator<<(std::ostream &out, const TatamiLocation &location);
 std::ostream &operator<<(std::ostream &out, const ConcurrentGroupLocation &location);
 std::ostream &operator<<(std::ostream &out, const SequentialGroupLocation &location);
 std::ostream &operator<<(std::ostream &out, const BlockLocation &location);
 
 namespace std {
     template <>
-    struct hash<NewTatamiLocation> {
-        size_t operator()(const NewTatamiLocation &v) const {
+    struct hash<TatamiLocation> {
+        size_t operator()(const TatamiLocation &v) const {
             std::hash<PositionHandle> hasher;
             return hasher(v.handle);
         }
