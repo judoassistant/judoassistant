@@ -34,11 +34,13 @@ public:
 
     SequentialBlockGroup();
 
-    size_t eraseBlock(std::pair<CategoryId, MatchType> block);
-    BlockLocation addBlock(size_t index, std::pair<CategoryId, MatchType> block);
+    void eraseBlock(std::pair<CategoryId, MatchType> block);
+    void addBlock(size_t index, std::pair<CategoryId, MatchType> block);
     size_t blockCount() const;
 
-    std::pair<CategoryId, MatchType> & at(size_t index) const;
+    std::pair<CategoryId, MatchType> & at(size_t index);
+    const std::pair<CategoryId, MatchType> & at(size_t index) const;
+    size_t getIndex(std::pair<CategoryId, MatchType> block) const;
 
     ConstMatchIterator matchesBegin(const TournamentStore &tournament) const;
     ConstMatchIterator matchesEnd(const TournamentStore &tournament) const;

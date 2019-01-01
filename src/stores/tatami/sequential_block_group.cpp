@@ -1,0 +1,126 @@
+#include "stores/tatami/sequential_block_group.hpp"
+#include "stores/tatami/tatami_location.hpp"
+#include "stores/category_store.hpp"
+#include "draw_systems/draw_system.hpp"
+#include "rulesets/ruleset.hpp"
+#include "stores/match_store.hpp"
+#include "stores/tournament_store.hpp"
+
+SequentialBlockGroup::SequentialBlockGroup()
+    : mMatchCount(0)
+{}
+
+void SequentialBlockGroup::eraseBlock(std::pair<CategoryId, MatchType> block) {
+    auto it = std::find(mBlocks.begin(), mBlocks.end(), block);
+    assert(it != mBlocks.end());
+    mBlocks.erase(it);
+}
+
+void SequentialBlockGroup::addBlock(size_t index, std::pair<CategoryId, MatchType> block) {
+    assert(index <= mBlocks.size());
+    mBlocks.insert(mBlocks.begin() + index, block);
+}
+
+size_t SequentialBlockGroup::blockCount() const {
+    return mBlocks.size();
+}
+
+const std::pair<CategoryId, MatchType> & SequentialBlockGroup::at(size_t index) const {
+    assert(blockCount() > index);
+    return mBlocks[index];
+}
+
+std::pair<CategoryId, MatchType> & SequentialBlockGroup::at(size_t index) {
+    assert(blockCount() > index);
+    return mBlocks[index];
+}
+
+size_t SequentialBlockGroup::getIndex(std::pair<CategoryId, MatchType> block) const {
+    auto it = std::find(mBlocks.begin(), mBlocks.end(), block);
+    assert (it != mBlocks.end());
+    return std::distance(mBlocks.begin(), it);
+}
+
+SequentialBlockGroup::ConstMatchIterator SequentialBlockGroup::matchesBegin(const TournamentStore &tournament) const {
+    return ConstMatchIterator(tournament, *this, 0, 0);
+}
+
+SequentialBlockGroup::ConstMatchIterator SequentialBlockGroup::matchesEnd(const TournamentStore &tournament) const {
+    return ConstMatchIterator(tournament, *this, mBlocks.size(), 0);
+}
+
+size_t SequentialBlockGroup::getMatchCount() const {
+    return mMatchCount;
+}
+
+void SequentialBlockGroup::recompute(const TournamentStore &tournament) {
+    mMatchCount = 0;
+    for (size_t i = 0; i < mBlocks.size(); ++i) {
+        auto block = mBlocks[i];
+        mMatchCount += tournament.getCategory(block.first).getMatchCount(block.second);
+    }
+}
+
+SequentialBlockGroup::ConstMatchIterator::ConstMatchIterator(const TournamentStore &tournament, const SequentialBlockGroup &group, size_t currentBlock, size_t currentMatch)
+    : mTournament(tournament)
+    , mGroup(group)
+    , mCurrentCategory(nullptr)
+    , mCurrentBlock(currentBlock)
+    , mCurrentMatch(currentMatch)
+{
+    loadMatch();
+}
+
+void SequentialBlockGroup::ConstMatchIterator::loadMatch() {
+    while (true) {
+        if (mCurrentBlock == mGroup.blockCount())
+            break;
+
+        if (mCurrentCategory == nullptr) {
+            auto block = mGroup.at(mCurrentBlock);
+            mCurrentCategory = &mTournament.getCategory(block.first);
+            mCurrentType = block.second;
+        }
+
+        if (mCurrentMatch == mCurrentCategory->getMatches().size()) {
+            mCurrentCategory = nullptr;
+            mCurrentMatch = 0;
+            ++mCurrentBlock;
+            continue;
+        }
+
+        const auto &match = *(mCurrentCategory->getMatches()[mCurrentMatch]);
+        if (match.isBye()) {
+            ++mCurrentMatch;
+            continue;
+        }
+
+        if (mCurrentType != match.getType()) {
+            ++mCurrentMatch;
+            continue;
+        }
+
+        break;
+    }
+}
+
+SequentialBlockGroup::ConstMatchIterator & SequentialBlockGroup::ConstMatchIterator::operator++() {
+    ++mCurrentMatch;
+    loadMatch();
+
+    return *this;
+}
+
+std::pair<CategoryId, MatchId> SequentialBlockGroup::ConstMatchIterator::operator*() {
+    assert(mCurrentCategory != nullptr);
+    auto matchId = mCurrentCategory->getMatches()[mCurrentMatch]->getId();
+    return std::make_pair(mCurrentCategory->getId(), matchId);
+}
+
+bool SequentialBlockGroup::ConstMatchIterator::operator!=(const SequentialBlockGroup::ConstMatchIterator &other) const {
+    return !(*this == other);
+}
+
+bool SequentialBlockGroup::ConstMatchIterator::operator==(const SequentialBlockGroup::ConstMatchIterator &other) const {
+    return mCurrentBlock == other.mCurrentBlock && mCurrentMatch == other.mCurrentMatch;
+}
