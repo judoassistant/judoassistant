@@ -8,7 +8,11 @@
 
 enum class MatchType;
 class TournamentStore;
+class ConcurrentGroupLocation;
 class SequentialGroupLocation;
+
+// TODO: Add interface to delay matches
+// TODO: Update status in action when neccesary
 
 class ConcurrentBlockGroup {
 public:
@@ -20,24 +24,27 @@ public:
 
     ConcurrentBlockGroup();
 
-    // TODO: Add interface to delay matches
-    // TODO: Update status in action when neccesary
     const MatchList & getMatches() const;
 
     void eraseGroup(PositionHandle handle);
     PositionHandle getHandle(size_t index) const;
+    size_t getIndex(PositionHandle handle) const;
     size_t groupCount() const;
 
     void setStatus(Status status);
     Status getStatus() const;
 
-    SequentialGroupLocation generateLocation(TournamentStore & tournament, size_t index);
-
-    SequentialBlockGroup & getGroup(PositionHandle handle);
-    SequentialBlockGroup & getGroup(PositionHandle handle) const;
-    SequentialBlockGroup & getGroup(size_t index) const;
+    SequentialBlockGroup & operator[](PositionHandle handle);
+    SequentialBlockGroup & at(PositionHandle handle);
+    const SequentialBlockGroup & at(PositionHandle handle) const;
+    const SequentialBlockGroup & at(size_t index) const;
+    const SequentialBlockGroup & at(SequentialGroupLocation location) const;
 
     void recompute(const TournamentStore &tournament);
+    SequentialGroupLocation generateLocation(TournamentStore & tournament, ConcurrentGroupLocation location, size_t index);
+
+
+    SequentialGroupLocation generateLocation(ConcurrentGroupLocation location, size_t index);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
