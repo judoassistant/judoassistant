@@ -152,7 +152,13 @@ void HubWindow::createPreferencesMenu() {
     QMenu *menu = menuBar()->addMenu(tr("Preferences"));
     {
         QMenu *submenu = menu->addMenu("Language");
+        auto *actionGroup = new QActionGroup(this);
+
         QAction *englishAction = new QAction(tr("English"), this);
+        actionGroup->addAction(englishAction);
+
+        englishAction->setCheckable(true);
+        englishAction->setChecked(true);
         submenu->addAction(englishAction);
     }
 }

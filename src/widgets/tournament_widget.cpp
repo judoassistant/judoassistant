@@ -30,7 +30,6 @@ TournamentWidget::TournamentWidget(StoreManager &storeManager)
 
     mLanguageContent = new QComboBox;
     mLanguageContent->addItem("English");
-    mLanguageContent->addItem("Danish (Dansk)");
     // connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
     formLayout->addRow(tr("Tournament language"), mLanguageContent);
 
