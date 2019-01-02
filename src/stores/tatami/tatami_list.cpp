@@ -79,6 +79,10 @@ const TatamiStore & TatamiList::at(size_t index) const {
     return mTatamis.at(index);
 }
 
+TatamiStore & TatamiList::at(size_t index) {
+    return mTatamis.at(index);
+}
+
 TatamiStore & TatamiList::at(TatamiLocation location) {
     return mTatamis.at(location.handle);
 }
@@ -87,8 +91,16 @@ const TatamiStore & TatamiList::at(TatamiLocation location) const {
     return mTatamis.at(location.handle);
 }
 
+ConcurrentBlockGroup & TatamiList::at(ConcurrentGroupLocation location) {
+    return at(location.tatami).at(location);
+}
+
 const ConcurrentBlockGroup & TatamiList::at(ConcurrentGroupLocation location) const {
     return at(location.tatami).at(location);
+}
+
+SequentialBlockGroup & TatamiList::at(SequentialGroupLocation location) {
+    return at(location.concurrentGroup).at(location);
 }
 
 const SequentialBlockGroup & TatamiList::at(SequentialGroupLocation location) const {

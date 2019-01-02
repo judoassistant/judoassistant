@@ -64,7 +64,15 @@ const SequentialBlockGroup & ConcurrentBlockGroup::at(SequentialGroupLocation lo
     return at(location.handle);
 }
 
+SequentialBlockGroup & ConcurrentBlockGroup::at(SequentialGroupLocation location) {
+    return at(location.handle);
+}
+
 const SequentialBlockGroup & ConcurrentBlockGroup::at(size_t index) const {
+    return mGroups.at(index);
+}
+
+SequentialBlockGroup & ConcurrentBlockGroup::at(size_t index) {
     return mGroups.at(index);
 }
 

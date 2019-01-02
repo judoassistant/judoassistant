@@ -28,11 +28,18 @@ public:
 
     const TatamiStore & at(PositionHandle handle) const;
     TatamiStore & at(PositionHandle handle);
+
     const TatamiStore & at(size_t index) const;
+    TatamiStore & at(size_t index);
+
     TatamiStore & at(TatamiLocation location);
     const TatamiStore & at(TatamiLocation location) const;
+
     const ConcurrentBlockGroup & at(ConcurrentGroupLocation location) const;
+    ConcurrentBlockGroup & at(ConcurrentGroupLocation location);
+
     const SequentialBlockGroup & at(SequentialGroupLocation location) const;
+    SequentialBlockGroup & at(SequentialGroupLocation location);
 
     void moveBlock(const TournamentStore &tournament, std::pair<CategoryId, MatchType> block, std::optional<BlockLocation> from, std::optional<BlockLocation> to);
     void recomputeBlock(const TournamentStore &tournament, BlockLocation);

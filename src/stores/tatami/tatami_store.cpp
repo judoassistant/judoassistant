@@ -57,8 +57,15 @@ const ConcurrentBlockGroup & TatamiStore::at(ConcurrentGroupLocation location) c
     return at(location.handle);
 }
 
+ConcurrentBlockGroup & TatamiStore::at(ConcurrentGroupLocation location) {
+    return at(location.handle);
+}
+
 const ConcurrentBlockGroup & TatamiStore::at(size_t index) const {
     return mGroups.at(index);
+}
 
+ConcurrentBlockGroup & TatamiStore::at(size_t index) {
+    return mGroups.at(index);
 }
 

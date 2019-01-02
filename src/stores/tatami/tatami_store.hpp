@@ -22,8 +22,12 @@ public:
 
     ConcurrentBlockGroup & at(PositionHandle handle);
     const ConcurrentBlockGroup & at(PositionHandle handle) const;
+
     const ConcurrentBlockGroup & at(ConcurrentGroupLocation location) const;
+    ConcurrentBlockGroup & at(ConcurrentGroupLocation location);
+
     const ConcurrentBlockGroup & at(size_t index) const;
+    ConcurrentBlockGroup & at(size_t index);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

@@ -35,10 +35,15 @@ public:
     Status getStatus() const;
 
     SequentialBlockGroup & operator[](PositionHandle handle);
-    SequentialBlockGroup & at(PositionHandle handle);
+
     const SequentialBlockGroup & at(PositionHandle handle) const;
+    SequentialBlockGroup & at(PositionHandle handle);
+
     const SequentialBlockGroup & at(size_t index) const;
+    SequentialBlockGroup & at(size_t index);
+
     const SequentialBlockGroup & at(SequentialGroupLocation location) const;
+    SequentialBlockGroup & at(SequentialGroupLocation location);
 
     void recompute(const TournamentStore &tournament);
     SequentialGroupLocation generateLocation(TournamentStore & tournament, ConcurrentGroupLocation location, size_t index);
