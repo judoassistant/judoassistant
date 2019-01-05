@@ -19,9 +19,8 @@ class CategoryStore;
 class UnallocatedBlockItem : public QGraphicsItem
 {
 public:
-    static const int WIDTH = 300;
+    static const int WIDTH = 200;
     static const int HEIGHT = 30;
-    static const int PADDING = 5;
 
     UnallocatedBlockItem(const CategoryStore &category, MatchType type);
 
@@ -52,6 +51,7 @@ class UnallocatedBlocksWidget : public QGraphicsView {
     Q_OBJECT
 public:
     static const int ITEM_MARGIN = 3;
+    static const int PADDING = 5;
 
     UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent = 0);
 

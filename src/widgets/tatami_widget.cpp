@@ -406,14 +406,15 @@ void BlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     painter->setPen(pen);
     painter->setBrush(COLOR_6);
 
-    painter->drawRect(0, 0, WIDTH, getHeight());
+    QRect rect(0, 0, WIDTH, getHeight());
+    QRect nameRect(PADDING, PADDING, WIDTH-2*PADDING, 25);
+    QRect countRect(PADDING, PADDING+25, WIDTH-2*PADDING, getHeight()-2*PADDING-25);
 
-    painter->setPen(COLOR_0);
-    painter->setBrush(COLOR_0);
-    painter->drawText(PADDING, PADDING+10, mName);
+    painter->drawRect(rect);
+    painter->drawText(nameRect, Qt::AlignTop | Qt::AlignHCenter, mName);
 
-    QString countString = QString("(%1 matches)").arg(QString::number(mMatchCount)); // TODO: translate
-    painter->drawText(PADDING, PADDING+25, countString);
+    QString countString = QString("%1 matches").arg(QString::number(mMatchCount)); // TODO: translate
+    painter->drawText(countRect, Qt::AlignTop | Qt::AlignHCenter, countString);
 }
 
 void BlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {

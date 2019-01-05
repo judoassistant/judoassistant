@@ -34,7 +34,7 @@ private:
 
 class BlockItem : public QGraphicsItem {
 public:
-    static const int WIDTH = 70;
+    static const int WIDTH = 80;
     static const int PADDING = 5;
 
     BlockItem(StoreManager * storeManager, std::pair<CategoryId, MatchType> block, QGraphicsItem *parent = nullptr);
@@ -56,7 +56,7 @@ private:
 
 class SequentialBlockItem : public QGraphicsItem {
 public:
-    static const int WIDTH = 80;
+    static const int WIDTH = 90;
     static const int PADDING = 5;
     static const int BLOCK_MARGIN = 2;
 

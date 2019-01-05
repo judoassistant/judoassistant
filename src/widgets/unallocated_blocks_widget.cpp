@@ -10,6 +10,7 @@
 #include "store_managers/store_manager.hpp"
 #include "widgets/unallocated_blocks_widget.hpp"
 #include "widgets/misc/judoassistant_mime.hpp"
+#include "widgets/colors.hpp"
 
 UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent)
     : QGraphicsView(parent)
@@ -18,13 +19,13 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QW
 {
     mScene = new QGraphicsScene(this);
     mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    mScene->setSceneRect(0, 0, 200, 800);
+    mScene->setSceneRect(0, 0, UnallocatedBlockItem::WIDTH + PADDING*2, 800);
     setScene(mScene);
     setCacheMode(CacheNone);
     setViewportUpdateMode(MinimalViewportUpdate);
-    setRenderHint(QPainter::Antialiasing);
-    setMinimumSize(216, 400);
-    setMaximumWidth(216);
+    setRenderHint(QPainter::Antialiasing, false);
+    setMinimumSize(UnallocatedBlockItem::WIDTH + PADDING*2 + 16, 800);
+    setMaximumWidth(UnallocatedBlockItem::WIDTH + PADDING*2 + 16);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &UnallocatedBlocksWidget::beginTournamentReset);
@@ -125,7 +126,7 @@ void UnallocatedBlocksWidget::reloadBlocks() {
     for (auto block : mBlocks) {
         const CategoryStore & category = tournament.getCategory(block.first);
         auto * item = new UnallocatedBlockItem(category, block.second);
-        item->setPos(0, offset);
+        item->setPos(PADDING, offset);
         mBlockItems[block] = item;
         offset += UnallocatedBlockItem::HEIGHT + ITEM_MARGIN;
         mScene->addItem(item);
@@ -162,15 +163,17 @@ void UnallocatedBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(Qt::darkGray);
+    pen.setColor(COLOR_3);
 
     painter->setPen(pen);
-    painter->setBrush(Qt::lightGray);
+    painter->setBrush(COLOR_6);
 
-    painter->drawRect(0, 0, WIDTH, HEIGHT);
+    QRect rect(0, 0, WIDTH, HEIGHT);
+    painter->drawRect(rect);
+
     QString name = QString::fromStdString(mCategory->getName(mType));
     QString str = QString("%1 (%2 matches)").arg(name).arg(QString::number(mCategory->getMatchCount(mType))); // TODO: translate
-    painter->drawText(PADDING, PADDING+10, str);
+    painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, str);
 }
 
 void UnallocatedBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -195,7 +198,7 @@ void UnallocatedBlockItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
     QPainter painter(&pixmap);
     // painter.translate(15, 15);
-    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::Antialiasing, false);
     paint(&painter, 0, 0);
     painter.end();
 
@@ -214,7 +217,7 @@ void UnallocatedBlocksWidget::shiftBlocks() {
     size_t offset = 0;
     for (auto block : mBlocks) {
         UnallocatedBlockItem *item = mBlockItems[block];
-        item->setPos(0, offset);
+        item->setPos(PADDING, offset);
         offset += UnallocatedBlockItem::HEIGHT + ITEM_MARGIN;
     }
 }
