@@ -148,11 +148,13 @@ void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
 
             // update all categories on the tatami
             for (size_t i = 0; i < tatami.groupCount(); ++i) {
-                const auto &concurrentGroup = tatami.at(i);
-                ConcurrentGroupLocation concurrentLocation = {tatamiLocation, i};
+                const auto &concurrentHandle = tatami.getHandle(i);
+                const auto &concurrentGroup = tatami.at(concurrentHandle);
+                ConcurrentGroupLocation concurrentLocation = {tatamiLocation, concurrentHandle};
                 for (size_t j = 0; j < concurrentGroup.groupCount(); ++j) {
-                    const auto &sequentialGroup = concurrentGroup.at(j);
-                    SequentialGroupLocation sequentialLocation = {concurrentLocation, j};
+                    const auto &sequentialHandle = concurrentGroup.getHandle(j);
+                    const auto &sequentialGroup = concurrentGroup.at(sequentialHandle);
+                    SequentialGroupLocation sequentialLocation = {concurrentLocation, sequentialHandle};
 
                     for (size_t k = 0; k < sequentialGroup.blockCount(); ++k) {
                         auto block = sequentialGroup.at(k);
