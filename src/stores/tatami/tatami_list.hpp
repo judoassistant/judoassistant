@@ -21,7 +21,7 @@ public:
     size_t getIndex(PositionHandle handle) const;
     size_t getIndex(TatamiLocation location) const;
     size_t tatamiCount() const;
-    TatamiLocation addTatami(size_t index);
+    TatamiLocation generateLocation(size_t index);
     BlockLocation refreshLocation(BlockLocation location, std::pair<CategoryId, MatchType> block) const;
 
     TatamiStore & operator[](PositionHandle handle);

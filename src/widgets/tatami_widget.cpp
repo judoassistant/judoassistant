@@ -317,6 +317,7 @@ SequentialBlockItem::SequentialBlockItem(StoreManager * storeManager, Sequential
         auto *item = new BlockItem(mStoreManager, block, this);
         item->setPos(PADDING, offset);
         offset += item->getHeight() + BLOCK_MARGIN;
+        mBlocks.push_back(block);
     }
     mHeight = offset + PADDING;
 }

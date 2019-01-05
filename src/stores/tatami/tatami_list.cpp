@@ -36,11 +36,11 @@ size_t TatamiList::tatamiCount() const {
     return mTatamis.size();
 }
 
-TatamiLocation TatamiList::addTatami(size_t index) {
+TatamiLocation TatamiList::generateLocation(size_t index) {
     PositionHandle handle;
     handle.id = PositionId::generate(mTatamis);
     handle.index = index;
-    return {handle};
+    return {std::move(handle)};
 }
 
 BlockLocation TatamiList::refreshLocation(BlockLocation location, std::pair<CategoryId, MatchType> block) const {
