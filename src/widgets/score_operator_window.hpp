@@ -8,7 +8,7 @@
 #include <QTableView>
 
 #include "core.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_location.hpp"
 #include "widgets/client_window.hpp"
 #include "widgets/match_card_widget.hpp"
 #include "widgets/score_display_widget.hpp"
@@ -38,12 +38,12 @@ private:
 
     void pausingTimerHit();
 
-    void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
     void beginResetMatches(CategoryId categoryId);
     void endResetMatches(CategoryId categoryId);
 
-    void setTatami(int tatami);
+    void setTatami(TatamiLocation tatami);
 
     void findNextMatch();
     void updateNextButton();
@@ -84,7 +84,7 @@ private:
     QAction *mConnectAction;
     QAction *mDisconnectAction;
 
-    int mTatami;
+    std::optional<TatamiLocation> mTatami;
     std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
     std::optional<std::pair<CategoryId, MatchId>> mNextMatch;
     std::stack<QMetaObject::Connection> mConnections;

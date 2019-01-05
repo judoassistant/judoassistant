@@ -5,11 +5,13 @@
 #include "actions/match_actions.hpp"
 #include "draw_systems/draw_systems.hpp"
 #include "exception.hpp"
+#include "log.hpp"
 #include "rulesets/rulesets.hpp"
 #include "stores/tournament_store.hpp"
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_list.hpp"
+#include "stores/tatami/tatami_location.hpp"
 
 AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
     : mId(id)
@@ -172,6 +174,22 @@ std::unique_ptr<Action> EraseCategoriesAction::freshClone() const {
     return std::make_unique<EraseCategoriesAction>(mCategoryIds);
 }
 
+struct BlockLocationIndexComp {
+    typedef std::tuple<CategoryId, MatchType, BlockLocation> Type;
+    bool operator()(const Type &a, const Type &b) const {
+        const auto &aLocation = std::get<2>(a);
+        const auto &bLocation = std::get<2>(b);
+
+        if (aLocation.sequentialGroup.concurrentGroup.tatami.handle.index != bLocation.sequentialGroup.concurrentGroup.tatami.handle.index)
+            return aLocation.sequentialGroup.concurrentGroup.handle.index < bLocation.sequentialGroup.concurrentGroup.handle.index;
+        if (aLocation.sequentialGroup.concurrentGroup.handle.index != bLocation.sequentialGroup.concurrentGroup.handle.index)
+            return aLocation.sequentialGroup.concurrentGroup.handle.index < bLocation.sequentialGroup.concurrentGroup.handle.index;
+        if (aLocation.sequentialGroup.handle.index != bLocation.sequentialGroup.handle.index)
+            return aLocation.sequentialGroup.handle.index < bLocation.sequentialGroup.handle.index;
+        return aLocation.pos < bLocation.pos;
+    }
+};
+
 void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
     for (auto categoryId : mCategoryIds) {
         if (!tournament.containsCategory(categoryId))
@@ -180,29 +198,34 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         mErasedCategoryIds.push_back(categoryId);
     }
 
-    std::unordered_set<TatamiLocation> locations;
-    std::unordered_set<std::pair<CategoryId, MatchType>> blocks;
+    std::unordered_set<BlockLocation> locations;
+
+    // sort the blocks such that they appear in non-decreasing order
+    std::set<std::tuple<CategoryId, MatchType, BlockLocation>, BlockLocationIndexComp> blocks;
 
     tournament.beginEraseCategories(mErasedCategoryIds);
+    const auto &tatamis = tournament.getTatamis();
 
     for (auto categoryId : mErasedCategoryIds) {
         CategoryStore & category = tournament.getCategory(categoryId);
 
         {
-            auto loc = category.getTatamiLocation(MatchType::KNOCKOUT);
-            if (loc) {
-                locations.insert(*loc);
-                blocks.insert(std::make_pair(categoryId, MatchType::KNOCKOUT));
-                tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::KNOCKOUT, loc, std::nullopt, 0);
+            if (category.getLocation(MatchType::KNOCKOUT)) {
+                auto block = std::make_pair(categoryId, MatchType::KNOCKOUT);
+                auto location = tatamis.refreshLocation(*category.getLocation(MatchType::KNOCKOUT), block);
+                locations.insert(location);
+                blocks.insert({categoryId, MatchType::KNOCKOUT, location});
+                tournament.getTatamis().moveBlock(tournament, block, location, std::nullopt);
             }
         }
 
         {
-            auto loc = category.getTatamiLocation(MatchType::FINAL);
-            if (loc) {
-                locations.insert(*loc);
-                blocks.insert(std::make_pair(categoryId, MatchType::FINAL));
-                tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::FINAL, loc, std::nullopt, 0);
+            if (category.getLocation(MatchType::FINAL)) {
+                auto block = std::make_pair(categoryId, MatchType::FINAL);
+                auto location = tatamis.refreshLocation(*category.getLocation(MatchType::FINAL), block);
+                locations.insert(location);
+                blocks.insert({categoryId, MatchType::FINAL, location});
+                tournament.getTatamis().moveBlock(tournament, block, location, std::nullopt);
             }
         }
 
@@ -227,7 +250,9 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
     tournament.endEraseCategories();
 
     mLocations = std::vector(locations.begin(), locations.end());
-    mBlocks = std::vector(blocks.begin(), blocks.end());
+    mBlocks.clear();
+    for (const auto & tuple : blocks)
+        mBlocks.push_back({std::get<0>(tuple), std::get<1>(tuple)});
 
     if (!mBlocks.empty())
         tournament.changeTatamis(mLocations, mBlocks);
@@ -255,17 +280,18 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
         }
 
         // copy before category
+        // TODO: Fix ordering not being correctly restored when deleting multiple categories
         auto categoryId = category->getId();
-        auto knockoutLoc = category->getTatamiLocation(MatchType::KNOCKOUT);
-        auto finalLoc = category->getTatamiLocation(MatchType::FINAL);
+        auto knockoutLoc = category->getLocation(MatchType::KNOCKOUT);
+        auto finalLoc = category->getLocation(MatchType::FINAL);
 
         tournament.addCategory(std::move(category));
 
         if (knockoutLoc)
-            tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::KNOCKOUT, std::nullopt, knockoutLoc, 0);
+            tournament.getTatamis().moveBlock(tournament, {categoryId, MatchType::KNOCKOUT}, std::nullopt, knockoutLoc);
 
         if (finalLoc)
-            tournament.getTatamis().moveBlock(tournament, categoryId, MatchType::FINAL, std::nullopt, finalLoc, 0);
+            tournament.getTatamis().moveBlock(tournament, {categoryId, MatchType::FINAL}, std::nullopt, finalLoc);
 
         mCategories.pop();
     }
@@ -318,20 +344,20 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
 
     tournament.endResetMatches(mCategoryId);
 
-    std::vector<TatamiLocation> changedTatamiLocations;
+    std::vector<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
     for (MatchType type : {MatchType::FINAL, MatchType::KNOCKOUT}) {
-        std::optional<TatamiLocation> location = category.getTatamiLocation(type);
+        std::optional<BlockLocation> location = category.getLocation(type);
         if (location) {
             tournament.getTatamis().recomputeBlock(tournament, *location);
-            changedTatamiLocations.push_back(*location);
+            changedLocations.push_back(*location);
             changedBlocks.push_back({mCategoryId, type});
         }
     }
 
-    if (!changedTatamiLocations.empty())
-        tournament.changeTatamis(changedTatamiLocations, changedBlocks);
+    if (!changedLocations.empty())
+        tournament.changeTatamis(changedLocations, changedBlocks);
 }
 
 void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
@@ -364,20 +390,20 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 
     tournament.endResetMatches(mCategoryId);
 
-    std::vector<TatamiLocation> changedTatamiLocations;
+    std::vector<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
     for (MatchType type : {MatchType::FINAL, MatchType::KNOCKOUT}) {
-        std::optional<TatamiLocation> location = category.getTatamiLocation(type);
+        std::optional<BlockLocation> location = category.getLocation(type);
         if (location) {
             tournament.getTatamis().recomputeBlock(tournament, *location);
-            changedTatamiLocations.push_back(*location);
+            changedLocations.push_back(*location);
             changedBlocks.push_back({mCategoryId, type});
         }
     }
 
-    if (!changedTatamiLocations.empty())
-        tournament.changeTatamis(changedTatamiLocations, changedBlocks);
+    if (!changedLocations.empty())
+        tournament.changeTatamis(changedLocations, changedBlocks);
 }
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds)

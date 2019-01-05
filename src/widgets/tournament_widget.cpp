@@ -55,8 +55,8 @@ void TournamentWidget::tournamentAboutToBeReset() {
 
 void TournamentWidget::tournamentReset() {
     mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tournamentChanged, this, &TournamentWidget::tournamentChanged));
-    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisAdded, this, [this](std::vector<size_t> id) { tatamiCountChanged(); }));
-    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisErased, this, [this](std::vector<size_t> id) { tatamiCountChanged(); }));
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisAdded, this, [this](std::vector<TatamiLocation> id) { tatamiCountChanged(); }));
+    mConnections.push(connect(&mStoreManager.getTournament(), &QTournamentStore::tatamisErased, this, [this](std::vector<TatamiLocation> id) { tatamiCountChanged(); }));
     tournamentChanged();
     tatamiCountChanged();
 }
@@ -82,6 +82,6 @@ void TournamentWidget::updateTatamiCount(int count) {
     if (static_cast<size_t>(count) == mStoreManager.getTournament().getTatamis().tatamiCount())
         return;
 
-    mStoreManager.dispatch(std::make_unique<SetTatamiCountAction>(static_cast<size_t>(count)));
+    mStoreManager.dispatch(std::make_unique<SetTatamiCountAction>(mStoreManager.getTournament(), static_cast<size_t>(count)));
 }
 

@@ -5,7 +5,7 @@
 #include "core.hpp"
 #include "id.hpp"
 #include "serialize.hpp"
-#include "tatami_store.hpp"
+#include "tatami/tatami_list.hpp"
 
 class PlayerStore;
 class CategoryStore;
@@ -79,10 +79,10 @@ public:
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
 
-    virtual void changeTatamis(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {}
-    virtual void beginAddTatamis(std::vector<size_t> ids) {}
+    virtual void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {}
+    virtual void beginAddTatamis(std::vector<TatamiLocation> locations) {}
     virtual void endAddTatamis() {}
-    virtual void beginEraseTatamis(std::vector<size_t> ids) {}
+    virtual void beginEraseTatamis(std::vector<TatamiLocation> locations) {}
     virtual void endEraseTatamis() {}
 
 private:

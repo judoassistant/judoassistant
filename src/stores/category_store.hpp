@@ -7,7 +7,7 @@
 #include "core.hpp"
 #include "id.hpp"
 #include "serialize.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_location.hpp"
 
 class DrawSystem;
 class MatchStore;
@@ -58,8 +58,8 @@ public:
     DrawSystem & getDrawSystem();
     const DrawSystem & getDrawSystem() const;
 
-    std::optional<TatamiLocation> getTatamiLocation(MatchType type) const;
-    void setTatamiLocation(MatchType type, std::optional<TatamiLocation> location);
+    std::optional<BlockLocation> getLocation(MatchType type) const;
+    void setLocation(MatchType type, std::optional<BlockLocation> location);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -69,7 +69,7 @@ public:
         ar(cereal::make_nvp("matches", mMatches));
         ar(cereal::make_nvp("matchMap", mMatchMap));
         ar(cereal::make_nvp("matchCount", mMatchCount));
-        ar(cereal::make_nvp("tatamiLocation", mTatamiLocation));
+        ar(cereal::make_nvp("location", mLocation));
         ar(cereal::make_nvp("ruleset", mRuleset));
         ar(cereal::make_nvp("drawSystem", mDrawSystem));
     }
@@ -80,7 +80,7 @@ private:
     MatchList mMatches; // order matters in this case
     std::unordered_map<MatchId, size_t> mMatchMap;
     std::array<size_t, 2> mMatchCount;
-    std::array<std::optional<TatamiLocation>, 2> mTatamiLocation;
+    std::array<std::optional<BlockLocation>, 2> mLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;
 };

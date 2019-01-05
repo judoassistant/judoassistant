@@ -8,7 +8,7 @@
 class CategoryStore;
 class DrawSystem;
 class TournamentStore;
-class TatamiLocation;
+class BlockLocation;
 class MatchStore;
 enum class MatchType;
 class Ruleset;
@@ -148,7 +148,7 @@ private:
     // undo members
     std::vector<CategoryId> mErasedCategoryIds;
     std::stack<std::unique_ptr<CategoryStore>> mCategories;
-    std::vector<TatamiLocation> mLocations;
+    std::vector<BlockLocation> mLocations;
     std::vector<std::pair<CategoryId, MatchType>> mBlocks;
 };
 

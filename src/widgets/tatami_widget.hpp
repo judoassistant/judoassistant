@@ -5,19 +5,19 @@
 
 #include "id.hpp"
 #include "position_manager.hpp"
+#include "stores/tatami/tatami_location.hpp"
 
 class TatamiLocation;
 class StoreManager;
 enum class MatchType;
 
-// TODO: Fix: A segfault occasionally occurs when moving blocks.
 // TODO: Disable dragging for already started blocks
 class EmptyConcurrentBlockItem : public QGraphicsItem {
 public:
     static const int WIDTH = 280;
     static const int HEIGHT = 20;
 
-    EmptyConcurrentBlockItem(StoreManager * storeManager, size_t tatamiIndex, size_t groupIndex);
+    EmptyConcurrentBlockItem(StoreManager * storeManager, TatamiLocation tatami, size_t index);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
@@ -27,8 +27,8 @@ public:
 
 private:
     StoreManager *mStoreManager;
-    size_t mTatamiIndex;
-    size_t mGroupIndex;
+    TatamiLocation mTatami;
+    size_t mIndex;
     bool mDragOver;
 };
 
@@ -37,7 +37,7 @@ public:
     static const int WIDTH = 70;
     static const int PADDING = 5;
 
-    BlockItem(StoreManager * storeManager, CategoryId categoryId, MatchType type, QGraphicsItem *parent = nullptr);
+    BlockItem(StoreManager * storeManager, std::pair<CategoryId, MatchType> block, QGraphicsItem *parent = nullptr);
     int getHeight() const;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -49,9 +49,9 @@ protected:
 
 private:
     StoreManager *mStoreManager;
-    CategoryStore *mCategory;
-    MatchType mType;
+    std::pair<CategoryId, MatchType> mBlock;
     int mMatchCount;
+    QString mName;
 };
 
 class SequentialBlockItem : public QGraphicsItem {
@@ -60,7 +60,7 @@ public:
     static const int PADDING = 5;
     static const int BLOCK_MARGIN = 2;
 
-    SequentialBlockItem(StoreManager * storeManager, size_t tatamiIndex, PositionHandle concurrentHandle, PositionHandle handle, QGraphicsItem *parent = nullptr);
+    SequentialBlockItem(StoreManager * storeManager, SequentialGroupLocation location, QGraphicsItem *parent = nullptr);
     int getHeight() const;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -71,9 +71,8 @@ public:
 
 private:
     StoreManager *mStoreManager;
-    size_t mTatamiIndex;
-    PositionHandle mConcurrentHandle;
-    PositionHandle mHandle;
+    SequentialGroupLocation mLocation;
+
     std::vector<std::pair<CategoryId, MatchType>> mBlocks;
     int mHeight;
     bool mDragOver;
@@ -84,12 +83,12 @@ public:
     static const int WIDTH = 280;
     static const int PADDING = 5;
 
-    ConcurrentBlockItem(StoreManager * storeManager, size_t tatamiIndex, PositionHandle handle);
+    ConcurrentBlockItem(StoreManager * storeManager, ConcurrentGroupLocation location);
     int getHeight() const;
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     void reloadBlocks();
-    PositionHandle getHandle() const;
+    ConcurrentGroupLocation getLocation() const;
 
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
     void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
@@ -97,10 +96,9 @@ public:
 
 private:
     StoreManager *mStoreManager;
-    size_t mTatamiIndex;
+    ConcurrentGroupLocation mLocation;
     int mHeight;
     bool mDragOver;
-    PositionHandle mHandle;
     std::vector<SequentialBlockItem*> mSequentialGroups;
 };
 
@@ -111,21 +109,19 @@ public:
     static const int PADDING = 10;
     static const int BLOCK_MARGIN = 2;
 
-    TatamiWidget(StoreManager & storeManager, size_t index, QWidget *parent = nullptr);
+    TatamiWidget(StoreManager & storeManager, TatamiLocation location, QWidget *parent = nullptr);
 
-    void tatamisChanged(std::vector<TatamiLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void tatamisReset();
+    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
+    void endResetTatamis();
 
 private:
     void reloadBlocks();
     void shiftBlocks();
 
-    QGraphicsScene *mScene;
     StoreManager *mStoreManager;
+    TatamiLocation mLocation;
+    QGraphicsScene *mScene;
     std::vector<EmptyConcurrentBlockItem*> mEmptyGroups;
     std::list<ConcurrentBlockItem*> mGroups;
-
-    // todo: consider switching to lists.
-    size_t mIndex;
 };
 

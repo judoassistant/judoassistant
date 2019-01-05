@@ -1,8 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-#include <vector>
 #include <algorithm>
+#include <ostream>
+#include <vector>
+#include <unordered_map>
 
 #include "core.hpp"
 #include "id.hpp"
@@ -21,6 +22,10 @@ struct PositionHandle {
 
     bool operator==(const PositionHandle &other) const {
         return id == other.id && index == other.index;
+    }
+
+    bool equiv(const PositionHandle &other) const {
+        return id == other.id;
     }
 };
 
@@ -42,13 +47,44 @@ template <typename T>
 class PositionManager {
 public:
 
-    T & get(PositionHandle handle) {
+    T & operator[](PositionHandle handle) {
         auto it = mElements.find(handle.id);
         if (it != mElements.end())
             return it->second;
 
         mIds.insert(mIds.begin() + std::min(mIds.size(), handle.index), handle.id);
         return mElements[handle.id];
+    }
+
+    void insert(PositionHandle handle) {
+        auto it = mElements.find(handle.id);
+        if (it != mElements.end())
+            return;
+
+        mIds.insert(mIds.begin() + std::min(mIds.size(), handle.index), handle.id);
+        mElements.insert({handle.id, T()});
+    }
+
+    T & at(PositionHandle handle) {
+        auto it = mElements.find(handle.id);
+        assert(it != mElements.end());
+        return it->second;
+    }
+
+    T & at(size_t index) {
+        assert(index < mElements.size());
+        return mElements.at(mIds[index]);
+    }
+
+    const T & at(PositionHandle handle) const {
+        auto it = mElements.find(handle.id);
+        assert(it != mElements.end());
+        return it->second;
+    }
+
+    const T & at(size_t index) const {
+        assert(index < mElements.size());
+        return mElements.at(mIds[index]);
     }
 
     void erase(PositionHandle handle) {
@@ -61,8 +97,7 @@ public:
     }
 
     PositionHandle getHandle(size_t index) const {
-        if (!(index < mIds.size()))
-            throw std::out_of_range("Requested index out of range");
+        assert(index < mIds.size());
 
         PositionHandle handle;
         handle.index = index;
@@ -71,20 +106,21 @@ public:
     }
 
     size_t getIndex(PositionHandle handle) const {
-        for (size_t i = 0; i < mIds.size(); ++i) {
-            if (mIds[i] == handle.id)
-                return i;
-        }
-
-        throw std::out_of_range("The specified does not exist");
+        auto it = std::find(mIds.begin(), mIds.end(), handle.id);
+        assert (it != mIds.end());
+        return std::distance(mIds.begin(), it);
     }
 
     size_t size() const {
         return mIds.size();
     }
 
-    bool containsId(PositionId id) const {
+    bool contains(PositionId id) const {
         return mElements.find(id) != mElements.end();
+    }
+
+    bool contains(PositionHandle handle) const {
+        return contains(handle.id);
     }
 
     template<typename Archive>

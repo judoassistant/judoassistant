@@ -4,6 +4,7 @@
 #include <QBrush>
 #include <QTimer>
 
+#include "log.hpp"
 #include "store_managers/store_manager.hpp"
 #include "stores/qtournament_store.hpp"
 #include "widgets/models/match_card.hpp"

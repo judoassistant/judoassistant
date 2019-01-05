@@ -18,8 +18,6 @@ MatchCardWidget::MatchCardWidget(const StoreManager &storeManager, QWidget *pare
 }
 
 void MatchCardWidget::paintEvent(QPaintEvent *event) {
-    log_debug().field("combinedId", mCombinedId).msg("Painting match card widget");
-
     QPainter painter(this);
     QRect boundingRect(0,0,width(),height());
     if (mCombinedId) {
@@ -52,8 +50,6 @@ QSize MatchCardWidget::sizeHint() const {
 
 void MatchCardWidget::setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId) {
     mCombinedId = combinedId;
-
-    log_debug().field("combinedId", mCombinedId).msg("Setting match card match");
 
     if (mCombinedId) {
         const auto &tournament = mStoreManager.getTournament();

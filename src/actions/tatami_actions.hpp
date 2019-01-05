@@ -3,12 +3,17 @@
 #include "id.hpp"
 #include "actions/action.hpp"
 #include "stores/match_store.hpp"
-#include "stores/tatami_store.hpp"
+#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/tatami_store.hpp"
 
+class TournamentStore;
+class BlockLocation;
+
+// TODO: Introduce alias for std::pair<CategoryId, MatchType>
 class SetTatamiLocationAction : public Action {
 public:
     SetTatamiLocationAction() = default;
-    SetTatamiLocationAction(CategoryId categoryId, MatchType type, std::optional<TatamiLocation> location, size_t seqIndex);
+    SetTatamiLocationAction(std::pair<CategoryId, MatchType> block, std::optional<BlockLocation> location);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -17,21 +22,15 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
-        ar(mType);
-        ar(mLocation);
-        ar(mSeqIndex);
+        ar(mBlock, mLocation);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchType mType;
-    std::optional<TatamiLocation> mLocation;
-    size_t mSeqIndex;
+    std::pair<CategoryId, MatchType> mBlock;
+    std::optional<BlockLocation> mLocation;
 
     // undo members
-    std::optional<TatamiLocation> mOldLocation;
-    size_t mOldSeqIndex;
+    std::optional<BlockLocation> mOldLocation;
 };
 
 CEREAL_REGISTER_TYPE(SetTatamiLocationAction)
@@ -40,7 +39,8 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, SetTatamiLocationAction)
 class SetTatamiCountAction : public Action {
 public:
     SetTatamiCountAction() = default;
-    SetTatamiCountAction(size_t count);
+    SetTatamiCountAction(TournamentStore &tournament, size_t count);
+    SetTatamiCountAction(const std::vector<TatamiLocation> &locations);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -49,15 +49,15 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCount);
+        ar(mLocations);
     }
 
 private:
-    size_t mCount;
+    std::vector<TatamiLocation> mLocations;
 
     // undo members
     size_t mOldCount;
-    std::stack<std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>>> mOldContents;
+    std::vector<std::pair<TatamiLocation, TatamiStore>> mErasedTatamis;
 };
 
 CEREAL_REGISTER_TYPE(SetTatamiCountAction)
