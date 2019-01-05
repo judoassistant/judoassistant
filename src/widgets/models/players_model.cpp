@@ -263,3 +263,16 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
     return player.containsCategory(*mCategoryId);
 }
 
+bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
+    if (left.column() == 8 && right.column() == 8) {
+        const auto &tournament = mStoreManager.getTournament();
+        std::string leftString = sourceModel()->data(left).toString().toStdString();
+        std::string rightString = sourceModel()->data(right).toString().toStdString();
+
+        NumericalStringComparator comp;
+        return comp(leftString, rightString);
+    }
+
+    return QSortFilterProxyModel::lessThan(left, right);
+}
+

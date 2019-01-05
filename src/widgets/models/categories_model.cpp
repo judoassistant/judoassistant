@@ -2,6 +2,7 @@
 #include "stores/qtournament_store.hpp"
 #include "store_managers/store_manager.hpp"
 #include "widgets/models/categories_model.hpp"
+#include "widgets/misc/numerical_string_comparator.hpp"
 
 CategoriesModel::CategoriesModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)
@@ -167,8 +168,9 @@ void CategoriesModel::categoryPlayersChanged(CategoryId categoryId) {
 
 CategoriesProxyModel::CategoriesProxyModel(StoreManager &storeManager, QObject *parent)
     : QSortFilterProxyModel(parent)
+    , mStoreManager(storeManager)
 {
-    mModel = new CategoriesModel(storeManager, this);
+    mModel = new CategoriesModel(mStoreManager, this);
 
     setSourceModel(mModel);
     setSortRole(Qt::UserRole);
@@ -176,5 +178,18 @@ CategoriesProxyModel::CategoriesProxyModel(StoreManager &storeManager, QObject *
 
 std::vector<CategoryId> CategoriesProxyModel::getCategories(const QItemSelection &selection) const {
     return mModel->getCategories(mapSelectionToSource(selection));
+}
+
+bool CategoriesProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
+    if (left.column() == 0 && right.column() == 0) {
+        const auto &tournament = mStoreManager.getTournament();
+        const auto &leftCategory = tournament.getCategory(mModel->getCategory(left.row()));
+        const auto &rightCategory = tournament.getCategory(mModel->getCategory(right.row()));
+
+        NumericalStringComparator comp;
+        return comp(leftCategory.getName(), rightCategory.getName());
+    }
+
+    return QSortFilterProxyModel::lessThan(left, right);
 }
 

@@ -55,6 +55,7 @@ public:
     void setCategory(std::optional<CategoryId> categoryId);
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
     void hideAll();
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
     StoreManager & mStoreManager;

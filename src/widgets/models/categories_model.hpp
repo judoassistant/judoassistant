@@ -47,8 +47,10 @@ class CategoriesProxyModel : public QSortFilterProxyModel {
 public:
     CategoriesProxyModel(StoreManager &storeManager, QObject *parent);
     std::vector<CategoryId> getCategories(const QItemSelection &selection) const;
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
+    StoreManager &mStoreManager;
     CategoriesModel *mModel;
 };
 
