@@ -11,6 +11,7 @@
 #include "stores/category_store.hpp"
 #include "store_managers/store_manager.hpp"
 #include "widgets/models/players_model.hpp"
+#include "widgets/misc/numerical_string_comparator.hpp"
 
 PlayersModel::PlayersModel(StoreManager & storeManager, QObject * parent)
     : QAbstractTableModel(parent)
@@ -184,10 +185,19 @@ void PlayersModel::tournamentReset() {
 }
 
 std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const {
-    std::stringstream res;
+    std::vector<std::string> names;
     for (auto categoryId : player.getCategories()) {
         const CategoryStore &category = mStoreManager.getTournament().getCategory(categoryId);
-        res << category.getName() << " ";
+        names.push_back(category.getName());
+    }
+
+    std::sort(names.begin(), names.end(), NumericalStringComparator());
+
+    std::stringstream res;
+    for (size_t i = 0; i < names.size(); ++i) {
+        res << names[i];
+        if (i != names.size() - 1)
+            res << ", ";
     }
 
     return res.str();
