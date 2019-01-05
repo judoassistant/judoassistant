@@ -4,6 +4,7 @@
 #include "actions/action.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/tatami_store.hpp"
 
 class TournamentStore;
 class BlockLocation;
@@ -56,7 +57,7 @@ private:
 
     // undo members
     size_t mOldCount;
-    // std::stack<std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>>> mOldContents;
+    std::vector<std::pair<TatamiLocation, TatamiStore>> mErasedTatamis;
 };
 
 CEREAL_REGISTER_TYPE(SetTatamiCountAction)

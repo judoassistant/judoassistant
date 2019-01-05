@@ -68,8 +68,7 @@ SetTatamiCountAction::SetTatamiCountAction(const std::vector<TatamiLocation> &lo
     : mLocations(locations)
 {}
 
-SetTatamiCountAction::SetTatamiCountAction(TournamentStore &tournament, size_t count)
-{
+SetTatamiCountAction::SetTatamiCountAction(TournamentStore &tournament, size_t count) {
     auto &tatamis = tournament.getTatamis();
     // generate `count` locations even though fewer might be enough
     for (size_t i = 0; i < count; ++i)
@@ -78,6 +77,7 @@ SetTatamiCountAction::SetTatamiCountAction(TournamentStore &tournament, size_t c
 
 void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
     auto & tatamis = tournament.getTatamis();
+    mOldCount = tatamis.tatamiCount();
 
     if (tatamis.tatamiCount() < mLocations.size()) {
         std::vector<TatamiLocation> locations;
@@ -92,7 +92,44 @@ void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
     }
     else if (tatamis.tatamiCount() > mLocations.size()) {
         std::vector<TatamiLocation> locations;
+        std::unordered_set<CategoryId> categories;
         for (size_t i = mLocations.size(); i < tatamis.tatamiCount(); ++i)
+            locations.push_back({tatamis.getHandle(i)});
+
+        tournament.beginEraseTatamis(locations);
+        for (TatamiLocation location : locations) {
+            // erase the tatami
+            TatamiStore tatami = std::move(tatamis.at(location));
+            tatamis.eraseTatami(location.handle);
+
+            // update all categories on the tatami
+            for (size_t i = 0; i < tatami.groupCount(); ++i) {
+                const auto &concurrentGroup = tatami.at(i);
+                for (size_t j = 0; j < concurrentGroup.groupCount(); ++j) {
+                    const auto &sequentialGroup = concurrentGroup.at(j);
+
+                    for (size_t k = 0; k < sequentialGroup.blockCount(); ++k) {
+                        auto block = sequentialGroup.at(k);
+                        categories.insert(block.first);
+
+                        tournament.getCategory(block.first).setLocation(block.second, std::nullopt);
+                    }
+                }
+            }
+
+            mErasedTatamis.push_back(std::make_pair(location, std::move(tatami)));
+        }
+        tournament.endEraseTatamis();
+        tournament.changeCategories(std::vector(categories.begin(), categories.end()));
+    }
+}
+
+void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
+    auto & tatamis = tournament.getTatamis();
+
+    if (tatamis.tatamiCount() > mOldCount) {
+        std::vector<TatamiLocation> locations;
+        for (size_t i = mOldCount; i < tatamis.tatamiCount(); ++i)
             locations.push_back({tatamis.getHandle(i)});
 
         tournament.beginEraseTatamis(locations);
@@ -100,36 +137,42 @@ void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
             tatamis.eraseTatami(location.handle);
         tournament.endEraseTatamis();
     }
-}
+    else if (tatamis.tatamiCount() < mOldCount) {
+        std::vector<TatamiLocation> locations;
+        std::unordered_set<CategoryId> categories;
+        for (const auto & pair : mErasedTatamis) {
+            auto tatamiLocation = pair.first;
+            const TatamiStore &tatami = pair.second;
 
-void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
-    // TODO: Implement
-    throw std::runtime_error("Not implemented");
-    // auto & tatamis = tournament.getTatamis();
+            locations.push_back(tatamiLocation);
 
-    // if (tatamis.tatamiCount() > mOldCount) {
-    //     std::vector<size_t> ids;
-    //     for (size_t i = mOldCount; i < tatamis.tatamiCount(); ++i)
-    //         ids.push_back(i);
+            // update all categories on the tatami
+            for (size_t i = 0; i < tatami.groupCount(); ++i) {
+                const auto &concurrentGroup = tatami.at(i);
+                ConcurrentGroupLocation concurrentLocation = {tatamiLocation, i};
+                for (size_t j = 0; j < concurrentGroup.groupCount(); ++j) {
+                    const auto &sequentialGroup = concurrentGroup.at(j);
+                    SequentialGroupLocation sequentialLocation = {concurrentLocation, j};
 
-    //     tournament.beginEraseTatamis(std::move(ids));
-    //     while (tatamis.tatamiCount() > mOldCount)
-    //         tatamis.popTatami();
-    //     tournament.endEraseTatamis();
-    // }
+                    for (size_t k = 0; k < sequentialGroup.blockCount(); ++k) {
+                        auto block = sequentialGroup.at(k);
+                        BlockLocation blockLocation = {sequentialLocation, k};
+                        categories.insert(block.first);
 
-    // if (tatamis.tatamiCount() < mOldCount) {
-    //     std::vector<size_t> ids;
-    //     for (size_t i = tatamis.tatamiCount(); i < mOldCount; ++i)
-    //         ids.push_back(i);
+                        tournament.getCategory(block.first).setLocation(block.second, blockLocation);
+                    }
+                }
+            }
 
-    //     tournament.beginAddTatamis(std::move(ids));
-    //     while (tatamis.tatamiCount() < mOldCount) {
-    //         tatamis.recoverTatami(mOldContents.top());
-    //         mOldContents.pop();
-    //     }
-    //     tournament.endAddTatamis();
-    // }
+        }
+
+        tournament.beginAddTatamis(locations);
+        for (auto & pair : mErasedTatamis)
+            tatamis[pair.first.handle] = std::move(pair.second);
+        mErasedTatamis.clear();
+        tournament.endAddTatamis();
+        tournament.changeCategories(std::vector(categories.begin(), categories.end()));
+    }
 }
 
 std::unique_ptr<Action> SetTatamiCountAction::freshClone() const {
