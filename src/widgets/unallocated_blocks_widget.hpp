@@ -56,11 +56,9 @@ public:
     UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent = 0);
 
 public slots:
-    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void endAddTatamis(std::vector<TatamiLocation> locations);
-    void beginEraseTatamis(std::vector<TatamiLocation> locations);
-    void endAddCategories(std::vector<CategoryId> categoryId);
-    void beginEraseCategories(std::vector<CategoryId> categoryId);
+    void endAddCategories(std::vector<CategoryId> categoryIds);
+    void beginEraseCategories(std::vector<CategoryId> categoryIds);
+    void changeCategories(std::vector<CategoryId> categoryIds);
     void beginTournamentReset();
     void endTournamentReset();
     void endCategoriesReset();

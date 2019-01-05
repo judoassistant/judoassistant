@@ -31,82 +31,6 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QW
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &UnallocatedBlocksWidget::endTournamentReset);
 }
 
-void UnallocatedBlocksWidget::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
-    const TournamentStore & tournament = mStoreManager.getTournament();
-
-    bool shouldShift = false;
-
-    for (auto block : blocks) {
-        if (!tournament.containsCategory(block.first))
-            continue;
-
-        const CategoryStore & category = tournament.getCategory(block.first);
-        if (!category.getLocation(block.second))
-            shouldShift |= insertBlock(category, block.second);
-        else
-            shouldShift |= eraseBlock(category, block.second);
-    }
-
-    if (shouldShift)
-        shiftBlocks();
-}
-
-// TODO: Refactor the many nested loops for this class
-void UnallocatedBlocksWidget::beginEraseTatamis(std::vector<TatamiLocation> locations) {
-    bool shouldShift = false;
-
-    const TournamentStore &tournament = mStoreManager.getTournament();
-    const TatamiList &tatamis = tournament.getTatamis();
-
-    for (TatamiLocation location : locations) {
-        const TatamiStore &tatami = tatamis.at(location);
-
-        for (size_t i = 0; i < tatami.groupCount(); ++i) {
-            const auto &group = tatami.at(i);
-
-            for (size_t j = 0; j < group.groupCount(); ++j) {
-                const auto &seqGroup = group.at(j);
-
-                for (size_t k = 0; k < seqGroup.blockCount(); ++k) {
-                    auto block = seqGroup.at(k);
-                    const CategoryStore &category = tournament.getCategory(block.first);
-                    shouldShift |= insertBlock(category, block.second);
-                }
-            }
-        }
-    }
-
-    if (shouldShift)
-        shiftBlocks();
-}
-
-void UnallocatedBlocksWidget::endAddTatamis(std::vector<TatamiLocation> locations) {
-    bool shouldShift = false;
-
-    const TournamentStore &tournament = mStoreManager.getTournament();
-    const TatamiList &tatamis = tournament.getTatamis();
-
-    for (TatamiLocation location : locations) {
-        const auto &tatami = tatamis.at(location);
-
-        for (size_t i = 0; i < tatami.groupCount(); ++i) {
-            const auto &group = tatami.at(i);
-
-            for (size_t j = 0; j < group.groupCount(); ++j) {
-                const auto &seqGroup = group.at(j);
-
-                for (size_t k = 0; k < seqGroup.blockCount(); ++k) {
-                    auto block = seqGroup.at(k);
-                    shouldShift |= eraseBlock(block.first, block.second);
-                }
-            }
-        }
-    }
-
-    if (shouldShift)
-        shiftBlocks();
-}
-
 void UnallocatedBlocksWidget::endAddCategories(std::vector<CategoryId> categoryIds) {
     const TournamentStore & tournament = mStoreManager.getTournament();
 
@@ -117,6 +41,29 @@ void UnallocatedBlocksWidget::endAddCategories(std::vector<CategoryId> categoryI
             shouldShift |= insertBlock(category, MatchType::KNOCKOUT);
         if (category.getDrawSystem().hasFinalBlock() && !category.getLocation(MatchType::FINAL))
             shouldShift |= insertBlock(category, MatchType::FINAL);
+    }
+
+    if (shouldShift)
+        shiftBlocks();
+}
+
+void UnallocatedBlocksWidget::changeCategories(std::vector<CategoryId> categoryIds) {
+    const TournamentStore & tournament = mStoreManager.getTournament();
+
+    bool shouldShift = false;
+    for (auto categoryId : categoryIds) {
+        const CategoryStore &category = tournament.getCategory(categoryId);
+        if (!category.getLocation(MatchType::KNOCKOUT))
+            shouldShift |= insertBlock(category, MatchType::KNOCKOUT);
+        else
+            shouldShift |= eraseBlock(category, MatchType::KNOCKOUT);
+
+        if (category.getDrawSystem().hasFinalBlock()) {
+            if (!category.getLocation(MatchType::FINAL))
+                shouldShift |= insertBlock(category, MatchType::FINAL);
+            else
+                shouldShift |= eraseBlock(category, MatchType::FINAL);
+        }
     }
 
     if (shouldShift)
@@ -146,12 +93,10 @@ void UnallocatedBlocksWidget::beginTournamentReset() {
 void UnallocatedBlocksWidget::endTournamentReset() {
     auto & tournament = mStoreManager.getTournament();
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &UnallocatedBlocksWidget::changeTatamis));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &UnallocatedBlocksWidget::beginEraseTatamis));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &UnallocatedBlocksWidget::endAddTatamis));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesAdded, this, &UnallocatedBlocksWidget::endAddCategories));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &UnallocatedBlocksWidget::beginEraseCategories));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesReset, this, &UnallocatedBlocksWidget::endCategoriesReset));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesChanged, this, &UnallocatedBlocksWidget::changeCategories));
 
     mBlocks = std::set<std::pair<CategoryId, MatchType>, BlockComparator>(BlockComparator(tournament));
     reloadBlocks();
