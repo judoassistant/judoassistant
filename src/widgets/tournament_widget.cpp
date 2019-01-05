@@ -82,6 +82,6 @@ void TournamentWidget::updateTatamiCount(int count) {
     if (static_cast<size_t>(count) == mStoreManager.getTournament().getTatamis().tatamiCount())
         return;
 
-    mStoreManager.dispatch(std::make_unique<SetTatamiCountAction>(static_cast<size_t>(count)));
+    mStoreManager.dispatch(std::make_unique<SetTatamiCountAction>(mStoreManager.getTournament(), static_cast<size_t>(count)));
 }
 

@@ -23,6 +23,7 @@ public:
     size_t tatamiCount() const;
     TatamiLocation generateLocation(size_t index);
     BlockLocation refreshLocation(BlockLocation location, std::pair<CategoryId, MatchType> block) const;
+    void insert(PositionHandle handle);
 
     TatamiStore & operator[](PositionHandle handle);
 

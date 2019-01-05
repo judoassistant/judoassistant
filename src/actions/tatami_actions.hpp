@@ -5,6 +5,7 @@
 #include "stores/match_store.hpp"
 #include "stores/tatami/tatami_location.hpp"
 
+class TournamentStore;
 class BlockLocation;
 
 // TODO: Introduce alias for std::pair<CategoryId, MatchType>
@@ -37,7 +38,8 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, SetTatamiLocationAction)
 class SetTatamiCountAction : public Action {
 public:
     SetTatamiCountAction() = default;
-    SetTatamiCountAction(size_t count);
+    SetTatamiCountAction(TournamentStore &tournament, size_t count);
+    SetTatamiCountAction(const std::vector<TatamiLocation> &locations);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -46,11 +48,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCount);
+        ar(mLocations);
     }
 
 private:
-    size_t mCount;
+    std::vector<TatamiLocation> mLocations;
 
     // undo members
     size_t mOldCount;

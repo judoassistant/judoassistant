@@ -56,6 +56,15 @@ public:
         return mElements[handle.id];
     }
 
+    void insert(PositionHandle handle) {
+        auto it = mElements.find(handle.id);
+        if (it != mElements.end())
+            return;
+
+        mIds.insert(mIds.begin() + std::min(mIds.size(), handle.index), handle.id);
+        mElements.insert({handle.id, T()});
+    }
+
     T & at(PositionHandle handle) {
         auto it = mElements.find(handle.id);
         assert(it != mElements.end());

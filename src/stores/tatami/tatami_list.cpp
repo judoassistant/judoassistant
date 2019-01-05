@@ -1,11 +1,5 @@
 #include "stores/tatami/tatami_list.hpp"
 #include "stores/tatami/tatami_location.hpp"
-// #include "stores/category_store.hpp"
-// #include "draw_systems/draw_system.hpp"
-// #include "rulesets/ruleset.hpp"
-// #include "stores/match_store.hpp"
-// #include "stores/tournament_store.hpp"
-//
 
 void TatamiList::eraseTatami(PositionHandle handle) {
     assert(mTatamis.contains(handle));
@@ -65,6 +59,10 @@ BlockLocation TatamiList::refreshLocation(BlockLocation location, std::pair<Cate
 
 TatamiStore & TatamiList::operator[](PositionHandle handle) {
     return mTatamis[handle];
+}
+
+void TatamiList::insert(PositionHandle handle) {
+    mTatamis.insert(handle);
 }
 
 const TatamiStore & TatamiList::at(PositionHandle handle) const {

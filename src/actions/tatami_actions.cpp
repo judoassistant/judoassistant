@@ -1,6 +1,7 @@
 #include "actions/tatami_actions.hpp"
 #include "draw_systems/draw_system.hpp"
 #include "rulesets/ruleset.hpp"
+#include "stores/tatami/tatami_list.hpp"
 #include "stores/category_store.hpp"
 #include "stores/tournament_store.hpp"
 #include "stores/tatami/tatami_list.hpp"
@@ -63,41 +64,47 @@ void SetTatamiLocationAction::undoImpl(TournamentStore & tournament) {
     }
 }
 
-SetTatamiCountAction::SetTatamiCountAction(size_t count)
-    : mCount(count)
+SetTatamiCountAction::SetTatamiCountAction(const std::vector<TatamiLocation> &locations)
+    : mLocations(locations)
 {}
 
+SetTatamiCountAction::SetTatamiCountAction(TournamentStore &tournament, size_t count)
+{
+    auto &tatamis = tournament.getTatamis();
+    // generate `count` locations even though fewer might be enough
+    for (size_t i = 0; i < count; ++i)
+        mLocations.push_back(tatamis.generateLocation(i));
+}
+
 void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
-    // TODO: Implement
-    // auto & tatamis = tournament.getTatamis();
+    auto & tatamis = tournament.getTatamis();
 
-    // mOldCount = tatamis.tatamiCount();
+    if (tatamis.tatamiCount() < mLocations.size()) {
+        std::vector<TatamiLocation> locations;
+        for (size_t i = tatamis.tatamiCount(); i < mLocations.size(); ++i) {
+            locations.push_back(mLocations[i]);
+        }
 
-    // if (tatamis.tatamiCount() < mCount) {
-    //     std::vector<size_t> ids;
-    //     for (size_t i = tatamis.tatamiCount(); i < mCount; ++i)
-    //         ids.push_back(i);
+        tournament.beginAddTatamis(locations);
+        for (TatamiLocation location : locations)
+            tatamis.insert(location.handle);
+        tournament.endAddTatamis();
+    }
+    else if (tatamis.tatamiCount() > mLocations.size()) {
+        std::vector<TatamiLocation> locations;
+        for (size_t i = mLocations.size(); i < tatamis.tatamiCount(); ++i)
+            locations.push_back({tatamis.getHandle(i)});
 
-    //     tournament.beginAddTatamis(std::move(ids));
-    //     while (tatamis.tatamiCount() < mCount)
-    //         tatamis.pushTatami();
-    //     tournament.endAddTatamis();
-    // }
-
-    // if (tatamis.tatamiCount() > mCount) {
-    //     std::vector<size_t> ids;
-    //     for (size_t i = mCount; i < tatamis.tatamiCount(); ++i)
-    //         ids.push_back(i);
-
-    //     tournament.beginEraseTatamis(std::move(ids));
-    //     while (tatamis.tatamiCount() > mCount)
-    //         mOldContents.push(tatamis.popTatami());
-    //     tournament.endEraseTatamis();
-    // }
+        tournament.beginEraseTatamis(locations);
+        for (TatamiLocation location : locations)
+            tatamis.eraseTatami(location.handle);
+        tournament.endEraseTatamis();
+    }
 }
 
 void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
     // TODO: Implement
+    throw std::runtime_error("Not implemented");
     // auto & tatamis = tournament.getTatamis();
 
     // if (tatamis.tatamiCount() > mOldCount) {
@@ -126,7 +133,7 @@ void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
 }
 
 std::unique_ptr<Action> SetTatamiCountAction::freshClone() const {
-    return std::make_unique<SetTatamiCountAction>(mCount);
+    return std::make_unique<SetTatamiCountAction>(mLocations);
 }
 
 std::unique_ptr<Action> SetTatamiLocationAction::freshClone() const {

@@ -1,3 +1,4 @@
+#include "log.hpp"
 #include "stores/tatami/sequential_block_group.hpp"
 #include "stores/tatami/tatami_location.hpp"
 #include "stores/category_store.hpp"
