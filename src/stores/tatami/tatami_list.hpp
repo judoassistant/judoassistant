@@ -12,6 +12,7 @@ class TatamiLocation;
 class ConcurrentGroupLocation;
 class SequentialGroupLocation;
 
+// TODO: Refactor to avoid public methods accepting PositionHandle
 class TatamiList {
 public:
     void eraseTatami(PositionHandle handle);
