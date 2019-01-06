@@ -47,7 +47,43 @@ private:
 CEREAL_REGISTER_TYPE(AddMatchAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddMatchAction)
 
-class ResumeMatchAction : public Action {
+// Abstract class with common methods for match events
+class MatchEventAction : public Action {
+public:
+    MatchEventAction() = default;
+    MatchEventAction(CategoryId categoryId, MatchId matchId);
+
+    void save(const MatchStore &match);
+    void recover(TournamentStore &tournament);
+    bool shouldRecover();
+    void notify(TournamentStore &tournament, const MatchStore &match);
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId);
+    }
+protected:
+    // fields common to all match event actions
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+
+    // undo fields
+    bool mDidSave;
+    size_t mPrevEventSize;
+    MatchStatus mPrevStatus;
+    MatchStore::Score mPrevWhiteScore;
+    MatchStore::Score mPrevBlueScore;
+    bool mPrevGoldenScore;
+    std::chrono::milliseconds mPrevResumeTime; // the time when the clock was last resumed
+    std::chrono::milliseconds mPrevDuration; // the match duration when the clock was last paused
+
+    std::stack<std::unique_ptr<Action>> mDrawActions;
+};
+
+CEREAL_REGISTER_TYPE(MatchEventAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, MatchEventAction)
+
+class ResumeMatchAction : public MatchEventAction {
 public:
     ResumeMatchAction() = default;
     ResumeMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
@@ -60,24 +96,18 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mMasterTime);
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mMasterTime);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
     std::chrono::milliseconds mMasterTime;
-
-    // undo members
-    bool mDidResume;
-    MatchStatus mPrevStatus;
-    std::chrono::milliseconds mPrevResumeTime;
 };
 
 CEREAL_REGISTER_TYPE(ResumeMatchAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ResumeMatchAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, ResumeMatchAction)
 
-class PauseMatchAction : public Action {
+class PauseMatchAction : public MatchEventAction {
 public:
     PauseMatchAction() = default;
     PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
@@ -90,25 +120,18 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mMasterTime);
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mMasterTime);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
     std::chrono::milliseconds mMasterTime;
-
-    // undo members
-    bool mDidPause;
-    std::chrono::milliseconds mPrevDuration;
-    bool mPrevGoldenScore;
-    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(PauseMatchAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, PauseMatchAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, PauseMatchAction)
 
-class AwardIpponAction : public Action {
+class AwardIpponAction : public MatchEventAction {
 public:
     AwardIpponAction() = default;
     AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
@@ -122,26 +145,19 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mPlayerIndex, mMasterTime);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
     MatchStore::PlayerIndex mPlayerIndex;
     std::chrono::milliseconds mMasterTime;
-
-    // undo members
-    bool mDidAward;
-    MatchStatus mPrevStatus;
-    bool mPrevGoldenScore;
-    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardIpponAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardIpponAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, AwardIpponAction)
 
-class AwardWazariAction : public Action {
+class AwardWazariAction : public MatchEventAction {
 public:
     AwardWazariAction() = default;
     AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
@@ -155,26 +171,19 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mPlayerIndex, mMasterTime);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
     MatchStore::PlayerIndex mPlayerIndex;
     std::chrono::milliseconds mMasterTime;
-
-    // undo members
-    bool mDidAward;
-    MatchStatus mPrevStatus;
-    bool mPrevGoldenScore;
-    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardWazariAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardWazariAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, AwardWazariAction)
 
-class AwardShidoAction : public Action {
+class AwardShidoAction : public MatchEventAction {
 public:
     AwardShidoAction() = default;
     AwardShidoAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
@@ -188,26 +197,19 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mPlayerIndex, mMasterTime);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
     MatchStore::PlayerIndex mPlayerIndex;
     std::chrono::milliseconds mMasterTime;
-
-    // undo members
-    bool mDidAward;
-    MatchStatus mPrevStatus;
-    bool mPrevGoldenScore;
-    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardShidoAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardShidoAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, AwardShidoAction)
 
-class AwardHansokuMakeAction : public Action {
+class AwardHansokuMakeAction : public MatchEventAction {
 public:
     AwardHansokuMakeAction() = default;
     AwardHansokuMakeAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
@@ -221,22 +223,15 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mPlayerIndex, mMasterTime);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
     MatchStore::PlayerIndex mPlayerIndex;
     std::chrono::milliseconds mMasterTime;
-
-    // undo members
-    bool mDidAward;
-    MatchStatus mPrevStatus;
-    bool mPrevGoldenScore;
-    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(AwardHansokuMakeAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AwardHansokuMakeAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, AwardHansokuMakeAction)
 
