@@ -15,8 +15,6 @@ class Ruleset;
 
 enum class MatchType;
 
-// TODO: Use rvalue references for functions where appropriate
-// TODO: Make members const where appropriate
 // TODO: Make 'magic' categories that update automatically
 
 class CategoryStore {
@@ -37,7 +35,7 @@ public:
     MatchList & getMatches();
     MatchStore & getMatch(MatchId id);
     const MatchStore & getMatch(MatchId id) const;
-    void pushMatch(std::unique_ptr<MatchStore> &&match);
+    void pushMatch(std::unique_ptr<MatchStore> match);
     std::unique_ptr<MatchStore> popMatch();
     bool containsMatch(MatchId id) const;
     MatchList clearMatches();
@@ -50,11 +48,11 @@ public:
     void addPlayer(PlayerId id);
     bool containsPlayer(PlayerId id) const;
 
-    std::unique_ptr<Ruleset> setRuleset(std::unique_ptr<Ruleset> && ptr);
+    std::unique_ptr<Ruleset> setRuleset(std::unique_ptr<Ruleset> ptr);
     Ruleset & getRuleset();
     const Ruleset & getRuleset() const;
 
-    std::unique_ptr<DrawSystem> setDrawSystem(std::unique_ptr<DrawSystem> && ptr);
+    std::unique_ptr<DrawSystem> setDrawSystem(std::unique_ptr<DrawSystem> ptr);
     DrawSystem & getDrawSystem();
     const DrawSystem & getDrawSystem() const;
 

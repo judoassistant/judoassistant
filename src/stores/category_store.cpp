@@ -63,7 +63,7 @@ const CategoryId & CategoryStore::getId() const {
     return mId;
 }
 
-std::unique_ptr<Ruleset> CategoryStore::setRuleset(std::unique_ptr<Ruleset> && ptr) {
+std::unique_ptr<Ruleset> CategoryStore::setRuleset(std::unique_ptr<Ruleset> ptr) {
     auto old = std::move(mRuleset);
     mRuleset = std::move(ptr);
     return std::move(old);
@@ -77,7 +77,7 @@ const Ruleset & CategoryStore::getRuleset() const {
     return *mRuleset;
 }
 
-std::unique_ptr<DrawSystem> CategoryStore::setDrawSystem(std::unique_ptr<DrawSystem> && ptr) {
+std::unique_ptr<DrawSystem> CategoryStore::setDrawSystem(std::unique_ptr<DrawSystem> ptr) {
     auto old = std::move(mDrawSystem);
     mDrawSystem = std::move(ptr);
     return std::move(old);
@@ -115,7 +115,7 @@ const MatchStore & CategoryStore::getMatch(MatchId id) const {
     return *(mMatches[it->second]);
 }
 
-void CategoryStore::pushMatch(std::unique_ptr<MatchStore> &&match) {
+void CategoryStore::pushMatch(std::unique_ptr<MatchStore> match) {
     MatchId id = match->getId();
 
     if (!match->isBye())
