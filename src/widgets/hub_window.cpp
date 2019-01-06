@@ -12,6 +12,7 @@
 
 #include <fstream>
 
+#include "log.hpp"
 #include "widgets/hub_window.hpp"
 #include "widgets/tournament_widget.hpp"
 #include "widgets/players_widget.hpp"
@@ -26,7 +27,6 @@
 
 HubWindow::HubWindow() {
     // TODO: Add todostack sidebar
-    // TODO: Catch quit signal to quit gracefully 
     createStatusBar();
     createTournamentMenu();
     createEditMenu();

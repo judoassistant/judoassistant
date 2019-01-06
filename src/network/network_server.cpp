@@ -8,11 +8,9 @@ using boost::asio::ip::tcp;
 // TODO: Catch exception when port already in use
 
 void NetworkParticipant::start() {
-    log_debug().msg("Starting participant");
     mServer->join(shared_from_this());
     auto syncMessage = std::make_unique<NetworkMessage>();
     syncMessage->encodeSync(*(mServer->getTournament()), mServer->getActionStack());
-    log_debug().field("bodysize", syncMessage->bodySize()).msg("Delivering sync message");
     deliver(std::move(syncMessage));
 
     readMessage();
@@ -31,7 +29,7 @@ void NetworkParticipant::writeMessage() {
 
     mConnection->asyncWrite(*(mMessageQueue.front()), [this, self](boost::system::error_code ec) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
+            log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
             mServer->leave(shared_from_this());
             return;
         }
@@ -47,13 +45,12 @@ void NetworkParticipant::readMessage() {
 
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
+            log_warning().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             mServer->leave(shared_from_this());
             return;
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
-            log_info().msg("Received QUIT message from client. Kicking client");
             mServer->leave(shared_from_this());
             return;
         }
