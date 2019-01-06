@@ -14,7 +14,7 @@ MasterStoreManager::MasterStoreManager()
 }
 
 MasterStoreManager::~MasterStoreManager() {
-
+    stopServer();
 }
 
 bool MasterStoreManager::read(const QString &path) {
