@@ -213,9 +213,11 @@ void NetworkServer::postQuit() {
         auto message = std::make_shared<NetworkMessage>();
         message->encodeQuit();
 
-        for (auto & participant : mParticipants) {
+        auto it = mParticipants.begin();
+        while (it != mParticipants.end()) {
+            auto &participant = *it;
             participant->deliver(message);
-            leave(participant);
+            it = mParticipants.erase(it);
         }
     });
 }
