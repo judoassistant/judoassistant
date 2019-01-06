@@ -1,4 +1,7 @@
 #include <fstream>
+
+#include <boost/system/system_error.hpp>
+
 #include "log.hpp"
 #include "network/network_server.hpp"
 #include "serializables.hpp"
@@ -69,7 +72,15 @@ bool MasterStoreManager::write(const QString &path) {
 }
 
 void MasterStoreManager::startServer(int port) {
-    startInterface(std::make_unique<NetworkServer>(port));
+    try {
+        startInterface(std::make_unique<NetworkServer>(port));
+    }
+    catch (const boost::system::system_error &e) {
+        if (e.code() == boost::system::errc::address_in_use)
+            throw AddressInUseException(port);
+        else
+            throw e;
+    }
     sync();
 }
 

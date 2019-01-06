@@ -29,6 +29,7 @@ int HubApplication::exec() {
     }
 
     window.show();
+    window.startServer();
 
     return QApplication::exec();
 }

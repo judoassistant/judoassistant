@@ -21,6 +21,7 @@
 #include "widgets/import_players_csv_dialog.hpp"
 #include "widgets/import_helpers/csv_reader.hpp"
 #include "config/web.hpp"
+#include "config/network.hpp"
 #include "exception.hpp"
 
 HubWindow::HubWindow() {
@@ -46,8 +47,16 @@ HubWindow::HubWindow() {
 
     resize(250,250);
     setWindowTitle(tr("JudoAssistant"));
+}
 
-    mStoreManager.startServer(8000);
+void HubWindow::startServer() {
+    try {
+        mStoreManager.startServer(Config::DEFAULT_PORT);
+    }
+    catch (const AddressInUseException &e) {
+        QMessageBox::warning(this, tr("Unable to open default port"), tr("JudoAssistant was unable to open port 8000 for communication.").arg(e.getPort()));
+        log_warning().field("msg", e.what()).field("port", e.getPort()).msg("Failed starting serving");
+    }
 }
 
 void HubWindow::createStatusBar() {

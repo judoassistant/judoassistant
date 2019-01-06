@@ -13,6 +13,7 @@ public:
 
     void readTournament();
     void readTournament(const QString &fileName);
+    void startServer();
 
 private slots:
     void quit();
