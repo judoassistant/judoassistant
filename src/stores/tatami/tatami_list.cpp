@@ -1,5 +1,5 @@
 #include "stores/tatami/tatami_list.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 
 void TatamiList::eraseTatami(PositionHandle handle) {
     assert(mTatamis.contains(handle));

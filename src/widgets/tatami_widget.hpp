@@ -5,7 +5,7 @@
 
 #include "id.hpp"
 #include "position_manager.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 
 class TatamiLocation;
 class StoreManager;

@@ -3,7 +3,7 @@
 #include "id.hpp"
 #include "actions/action.hpp"
 #include "stores/match_store.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 #include "stores/tatami/tatami_store.hpp"
 
 class TournamentStore;

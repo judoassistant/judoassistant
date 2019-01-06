@@ -11,7 +11,7 @@
 #include "id.hpp"
 #include "widgets/misc/numerical_string_comparator.hpp"
 #include "stores/match_store.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 
 class StoreManager;
 class CategoryStore;

@@ -6,7 +6,7 @@
 #include "stores/match_store.hpp"
 #include "stores/player_store.hpp"
 #include "stores/tatami/tatami_list.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 #include "stores/tournament_store.hpp"
 
 #include "actions/actions.hpp"

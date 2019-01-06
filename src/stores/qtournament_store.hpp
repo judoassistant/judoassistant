@@ -9,7 +9,7 @@
 #include "rulesets/ruleset.hpp"
 #include "stores/match_store.hpp"
 #include "stores/tournament_store.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 
 class QTournamentStore : public QObject, public TournamentStore {
     Q_OBJECT

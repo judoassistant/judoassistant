@@ -1,6 +1,6 @@
 #include "log.hpp"
 #include "stores/tatami/sequential_block_group.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 #include "stores/category_store.hpp"
 #include "draw_systems/draw_system.hpp"
 #include "rulesets/ruleset.hpp"

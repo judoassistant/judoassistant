@@ -8,7 +8,7 @@
 #include <QTableView>
 
 #include "core.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 #include "widgets/client_window.hpp"
 #include "widgets/match_card_widget.hpp"
 #include "widgets/score_display_widget.hpp"

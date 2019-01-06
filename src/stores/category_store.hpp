@@ -7,7 +7,7 @@
 #include "core.hpp"
 #include "id.hpp"
 #include "serialize.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 
 class DrawSystem;
 class MatchStore;

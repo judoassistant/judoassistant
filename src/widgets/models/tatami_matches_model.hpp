@@ -12,7 +12,7 @@
 #include <QSortFilterProxyModel>
 
 #include "id.hpp"
-#include "stores/tatami/tatami_location.hpp"
+#include "stores/tatami/location.hpp"
 #include "stores/match_store.hpp"
 
 class StoreManager;
