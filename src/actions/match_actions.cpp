@@ -129,7 +129,7 @@ void PauseMatchAction::redoImpl(TournamentStore & tournament) {
         return;
 
     save(match);
-    ruleset.pause(match, mMasterTime); // TODO: Update drawing etc. if neccesary
+    ruleset.pause(match, mMasterTime);
     notify(tournament, match);
 }
 

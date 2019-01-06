@@ -18,7 +18,7 @@ public:
 
     class Generator {
     public:
-        Generator() {} // TODO: Seed the generator
+        Generator() {}
         Generator(InternalType seed)
             : mEng(seed)
             , mDist(std::numeric_limits<InternalType>::min(), std::numeric_limits<InternalType>::max())

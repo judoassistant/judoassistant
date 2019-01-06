@@ -280,7 +280,6 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
         }
 
         // copy before category
-        // TODO: Fix ordering not being correctly restored when deleting multiple categories
         auto categoryId = category->getId();
         auto knockoutLoc = category->getLocation(MatchType::KNOCKOUT);
         auto finalLoc = category->getLocation(MatchType::FINAL);

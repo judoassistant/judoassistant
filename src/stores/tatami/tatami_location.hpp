@@ -7,7 +7,7 @@
 #include "position_manager.hpp"
 #include "serialize.hpp"
 
-struct TatamiLocation { // TODO: Rename to TatamiLocation. Temporary name used for ambiguity purposes
+struct TatamiLocation {
     PositionHandle handle;
 
     template<typename Archive>
