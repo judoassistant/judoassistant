@@ -16,17 +16,17 @@ void Ruleset::addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, s
     updateStatus(match, masterTime);
 }
 
-bool Ruleset::canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
-    return (score.ippon > 0);
-}
+// bool Ruleset::canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+//     const auto & score = match.getScore(playerIndex);
+//     return (score.ippon > 0);
+// }
 
-void Ruleset::subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canSubtractIppon(match, playerIndex));
+// void Ruleset::subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+//     assert(canSubtractIppon(match, playerIndex));
 
-    auto & score = match.getScore(playerIndex);
-    score.ippon -= 1;
-}
+//     auto & score = match.getScore(playerIndex);
+//     score.ippon -= 1;
+// }
 
 bool Ruleset::shouldPause(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (match.getStatus() != MatchStatus::UNPAUSED)

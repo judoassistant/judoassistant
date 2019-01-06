@@ -18,18 +18,18 @@ void TwentyEighteenRuleset::addWazari(MatchStore &match, MatchStore::PlayerIndex
     updateStatus(match, masterTime);
 }
 
-bool TwentyEighteenRuleset::canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
-    return (score.ippon > 0 || score.wazari > 0);
-}
+// bool TwentyEighteenRuleset::canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+//     const auto & score = match.getScore(playerIndex);
+//     return (score.ippon > 0 || score.wazari > 0);
+// }
 
-void TwentyEighteenRuleset::subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canSubtractWazari(match, playerIndex));
+// void TwentyEighteenRuleset::subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+//     assert(canSubtractWazari(match, playerIndex));
 
-    auto & score = match.getScore(playerIndex);
-    score.wazari = (score.wazari + 1) % 2;
-    score.ippon = 0;
-}
+//     auto & score = match.getScore(playerIndex);
+//     score.wazari = (score.wazari + 1) % 2;
+//     score.ippon = 0;
+// }
 
 bool TwentyEighteenRuleset::canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
@@ -46,18 +46,18 @@ void TwentyEighteenRuleset::addShido(MatchStore &match, MatchStore::PlayerIndex 
     updateStatus(match, masterTime);
 }
 
-bool TwentyEighteenRuleset::canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
-    return (score.hansokuMake == 1 || score.shido > 0);
-}
+// bool TwentyEighteenRuleset::canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+//     const auto & score = match.getScore(playerIndex);
+//     return (score.hansokuMake == 1 || score.shido > 0);
+// }
 
-void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canSubtractShido(match, playerIndex));
+// void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+//     assert(canSubtractShido(match, playerIndex));
 
-    auto & score = match.getScore(playerIndex);
-    score.shido = (score.shido + 2) % 3;
-    score.hansokuMake = 0;
-}
+//     auto & score = match.getScore(playerIndex);
+//     score.shido = (score.shido + 2) % 3;
+//     score.hansokuMake = 0;
+// }
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (match.isBye())
@@ -131,15 +131,15 @@ void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::Player
     updateStatus(match, masterTime);
 }
 
-bool TwentyEighteenRuleset::canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
-    return (score.hansokuMake == 1);
-}
+// bool TwentyEighteenRuleset::canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+//     const auto & score = match.getScore(playerIndex);
+//     return (score.hansokuMake == 1);
+// }
 
-void TwentyEighteenRuleset::subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canSubtractHansokuMake(match, playerIndex));
+// void TwentyEighteenRuleset::subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+//     assert(canSubtractHansokuMake(match, playerIndex));
 
-    auto & score = match.getScore(playerIndex);
-    score.hansokuMake = 0;
-}
+//     auto & score = match.getScore(playerIndex);
+//     score.hansokuMake = 0;
+// }
 
