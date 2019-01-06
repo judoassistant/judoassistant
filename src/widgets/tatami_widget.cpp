@@ -371,9 +371,9 @@ void SequentialBlockItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     location.sequentialGroup = mLocation;
     location.pos = mBlocks.size();
 
-    mStoreManager->dispatch(std::make_unique<SetTatamiLocationAction>(block, location));
     mDragOver = false;
     update();
+    mStoreManager->dispatch(std::make_unique<SetTatamiLocationAction>(block, location));
 }
 
 BlockItem::BlockItem(StoreManager * storeManager, std::pair<CategoryId, MatchType> block, QGraphicsItem *parent)
