@@ -55,6 +55,10 @@ CategoryId MatchStore::getCategory() const {
     return mCategory;
 }
 
+std::pair<CategoryId, MatchId> MatchStore::getCombinedId() const {
+    return {mCategory, mId};
+}
+
 MatchStore::Score & MatchStore::getWhiteScore() {
     return getScore(PlayerIndex::WHITE);
 }

@@ -45,6 +45,7 @@ public:
 
     void moveBlock(const TournamentStore &tournament, std::pair<CategoryId, MatchType> block, std::optional<BlockLocation> from, std::optional<BlockLocation> to);
     void recomputeBlock(const TournamentStore &tournament, BlockLocation);
+    void updateStatus(const TournamentStore &tournament, BlockLocation location);
 
     // std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>> popTatami();
     // void recoverTatami(const std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>> &contents);

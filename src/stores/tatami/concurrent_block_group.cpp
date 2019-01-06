@@ -102,7 +102,8 @@ struct QueueElement { // Using custom class for queue entries to avoid floating 
 void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mMatches.clear();
     mMatchMap.clear();
-    mStatus = Status::NOT_STARTED;
+    mStartedMatches.clear();
+    mFinishedMatches.clear();
 
     // Merging algorithm: Keep fetching matches from the group with smallest progress(#(matches fetched) / #(matches total))
     std::priority_queue<QueueElement> progressQueue;
@@ -131,10 +132,41 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
 
         const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
 
-        if (match.getStatus() == MatchStatus::FINISHED && mStatus == Status::NOT_STARTED)
-            mStatus = Status::FINISHED;
+        if (match.getStatus() == MatchStatus::FINISHED)
+            mFinishedMatches.insert(combinedId);
         else if (match.getStatus() != MatchStatus::NOT_STARTED)
-            mStatus = Status::STARTED;
+            mStartedMatches.insert(combinedId);
     }
+
+    recomputeStatus();
+}
+
+void ConcurrentBlockGroup::recomputeStatus() {
+    if (mMatches.size() == mFinishedMatches.size())
+        mStatus = Status::FINISHED;
+    else if (!mStartedMatches.empty() || !mFinishedMatches.empty())
+        mStatus = Status::STARTED;
+    else
+        mStatus = Status::NOT_STARTED;
+}
+
+void ConcurrentBlockGroup::updateStatus(const MatchStore &match) {
+    auto combinedId = match.getCombinedId();
+    if (match.getStatus() == MatchStatus::FINISHED) {
+        // insert into finished matches and delete from other maps if the match
+        // was not already finished.
+        if (mFinishedMatches.insert(combinedId).second)
+            mStartedMatches.erase(combinedId);
+    }
+    else if (match.getStatus() != MatchStatus::NOT_STARTED) {
+        if (mStartedMatches.insert(combinedId).second)
+            mFinishedMatches.erase(combinedId);
+    }
+    else {
+        mStartedMatches.erase(combinedId);
+        mFinishedMatches.erase(combinedId);
+    }
+
+    recomputeStatus();
 }
 

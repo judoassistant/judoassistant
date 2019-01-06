@@ -78,6 +78,7 @@ public:
     void setStatus(MatchStatus status);
 
     CategoryId getCategory() const;
+    std::pair<CategoryId, MatchId> getCombinedId() const;
 
     void setDuration(std::chrono::milliseconds duration);
     std::chrono::milliseconds getDuration() const;

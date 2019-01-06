@@ -10,17 +10,17 @@ enum class MatchType;
 class TournamentStore;
 class ConcurrentGroupLocation;
 class SequentialGroupLocation;
+class MatchStore;
 
 // TODO: Add interface to delay matches
-// TODO: Update status in action when neccesary
 
 class ConcurrentBlockGroup {
 public:
-    typedef std::vector<std::pair<CategoryId, MatchId>> MatchList; // Iteration and swapping of two elements given indexes must be supported
-
     enum class Status {
         NOT_STARTED, STARTED, FINISHED
     };
+
+    typedef std::vector<std::pair<CategoryId, MatchId>> MatchList; // Iteration and swapping of two elements given indexes must be supported
 
     ConcurrentBlockGroup();
 
@@ -46,9 +46,9 @@ public:
     SequentialBlockGroup & at(SequentialGroupLocation location);
 
     void recompute(const TournamentStore &tournament);
+    void updateStatus(const MatchStore &match);
+
     SequentialGroupLocation generateLocation(TournamentStore & tournament, ConcurrentGroupLocation location, size_t index);
-
-
     SequentialGroupLocation generateLocation(ConcurrentGroupLocation location, size_t index);
 
     template<typename Archive>
@@ -56,9 +56,14 @@ public:
         ar(mGroups, mMatches, mStatus, mMatchMap);
     }
 private:
+    void recomputeStatus();
+
     PositionManager<SequentialBlockGroup> mGroups;
     MatchList mMatches;
     Status mStatus;
     std::unordered_map<std::pair<CategoryId, MatchId>,size_t> mMatchMap;
+
+    std::unordered_set<std::pair<CategoryId, MatchId>> mStartedMatches;
+    std::unordered_set<std::pair<CategoryId, MatchId>> mFinishedMatches;
 };
 
