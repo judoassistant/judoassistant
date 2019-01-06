@@ -188,7 +188,6 @@ void ScoreOperatorWindow::openReportIssue() {
 }
 
 void ScoreOperatorWindow::quit() {
-    // TODO: disconnect
     QCoreApplication::exit();
 }
 

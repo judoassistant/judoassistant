@@ -11,7 +11,6 @@
 
 class StoreManager;
 
-// TODO: Correctly sort by name
 class CategoriesModel : public QAbstractTableModel {
     Q_OBJECT
 public:
