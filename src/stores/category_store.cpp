@@ -33,10 +33,13 @@ const std::unordered_set<PlayerId> & CategoryStore::getPlayers() const {
 }
 
 void CategoryStore::erasePlayer(PlayerId id) {
-    mPlayers.erase(id);
+    auto it = mPlayers.find(id);
+    assert(it != mPlayers.end());
+    mPlayers.erase(it);
 }
 
 void CategoryStore::addPlayer(PlayerId id) {
+    assert(mPlayers.find(id) == mPlayers.end());
     mPlayers.insert(id);
 }
 
@@ -101,13 +104,15 @@ CategoryStore::MatchList & CategoryStore::getMatches() {
 }
 
 MatchStore & CategoryStore::getMatch(MatchId id) {
-    size_t index = mMatchMap.find(id)->second;
-    return *(mMatches[index]);
+    auto it = mMatchMap.find(id);
+    assert(it != mMatchMap.end());
+    return *(mMatches[it->second]);
 }
 
 const MatchStore & CategoryStore::getMatch(MatchId id) const {
-    size_t index = mMatchMap.find(id)->second;
-    return *(mMatches[index]);
+    auto it = mMatchMap.find(id);
+    assert(it != mMatchMap.end());
+    return *(mMatches[it->second]);
 }
 
 void CategoryStore::pushMatch(std::unique_ptr<MatchStore> &&match) {
@@ -117,6 +122,7 @@ void CategoryStore::pushMatch(std::unique_ptr<MatchStore> &&match) {
         ++(mMatchCount[static_cast<int>(match->getType())]);
 
     mMatches.push_back(std::move(match));
+    assert(mMatchMap.find(id) == mMatchMap.end());
     mMatchMap[id] = mMatches.size() - 1;
 }
 

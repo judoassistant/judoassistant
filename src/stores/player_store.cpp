@@ -97,7 +97,9 @@ void PlayerStore::eraseMatch(CategoryId categoryId, MatchId matchId) {
 }
 
 void PlayerStore::addMatch(CategoryId categoryId, MatchId matchId) {
-    mMatches.insert(std::make_pair(categoryId, matchId));
+    auto p = std::make_pair(categoryId, matchId);
+    assert(mMatches.find(p) == mMatches.end());
+    mMatches.insert(p);
 }
 
 const std::unordered_set<std::pair<CategoryId,MatchId>> & PlayerStore::getMatches() const {
@@ -109,10 +111,13 @@ bool PlayerStore::containsMatch(CategoryId categoryId, MatchId matchId) const {
 }
 
 void PlayerStore::eraseCategory(CategoryId id) {
-    mCategories.erase(id);
+    auto it = mCategories.find(id);
+    assert(it != mCategories.end());
+    mCategories.erase(it);
 }
 
 void PlayerStore::addCategory(CategoryId id) {
+    assert(mCategories.find(id) == mCategories.end());
     mCategories.insert(id);
 }
 

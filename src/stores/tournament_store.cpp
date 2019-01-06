@@ -31,21 +31,25 @@ const std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> & Tournamen
 }
 
 void TournamentStore::addPlayer(std::unique_ptr<PlayerStore> ptr) {
+    assert(mPlayers.find(ptr->getId()) == mPlayers.end());
     mPlayers[ptr->getId()] = std::move(ptr);
 }
 
 PlayerStore & TournamentStore::getPlayer(PlayerId id) {
     auto it = mPlayers.find(id);
+    assert(it != mPlayers.end());
     return *(it->second);
 }
 
 const PlayerStore & TournamentStore::getPlayer(PlayerId id) const {
     auto it = mPlayers.find(id);
+    assert(it != mPlayers.end());
     return *(it->second);
 }
 
 std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(PlayerId id) {
     auto it = mPlayers.find(id);
+    assert(it != mPlayers.end());
     auto ptr = std::move(it->second);
     mPlayers.erase(it);
     return std::move(ptr);
@@ -53,20 +57,24 @@ std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(PlayerId id) {
 
 CategoryStore & TournamentStore::getCategory(CategoryId id) {
     auto it = mCategories.find(id);
+    assert(it != mCategories.end());
     return *(it->second);
 }
 
 const CategoryStore & TournamentStore::getCategory(CategoryId id) const {
     auto it = mCategories.find(id);
+    assert(it != mCategories.end());
     return *(it->second);
 }
 
 void TournamentStore::addCategory(std::unique_ptr<CategoryStore> ptr) {
+    assert(mCategories.find(ptr->getId()) == mCategories.end());
     mCategories[ptr->getId()] = std::move(ptr);
 }
 
 std::unique_ptr<CategoryStore> TournamentStore::eraseCategory(CategoryId id) {
     auto it = mCategories.find(id);
+    assert(it != mCategories.end());
     auto ptr = std::move(it->second);
     mCategories.erase(it);
     return std::move(ptr);
