@@ -283,11 +283,13 @@ void HubWindow::saveTournament() {
 }
 
 void HubWindow::saveAsTournament() {
-    // TODO: Append .qj if not already
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
 
     if (fileName.isEmpty())
         return;
+
+    if (!fileName.endsWith(".qj"))
+        fileName += ".qj";
 
     mFileName = fileName;
     writeTournament();
