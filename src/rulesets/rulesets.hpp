@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rulesets/twentyeighteen_ruleset.hpp"
+#include "rulesets/twenty_eighteen_ruleset.hpp"
 
 class Rulesets {
 public:

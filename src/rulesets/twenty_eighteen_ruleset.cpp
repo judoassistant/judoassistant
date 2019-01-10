@@ -1,4 +1,4 @@
-#include "rulesets/twentyeighteen_ruleset.hpp"
+#include "rulesets/twenty_eighteen_ruleset.hpp"
 
 // TODO: Make the ruleset interface more intuitive regarding setting and recovering status
 bool TwentyEighteenRuleset::canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
