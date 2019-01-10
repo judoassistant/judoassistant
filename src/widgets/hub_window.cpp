@@ -40,7 +40,7 @@ HubWindow::HubWindow() {
     tabWidget->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
     tabWidget->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
     tabWidget->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    tabWidget->setCurrentIndex(4);
+    tabWidget->setCurrentIndex(0);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
     setCentralWidget(tabWidget);
