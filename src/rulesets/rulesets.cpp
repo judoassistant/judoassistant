@@ -5,6 +5,8 @@ const std::vector<std::unique_ptr<Ruleset>> & Rulesets::getRulesets() {
 
     if (rulesets.empty()) {
         rulesets.push_back(std::make_unique<TwentyEighteenRuleset>());
+        rulesets.push_back(std::make_unique<TwentyEighteenChildrenRuleset>());
+        rulesets.push_back(std::make_unique<TwentyEighteenVeteranRuleset>());
     }
 
     return rulesets;
