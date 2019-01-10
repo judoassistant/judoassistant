@@ -16,8 +16,8 @@ class Ruleset;
 class AddCategoryAction : public Action {
 public:
     AddCategoryAction() = default;
-    AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem);
-    AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem);
+    AddCategoryAction(TournamentStore & tournament, const std::string &name, size_t ruleset, size_t drawSystem);
+    AddCategoryAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -37,8 +37,8 @@ public:
 private:
     CategoryId mId;
     std::string mName;
-    uint8_t mRuleset;
-    uint8_t mDrawSystem;
+    size_t mRuleset;
+    size_t mDrawSystem;
 };
 
 CEREAL_REGISTER_TYPE(AddCategoryAction)
@@ -238,7 +238,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoryNameAction)
 class ChangeCategoryRulesetAction : public Action {
 public:
     ChangeCategoryRulesetAction() = default;
-    ChangeCategoryRulesetAction (CategoryId categoryId, uint8_t ruleset);
+    ChangeCategoryRulesetAction (CategoryId categoryId, size_t ruleset);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -253,7 +253,7 @@ public:
 
 private:
     CategoryId mCategoryId;
-    uint8_t mRuleset;
+    size_t mRuleset;
 
     // undo members
     std::unique_ptr<Ruleset> mOldRuleset;
@@ -266,7 +266,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoryRulesetAction)
 class ChangeCategoryDrawSystemAction : public Action {
 public:
     ChangeCategoryDrawSystemAction() = default;
-    ChangeCategoryDrawSystemAction(CategoryId categoryId, uint8_t drawSystem);
+    ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -281,7 +281,7 @@ public:
 
 private:
     CategoryId mCategoryId;
-    uint8_t mDrawSystem;
+    size_t mDrawSystem;
 
     // undo members
     std::unique_ptr<DrawSystem> mOldDrawSystem;

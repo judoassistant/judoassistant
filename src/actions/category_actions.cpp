@@ -13,14 +13,14 @@
 #include "stores/tatami/tatami_list.hpp"
 #include "stores/tatami/location.hpp"
 
-AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
+AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem)
     : mId(id)
     , mName(name)
     , mRuleset(ruleset)
     , mDrawSystem(drawSystem)
 {}
 
-AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, uint8_t ruleset, uint8_t drawSystem)
+AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, size_t ruleset, size_t drawSystem)
     : AddCategoryAction(CategoryId::generate(tournament), name, ruleset, drawSystem)
 {}
 
@@ -462,7 +462,6 @@ struct Solution {
 AutoAddCategoriesAction::AutoAddCategoriesAction(TournamentStore &tournament, std::vector<PlayerId> playerIds, std::string baseName, float maxDifference, size_t maxSize)
     : mBaseName(baseName)
 {
-    log_debug().msg("Redoing");
     std::vector<std::pair<float, PlayerId>> weights;
     for (auto playerId : playerIds) {
         if (!tournament.containsPlayer(playerId))
@@ -473,7 +472,6 @@ AutoAddCategoriesAction::AutoAddCategoriesAction(TournamentStore &tournament, st
         weights.push_back({player.getWeight()->toFloat(), playerId});
     }
 
-    log_debug().field("weights", weights).msg("Created weights array");
     if (weights.empty())
         return;
 
@@ -600,7 +598,7 @@ void ChangeCategoryNameAction::undoImpl(TournamentStore & tournament) {
     tournament.changeCategories({mCategoryId});
 }
 
-ChangeCategoryRulesetAction::ChangeCategoryRulesetAction(CategoryId categoryId, uint8_t ruleset)
+ChangeCategoryRulesetAction::ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset)
     : mCategoryId(categoryId)
     , mRuleset(ruleset)
 {}
@@ -640,7 +638,7 @@ void ChangeCategoryRulesetAction::undoImpl(TournamentStore & tournament) {
     tournament.changeCategories({mCategoryId});
 }
 
-ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction (CategoryId categoryId, uint8_t drawSystem)
+ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem)
     : mCategoryId(categoryId)
     , mDrawSystem(drawSystem)
 {}
