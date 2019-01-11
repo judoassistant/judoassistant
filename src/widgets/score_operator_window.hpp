@@ -8,6 +8,7 @@
 #include <QTableView>
 
 #include "core.hpp"
+#include "config/network.hpp"
 #include "stores/tatami/location.hpp"
 #include "widgets/client_window.hpp"
 #include "widgets/match_card_widget.hpp"
@@ -19,7 +20,7 @@ class ScoreOperatorWindow : public ClientWindow {
 
 public:
     ScoreOperatorWindow();
-    void silentConnect(QString host, int port=8000); // TODO: Setup default port in config
+    void silentConnect(QString host, int port=Config::DEFAULT_PORT);
 
 private:
     static constexpr auto PAUSING_TIMER_INTERVAL = std::chrono::milliseconds(100);
