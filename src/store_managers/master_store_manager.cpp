@@ -56,6 +56,7 @@ void MasterStoreManager::resetTournament() {
 bool MasterStoreManager::write(const QString &path) {
     log_debug().field("path", path.toStdString()).msg("Writing tournament to file");
     std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
+    // TODO: Apply LZ4 compression
 
     if (!file.is_open())
         return false;

@@ -3,6 +3,7 @@
 #include "serializables.hpp"
 #include "version.hpp"
 
+// TODO: Apply LZ4 compression
 NetworkMessage::NetworkMessage() {
     mHeader.resize(HEADER_LENGTH);
 }
