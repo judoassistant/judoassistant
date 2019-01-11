@@ -90,7 +90,7 @@ void CSVReader::parse() {
             }
 
             if (c == mDelimiter && !inQuotes) {
-                mFields.back().push_back(curField);
+                mFields.back().push_back(trim(curField));
                 curField.clear();
                 continue;
             }
