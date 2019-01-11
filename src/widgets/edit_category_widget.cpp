@@ -157,7 +157,7 @@ void EditCategoryWidget::rulesetEdited() {
     CategoryStore &category = tournament.getCategory(*mCategoryId);
 
     if (mRulesetContent->currentIndex() == mRulesetContent->findText(QString::fromStdString(category.getRuleset().getName())))
-        return
+        return;
 
     mStoreManager.dispatch(std::make_unique<ChangeCategoryRulesetAction>(*mCategoryId, mRulesetContent->currentIndex()));
 }
@@ -170,7 +170,7 @@ void EditCategoryWidget::drawSystemEdited() {
     CategoryStore &category = tournament.getCategory(*mCategoryId);
 
     if (mDrawSystemContent->currentIndex() == mDrawSystemContent->findText(QString::fromStdString(category.getDrawSystem().getName())))
-        return
+        return;
 
     mStoreManager.dispatch(std::make_unique<ChangeCategoryDrawSystemAction>(*mCategoryId, mDrawSystemContent->currentIndex()));
 }
