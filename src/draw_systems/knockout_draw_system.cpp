@@ -74,7 +74,7 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std:
             log_debug().field("round", round).field("i", i).field("bye", isBye).msg("Creating match");
             auto matchType = (round + 2 < rounds ? MatchType::KNOCKOUT : MatchType::FINAL);
 
-            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), matchType, matchTitle(i, rounds), isBye, whiteId, blueId);
+            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), matchType, matchTitle(round, rounds), isBye, whiteId, blueId);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }
