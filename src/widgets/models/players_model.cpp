@@ -265,7 +265,6 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
 
 bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
     if (left.column() == 8 && right.column() == 8) {
-        const auto &tournament = mStoreManager.getTournament();
         std::string leftString = sourceModel()->data(left).toString().toStdString();
         std::string rightString = sourceModel()->data(right).toString().toStdString();
 
