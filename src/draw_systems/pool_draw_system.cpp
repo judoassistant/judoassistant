@@ -15,14 +15,30 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vec
     mMatches.clear();
 
     std::vector<std::unique_ptr<Action>> actions;
+    if (playerIds.size() <= 1)
+        return (actions);
 
-    // TODO: Sort the matches to maximize recovery
-    for (size_t i = 0; i < playerIds.size(); ++i) {
-        for (size_t j = i+1; j < playerIds.size(); ++j) {
-            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), MatchType::KNOCKOUT, "Pool", false, playerIds[i], playerIds[j]);
+    // TODO: shuffle
+    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
+    std::vector<std::optional<PlayerId>> shiftedIds;
+    if (playerIds.size() % 2 != 0)
+        shiftedIds.push_back(std::nullopt);
+    for (size_t i = 0; i < playerIds.size(); ++i)
+        shiftedIds.emplace_back(playerIds[i]);
+
+    for (size_t round = 0; round < shiftedIds.size()-1; ++round) {
+        for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
+            size_t j = shiftedIds.size() - i - 1;
+            if (!shiftedIds[i] || !shiftedIds[j]) continue;
+            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), MatchType::KNOCKOUT, "Pool", false, shiftedIds[i], shiftedIds[j]);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }
+
+        // shift ids
+        std::optional<PlayerId> temp = shiftedIds.back();
+        for (size_t i = 1; i < shiftedIds.size(); ++i)
+            std::swap(shiftedIds[i], temp);
     }
 
     mPlayers = playerIds;
