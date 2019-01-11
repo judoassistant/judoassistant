@@ -53,7 +53,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mGroups, mMatches, mStatus, mMatchMap);
+        ar(mGroups, mMatches, mStatus, mMatchMap, mStartedMatches, mFinishedMatches);
     }
 private:
     void recomputeStatus();
