@@ -1,6 +1,5 @@
 #include "rulesets/twenty_eighteen_ruleset.hpp"
 
-// TODO: Make the ruleset interface more intuitive regarding setting and recovering status
 bool TwentyEighteenRuleset::canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
