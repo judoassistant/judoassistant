@@ -97,8 +97,8 @@ public:
         ar(cereal::make_nvp("bye", mBye));
         ar(cereal::make_nvp("scores", mScores));
         ar(cereal::make_nvp("players", mPlayers));
-        ar(cereal::make_nvp("goldenScore", mGoldenScore));
         ar(cereal::make_nvp("status", mStatus));
+        ar(cereal::make_nvp("goldenScore", mGoldenScore));
         ar(cereal::make_nvp("resumeTime", mResumeTime));
         ar(cereal::make_nvp("duration", mDuration));
         ar(cereal::make_nvp("events", mEvents));
