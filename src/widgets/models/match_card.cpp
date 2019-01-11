@@ -30,7 +30,6 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         font.setPixelSize((insideHeight/3)/3);
         painter->setFont(font);
 
-        painter->setRenderHint(QPainter::Antialiasing, true);
         auto text = playerFields.lastName.toUpper() + " " + playerFields.firstName.front().toUpper() + ".";
         painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, text);
         painter->restore();
@@ -54,7 +53,6 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         font.setPixelSize((insideHeight/3)/3);
         painter->setFont(font);
 
-        painter->setRenderHint(QPainter::Antialiasing, true);
         if (playerFields.score.ippon != 0)
             painter->drawText(ipponRect, Qt::AlignVCenter | Qt::AlignLeft, QString::number(playerFields.score.ippon));
         painter->drawText(wazariRect, Qt::AlignVCenter | Qt::AlignLeft, QString::number(playerFields.score.wazari));
@@ -110,7 +108,6 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
         font.setPixelSize(headerHeight/3);
         painter->setFont(font);
-        painter->setRenderHint(QPainter::Antialiasing, true);
 
         if (mTatami) { // Draw tatami number
             QRect rect(padding, padding, headerHeight-padding*2, headerHeight-padding*2);
@@ -135,9 +132,15 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, mCategory);
         }
 
-        if (mStatus != MatchStatus::NOT_STARTED && mStatus != MatchStatus::FINISHED) { // Draw Time
-            int pauseRectSize = headerHeight/4;
-            QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
+        int pauseRectSize = headerHeight/4;
+        QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
+        QRect textRect(columnThreeOffset + pauseRectSize + padding, padding, insideWidth-(columnThreeOffset + pauseRectSize + padding), headerHeight-padding*2);
+        if (mBye) {
+            painter->setPen(COLOR_0);
+            painter->setBrush(COLOR_0);
+            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("bye"));
+        }
+        else if (mStatus != MatchStatus::NOT_STARTED && mStatus != MatchStatus::FINISHED) { // Draw Time
             painter->setPen(Qt::NoPen);
             if (mStatus != MatchStatus::UNPAUSED)
                 painter->setBrush(COLOR_13);
@@ -145,15 +148,12 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
                 painter->setBrush(COLOR_14);
             painter->drawRect(pauseRect);
 
-            QRect textRect(columnThreeOffset + pauseRectSize + padding, padding, insideWidth-(columnThreeOffset + pauseRectSize + padding), headerHeight-padding*2);
-
             painter->setPen(COLOR_0);
             painter->setBrush(COLOR_0);
 
             QString seconds = QString::number((mTime % std::chrono::minutes(1)).count()).rightJustified(2, '0');
             QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(mTime).count());
 
-            painter->setRenderHint(QPainter::Antialiasing, true);
             if (mGoldenScore)
                 painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("GS %1:%2").arg(minutes).arg(seconds));
             else
@@ -161,12 +161,9 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         }
         else { // Draw ETA
             // TODO: Calculate ETA for matches
-            // QRect textRect(columnThreeOffset, padding, insideWidth-columnThreeOffset-padding, headerHeight-padding*2);
-
             // painter->setPen(COLOR_0);
             // painter->setBrush(COLOR_0);
 
-            // painter->setRenderHint(QPainter::Antialiasing, true);
             // painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignRight, "~16 min");
         }
 
@@ -175,32 +172,30 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     }
 
     // Draw white player rect
-    if (mWhitePlayer) {
-        painter->save();
-        painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3)*2);
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(Qt::white);
-        painter->drawRect(0, 0, insideWidth, insideHeight/3);
+    painter->save();
+    painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3)*2);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(Qt::white);
+    painter->drawRect(0, 0, insideWidth, insideHeight/3);
 
+    if (mWhitePlayer)
         paintPlayer(*mWhitePlayer, painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
 
-        painter->restore();
-    }
+    painter->restore();
     // painter->setPen(Qt::NoPen);
     // painter->setBrush(COLOR_5::NoPen);
 
     // Draw blue player rect
-    if (mBluePlayer) {
-        painter->save();
-        painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3));
-        painter->setPen(Qt::NoPen);
-        painter->setBrush(COLOR_10);
-        painter->drawRect(0, 0, insideWidth, insideHeight/3);
+    painter->save();
+    painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3));
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(COLOR_10);
+    painter->drawRect(0, 0, insideWidth, insideHeight/3);
 
+    if (mBluePlayer)
         paintPlayer(*mBluePlayer, painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
 
-        painter->restore();
-    }
+    painter->restore();
 
     painter->restore();
 }
