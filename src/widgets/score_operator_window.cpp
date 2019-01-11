@@ -392,6 +392,9 @@ void ScoreOperatorWindow::findNextMatch() {
 
                 const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
 
+                if (match.isBye())
+                    continue;
+
                 if (match.getStatus() != MatchStatus::FINISHED) {
                     mNextMatch = combinedId;
                     mNextMatchWidget->setMatch(combinedId);
