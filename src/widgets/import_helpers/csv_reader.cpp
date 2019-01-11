@@ -58,6 +58,22 @@ size_t CSVReader::columnCount() const {
     return mColumnCount;
 }
 
+std::string trim(const std::string &str) {
+    size_t begin;
+    for (begin = 0; begin < str.size(); ++begin) {
+        if (str[begin] != ' ')
+            break;
+    }
+
+    size_t end;
+    for (end = str.size(); end > 0; --end) {
+        if (str[end-1] != ' ')
+            break;
+    }
+
+    return str.substr(begin, end-begin);
+}
+
 void CSVReader::parse() {
     mFields.clear();
     mColumnCount = 0;
@@ -82,7 +98,7 @@ void CSVReader::parse() {
             curField.push_back(c);
         }
 
-        mFields.back().push_back(curField); // TODO: Strip of whitespace
+        mFields.back().push_back(trim(curField));
         mColumnCount = std::max(mColumnCount, mFields.back().size());
     }
 }

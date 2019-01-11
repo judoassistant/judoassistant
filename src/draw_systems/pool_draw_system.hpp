@@ -13,18 +13,19 @@ public:
     std::string getName() const override;
     bool hasFinalBlock() const override;
 
-    std::vector<std::unique_ptr<Action>> initCategory(const std::vector<PlayerId> &playerIds, TournamentStore & tournament, CategoryStore & category) override;
-    std::vector<std::unique_ptr<Action>> updateCategory(TournamentStore & tournament, CategoryStore & category) const override;
-    bool isFinished(TournamentStore & tournament, CategoryStore & category) const override;
-    std::vector<std::pair<size_t, PlayerId>> get_results() const override;
+    std::vector<std::unique_ptr<Action>> initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category) override;
+    std::vector<std::unique_ptr<Action>> updateCategory(const TournamentStore & tournament, const CategoryStore & category) const override;
+    bool isFinished(const TournamentStore &tournament, const CategoryStore &category) const override;
+    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> getResults(const TournamentStore &tournament, const CategoryStore &category) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("matchIds", mMatchIds));
+        ar(mMatches, mPlayers);
     }
 
 private:
-    std::vector<MatchId> mMatchIds;
+    std::vector<MatchId> mMatches;
+    std::vector<PlayerId> mPlayers;
 };
 
 CEREAL_REGISTER_TYPE(PoolDrawSystem)

@@ -18,10 +18,10 @@ public:
     virtual std::string getName() const = 0;
     virtual bool hasFinalBlock() const = 0;
 
-    virtual std::vector<std::unique_ptr<Action>> initCategory(const std::vector<PlayerId> &playerIds, TournamentStore & tournament, CategoryStore & category) = 0;
-    virtual std::vector<std::unique_ptr<Action>> updateCategory(TournamentStore & tournament, CategoryStore & category) const = 0;
-    virtual bool isFinished(TournamentStore & tournament, CategoryStore & category) const = 0;
-    virtual std::vector<std::pair<size_t, PlayerId>> get_results() const = 0;
+    virtual std::vector<std::unique_ptr<Action>> initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category) = 0;
+    virtual std::vector<std::unique_ptr<Action>> updateCategory(const TournamentStore & tournament, const CategoryStore & category) const = 0;
+    virtual bool isFinished(const TournamentStore &tournament, const CategoryStore &category) const = 0;
+    virtual std::vector<std::pair<std::optional<unsigned int>, PlayerId>> getResults(const TournamentStore &tournament, const CategoryStore &category) const = 0;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}
