@@ -74,6 +74,20 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
             tabWidget->addTab(matchesList, tr("Matches"));
         }
 
+        {
+            auto *resultsView = new QTableView(this);
+            mResultsModel = new ResultsModel(mStoreManager, this);
+
+            resultsView->setModel(mResultsModel);
+            resultsView->horizontalHeader()->setStretchLastSection(true);
+            resultsView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+            resultsView->setSelectionBehavior(QAbstractItemView::SelectRows);
+            // resultsView->setSortingEnabled(false);
+            // resultsView->sortByColumn(0, Qt::AscendingOrder);
+
+            tabWidget->addTab(resultsView, tr("Results"));
+        }
+
         splitter->addWidget(tabWidget);
     }
 
@@ -101,5 +115,6 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
     mEditCategoryWidget->setCategory(categoryId);
     mEditCategoryPlayersWidget->setCategory(categoryId);
     mCategoryMatchesModel->setCategory(categoryId);
+    mResultsModel->setCategory(categoryId);
 }
 
