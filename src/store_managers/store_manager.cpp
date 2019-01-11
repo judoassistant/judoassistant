@@ -68,6 +68,9 @@ void StoreManager::sync(std::unique_ptr<QTournamentStore> tournament) {
 
     if (mNetworkInterface)
         mNetworkInterface->postSync(std::make_unique<TournamentStore>(*mTournament));
+    else
+        --mSyncing;
+
 
     emit tournamentReset();
     emit redoStatusChanged(false);
