@@ -47,7 +47,8 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddCategoryAction)
 class DrawCategoryAction : public Action {
 public:
     DrawCategoryAction() = default;
-    DrawCategoryAction(CategoryId categoryId);
+    DrawCategoryAction(CategoryId categoryId, unsigned int seed);
+    // DrawCategoryAction(CategoryId categoryId);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -56,11 +57,12 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
+        ar(mCategoryId, mSeed);
     }
 
 private:
     CategoryId mCategoryId;
+    unsigned int mSeed;
 
     // undo members
     std::vector<std::unique_ptr<MatchStore>> mOldMatches;
@@ -75,6 +77,7 @@ class AddPlayersToCategoryAction : public Action {
 public:
     AddPlayersToCategoryAction() = default;
     AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
+    AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -83,13 +86,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
-        ar(mPlayerIds);
+        ar(mCategoryId, mPlayerIds, mSeed);
     }
 
 private:
     CategoryId mCategoryId;
     std::vector<PlayerId> mPlayerIds;
+    unsigned int mSeed;
 
     // undo members
     std::vector<PlayerId> mAddedPlayerIds;
@@ -103,6 +106,7 @@ class ErasePlayersFromCategoryAction : public Action {
 public:
     ErasePlayersFromCategoryAction() = default;
     ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
+    ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -111,13 +115,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
-        ar(mPlayerIds);
+        ar(mCategoryId, mPlayerIds, mSeed);
     }
 
 private:
     CategoryId mCategoryId;
     std::vector<PlayerId> mPlayerIds;
+    unsigned int mSeed;
 
     // undo members
     std::vector<PlayerId> mErasedPlayerIds;
@@ -159,6 +163,7 @@ class ErasePlayersFromAllCategoriesAction : public Action {
 public:
     ErasePlayersFromAllCategoriesAction() = default;
     ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds);
+    ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -167,11 +172,12 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerIds);
+        ar(mPlayerIds, mSeed);
     }
 
 private:
     std::vector<PlayerId> mPlayerIds;
+    unsigned int mSeed;
 
     // undo members
     std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
@@ -184,7 +190,7 @@ class AutoAddCategoriesAction : public Action {
 public:
     AutoAddCategoriesAction() = default;
     AutoAddCategoriesAction(TournamentStore &tournament, std::vector<PlayerId> playerIds, std::string baseName, float maxDifference, size_t maxSize);
-    AutoAddCategoriesAction(const std::vector<std::vector<PlayerId>> &playerIds, std::vector<CategoryId> categoryIds, std::string baseName);
+    AutoAddCategoriesAction(const std::vector<std::vector<PlayerId>> &playerIds, std::vector<CategoryId> categoryIds, std::string baseName, unsigned int seed);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -194,15 +200,14 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerIds);
-        ar(mCategoryIds);
-        ar(mBaseName);
+        ar(mPlayerIds, mCategoryIds, mBaseName, mSeed);
     }
 
 private:
     std::vector<std::vector<PlayerId>> mPlayerIds;
     std::vector<CategoryId> mCategoryIds;
     std::string mBaseName;
+    unsigned int mSeed;
 };
 
 CEREAL_REGISTER_TYPE(AutoAddCategoriesAction)
@@ -238,7 +243,8 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoryNameAction)
 class ChangeCategoryRulesetAction : public Action {
 public:
     ChangeCategoryRulesetAction() = default;
-    ChangeCategoryRulesetAction (CategoryId categoryId, size_t ruleset);
+    ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset);
+    ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -247,13 +253,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
-        ar(mRuleset);
+        ar(mCategoryId, mRuleset, mSeed);
     }
 
 private:
     CategoryId mCategoryId;
     size_t mRuleset;
+    unsigned int mSeed;
 
     // undo members
     std::unique_ptr<Ruleset> mOldRuleset;
@@ -267,6 +273,7 @@ class ChangeCategoryDrawSystemAction : public Action {
 public:
     ChangeCategoryDrawSystemAction() = default;
     ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem);
+    ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -275,13 +282,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
-        ar(mDrawSystem);
+        ar(mCategoryId, mDrawSystem, mSeed);
     }
 
 private:
     CategoryId mCategoryId;
     size_t mDrawSystem;
+    unsigned int mSeed;
 
     // undo members
     std::unique_ptr<DrawSystem> mOldDrawSystem;

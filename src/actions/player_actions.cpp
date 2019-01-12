@@ -3,6 +3,7 @@
 #include "actions/match_actions.hpp"
 #include "draw_systems/draw_system.hpp"
 #include "exception.hpp"
+#include "random.hpp"
 #include "rulesets/ruleset.hpp"
 #include "stores/category_store.hpp"
 #include "stores/tournament_store.hpp"
@@ -44,11 +45,17 @@ void AddPlayersAction::undoImpl(TournamentStore & tournament) {
 }
 
 ErasePlayersAction::ErasePlayersAction(const std::vector<PlayerId> &playerIds)
-    : mPlayerIds(playerIds) // TODO: Use std::move where appropriate
+    : mPlayerIds(playerIds)
+    , mSeed(getSeed())
+{}
+
+ErasePlayersAction::ErasePlayersAction(const std::vector<PlayerId> &playerIds, unsigned int seed)
+    : mPlayerIds(playerIds)
+    , mSeed(seed)
 {}
 
 std::unique_ptr<Action> ErasePlayersAction::freshClone() const {
-    return std::make_unique<ErasePlayersAction>(mPlayerIds);
+    return std::make_unique<ErasePlayersAction>(mPlayerIds, mSeed);
 }
 
 void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
@@ -65,7 +72,7 @@ void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
 
     tournament.beginErasePlayers(mErasedPlayerIds);
     for (auto categoryId : categoryIds) {
-        auto action = std::make_unique<ErasePlayersFromCategoryAction>(categoryId, mErasedPlayerIds); // lazily give the action all playerIds and let it figure the rest out on its own
+        auto action = std::make_unique<ErasePlayersFromCategoryAction>(categoryId, mErasedPlayerIds, mSeed); // lazily give the action all playerIds and let it figure the rest out on its own
         action->redo(tournament);
         mActions.push(std::move(action));
     }

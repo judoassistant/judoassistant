@@ -11,10 +11,12 @@ std::string PoolDrawSystem::getName() const {
     return "Pool";
 }
 
-std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category) {
+std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category, unsigned int seed) {
     mMatches.clear();
 
     std::vector<std::unique_ptr<Action>> actions;
+    MatchId::Generator generator(seed);
+
     if (playerIds.size() <= 1)
         return (actions);
 
@@ -30,7 +32,7 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vec
         for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
             size_t j = shiftedIds.size() - i - 1;
             if (!shiftedIds[i] || !shiftedIds[j]) continue;
-            auto action = std::make_unique<AddMatchAction>(tournament, category.getId(), MatchType::KNOCKOUT, "Pool", false, shiftedIds[i], shiftedIds[j]);
+            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::KNOCKOUT, "Pool", false, shiftedIds[i], shiftedIds[j]);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }

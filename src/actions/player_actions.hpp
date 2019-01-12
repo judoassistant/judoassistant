@@ -40,6 +40,7 @@ class ErasePlayersAction : public Action {
 public:
     ErasePlayersAction() = default;
     ErasePlayersAction(const std::vector<PlayerId> &playerIds);
+    ErasePlayersAction(const std::vector<PlayerId> &playerIds, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -48,11 +49,12 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerIds);
+        ar(mPlayerIds, mSeed);
     }
 
 private:
     std::vector<PlayerId> mPlayerIds;
+    unsigned int mSeed;
 
     // undo members
     std::vector<PlayerId> mErasedPlayerIds;
