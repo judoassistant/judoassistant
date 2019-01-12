@@ -21,7 +21,7 @@
 #include "widgets/matches_widget.hpp"
 #include "widgets/import_players_csv_dialog.hpp"
 #include "widgets/import_helpers/csv_reader.hpp"
-#include "config/web.hpp"
+#include "config/homepage.hpp"
 #include "config/network.hpp"
 #include "exception.hpp"
 

@@ -10,7 +10,7 @@
 #include <QHeaderView>
 
 #include "actions/match_actions.hpp"
-#include "config/web.hpp"
+#include "config/homepage.hpp"
 #include "stores/category_store.hpp"
 #include "stores/match_store.hpp"
 #include "stores/qtournament_store.hpp"

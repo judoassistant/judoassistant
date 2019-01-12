@@ -1,9 +1,9 @@
 #pragma once
 
-#include <QUrl>
+#include <string>
 
 namespace Config {
-    const QUrl HOME_PAGE_URL = QUrl("https://judoassistant.com/", QUrl::TolerantMode);
-    const QUrl MANUAL_URL = QUrl("https://judoassistant.com/manual", QUrl::TolerantMode);
-    const QUrl REPORT_ISSUE_URL = QUrl("https://judoassistant.com/report-issue", QUrl::TolerantMode);
+    constexpr int WEB_PORT = 9000;
+    constexpr std::string WEB_ADDRESS = "127.0.0.1";
 }
+
