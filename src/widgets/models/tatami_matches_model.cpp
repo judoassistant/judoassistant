@@ -254,13 +254,15 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
         if (!isFinished && !wasFinished) {
             // May need to update players
             auto it = mUnfinishedMatchesPlayersInv.find(combinedId);
+            assert(it != mUnfinishedMatchesPlayersInv.end());
             auto prevWhitePlayer = it->second.first;
             auto prevBluePlayer = it->second.second;
 
             if (match.getWhitePlayer() != prevWhitePlayer) {
                 if (prevWhitePlayer) {
                     auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
-                    auto & set = it1->second;
+                    assert(it1 != mUnfinishedMatchesPlayers.end());
+                    auto &set = it1->second;
                     set.erase(combinedId);
 
                     if (set.empty())
@@ -275,7 +277,8 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
             if (match.getBluePlayer() != prevBluePlayer) {
                 if (prevBluePlayer) {
                     auto it1 = mUnfinishedMatchesPlayers.find(*prevBluePlayer);
-                    auto & set = it1->second;
+                    assert(it1 != mUnfinishedMatchesPlayers.end());
+                    auto &set = it1->second;
                     set.erase(combinedId);
 
                     if (set.empty())
@@ -306,6 +309,7 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
             auto prevWhitePlayer = it->second.first;
             if (prevWhitePlayer) {
                 auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                assert(it1 != mUnfinishedMatchesPlayers.end());
                 auto & set = it1->second;
                 set.erase(combinedId);
 
@@ -313,9 +317,10 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
                     mUnfinishedMatchesPlayers.erase(it1);
             }
 
-            auto prevBluePlayer = it->second.first;
+            auto prevBluePlayer = it->second.second;
             if (prevBluePlayer) {
-                auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                auto it1 = mUnfinishedMatchesPlayers.find(*prevBluePlayer);
+                assert(it1 != mUnfinishedMatchesPlayers.end());
                 auto & set = it1->second;
                 set.erase(combinedId);
 
