@@ -28,20 +28,23 @@ std::string matchTitle(size_t round, size_t depth) {
     return std::to_string(round+1) + "th Round";
 }
 
-// TODO: Perform proper shuffling of players in all draw systems
 std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category, unsigned int seed) {
     mMatches.clear();
+    mPlayers = playerIds;
 
     MatchId::Generator generator(seed);
     std::vector<std::unique_ptr<Action>> actions;
 
-    if (playerIds.size() <= 1)
+    if (mPlayers.size() <= 1)
         return actions;
+
+    std::default_random_engine random_eng(seed);
+    std::shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
 
     // Size of round 1
     size_t nodeCount = 1;
     size_t rounds = 1;
-    while (nodeCount < (playerIds.size() + 1)/2) {
+    while (nodeCount < (mPlayers.size() + 1)/2) {
         nodeCount *= 2;
         ++rounds;
     }
@@ -51,18 +54,18 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std:
     std::vector<std::optional<PlayerId>> nodePlayers;
     nodePlayers.reserve(2*nodeCount);
     size_t j = 0;
-    size_t byesNeeded = 2 * nodeCount - playerIds.size();
+    size_t byesNeeded = 2 * nodeCount - mPlayers.size();
     for (size_t i = 0; i < 2*nodeCount; ++i) {
         if (byesNeeded > 0 && i % 2 == 1) {
             nodePlayers.push_back(std::nullopt);
             --byesNeeded;
         }
         else {
-            nodePlayers.push_back(playerIds[j++]);
+            nodePlayers.push_back(mPlayers[j++]);
         }
     }
 
-    assert(j == playerIds.size());
+    assert(j == mPlayers.size());
     assert(byesNeeded == 0);
 
     // Create matches for all rounds
@@ -99,8 +102,6 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std:
         nodePlayers = std::move(updatedNodePlayers);
         nodeCount /= 2;
     }
-
-    mPlayers = playerIds;
 
     return actions;
 }

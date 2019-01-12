@@ -13,20 +13,23 @@ std::string PoolDrawSystem::getName() const {
 
 std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category, unsigned int seed) {
     mMatches.clear();
+    mPlayers = playerIds;
 
     std::vector<std::unique_ptr<Action>> actions;
     MatchId::Generator generator(seed);
 
-    if (playerIds.size() <= 1)
-        return (actions);
+    if (mPlayers.size() <= 1)
+        return actions;
 
-    // TODO: shuffle
+    std::default_random_engine random_eng(seed);
+    std::shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
+
     // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
     std::vector<std::optional<PlayerId>> shiftedIds;
-    if (playerIds.size() % 2 != 0)
+    if (mPlayers.size() % 2 != 0)
         shiftedIds.push_back(std::nullopt);
-    for (size_t i = 0; i < playerIds.size(); ++i)
-        shiftedIds.emplace_back(playerIds[i]);
+    for (size_t i = 0; i < mPlayers.size(); ++i)
+        shiftedIds.emplace_back(mPlayers[i]);
 
     for (size_t round = 0; round < shiftedIds.size()-1; ++round) {
         for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
@@ -42,8 +45,6 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const std::vec
         for (size_t i = 1; i < shiftedIds.size(); ++i)
             std::swap(shiftedIds[i], temp);
     }
-
-    mPlayers = playerIds;
 
     return std::move(actions);
 }
