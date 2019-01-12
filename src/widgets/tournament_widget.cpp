@@ -11,11 +11,22 @@
 TournamentWidget::TournamentWidget(StoreManager &storeManager)
     : mStoreManager(storeManager)
 {
-    // Basic group fields
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(basicInformationSection());
 
-    QGroupBox *basicGroupBox = new QGroupBox(tr("Basic tournament information"));
+    setLayout(mainLayout);
+
+    tournamentAboutToBeReset();
+    tournamentReset();
+
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TournamentWidget::tournamentAboutToBeReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TournamentWidget::tournamentReset);
+}
+
+QWidget* TournamentWidget::basicInformationSection() {
+    QGroupBox *box = new QGroupBox(tr("Basic tournament information"));
     QFormLayout *formLayout = new QFormLayout;
-    basicGroupBox->setLayout(formLayout);
+    box->setLayout(formLayout);
 
     mNameContent = new QLineEdit;
     mNameContent->setText(QString::fromStdString(mStoreManager.getTournament().getName()));
@@ -33,17 +44,7 @@ TournamentWidget::TournamentWidget(StoreManager &storeManager)
     // connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
     formLayout->addRow(tr("Tournament language"), mLanguageContent);
 
-    // Main layout
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(basicGroupBox);
-
-    setLayout(mainLayout);
-
-    tournamentAboutToBeReset();
-    tournamentReset();
-
-    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TournamentWidget::tournamentAboutToBeReset);
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TournamentWidget::tournamentReset);
+    return box;
 }
 
 void TournamentWidget::tournamentAboutToBeReset() {

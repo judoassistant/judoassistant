@@ -17,6 +17,8 @@ public:
     TournamentWidget(StoreManager &storeManager);
 
 private:
+    QWidget* basicInformationSection();
+
     void tournamentAboutToBeReset();
     void tournamentReset();
     void tournamentChanged();
