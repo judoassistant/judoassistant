@@ -18,6 +18,7 @@ public:
 
 private:
     QWidget* basicInformationSection();
+    QWidget* webSection();
 
     void tournamentAboutToBeReset();
     void tournamentReset();
