@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include <boost/system/system_error.hpp>
+#include "lz4.h"
 
 #include "log.hpp"
 #include "network/network_server.hpp"
@@ -21,21 +22,50 @@ MasterStoreManager::~MasterStoreManager() {
 }
 
 bool MasterStoreManager::read(const QString &path) {
-    log_debug().field("path", path.toStdString()).msg("Reading tournament from file");
     std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
 
     if (!file.is_open())
         return false;
 
-    auto tournament = std::make_unique<QTournamentStore>();
-    cereal::PortableBinaryInputArchive archive(file);
+    int compressedSize, uncompressedSize;
     try {
+        file.read(reinterpret_cast<char*>(&compressedSize), sizeof(compressedSize));
+        file.read(reinterpret_cast<char*>(&uncompressedSize), sizeof(uncompressedSize));
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    auto compressed = std::make_unique<char[]>(compressedSize);
+    std::string uncompressed;
+    uncompressed.resize(uncompressedSize);
+
+    try {
+        file.read(compressed.get(), compressedSize);
+        file.close();
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    auto returnCode = LZ4_decompress_safe(compressed.get(), uncompressed.data(), compressedSize, uncompressedSize);
+
+    if (returnCode <= 0) {
+        log_debug().field("return_value", returnCode).msg("LZ4 decompress failed");
+        return false;
+    }
+
+    std::istringstream stream(uncompressed);
+    auto tournament = std::make_unique<QTournamentStore>();
+    try {
+        cereal::PortableBinaryInputArchive archive(stream);
         archive(*tournament);
     }
     catch(const std::exception &e) {
         return false;
     }
 
+    log_debug().field("compressedSize", compressedSize).field("uncompressedSize", uncompressedSize).field("path", path.toStdString()).msg("Read tournament from file");
 
     sync(std::move(tournament));
 
@@ -54,21 +84,48 @@ void MasterStoreManager::resetTournament() {
 }
 
 bool MasterStoreManager::write(const QString &path) {
-    log_debug().field("path", path.toStdString()).msg("Writing tournament to file");
     std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
-    // TODO: Apply LZ4 compression
 
     if (!file.is_open())
         return false;
 
-    cereal::PortableBinaryOutputArchive archive(file);
+    std::ostringstream stream;
+
     try {
+        cereal::PortableBinaryOutputArchive archive(stream);
         archive(getTournament());
     }
     catch(const std::exception &e) {
         return false;
     }
+
+    const std::string uncompressed = stream.str();
+    const int uncompressedSize = static_cast<int>(uncompressed.size());
+    const int compressBound = LZ4_compressBound(uncompressedSize);
+
+    auto compressed = std::make_unique<char[]>(compressBound);
+    const int compressedSize = LZ4_compress_default(uncompressed.data(), compressed.get(), uncompressed.size(), compressBound);
+
+    if (compressedSize <= 0) {
+        log_debug().field("return_value", compressedSize).msg("LZ4 compress failed");
+        return false;
+    }
+
+    log_debug().field("compressedSize", compressedSize).field("uncompressedSize", uncompressedSize).msg("Done compressing");
+
+    try {
+        // TODO: Make this more portable
+        file.write(reinterpret_cast<const char*>(&compressedSize), sizeof(compressedSize));
+        file.write(reinterpret_cast<const char*>(&uncompressedSize), sizeof(uncompressedSize));
+        file.write(compressed.get(), static_cast<size_t>(compressedSize));
+        file.close();
+    }
+    catch(const std::exception &e) {
+        return false;
+    }
+
     mDirty = false;
+    log_info().field("path", path.toStdString()).field("size(kb)", compressedSize/1024).msg("Wrote tournament to file");
     return true;
 }
 
