@@ -7,6 +7,9 @@ qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
 # Boost dependency
 boost_dep = dependency('boost', modules: ['system'])
 
+# LZ4 dependency
+lz4_dep = dependency('liblz4')
+
 # Threads dependency
 thread_dep = dependency('threads')
 
@@ -48,10 +51,10 @@ score_moc_files = qt5.preprocess(moc_headers: score_moc_headers, include_directo
 hub_moc_files = qt5.preprocess(moc_headers: hub_moc_headers, include_directories: include_dirs)
 
 # Compile static libraries
-core_lib = library('core', core_sources, include_directories: include_dirs)
+core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [lz4_dep])
 ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep])
 
 # Executables
-hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, lz4_dep])
 score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
 
