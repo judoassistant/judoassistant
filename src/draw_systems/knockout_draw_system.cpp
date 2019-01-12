@@ -1,4 +1,3 @@
-#include "log.hpp"
 #include "draw_systems/knockout_draw_system.hpp"
 #include "actions/match_actions.hpp"
 #include "rulesets/ruleset.hpp"
@@ -72,7 +71,6 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std:
             auto whiteId = nodePlayers[2*i];
             auto blueId = nodePlayers[2*i+1];
             bool isBye = (round == 0 && !(whiteId && blueId));
-            log_debug().field("round", round).field("i", i).field("bye", isBye).msg("Creating match");
             auto matchType = (round + 2 < rounds ? MatchType::KNOCKOUT : MatchType::FINAL);
 
             auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), matchType, matchTitle(round, rounds), isBye, whiteId, blueId);
@@ -90,7 +88,6 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std:
         for (size_t i = 0; i < nodeCount; ++i) {
             auto whiteId = nodePlayers[2*i];
             auto blueId = nodePlayers[2*i+1];
-            log_debug().field("i", i).field("white", whiteId).field("blue", blueId).msg("Calculating next");
             if (whiteId && !blueId)
                 updatedNodePlayers.push_back(whiteId);
             else if (!whiteId && blueId)
