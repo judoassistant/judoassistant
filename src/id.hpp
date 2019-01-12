@@ -5,11 +5,10 @@
 #include <ostream>
 #include <memory>
 #include "hash.hpp"
+#include "random.hpp"
 
 class CategoryStore;
 class TournamentStore;
-
-unsigned int getGeneratorSeed();
 
 template <typename CRTP>
 class Id {
@@ -83,6 +82,7 @@ public:
     MatchId(InternalType value) : Id(value) {}
 
     static MatchId generate(const CategoryStore &category);
+    static MatchId generate(const CategoryStore &category, MatchId::Generator &generator);
 };
 
 class CategoryId : public Id<CategoryId> {
@@ -91,6 +91,7 @@ public:
     CategoryId(InternalType value) : Id(value) {}
 
     static CategoryId generate(const TournamentStore &tournament);
+    static CategoryId generate(const TournamentStore &tournament, CategoryId::Generator &generator);
 };
 
 class PlayerId : public Id<PlayerId> {
@@ -99,6 +100,7 @@ public:
     PlayerId(InternalType value) : Id(value) {}
 
     static PlayerId generate(const TournamentStore &tournament);
+    static PlayerId generate(const TournamentStore &tournament, PlayerId::Generator &generator);
 };
 
 class PositionId : public Id<PositionId> {
@@ -110,16 +112,20 @@ public:
     static PositionId generate(const PositionManager &manager) {
         static std::unique_ptr<PositionId::Generator> generator; // singleton
         if (!generator)
-            generator = std::make_unique<PositionId::Generator>(getGeneratorSeed());
+            generator = std::make_unique<PositionId::Generator>(getSeed());
 
+        return generate(manager, *generator);
+    };
+
+    template <typename PositionManager>
+    static PositionId generate(const PositionManager &manager, PositionId::Generator &generator) {
         PositionId id;
         do {
-            id = (*generator)();
+            id = generator();
         } while(manager.contains(id));
 
         return id;
     };
-
 };
 
 class ActionId : public Id<ActionId> {

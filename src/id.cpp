@@ -7,19 +7,28 @@
 #include "stores/category_store.hpp"
 #include "stores/tournament_store.hpp"
 
-unsigned int getGeneratorSeed() {
-    return std::chrono::system_clock::now().time_since_epoch().count();
+MatchId MatchId::generate(const CategoryStore &category, MatchId::Generator &generator) {
+    MatchId id;
+    do {
+        id = generator();
+    } while(category.containsMatch(id));
+
+    return id;
 }
 
 MatchId MatchId::generate(const CategoryStore &category) {
     static std::unique_ptr<MatchId::Generator> generator; // singleton
     if (!generator)
-        generator = std::make_unique<MatchId::Generator>(getGeneratorSeed());
+        generator = std::make_unique<MatchId::Generator>(getSeed());
 
-    MatchId id;
+    return generate(category, *generator);
+}
+
+PlayerId PlayerId::generate(const TournamentStore &tournament, PlayerId::Generator &generator) {
+    PlayerId id;
     do {
-        id = (*generator)();
-    } while(category.containsMatch(id));
+        id = generator();
+    } while(tournament.containsPlayer(id));
 
     return id;
 }
@@ -27,12 +36,16 @@ MatchId MatchId::generate(const CategoryStore &category) {
 PlayerId PlayerId::generate(const TournamentStore &tournament) {
     static std::unique_ptr<PlayerId::Generator> generator; // singleton
     if (!generator)
-        generator = std::make_unique<PlayerId::Generator>(getGeneratorSeed());
+        generator = std::make_unique<PlayerId::Generator>(getSeed());
 
-    PlayerId id;
+    return generate(tournament, *generator);
+}
+
+CategoryId CategoryId::generate(const TournamentStore &tournament, CategoryId::Generator &generator) {
+    CategoryId id;
     do {
-        id = (*generator)();
-    } while(tournament.containsPlayer(id));
+        id = generator();
+    } while(tournament.containsCategory(id));
 
     return id;
 }
@@ -40,20 +53,15 @@ PlayerId PlayerId::generate(const TournamentStore &tournament) {
 CategoryId CategoryId::generate(const TournamentStore &tournament) {
     static std::unique_ptr<CategoryId::Generator> generator; // singleton
     if (!generator)
-        generator = std::make_unique<CategoryId::Generator>(getGeneratorSeed());
+        generator = std::make_unique<CategoryId::Generator>(getSeed());
 
-    CategoryId id;
-    do {
-        id = (*generator)();
-    } while(tournament.containsCategory(id));
-
-    return id;
+    return generate(tournament, *generator);
 }
 
 ActionId ActionId::generate() {
     static std::unique_ptr<ActionId::Generator> generator; // singleton
     if (!generator)
-        generator = std::make_unique<ActionId::Generator>(getGeneratorSeed());
+        generator = std::make_unique<ActionId::Generator>(getSeed());
 
     return (*generator)();
 }
@@ -61,7 +69,7 @@ ActionId ActionId::generate() {
 TournamentId TournamentId::generate() {
     static std::unique_ptr<TournamentId::Generator> generator; // singleton
     if (!generator)
-        generator = std::make_unique<TournamentId::Generator>(getGeneratorSeed());
+        generator = std::make_unique<TournamentId::Generator>(getSeed());
 
     return (*generator)();
 }
@@ -69,7 +77,7 @@ TournamentId TournamentId::generate() {
 ClientId ClientId::generate() {
     static std::unique_ptr<ClientId::Generator> generator; // singleton
     if (!generator)
-        generator = std::make_unique<ClientId::Generator>(getGeneratorSeed());
+        generator = std::make_unique<ClientId::Generator>(getSeed());
 
     return (*generator)();
 }
