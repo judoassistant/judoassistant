@@ -11,7 +11,7 @@ EditCategoryPlayersWidget::EditCategoryPlayersWidget (StoreManager & storeManage
     : QWidget(parent)
     , mStoreManager(storeManager)
 {
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout;
     mTableView = new QTableView(this);
     mModel = new PlayersProxyModel(mStoreManager, this);
     mTableView->setModel(mModel);
