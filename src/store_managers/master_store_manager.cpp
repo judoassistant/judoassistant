@@ -1,12 +1,15 @@
 #include <fstream>
 
 #include <boost/system/system_error.hpp>
+#include "lz4.h"
 
 #include "log.hpp"
 #include "network/network_server.hpp"
 #include "serializables.hpp"
 #include "store_managers/master_store_manager.hpp"
 #include "stores/qtournament_store.hpp"
+
+constexpr size_t FILE_HEADER_SIZE = 9;
 
 MasterStoreManager::MasterStoreManager()
     : mDirty(false)
@@ -21,21 +24,56 @@ MasterStoreManager::~MasterStoreManager() {
 }
 
 bool MasterStoreManager::read(const QString &path) {
-    log_debug().field("path", path.toStdString()).msg("Reading tournament from file");
     std::ifstream file(path.toStdString(), std::ios::in | std::ios::binary);
 
     if (!file.is_open())
         return false;
 
-    auto tournament = std::make_unique<QTournamentStore>();
-    cereal::PortableBinaryInputArchive archive(file);
+    int compressedSize, uncompressedSize;
+    std::string header;
+    header.resize(FILE_HEADER_SIZE);
     try {
+        file.read(header.data(), FILE_HEADER_SIZE);
+
+        std::istringstream stream(header);
+        cereal::PortableBinaryInputArchive archive(stream);
+        archive(compressedSize, uncompressedSize);
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    auto compressed = std::make_unique<char[]>(compressedSize);
+
+    std::string uncompressed;
+    uncompressed.resize(uncompressedSize);
+
+    try {
+        file.read(compressed.get(), compressedSize);
+        file.close();
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    auto returnCode = LZ4_decompress_safe(compressed.get(), uncompressed.data(), compressedSize, uncompressedSize);
+
+    if (returnCode <= 0) {
+        log_error().field("return_value", returnCode).msg("LZ4 decompress failed");
+        return false;
+    }
+
+    auto tournament = std::make_unique<QTournamentStore>();
+    try {
+        std::istringstream stream(uncompressed);
+        cereal::PortableBinaryInputArchive archive(stream);
         archive(*tournament);
     }
     catch(const std::exception &e) {
         return false;
     }
 
+    log_debug().field("compressedSize", compressedSize).field("uncompressedSize", uncompressedSize).field("path", path.toStdString()).msg("Read tournament from file");
 
     sync(std::move(tournament));
 
@@ -54,21 +92,64 @@ void MasterStoreManager::resetTournament() {
 }
 
 bool MasterStoreManager::write(const QString &path) {
-    log_debug().field("path", path.toStdString()).msg("Writing tournament to file");
+    // Open file
     std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
-    // TODO: Apply LZ4 compression
 
     if (!file.is_open())
         return false;
 
-    cereal::PortableBinaryOutputArchive archive(file);
+    // Serialize tournament to string
+    std::string uncompressed;
+
     try {
+        std::ostringstream stream;
+        cereal::PortableBinaryOutputArchive archive(stream);
         archive(getTournament());
+        uncompressed = stream.str();
     }
     catch(const std::exception &e) {
         return false;
     }
+
+    // Compress string
+    const int uncompressedSize = static_cast<int>(uncompressed.size());
+    const int compressBound = LZ4_compressBound(uncompressedSize);
+
+    auto compressed = std::make_unique<char[]>(compressBound);
+    const int compressedSize = LZ4_compress_default(uncompressed.data(), compressed.get(), uncompressed.size(), compressBound);
+
+    if (compressedSize <= 0) {
+        log_error().field("return_value", compressedSize).msg("LZ4 compress failed");
+        return false;
+    }
+
+    log_debug().field("compressedSize", compressedSize).field("uncompressedSize", uncompressedSize).msg("Done compressing");
+
+    // Serialize a header containing size information
+    std::string header;
+    try {
+        std::ostringstream stream;
+        cereal::PortableBinaryOutputArchive archive(stream);
+        archive(compressedSize, uncompressedSize);
+        header = stream.str();
+    }
+    catch(const std::exception &e) {
+        return false;
+    }
+    assert(header.size() == FILE_HEADER_SIZE);
+
+    // Write header and data to file
+    try {
+        file.write(header.data(), header.size());
+        file.write(compressed.get(), static_cast<size_t>(compressedSize));
+        file.close();
+    }
+    catch(const std::exception &e) {
+        return false;
+    }
+
     mDirty = false;
+    log_info().field("path", path.toStdString()).field("size(kb)", compressedSize/1024).msg("Wrote tournament to file");
     return true;
 }
 
