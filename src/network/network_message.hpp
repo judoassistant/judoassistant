@@ -25,6 +25,14 @@ public:
         UNDO, // The message undoes a previously sent action
         UNDO_ACK, // The message acknowledges an undo
         QUIT, // The participant or server has quit
+        WEB_LOGIN, // The message send to the server on login
+        WEB_LOGIN_RESPONSE, // The message send from the server on login
+        WEB_REGISTER, // The message send to the server on registration
+        WEB_REGISTER_RESPONSE, // The message send from the server on registration
+        WEB_SET_URL, // The message send to the server when changing or setting url of a tournament
+        WEB_SET_URL_RESPONSE, // The message send from the server when changing or setting url of a tournament
+        WEB_TEST_URL, // The message send to the server to test availability of an url
+        WEB_TEST_URL_RESPONSE, // The message send from the server to test availability of an url
     };
 
     NetworkMessage();

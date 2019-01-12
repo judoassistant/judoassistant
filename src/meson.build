@@ -5,6 +5,7 @@ subdir('network')
 subdir('rulesets')
 subdir('stores')
 subdir('store_managers')
+subdir('web')
 subdir('widgets')
 
 core_sources += ['src/id.cpp']
