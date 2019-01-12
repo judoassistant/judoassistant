@@ -63,6 +63,7 @@ private:
     void encodeHeader();
 
     Type mType;
+    int mUncompressedSize;
     std::string mHeader;
     std::string mBody;
 };

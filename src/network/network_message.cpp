@@ -1,9 +1,65 @@
+#include "lz4.h"
+
 #include "log.hpp"
 #include "network/network_message.hpp"
 #include "serializables.hpp"
 #include "version.hpp"
 
-// TODO: Apply LZ4 compression
+// Perfect forwards args to cereal archive and compresses the result
+template <typename... Args>
+std::tuple<std::string, int> serializeAndCompress(Args&&... args) {
+    std::string uncompressed;
+
+    {
+        std::ostringstream stream;
+        cereal::PortableBinaryOutputArchive archive(stream);
+        archive(std::forward<Args>(args)...);
+        uncompressed = stream.str();
+    }
+
+    const int uncompressedSize = static_cast<int>(uncompressed.size());
+    const int compressBound = LZ4_compressBound(uncompressedSize);
+
+    std::string compressed;
+    compressed.resize(compressBound);
+
+    const int compressedSize = LZ4_compress_default(uncompressed.data(), compressed.data(), uncompressed.size(), compressBound);
+
+    if (compressedSize <= 0) {
+        log_error().field("return_value", compressedSize).msg("LZ4 compress failed");
+        throw std::runtime_error("LZ4 compress failed");
+    }
+
+    return {std::move(compressed), uncompressedSize};
+}
+
+// Forwards args to cereal archive and decompress the result
+template <typename... Args>
+bool deserializeAndCompress(int uncompressedSize, const std::string &compressed, Args&&... args) {
+    std::string uncompressed;
+    uncompressed.resize(uncompressedSize);
+
+    auto returnCode = LZ4_decompress_safe(compressed.data(), uncompressed.data(), compressed.size(), uncompressedSize);
+
+    if (returnCode <= 0) {
+        log_error().field("return_value", returnCode).msg("LZ4 decompress failed");
+        return false;
+    }
+
+    try
+    {
+        std::istringstream stream(uncompressed);
+        cereal::PortableBinaryInputArchive archive(stream);
+        archive(args...);
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("Failed serialization of message");
+        return false;
+    }
+
+    return true;
+}
+
 NetworkMessage::NetworkMessage() {
     mHeader.resize(HEADER_LENGTH);
 }
@@ -26,7 +82,7 @@ bool NetworkMessage::decodeHeader() {
         cereal::PortableBinaryInputArchive archive(stream);
 
         size_t bodyLength;
-        archive(bodyLength, mType);
+        archive(mType, mUncompressedSize, bodyLength);
         mBody.resize(bodyLength);
     }
     catch (const std::exception &e) {
@@ -164,7 +220,7 @@ void NetworkMessage::encodeHeader() {
     cereal::PortableBinaryOutputArchive archive(stream);
 
     size_t bodyLength = mBody.size();
-    archive(bodyLength, mType);
+    archive(mType, mUncompressedSize, bodyLength);
 
     mHeader = stream.str();
     assert(mHeader.size() == HEADER_LENGTH);
