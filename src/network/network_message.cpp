@@ -30,6 +30,8 @@ std::tuple<std::string, int> serializeAndCompress(Args&&... args) {
         throw std::runtime_error("LZ4 compress failed");
     }
 
+    compressed.resize(compressedSize);
+
     return {std::move(compressed), uncompressedSize};
 }
 
@@ -76,6 +78,19 @@ size_t NetworkMessage::bodySize() const {
     return mBody.size();
 }
 
+void NetworkMessage::encodeHeader() {
+    std::ostringstream stream;
+    cereal::PortableBinaryOutputArchive archive(stream);
+
+    size_t bodyLength = mBody.size();
+    archive(mType, mUncompressedSize, bodyLength);
+    // log_debug().field("type", (size_t)mType).field("uncompressedSize", mUncompressedSize).field("bodyLength", bodyLength).msg("Encoding header");
+
+    mHeader = stream.str();
+    // log_debug().field("length", mHeader.size()).msg("Encoding header");
+    assert(mHeader.size() == HEADER_LENGTH);
+}
+
 bool NetworkMessage::decodeHeader() {
     try {
         std::istringstream stream(mHeader);
@@ -83,6 +98,7 @@ bool NetworkMessage::decodeHeader() {
 
         size_t bodyLength;
         archive(mType, mUncompressedSize, bodyLength);
+        log_debug().field("type", (size_t)mType).field("uncompressedSize", mUncompressedSize).field("bodyLength", bodyLength).msg("Decoding header");
         mBody.resize(bodyLength);
     }
     catch (const std::exception &e) {
@@ -98,169 +114,83 @@ NetworkMessage::Type NetworkMessage::getType() const {
 
 void NetworkMessage::encodeHandshake() {
     mType = Type::HANDSHAKE;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(ApplicationVersion::current());
 
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-    archive(ApplicationVersion::current());
-
-    mBody = stream.str();
-    log_debug().field("bodysize", mBody.size()).msg("Encoding handshake");
     encodeHeader();
 }
 
 bool NetworkMessage::decodeHandshake(ApplicationVersion &version) {
-    std::istringstream stream(mBody);
-    cereal::PortableBinaryInputArchive archive(stream);
-
-    try {
-        archive(version);
-        return true;
-    }
-    catch (const std::exception &e) {
-        return false;
-    }
+    return deserializeAndCompress(mUncompressedSize, mBody, version);
 }
 
 void NetworkMessage::encodeSyncAck() {
     mType = Type::SYNC_ACK;
     mBody.clear();
+    mUncompressedSize = 0;
     encodeHeader();
 }
 
 void NetworkMessage::encodeSync(const TournamentStore & tournament, const NetworkMessage::SharedActionList &actionStack) {
     mType = Type::SYNC;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(tournament, actionStack);
 
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-    archive(tournament, actionStack);
-
-    mBody = stream.str();
     encodeHeader();
 }
 
 bool NetworkMessage::decodeSync(TournamentStore & tournament, NetworkMessage::SharedActionList &actionStack) {
-    std::istringstream stream(mBody);
-    cereal::PortableBinaryInputArchive archive(stream);
-
-    try {
-        archive(tournament, actionStack);
-    }
-    catch (const std::exception &e) {
-        return false;
-    }
-
-    return true;
+    return deserializeAndCompress(mUncompressedSize, mBody, tournament, actionStack);
 }
 
 void NetworkMessage::encodeAction(const ClientActionId &actionId, const std::shared_ptr<Action> &action) {
     mType = Type::ACTION;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(actionId, action);
 
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-    archive(actionId, action);
-
-    mBody = stream.str();
-    encodeHeader();
-}
-
-void NetworkMessage::encodeActionAck(const ClientActionId &actionId) {
-    mType = Type::ACTION_ACK;
-
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-    archive(actionId);
-
-    mBody = stream.str();
-    encodeHeader();
-}
-
-void NetworkMessage::encodeUndoAck(const ClientActionId &actionId) {
-    mType = Type::UNDO_ACK;
-
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-    archive(actionId);
-
-    mBody = stream.str();
     encodeHeader();
 }
 
 bool NetworkMessage::decodeAction(ClientActionId &actionId, std::shared_ptr<Action> &action) {
-    std::istringstream stream(mBody);
-    cereal::PortableBinaryInputArchive archive(stream);
+    return deserializeAndCompress(mUncompressedSize, mBody, actionId, action);
+}
 
-    try {
-        archive(actionId, action);
-        return true;
-    }
-    catch (const std::exception &e) {
-        return false;
-    }
+
+void NetworkMessage::encodeActionAck(const ClientActionId &actionId) {
+    mType = Type::ACTION_ACK;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(actionId);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeActionAck(ClientActionId &actionId) {
+    return deserializeAndCompress(mUncompressedSize, mBody, actionId);
+}
+
+void NetworkMessage::encodeUndoAck(const ClientActionId &actionId) {
+    mType = Type::UNDO_ACK;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(actionId);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeUndoAck(ClientActionId &actionId) {
+    return deserializeAndCompress(mUncompressedSize, mBody, actionId);
+}
+
+void NetworkMessage::encodeUndo(const ClientActionId &actionId) {
+    mType = Type::UNDO;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(actionId);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeUndo(ClientActionId &actionId) {
+    return deserializeAndCompress(mUncompressedSize, mBody, actionId);
 }
 
 void NetworkMessage::encodeQuit() {
     mType = Type::QUIT;
     mBody.clear();
+    mUncompressedSize = 0;
+
     encodeHeader();
 }
 
-void NetworkMessage::encodeUndo(const ClientActionId &actionId) {
-    mType = Type::UNDO;
-
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-    archive(actionId);
-
-    mBody = stream.str();
-    encodeHeader();
-}
-
-void NetworkMessage::encodeHeader() {
-    std::ostringstream stream;
-    cereal::PortableBinaryOutputArchive archive(stream);
-
-    size_t bodyLength = mBody.size();
-    archive(mType, mUncompressedSize, bodyLength);
-
-    mHeader = stream.str();
-    assert(mHeader.size() == HEADER_LENGTH);
-}
-
-bool NetworkMessage::decodeUndo(ClientActionId &actionId) {
-    std::istringstream stream(mBody);
-    cereal::PortableBinaryInputArchive archive(stream);
-
-    try {
-        archive(actionId);
-        return true;
-    }
-    catch (const std::exception &e) {
-        return false;
-    }
-}
-
-bool NetworkMessage::decodeUndoAck(ClientActionId &actionId) {
-    std::istringstream stream(mBody);
-    cereal::PortableBinaryInputArchive archive(stream);
-
-    try {
-        archive(actionId);
-        return true;
-    }
-    catch (const std::exception &e) {
-        return false;
-    }
-}
-
-bool NetworkMessage::decodeActionAck(ClientActionId &actionId) {
-    std::istringstream stream(mBody);
-    cereal::PortableBinaryInputArchive archive(stream);
-
-    try {
-        archive(actionId);
-        return true;
-    }
-    catch (const std::exception &e) {
-        return false;
-    }
-}

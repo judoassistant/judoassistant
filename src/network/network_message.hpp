@@ -14,7 +14,7 @@ class Action;
 
 class NetworkMessage {
 public:
-    static const size_t HEADER_LENGTH = 13; // cereal::PortableBinaryOutputArchive uses 1 + 8 + 4 bytes for the header
+    static const size_t HEADER_LENGTH = 17; // cereal::PortableBinaryOutputArchive uses 1 + 8 + 4 + 4 bytes for the header
 
     enum class Type {
         HANDSHAKE, // The message contains the initial connection handshake
