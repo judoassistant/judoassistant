@@ -48,7 +48,7 @@ LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
 }
 
 void LoginDialog::loginClick() {
-    mLoginButton->setText(tr("Connecting.."));
+    mLoginButton->setText(tr("Logging in.."));
     mLoginButton->setEnabled(false);
 
     auto &webClient = mStoreManager.getWebClient();
@@ -67,7 +67,7 @@ void LoginDialog::succeedLogin(const QString &token) {
 }
 
 void LoginDialog::failLogin() {
-    mLoginButton->setText(tr("Connect"));
+    mLoginButton->setText(tr("Login"));
     mLoginButton->setEnabled(true);
     log_debug().msg("Login failed");
 }
