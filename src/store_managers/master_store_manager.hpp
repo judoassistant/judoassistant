@@ -21,11 +21,11 @@ public:
     bool write(const QString &path);
     void resetTournament();
 
-    void changeWebStatus(WebClient::Status status);
+    WebClient& getWebClient();
+    const WebClient& getWebClient() const;
 
 private:
     bool mDirty;
     WebClient mWebClient;
-    WebClient::Status mWebStatus;
 };
 

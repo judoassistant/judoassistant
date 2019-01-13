@@ -19,7 +19,6 @@ MasterStoreManager::MasterStoreManager()
     tatamis[location.handle];
 
     mWebClient.start();
-    connect(&mWebClient, &WebClient::statusChanged, this, &MasterStoreManager::changeWebStatus);
 }
 
 MasterStoreManager::~MasterStoreManager() {
@@ -192,7 +191,10 @@ bool MasterStoreManager::isDirty() const {
     return mDirty;
 }
 
-void MasterStoreManager::changeWebStatus(WebClient::Status status) {
-    mWebStatus = status;
+WebClient& MasterStoreManager::getWebClient() {
+    return mWebClient;
 }
 
+const WebClient& MasterStoreManager::getWebClient() const {
+    return mWebClient;
+}
