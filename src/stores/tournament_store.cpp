@@ -117,3 +117,11 @@ TournamentStore::TournamentStore(const TournamentStore &other)
 TournamentId TournamentStore::getId() const {
     return mId;
 }
+
+const std::string & TournamentStore::getWebName() const {
+    return mWebName;
+}
+
+void TournamentStore::setWebName(const std::string & name) {
+    mWebName = name;
+}

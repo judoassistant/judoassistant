@@ -25,15 +25,14 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("name", mName));
-        ar(cereal::make_nvp("id", mId));
-        ar(cereal::make_nvp("players", mPlayers));
-        ar(cereal::make_nvp("categories", mCategories));
-        ar(cereal::make_nvp("tatamis", mTatamis));
+        ar(mId, mName, mWebName, mPlayers, mCategories, mTatamis);
     }
 
     const std::string & getName() const;
     void setName(const std::string & name);
+
+    const std::string & getWebName() const;
+    void setWebName(const std::string & name);
 
     const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> & getPlayers() const;
     void addPlayer(std::unique_ptr<PlayerStore> ptr);
@@ -88,6 +87,7 @@ public:
 private:
     TournamentId mId;
     std::string mName;
+    std::string mWebName;
 
     std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> mPlayers;
     std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> mCategories;
