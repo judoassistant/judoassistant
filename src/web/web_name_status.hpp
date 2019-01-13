@@ -1,6 +1,6 @@
 #pragma once
 
-enum class UrlStatus {
+enum class WebNameStatus {
     AVAILABLE,
     SAME_TOURNAMENT,
     OVERWRITABLE_TOURNAMENT,

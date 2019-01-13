@@ -4,7 +4,7 @@
 #include <QString>
 #include <QThread>
 
-#include "web/url_status.hpp"
+#include "web/web_name_status.hpp"
 #include "network/network_connection.hpp"
 #include "id.hpp"
 
@@ -31,8 +31,8 @@ public:
     void registerUser(const QString &email, const QString &password);
     void disconnect();
 
-    void setUrl(TournamentId id, const QString &url);
-    void testUrl(TournamentId id, const QString &url);
+    void setWebName(TournamentId id, const QString &webName);
+    void testWebName(TournamentId id, const QString &webName);
 
 signals:
     void tokenValidationSucceeded();
@@ -42,7 +42,8 @@ signals:
     void registrationSucceeded(const QString &token);
     void registrationFailed();
     void disconnected();
-    void urlTested(const QString &url, UrlStatus status);
+    void webNameTested(const QString &webName, WebNameStatus status);
+    void webNameChanged(const QString &webNameSuffix);
     void statusChanged(Status status);
 
 private:
@@ -55,5 +56,5 @@ private:
 };
 
 Q_DECLARE_METATYPE(WebClient::Status)
-Q_DECLARE_METATYPE(UrlStatus)
+Q_DECLARE_METATYPE(WebNameStatus)
 

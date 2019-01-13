@@ -6,7 +6,7 @@ WebClient::WebClient()
     , mWorkGuard(boost::asio::make_work_guard(mContext))
     , mQuitPosted(false)
 {
-    qRegisterMetaType<UrlStatus>("UrlStatus");
+    qRegisterMetaType<WebNameStatus>("WebNameStatus");
     qRegisterMetaType<WebClient::Status>("WebClientStatus");
 
 }
@@ -27,11 +27,11 @@ void WebClient::disconnect() {
 
 }
 
-void WebClient::setUrl(TournamentId id, const QString &url) {
+void WebClient::setWebName(TournamentId id, const QString &webName) {
 
 }
 
-void WebClient::testUrl(TournamentId id, const QString &url) {
+void WebClient::testWebName(TournamentId id, const QString &webName) {
 
 }
 

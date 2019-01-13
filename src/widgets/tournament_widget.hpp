@@ -8,17 +8,16 @@
 
 #include "core.hpp"
 
-class StoreManager;
+class MasterStoreManager;
 
 class TournamentWidget : public QWidget {
     Q_OBJECT
 
 public:
-    TournamentWidget(StoreManager &storeManager);
+    TournamentWidget(MasterStoreManager &storeManager);
 
 private:
     QWidget* basicInformationSection();
-    QWidget* webSection();
 
     void tournamentAboutToBeReset();
     void tournamentReset();
@@ -27,7 +26,7 @@ private:
     void updateTatamiCount(int count);
     void tatamiCountChanged();
 
-    StoreManager &mStoreManager;
+    MasterStoreManager &mStoreManager;
     QLineEdit *mNameContent;
     QComboBox *mLanguageContent;
     QSpinBox *mTatamiCountContent;
