@@ -37,8 +37,8 @@ public:
 signals:
     void tokenValidationSucceeded();
     void tokenValidationFailed();
-    void logInSucceeded(const QString &token);
-    void logInFailed();
+    void loginSucceeded(const QString &token);
+    void loginFailed(); // TODO: Include reason for failure
     void registrationSucceeded(const QString &token);
     void registrationFailed();
     void disconnected();
@@ -47,6 +47,8 @@ signals:
     void statusChanged(Status status);
 
 private:
+    void killConnection();
+
     boost::asio::io_context mContext;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
     std::optional<boost::asio::ip::tcp::socket> mSocket;

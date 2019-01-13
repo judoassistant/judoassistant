@@ -43,8 +43,8 @@ LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
     }
 
     auto &webClient = mStoreManager.getWebClient();
-    connect(&webClient, &WebClient::logInFailed, this, &LoginDialog::failLogin);
-    connect(&webClient, &WebClient::logInSucceeded, this, &LoginDialog::succeedLogin);
+    connect(&webClient, &WebClient::loginFailed, this, &LoginDialog::failLogin);
+    connect(&webClient, &WebClient::loginSucceeded, this, &LoginDialog::succeedLogin);
 }
 
 void LoginDialog::loginClick() {
