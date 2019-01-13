@@ -4,7 +4,6 @@
 #include <QBrush>
 #include <QTimer>
 
-#include "log.hpp"
 #include "store_managers/store_manager.hpp"
 #include "stores/qtournament_store.hpp"
 #include "widgets/models/match_card.hpp"
@@ -64,8 +63,6 @@ void CategoryMatchesModel::endResetMatches() {
             mMatchPlayerMap[matchId] = std::make_pair(whitePlayer, bluePlayer);
         }
     }
-
-    log_debug().field("count", mMatches.size()).msg("Done resetting matches");
 
     mResettingMatches = false;
     endResetModel();
@@ -225,7 +222,6 @@ void CategoryMatchesModel::timerHit() {
 }
 
 void CategoryMatchesModel::setCategory(std::optional<CategoryId> categoryId) {
-    log_debug().field("categoryId", categoryId).msg("Setting category");
     beginResetMatches();
     mCategoryId = categoryId;
     endResetMatches();
