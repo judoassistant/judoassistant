@@ -78,10 +78,10 @@ QWidget* TournamentWidget::webSection() {
     mStatusContent->setEnabled(false);
     layout->addWidget(mStatusContent, 1, 1, 1, 2);
 
-    auto mSetupButton = new QPushButton("Configure..");
+    auto mSetupButton = new QPushButton("Configure");
     layout->addWidget(mSetupButton, 2, 1);
 
-    auto mNameButton = new QPushButton("Change name..");
+    auto mNameButton = new QPushButton("Connect");
     mNameButton->setEnabled(false);
     layout->addWidget(mNameButton, 2, 2);
     // mNameContent = new QLineEdit;
