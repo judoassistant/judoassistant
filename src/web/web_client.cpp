@@ -104,3 +104,4 @@ void WebClient::killConnection() {
     // while (!mWriteQueue.empty())
     //     mWriteQueue.pop();
 }
+

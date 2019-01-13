@@ -1,11 +1,11 @@
 #pragma once
 
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
+#include <pqxx/pqxx>
 
-// Responsible for handling connections to a set of tournaments
-class WebServerWorker {
+class WebServerDatabaseWorker {
 public:
-    WebServerWorker();
+    WebServerDatabaseWorker();
 
     void run();
     void quit();
