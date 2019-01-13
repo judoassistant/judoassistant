@@ -15,8 +15,8 @@ public:
 protected:
     void loginClick();
     void cancelClick();
-    void logInSucceeded();
-    void logInFailed();
+    void succeedLogin(const QString &token);
+    void failLogin();
 private:
     MasterStoreManager &mStoreManager;
     QLineEdit *mEmailContent;

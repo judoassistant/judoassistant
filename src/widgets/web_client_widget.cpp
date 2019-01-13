@@ -80,8 +80,11 @@ void WebClientWidget::buttonClick() {
     if (mWebStatus == WebClient::Status::NOT_CONNECTED) {
         if (mToken.empty()) {
             LoginDialog dialog(mStoreManager);
-            if (dialog.exec() == QDialog::Accepted) {
-            }
+            if (dialog.exec() != QDialog::Accepted)
+                return;
+
+            // Login succeeded
+            log_debug().msg("Login succeeded");
         }
         else {
             log_debug().msg("Validate token");
@@ -146,5 +149,9 @@ void WebClientWidget::updateButton() {
         mSetupButton->setText("Disconnect");
         return;
     }
+}
+
+void WebClientWidget::succeedLogin(const QString &token) {
+    mToken = token.toStdString();
 }
 

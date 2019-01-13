@@ -23,9 +23,9 @@ private:
     void beginResetTournament();
     void endResetTournament();
     void changeWebStatus(WebClient::Status status);
+    void succeedLogin(const QString &token);
 
     void updateButton();
-
     void buttonClick();
 
     MasterStoreManager &mStoreManager;

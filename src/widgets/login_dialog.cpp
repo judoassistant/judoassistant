@@ -4,6 +4,7 @@
 #include <QPushButton>
 
 #include "log.hpp"
+#include "store_managers/master_store_manager.hpp"
 #include "widgets/login_dialog.hpp"
 
 LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
@@ -40,22 +41,34 @@ LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
 
         mainLayout->addWidget(buttonBox);
     }
+
+    auto &webClient = mStoreManager.getWebClient();
+    connect(&webClient, &WebClient::logInFailed, this, &LoginDialog::failLogin);
+    connect(&webClient, &WebClient::logInSucceeded, this, &LoginDialog::succeedLogin);
 }
 
 void LoginDialog::loginClick() {
-    log_debug().msg("Login clicked");
+    mLoginButton->setText(tr("Connecting.."));
+    mLoginButton->setEnabled(false);
 
+    auto &webClient = mStoreManager.getWebClient();
+    auto email = mEmailContent->text();
+    auto password = mPasswordContent->text();
+    webClient.loginUser(email, password);
 }
 
 void LoginDialog::cancelClick() {
     reject();
 }
 
-void LoginDialog::logInSucceeded() {
+void LoginDialog::succeedLogin(const QString &token) {
     log_debug().msg("Login suceeded");
+    accept();
 }
 
-void LoginDialog::logInFailed() {
+void LoginDialog::failLogin() {
+    mLoginButton->setText(tr("Connect"));
+    mLoginButton->setEnabled(true);
     log_debug().msg("Login failed");
 }
 
