@@ -78,7 +78,7 @@ bool MasterStoreManager::read(const QString &path) {
         return false;
     }
 
-    log_debug().field("compressedSize", compressedSize).field("uncompressedSize", uncompressedSize).field("path", path.toStdString()).msg("Read tournament from file");
+    log_info().field("path", path.toStdString()).field("compressedSize(kb)", compressedSize/1000).field("uncompressedSize(kb)", uncompressedSize/1000).msg("Read tournament from file");
 
     sync(std::move(tournament));
 
@@ -128,8 +128,6 @@ bool MasterStoreManager::write(const QString &path) {
         return false;
     }
 
-    log_debug().field("compressedSize", compressedSize).field("uncompressedSize", uncompressedSize).msg("Done compressing");
-
     // Serialize a header containing size information
     std::string header;
     try {
@@ -154,7 +152,7 @@ bool MasterStoreManager::write(const QString &path) {
     }
 
     mDirty = false;
-    log_info().field("path", path.toStdString()).field("size(kb)", compressedSize/1024).msg("Wrote tournament to file");
+    log_info().field("path", path.toStdString()).field("compressedSize(kb)", compressedSize/1000).field("uncompressedSize(kb)", uncompressedSize/1000).msg("Wrote tournament to file");
     return true;
 }
 
