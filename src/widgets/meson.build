@@ -37,6 +37,7 @@ hub_moc_headers += ['src/widgets/tatami_widget.hpp']
 hub_moc_headers += ['src/widgets/unallocated_blocks_widget.hpp']
 hub_moc_headers += ['src/widgets/import_players_csv_dialog.hpp']
 hub_moc_headers += ['src/widgets/web_client_widget.hpp']
+hub_moc_headers += ['src/widgets/login_dialog.hpp']
 
 score_sources += ['src/widgets/match_card_widget.cpp']
 score_sources += ['src/widgets/score_display_window.cpp']
