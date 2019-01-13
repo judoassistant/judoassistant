@@ -4,6 +4,7 @@
 #include "store_managers/master_store_manager.hpp"
 #include "stores/qtournament_store.hpp"
 #include "widgets/web_client_widget.hpp"
+#include "widgets/login_dialog.hpp"
 
 WebClientWidget::WebClientWidget(MasterStoreManager &storeManager, QWidget *parent)
     : QGroupBox(tr("Live Web Results"), parent)
@@ -78,7 +79,9 @@ void WebClientWidget::buttonClick() {
 
     if (mWebStatus == WebClient::Status::NOT_CONNECTED) {
         if (mToken.empty()) {
-            log_debug().msg("Show login dialog");
+            LoginDialog dialog(mStoreManager);
+            if (dialog.exec() == QDialog::Accepted) {
+            }
         }
         else {
             log_debug().msg("Validate token");

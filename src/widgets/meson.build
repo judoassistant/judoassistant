@@ -20,6 +20,7 @@ hub_sources += ['src/widgets/unallocated_blocks_widget.cpp']
 hub_sources += ['src/widgets/tatami_widget.cpp']
 hub_sources += ['src/widgets/import_players_csv_dialog.cpp']
 hub_sources += ['src/widgets/web_client_widget.cpp']
+hub_sources += ['src/widgets/login_dialog.cpp']
 
 hub_moc_headers += ['src/widgets/auto_add_category_dialog.hpp']
 hub_moc_headers += ['src/widgets/categories_widget.hpp']
