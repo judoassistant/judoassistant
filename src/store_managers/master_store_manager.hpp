@@ -1,6 +1,7 @@
 #pragma once
 
 #include "store_managers/store_manager.hpp"
+#include "web/web_client.hpp"
 
 class MasterStoreManager : public StoreManager {
     Q_OBJECT
@@ -20,7 +21,11 @@ public:
     bool write(const QString &path);
     void resetTournament();
 
+    void changeWebStatus(WebClient::Status status);
+
 private:
     bool mDirty;
+    WebClient mWebClient;
+    WebClient::Status mWebStatus;
 };
 

@@ -17,10 +17,15 @@ MasterStoreManager::MasterStoreManager()
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
+
+    mWebClient.start();
+    connect(&mWebClient, &WebClient::statusChanged, this, &MasterStoreManager::changeWebStatus);
 }
 
 MasterStoreManager::~MasterStoreManager() {
     stopServer();
+    mWebClient.quit();
+    mWebClient.wait();
 }
 
 bool MasterStoreManager::read(const QString &path) {
@@ -187,5 +192,9 @@ void MasterStoreManager::redo() {
 
 bool MasterStoreManager::isDirty() const {
     return mDirty;
+}
+
+void MasterStoreManager::changeWebStatus(WebClient::Status status) {
+    mWebStatus = status;
 }
 
