@@ -4,6 +4,7 @@
 #include "config/web_server.hpp"
 
 void WebServer::run() {
+    mDatabaseConnection = std::make_unique<pqxx::connection>(Config::POSTGRES_CONFIG);
     for (size_t i = 0; i < Config::WORKER_COUNT; ++i) {
         auto worker = std::make_unique<WebServerWorker>();
         mThreads.emplace_back(&WebServerWorker::run, worker.get());
@@ -20,3 +21,4 @@ void WebServer::run() {
 void WebServer::quit() {
 
 }
+
