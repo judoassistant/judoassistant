@@ -1,8 +1,9 @@
 #include "log.hpp"
 #include "web/web_server_worker.hpp"
 
-WebServerWorker::WebServerWorker()
+WebServerWorker::WebServerWorker(boost::asio::io_context &masterContext)
     : mContext()
+    , mMasterContext(masterContext)
     , mWorkGuard(boost::asio::make_work_guard(mContext))
 {
 
