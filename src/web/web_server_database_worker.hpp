@@ -13,13 +13,13 @@ public:
     void run();
     void quit();
 
-    typedef std::function<void(bool, const Token&)> registerUserCallback;
+    typedef std::function<void(RegistrationResponse, const Token&)> registerUserCallback;
     void asyncRegisterUser(const std::string &email, const std::string &password, registerUserCallback callback);
 
-    typedef std::function<void(bool, const Token&)> tokenRequestCallback;
+    typedef std::function<void(TokenRequestResponse, const Token&)> tokenRequestCallback;
     void asyncRequestToken(const std::string &email, const std::string &password, tokenRequestCallback callback);
 
-    typedef std::function<void(bool)> tokenValidateCallback;
+    typedef std::function<void(TokenValidationResponse)> tokenValidateCallback;
     void asyncValidateToken(const std::string &email, const Token& token, tokenValidateCallback callback);
 
     // typedef void (*tokenValidateCallback)(bool success);

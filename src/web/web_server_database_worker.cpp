@@ -58,63 +58,78 @@ bool WebServerDatabaseWorker::checkPassword(const std::string &email, const std:
 void WebServerDatabaseWorker::validateToken(const std::string &email, const Token &token, tokenValidateCallback callback) {
     std::string maxTokenExpiration = "2019-02-16 04:05:06";
 
-    pqxx::work work(mConnection);
-    pqxx::result r = work.exec("select token_expiration FROM users where email = "
-                               + work.quote(email)
-                               + " and token = " + work.quote_raw(token.data(), token.size()));
-    work.commit();
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("select token_expiration FROM users where email = "
+                                + work.quote(email)
+                                + " and token = " + work.quote_raw(token.data(), token.size()));
+        work.commit();
 
 
-    if (r.size() == 0) {
-        callback(false);
+        if (r.size() == 0)
+            callback(TokenValidationResponse::INVALID_TOKEN);
+        else
+            callback(TokenValidationResponse::SUCCESSFUL);
     }
-    else {
-        log_debug().field("tokenExpiration", r[0][0]).msg("Validated token");
-        callback(true);
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        callback(TokenValidationResponse::SERVER_ERROR);
     }
 }
 
 void WebServerDatabaseWorker::registerUser(const std::string &email, const std::string &password, registerUserCallback callback) {
-    if (hasUser(email)) {
-        callback(false, Token());
-        return;
+    try {
+        if (hasUser(email)) {
+            callback(RegistrationResponse::EMAIL_EXISTS, Token());
+            return;
+        }
+
+        auto token = generateToken();
+        auto tokenExpiration = generateTokenExpiration();
+
+        auto &rng = Botan::system_rng();
+        auto passwordHash = Botan::generate_bcrypt(password, rng);
+        log_debug().field("passwordHash", passwordHash).msg("Generated password");
+
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("insert into users (email, password_hash, token, token_expiration) values ("
+                                + work.quote(email)
+                                + ", " + work.quote(passwordHash)
+                                + ", " + work.quote_raw(token.data(), token.size())
+                                + ", " + work.quote(tokenExpiration)
+                                + ")");
+        work.commit();
+
+        callback(RegistrationResponse::EMAIL_EXISTS, token);
     }
-
-    auto token = generateToken();
-    auto tokenExpiration = generateTokenExpiration();
-
-    auto &rng = Botan::system_rng();
-    auto passwordHash = Botan::generate_bcrypt(password, rng);
-    log_debug().field("passwordHash", passwordHash).msg("Generated password");
-
-    pqxx::work work(mConnection);
-    pqxx::result r = work.exec("insert into users (email, password_hash, token, token_expiration) values ("
-                               + work.quote(email)
-                               + ", " + work.quote(passwordHash)
-                               + ", " + work.quote_raw(token.data(), token.size())
-                               + ", " + work.quote(tokenExpiration)
-                               + ")");
-    work.commit();
-
-    callback(true, token);
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        callback(RegistrationResponse::SERVER_ERROR, Token());
+    }
 }
 
 void WebServerDatabaseWorker::requestToken(const std::string &email, const std::string &password, tokenRequestCallback callback) {
-    if (!checkPassword(email, password)) {
-        callback(false, Token());
-        return;
+    try {
+        if (!checkPassword(email, password)) {
+            callback(TokenRequestResponse::INCORRECT_CREDENTIALS, Token());
+            return;
+        }
+
+        auto token = generateToken();
+        auto tokenExpiration = generateTokenExpiration();
+
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("update users set token=" + work.quote_raw(token.data(), token.size())
+                                + ", token_expiration=" + work.quote(tokenExpiration)
+                                + " where email=" + work.quote(email));
+        work.commit();
+
+        callback(TokenRequestResponse::SUCCESSFUL, token);
     }
-
-    auto token = generateToken();
-    auto tokenExpiration = generateTokenExpiration();
-
-    pqxx::work work(mConnection);
-    pqxx::result r = work.exec("update users set token=" + work.quote_raw(token.data(), token.size())
-                               + ", token_expiration=" + work.quote(tokenExpiration)
-                               + " where email=" + work.quote(email));
-    work.commit();
-
-    callback(true, token);
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        callback(TokenRequestResponse::SERVER_ERROR, Token());
+    }
 }
 
 
