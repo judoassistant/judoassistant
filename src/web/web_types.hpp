@@ -6,7 +6,7 @@
 
 typedef std::array<uint8_t, 32> Token;
 
-enum class RegistrationResponse {
+enum class UserRegistrationResponse {
     SERVER_ERROR,
     EMAIL_EXISTS,
     INVALID_PASSWORD,
@@ -25,3 +25,25 @@ enum class TokenValidationResponse {
     INVALID_TOKEN,
     SUCCESSFUL,
 };
+
+enum class WebNameValidationResponse {
+    SERVER_ERROR,
+    OCCUPIED_OTHER_USER,
+    OCCUPIED_SAME_TOURNAMENT,
+    OCCUPIED_OTHER_TOURNAMENT,
+    FREE,
+};
+
+enum class WebNameCheckResponse {
+    SERVER_ERROR,
+    OCCUPIED_OTHER_USER,
+    OCCUPIED_SAME_USER,
+    FREE,
+};
+
+enum class WebNameRegistrationResponse {
+    SERVER_ERROR,
+    SUCCESSFUL,
+    OCCUPIED_OTHER_USER,
+};
+

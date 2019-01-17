@@ -24,20 +24,7 @@ void WebServer::run() {
     }
 
     log_info().msg("Waiting for clients");
-    mDatabaseWorker->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](RegistrationResponse response, const Token &token) {
-        // log_debug().field("success", success).msg("register user callback");
-        // if (!success)
-        //     return;
-        mDatabaseWorker->asyncRequestToken("svendcsvendsen@gmail.com", "password", [this](TokenRequestResponse response, const Token &token) {
-            // log_debug().field("success", success).msg("request token callback");
-            // if (!success)
-            //     return;
-            mDatabaseWorker->asyncValidateToken("svendcsvendsen@gmail.com", token, [](TokenValidationResponse response) {
-                // log_debug().field("success", success).msg("Validate token callback");
-            });
-        });
-    });
-
+    mDatabaseWorker->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const Token &token) {});
 
 
     mContext.run();

@@ -1,3 +1,4 @@
+#include "id.hpp"
 #include "log.hpp"
 #include "web/web_server_database_worker.hpp"
 #include "config/web_server.hpp"
@@ -22,16 +23,24 @@ void WebServerDatabaseWorker::quit() {
     mWorkGuard.reset();
 }
 
-void WebServerDatabaseWorker::asyncRequestToken(const std::string &email, const std::string &password, tokenRequestCallback callback) {
+void WebServerDatabaseWorker::asyncRequestToken(const std::string &email, const std::string &password, TokenRequestCallback callback) {
     boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::requestToken, this, email, password, callback));
 }
 
-void WebServerDatabaseWorker::asyncValidateToken(const std::string &email, const Token &token, tokenValidateCallback callback) {
+void WebServerDatabaseWorker::asyncValidateToken(const std::string &email, const Token &token, TokenValidationCallback callback) {
     boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::validateToken, this, email, token, callback));
 }
 
-void WebServerDatabaseWorker::asyncRegisterUser(const std::string &email, const std::string &password, registerUserCallback callback) {
+void WebServerDatabaseWorker::asyncRegisterUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
     boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerUser, this, email, password, callback));
+}
+
+void WebServerDatabaseWorker::validateWebName(const TournamentId &id, const std::string &webName, WebNameValidationCallback callback) {
+    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::validateWebName, this, id, webName, callback));
+}
+
+void WebServerDatabaseWorker::registerWebName(const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerWebName, this, id, webName, callback));
 }
 
 bool WebServerDatabaseWorker::hasUser(const std::string &email) {
@@ -55,7 +64,7 @@ bool WebServerDatabaseWorker::checkPassword(const std::string &email, const std:
     return Botan::check_bcrypt(password, hash);
 }
 
-void WebServerDatabaseWorker::validateToken(const std::string &email, const Token &token, tokenValidateCallback callback) {
+void WebServerDatabaseWorker::validateToken(const std::string &email, const Token &token, TokenValidationCallback callback) {
     std::string maxTokenExpiration = "2019-02-16 04:05:06";
 
     try {
@@ -77,10 +86,10 @@ void WebServerDatabaseWorker::validateToken(const std::string &email, const Toke
     }
 }
 
-void WebServerDatabaseWorker::registerUser(const std::string &email, const std::string &password, registerUserCallback callback) {
+void WebServerDatabaseWorker::registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
     try {
         if (hasUser(email)) {
-            callback(RegistrationResponse::EMAIL_EXISTS, Token());
+            callback(UserRegistrationResponse::EMAIL_EXISTS, Token());
             return;
         }
 
@@ -100,15 +109,15 @@ void WebServerDatabaseWorker::registerUser(const std::string &email, const std::
                                 + ")");
         work.commit();
 
-        callback(RegistrationResponse::EMAIL_EXISTS, token);
+        callback(UserRegistrationResponse::EMAIL_EXISTS, token);
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        callback(RegistrationResponse::SERVER_ERROR, Token());
+        callback(UserRegistrationResponse::SERVER_ERROR, Token());
     }
 }
 
-void WebServerDatabaseWorker::requestToken(const std::string &email, const std::string &password, tokenRequestCallback callback) {
+void WebServerDatabaseWorker::requestToken(const std::string &email, const std::string &password, TokenRequestCallback callback) {
     try {
         if (!checkPassword(email, password)) {
             callback(TokenRequestResponse::INCORRECT_CREDENTIALS, Token());
@@ -142,5 +151,13 @@ Token WebServerDatabaseWorker::generateToken() {
 
 std::string WebServerDatabaseWorker::generateTokenExpiration() {
     return "2019-02-17";
+}
+
+void WebServerDatabaseWorker::asyncValidateWebName(const TournamentId &id, const std::string &webName, WebNameValidationCallback callback) {
+
+}
+
+void WebServerDatabaseWorker::asyncRegisterWebName(const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+
 }
 
