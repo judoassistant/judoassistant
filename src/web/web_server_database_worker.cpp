@@ -35,12 +35,12 @@ void WebServerDatabaseWorker::asyncRegisterUser(const std::string &email, const 
     boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerUser, this, email, password, callback));
 }
 
-void WebServerDatabaseWorker::validateWebName(const TournamentId &id, const std::string &webName, WebNameValidationCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::validateWebName, this, id, webName, callback));
+void WebServerDatabaseWorker::asyncCheckWebName(int user, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
+    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::checkWebName, this, user, id, webName, callback));
 }
 
-void WebServerDatabaseWorker::registerWebName(const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerWebName, this, id, webName, callback));
+void WebServerDatabaseWorker::asyncRegisterWebName(int user, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerWebName, this, user, id, webName, callback));
 }
 
 bool WebServerDatabaseWorker::hasUser(const std::string &email) {
@@ -150,14 +150,71 @@ Token WebServerDatabaseWorker::generateToken() {
 }
 
 std::string WebServerDatabaseWorker::generateTokenExpiration() {
-    return "2019-02-17";
+    return "2019-02-17"; // TODO: Implement
 }
 
-void WebServerDatabaseWorker::asyncValidateWebName(const TournamentId &id, const std::string &webName, WebNameValidationCallback callback) {
+void WebServerDatabaseWorker::checkWebName(int user, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("select owner, tournament_id FROM tournaments where web_name = "
+                                + work.quote(webName));
+        work.commit();
 
+
+        if (r.empty())
+            callback(WebNameCheckResponse::FREE);
+        else if (r.front()[0].as<int>() != user)
+            callback(WebNameCheckResponse::OCCUPIED_OTHER_USER);
+        else if (r.front()[1].as<TournamentId::InternalType>() != id.getValue())
+            callback(WebNameCheckResponse::OCCUPIED_OTHER_TOURNAMENT);
+        else
+            callback(WebNameCheckResponse::OCCUPIED_SAME_TOURNAMENT);
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        callback(WebNameCheckResponse::SERVER_ERROR);
+    }
 }
 
-void WebServerDatabaseWorker::asyncRegisterWebName(const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+void WebServerDatabaseWorker::registerWebName(int user, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("select owner, tournament_id FROM tournaments where web_name = "
+                                + work.quote(webName));
+        work.commit();
 
+
+        if (!r.empty() && r.front()[0].as<int>() != user) {
+            callback(WebNameRegistrationResponse::OCCUPIED_OTHER_USER);
+            return;
+        }
+
+        if (!r.empty() && r.front()[1].as<TournamentId::InternalType>() == id.getValue()) {
+            callback(WebNameRegistrationResponse::SUCCESSFUL);
+            return;
+        }
+
+        if (r.empty()) {
+            pqxx::work work(mConnection);
+            pqxx::result r = work.exec("insert into tournaments (owner, tournament_id, web_name) values (" + work.quote(user)
+                                        + ", " + work.quote(id.getValue())
+                                        + ", " + work.quote(webName)
+                                        + ")");
+            work.commit();
+        }
+        else {
+            pqxx::work work(mConnection);
+            pqxx::result r = work.exec("update tournaments set owner=" + work.quote(user)
+                                        + ", tournament_id=" + work.quote(id.getValue())
+                                        + " WHERE web_name=" + work.quote(webName));
+            work.commit();
+        }
+
+        callback(WebNameRegistrationResponse::SUCCESSFUL);
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        callback(WebNameRegistrationResponse::SERVER_ERROR);
+    }
 }
 

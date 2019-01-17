@@ -26,18 +26,11 @@ enum class TokenValidationResponse {
     SUCCESSFUL,
 };
 
-enum class WebNameValidationResponse {
+enum class WebNameCheckResponse {
     SERVER_ERROR,
     OCCUPIED_OTHER_USER,
     OCCUPIED_SAME_TOURNAMENT,
     OCCUPIED_OTHER_TOURNAMENT,
-    FREE,
-};
-
-enum class WebNameCheckResponse {
-    SERVER_ERROR,
-    OCCUPIED_OTHER_USER,
-    OCCUPIED_SAME_USER,
     FREE,
 };
 

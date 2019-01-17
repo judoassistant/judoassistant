@@ -1,6 +1,7 @@
 #include "log.hpp"
 
 #include "web/web_server.hpp"
+#include "id.hpp"
 #include "config/web_server.hpp"
 #include "web/web_types.hpp"
 
@@ -25,7 +26,6 @@ void WebServer::run() {
 
     log_info().msg("Waiting for clients");
     mDatabaseWorker->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const Token &token) {});
-
 
     mContext.run();
     log_info().msg("Joining threads");

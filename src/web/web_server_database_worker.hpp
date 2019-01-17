@@ -23,11 +23,11 @@ public:
     typedef std::function<void(TokenValidationResponse)> TokenValidationCallback;
     void asyncValidateToken(const std::string &email, const Token& token, TokenValidationCallback callback);
 
-    typedef std::function<void(WebNameValidationResponse)> WebNameValidationCallback;
-    void asyncValidateWebName(const TournamentId &id, const std::string &webName, WebNameValidationCallback callback);
+    typedef std::function<void(WebNameCheckResponse)> WebNameCheckCallback;
+    void asyncCheckWebName(int user, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback);
 
     typedef std::function<void(WebNameRegistrationResponse)> WebNameRegistrationCallback;
-    void asyncRegisterWebName(const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
+    void asyncRegisterWebName(int, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
 
 private:
     void registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
@@ -35,8 +35,8 @@ private:
     void requestToken(const std::string &email, const std::string &password, TokenRequestCallback callback);
     void validateToken(const std::string &email, const Token &token, TokenValidationCallback callback);
 
-    void validateWebName(const TournamentId &id, const std::string &webName, WebNameValidationCallback callback);
-    void registerWebName(const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
+    void checkWebName(int user, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback);
+    void registerWebName(int user, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
 
     bool hasUser(const std::string &email);
     bool checkPassword(const std::string &email, const std::string &password);

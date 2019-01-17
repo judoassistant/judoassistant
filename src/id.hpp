@@ -13,7 +13,7 @@ class TournamentStore;
 template <typename CRTP>
 class Id {
 public:
-    typedef uint64_t InternalType;
+    typedef unsigned int InternalType;
 
     class Generator {
     public:
