@@ -132,17 +132,18 @@ void NetworkServer::accept() {
             auto connection = std::make_shared<NetworkConnection>(std::move(socket));
 
             connection->asyncAccept([this, connection](boost::system::error_code ec) {
-                if (ec)
+                if (ec) {
                     log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
-                else
+                }
+                else {
                     std::make_shared<NetworkParticipant>(std::move(connection), this)->start();
+                }
             });
         }
 
         if (mAcceptor.is_open())
             accept();
     });
-
 }
 
 void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {

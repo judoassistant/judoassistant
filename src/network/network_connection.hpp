@@ -34,7 +34,7 @@ public:
                 return;
             }
 
-            if (!version.isBackwardsCompatible(ApplicationVersion::current())) {
+            if (!version.isCompatible(ApplicationVersion::current())) {
                 log_debug().msg("Not backwards compatible");
                 handler(boost::system::errc::make_error_code(boost::system::errc::protocol_not_supported));
                 return;
@@ -80,7 +80,7 @@ public:
                     return;
                 }
 
-                if (!ApplicationVersion::current().isBackwardsCompatible(version)) {
+                if (!ApplicationVersion::current().isCompatible(version)) {
                     handler(boost::system::errc::make_error_code(boost::system::errc::protocol_not_supported));
                     return;
                 }

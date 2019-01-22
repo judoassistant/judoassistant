@@ -11,7 +11,7 @@ class ApplicationVersion {
 public:
     static ApplicationVersion current();
 
-    bool isBackwardsCompatible(const ApplicationVersion &other) const;
+    bool isCompatible(const ApplicationVersion &other) const;
 
     std::string toString() const;
 

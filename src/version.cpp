@@ -10,7 +10,7 @@ ApplicationVersion ApplicationVersion::current() {
     return std::move(res);
 }
 
-bool ApplicationVersion::isBackwardsCompatible(const ApplicationVersion &other) const {
+bool ApplicationVersion::isCompatible(const ApplicationVersion &other) const {
     return mVersionMajor == other.mVersionMajor;
 }
 
