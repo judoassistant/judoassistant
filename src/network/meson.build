@@ -1,5 +1,6 @@
 core_sources += ['src/network/network_message.cpp']
 hub_sources += ['src/network/network_server.cpp']
+hub_sources += ['src/network/network_participant.cpp']
 ui_sources += ['src/network/network_client.cpp']
 
 ui_moc_headers+= ['src/network/network_interface.hpp']
