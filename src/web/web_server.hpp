@@ -7,6 +7,7 @@
 #include "core.hpp"
 #include "web/web_server_worker.hpp"
 #include "web/web_server_database_worker.hpp"
+#include "web/web_participant.hpp"
 
 class WebServer {
 public:
@@ -16,8 +17,15 @@ public:
     void quit();
 
 private:
+    void tcpAccept();
+
     boost::asio::io_context mContext;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
+
+    boost::asio::ip::tcp::endpoint mEndpoint;
+    boost::asio::ip::tcp::acceptor mAcceptor;
+
+    std::unordered_set<std::shared_ptr<WebParticipant>> mParticipants;
+    std::unordered_map<std::string, size_t> mLoadedTournament;
 
     std::vector<std::thread> mThreads;
     std::unique_ptr<WebServerDatabaseWorker> mDatabaseWorker;

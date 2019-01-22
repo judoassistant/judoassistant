@@ -3,13 +3,17 @@
 #include "web/web_server.hpp"
 #include "id.hpp"
 #include "config/web_server.hpp"
+#include "config/web.hpp"
 #include "web/web_types.hpp"
+
+using boost::asio::ip::tcp;
 
 WebServer::WebServer()
     : mContext()
-    , mWorkGuard(boost::asio::make_work_guard(mContext))
+    , mEndpoint(tcp::v4(), Config::WEB_PORT)
+    , mAcceptor(mContext, mEndpoint)
 {
-
+    tcpAccept();
 }
 
 void WebServer::run() {
@@ -35,9 +39,32 @@ void WebServer::run() {
 }
 
 void WebServer::quit() {
-    mWorkGuard.reset();
+    mAcceptor.close();
     mDatabaseWorker->quit();
     for (auto &worker : mWorkers)
         worker->quit();
 }
 
+void WebServer::tcpAccept() {
+    mAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Received error code in async_accept");
+        }
+        else {
+            auto connection = std::make_shared<NetworkConnection>(std::move(socket));
+
+            connection->asyncAccept([this, connection](boost::system::error_code ec) {
+                if (ec) {
+                    log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
+                }
+                else {
+                    auto participant = std::make_unique<WebParticipant>(std::move(connection), *this);
+                    mParticipants.insert(std::move(participant));
+                }
+            });
+        }
+
+        if (mAcceptor.is_open())
+            tcpAccept();
+    });
+}
