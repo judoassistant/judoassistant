@@ -18,6 +18,7 @@ public:
 
 private:
     void tcpAccept();
+    void leave(std::shared_ptr<WebParticipant> participant);
 
     boost::asio::io_context mContext;
 
@@ -30,4 +31,7 @@ private:
     std::vector<std::thread> mThreads;
     std::unique_ptr<WebServerDatabaseWorker> mDatabaseWorker;
     std::vector<std::unique_ptr<WebServerWorker>> mWorkers;
+
+    friend WebParticipant;
 };
+

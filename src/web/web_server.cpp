@@ -28,8 +28,8 @@ void WebServer::run() {
         mWorkers.push_back(std::move(worker));
     }
 
-    log_info().msg("Waiting for clients");
-    mDatabaseWorker->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const Token &token) {});
+    // log_info().msg("Waiting for clients");
+    // mDatabaseWorker->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
 
     mContext.run();
     log_info().msg("Joining threads");
@@ -58,7 +58,7 @@ void WebServer::tcpAccept() {
                     log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
                 }
                 else {
-                    auto participant = std::make_unique<WebParticipant>(std::move(connection), *this);
+                    auto participant = std::make_unique<WebParticipant>(std::move(connection), *this, *mDatabaseWorker);
                     mParticipants.insert(std::move(participant));
                 }
             });
@@ -68,3 +68,8 @@ void WebServer::tcpAccept() {
             tcpAccept();
     });
 }
+
+void WebServer::leave(std::shared_ptr<WebParticipant> participant) {
+    mParticipants.erase(participant);
+}
+

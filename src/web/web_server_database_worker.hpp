@@ -14,14 +14,14 @@ public:
     void run();
     void quit();
 
-    typedef std::function<void(UserRegistrationResponse, const Token&)> UserRegistrationCallback;
+    typedef std::function<void(UserRegistrationResponse, const std::optional<WebToken>&)> UserRegistrationCallback;
     void asyncRegisterUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
 
-    typedef std::function<void(TokenRequestResponse, const Token&)> TokenRequestCallback;
-    void asyncRequestToken(const std::string &email, const std::string &password, TokenRequestCallback callback);
+    typedef std::function<void(WebTokenRequestResponse, const std::optional<WebToken>&)> WebTokenRequestCallback;
+    void asyncRequestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback);
 
-    typedef std::function<void(TokenValidationResponse)> TokenValidationCallback;
-    void asyncValidateToken(const std::string &email, const Token& token, TokenValidationCallback callback);
+    typedef std::function<void(WebTokenValidationResponse)> WebTokenValidationCallback;
+    void asyncValidateWebToken(const std::string &email, const WebToken& token, WebTokenValidationCallback callback);
 
     typedef std::function<void(WebNameCheckResponse)> WebNameCheckCallback;
     void asyncCheckWebName(int user, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback);
@@ -32,16 +32,16 @@ public:
 private:
     void registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
 
-    void requestToken(const std::string &email, const std::string &password, TokenRequestCallback callback);
-    void validateToken(const std::string &email, const Token &token, TokenValidationCallback callback);
+    void requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback);
+    void validateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback);
 
     void checkWebName(int user, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback);
     void registerWebName(int user, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
 
     bool hasUser(const std::string &email);
     bool checkPassword(const std::string &email, const std::string &password);
-    Token generateToken();
-    std::string generateTokenExpiration();
+    WebToken generateWebToken();
+    std::string generateWebTokenExpiration();
 
 private:
     boost::asio::io_context mContext;

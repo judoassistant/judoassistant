@@ -23,12 +23,12 @@ void WebServerDatabaseWorker::quit() {
     mWorkGuard.reset();
 }
 
-void WebServerDatabaseWorker::asyncRequestToken(const std::string &email, const std::string &password, TokenRequestCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::requestToken, this, email, password, callback));
+void WebServerDatabaseWorker::asyncRequestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
+    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::requestWebToken, this, email, password, callback));
 }
 
-void WebServerDatabaseWorker::asyncValidateToken(const std::string &email, const Token &token, TokenValidationCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::validateToken, this, email, token, callback));
+void WebServerDatabaseWorker::asyncValidateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
+    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::validateWebToken, this, email, token, callback));
 }
 
 void WebServerDatabaseWorker::asyncRegisterUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
@@ -64,8 +64,8 @@ bool WebServerDatabaseWorker::checkPassword(const std::string &email, const std:
     return Botan::check_bcrypt(password, hash);
 }
 
-void WebServerDatabaseWorker::validateToken(const std::string &email, const Token &token, TokenValidationCallback callback) {
-    std::string maxTokenExpiration = "2019-02-16 04:05:06";
+void WebServerDatabaseWorker::validateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
+    std::string maxWebTokenExpiration = "2019-02-16 04:05:06";
 
     try {
         pqxx::work work(mConnection);
@@ -76,25 +76,25 @@ void WebServerDatabaseWorker::validateToken(const std::string &email, const Toke
 
 
         if (r.size() == 0)
-            boost::asio::post(mMasterContext, std::bind(callback, TokenValidationResponse::INVALID_TOKEN));
+            boost::asio::post(mMasterContext, std::bind(callback, WebTokenValidationResponse::INVALID_TOKEN));
         else
-            boost::asio::post(mMasterContext, std::bind(callback, TokenValidationResponse::SUCCESSFUL));
+            boost::asio::post(mMasterContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, TokenValidationResponse::SERVER_ERROR));
+        boost::asio::post(mMasterContext, std::bind(callback, WebTokenValidationResponse::SERVER_ERROR));
     }
 }
 
 void WebServerDatabaseWorker::registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
     try {
         if (hasUser(email)) {
-            callback(UserRegistrationResponse::EMAIL_EXISTS, Token());
+            callback(UserRegistrationResponse::EMAIL_EXISTS, WebToken());
             return;
         }
 
-        auto token = generateToken();
-        auto tokenExpiration = generateTokenExpiration();
+        auto token = generateWebToken();
+        auto tokenExpiration = generateWebTokenExpiration();
 
         auto &rng = Botan::system_rng();
         auto passwordHash = Botan::generate_bcrypt(password, rng);
@@ -113,19 +113,19 @@ void WebServerDatabaseWorker::registerUser(const std::string &email, const std::
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, UserRegistrationResponse::SERVER_ERROR, Token()));
+        boost::asio::post(mMasterContext, std::bind(callback, UserRegistrationResponse::SERVER_ERROR, std::nullopt));
     }
 }
 
-void WebServerDatabaseWorker::requestToken(const std::string &email, const std::string &password, TokenRequestCallback callback) {
+void WebServerDatabaseWorker::requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
     try {
         if (!checkPassword(email, password)) {
-            boost::asio::post(mMasterContext, std::bind(callback, TokenRequestResponse::INCORRECT_CREDENTIALS, Token()));
+            boost::asio::post(mMasterContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt));
             return;
         }
 
-        auto token = generateToken();
-        auto tokenExpiration = generateTokenExpiration();
+        auto token = generateWebToken();
+        auto tokenExpiration = generateWebTokenExpiration();
 
         pqxx::work work(mConnection);
         pqxx::result r = work.exec("update users set token=" + work.quote_raw(token.data(), token.size())
@@ -133,23 +133,23 @@ void WebServerDatabaseWorker::requestToken(const std::string &email, const std::
                                 + " where email=" + work.quote(email));
         work.commit();
 
-        boost::asio::post(mMasterContext, std::bind(callback, TokenRequestResponse::SUCCESSFUL, token));
+        boost::asio::post(mMasterContext, std::bind(callback, WebTokenRequestResponse::SUCCESSFUL, token));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, TokenRequestResponse::SERVER_ERROR, Token()));
+        boost::asio::post(mMasterContext, std::bind(callback, WebTokenRequestResponse::SERVER_ERROR, std::nullopt));
     }
 }
 
 
-Token WebServerDatabaseWorker::generateToken() {
-    Token res;
+WebToken WebServerDatabaseWorker::generateWebToken() {
+    WebToken res;
     Botan::system_rng().randomize(res.data(), res.size());
 
     return res;
 }
 
-std::string WebServerDatabaseWorker::generateTokenExpiration() {
+std::string WebServerDatabaseWorker::generateWebTokenExpiration() {
     return "2019-02-17"; // TODO: Implement
 }
 

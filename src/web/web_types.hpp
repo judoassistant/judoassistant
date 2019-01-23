@@ -4,7 +4,7 @@
 
 // Header declaring different types used for communication
 
-typedef std::array<uint8_t, 32> Token;
+using WebToken = std::array<uint8_t, 32>;
 
 enum class UserRegistrationResponse {
     SERVER_ERROR,
@@ -13,13 +13,13 @@ enum class UserRegistrationResponse {
     SUCCESSFUL,
 };
 
-enum class TokenRequestResponse {
+enum class WebTokenRequestResponse {
     SERVER_ERROR,
     INCORRECT_CREDENTIALS,
     SUCCESSFUL,
 };
 
-enum class TokenValidationResponse {
+enum class WebTokenValidationResponse {
     SERVER_ERROR,
     EXPIRED_TOKEN,
     INVALID_TOKEN,
