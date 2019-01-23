@@ -21,10 +21,14 @@ public:
     WebParticipant(const WebParticipant &other) = delete;
     WebParticipant(std::shared_ptr<NetworkConnection> connection, WebServer &server, WebServerDatabaseWorker &databaseWorker);
 
+    void quit();
+
 private:
     void asyncAuth();
     void asyncTournamentRegister();
+
     void write();
+    void deliver(std::shared_ptr<NetworkMessage> message);
 
     std::shared_ptr<NetworkConnection> mConnection;
     std::unique_ptr<NetworkMessage> mReadMessage;
@@ -32,5 +36,6 @@ private:
     WebServer &mServer;
     WebServerDatabaseWorker &mDatabaseWorker;
     State mState;
+    std::optional<int> mUserId;
 };
 

@@ -33,12 +33,10 @@ public:
         REQUEST_WEB_TOKEN_RESPONSE,
         VALIDATE_WEB_TOKEN,
         VALIDATE_WEB_TOKEN_RESPONSE,
-        // REGISTER_USER,
-        // REGISTER_USER_RESPONSE,
-        // WEB_SET_URL,
-        // WEB_SET_URL_RESPONSE,
-        // WEB_TEST_URL,
-        // WEB_TEST_URL_RESPONSE,
+        REGISTER_WEB_NAME,
+        REGISTER_WEB_NAME_RESPONSE,
+        CHECK_WEB_NAME,
+        CHECK_WEB_NAME_RESPONSE,
     };
 
     NetworkMessage();
@@ -84,6 +82,18 @@ public:
 
     void encodeValidateWebTokenResponse(WebTokenValidationResponse response);
     bool decodeValidateWebTokenResponse(WebTokenValidationResponse &response);
+
+    void encodeRegisterWebName(const TournamentId &id, const std::string &webName);
+    bool decodeRegisterWebName(TournamentId &id, std::string &webName);
+
+    void encodeRegisterWebNameResponse(const WebNameRegistrationResponse &response);
+    bool decodeRegisterWebNameResponse(WebNameRegistrationResponse &response);
+
+    void encodeCheckWebName(const TournamentId &id, const std::string &webName);
+    bool decodeCheckWebName(TournamentId &id, std::string &webName);
+
+    void encodeCheckWebNameResponse(const WebNameCheckResponse &response);
+    bool decodeCheckWebNameResponse(WebNameCheckResponse  &response);
 
 private:
     void encodeHeader();

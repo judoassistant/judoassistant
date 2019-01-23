@@ -19,6 +19,7 @@ public:
 private:
     void tcpAccept();
     void leave(std::shared_ptr<WebParticipant> participant);
+    void assignWebName(std::shared_ptr<WebParticipant> participant, std::string webName);
 
     boost::asio::io_context mContext;
 

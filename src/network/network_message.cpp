@@ -240,3 +240,48 @@ bool NetworkMessage::decodeValidateWebTokenResponse(WebTokenValidationResponse &
     return deserializeAndCompress(mUncompressedSize, mBody, response);
 }
 
+void NetworkMessage::encodeRegisterWebName(const TournamentId &id, const std::string &webName) {
+    mType = Type::VALIDATE_WEB_TOKEN;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(id, webName);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeRegisterWebName(TournamentId &id, std::string &webName) {
+    return deserializeAndCompress(mUncompressedSize, mBody, id, webName);
+}
+
+void NetworkMessage::encodeRegisterWebNameResponse(const WebNameRegistrationResponse &response) {
+    mType = Type::REGISTER_WEB_NAME_RESPONSE;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(response);
+
+    encodeHeader();
+
+}
+
+bool NetworkMessage::decodeRegisterWebNameResponse(WebNameRegistrationResponse &response) {
+    return deserializeAndCompress(mUncompressedSize, mBody, response);
+}
+
+void NetworkMessage::encodeCheckWebName(const TournamentId &id, const std::string &webName) {
+    mType = Type::CHECK_WEB_NAME;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(id, webName);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeCheckWebName(TournamentId &id, std::string &webName) {
+    return deserializeAndCompress(mUncompressedSize, mBody, id, webName);
+}
+
+void NetworkMessage::encodeCheckWebNameResponse(const WebNameCheckResponse &response) {
+    mType = Type::CHECK_WEB_NAME_RESPONSE;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(response);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeCheckWebNameResponse(WebNameCheckResponse &response) {
+    return deserializeAndCompress(mUncompressedSize, mBody, response);
+}
+

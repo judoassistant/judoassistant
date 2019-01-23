@@ -73,3 +73,7 @@ void WebServer::leave(std::shared_ptr<WebParticipant> participant) {
     mParticipants.erase(participant);
 }
 
+void WebServer::assignWebName(std::shared_ptr<WebParticipant> participant, std::string webName) {
+    log_debug().msg("Assigning web name to participant");
+}
+
