@@ -4,6 +4,7 @@
 #include "network/network_message.hpp"
 #include "serializables.hpp"
 #include "version.hpp"
+#include "web/web_types.hpp"
 
 // Perfect forwards args to cereal archive and compresses the result
 template <typename... Args>
@@ -192,5 +193,50 @@ void NetworkMessage::encodeQuit() {
     mUncompressedSize = 0;
 
     encodeHeader();
+}
+
+void NetworkMessage::encodeRequestWebToken(const std::string &email, const std::string &password) {
+    mType = Type::REQUEST_WEB_TOKEN;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(email, password);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeRequestWebToken(std::string &email, std::string &password) {
+    return deserializeAndCompress(mUncompressedSize, mBody, email, password);
+}
+
+void NetworkMessage::encodeRequestWebTokenResponse(WebTokenRequestResponse response, const std::optional<WebToken> &token) {
+    mType = Type::REQUEST_WEB_TOKEN_RESPONSE;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(response, token);
+
+    encodeHeader();
+
+}
+
+bool NetworkMessage::decodeRequestWebTokenResponse(WebTokenRequestResponse &response, std::optional<WebToken> &token) {
+    return deserializeAndCompress(mUncompressedSize, mBody, response, token);
+}
+
+void NetworkMessage::encodeValidateWebToken(const std::string &email, const WebToken &token) {
+    mType = Type::VALIDATE_WEB_TOKEN;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(email, token);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeValidateWebToken(std::string &email, WebToken &token) {
+    return deserializeAndCompress(mUncompressedSize, mBody, email, token);
+}
+
+void NetworkMessage::encodeValidateWebTokenResponse(WebTokenValidationResponse response) {
+    mType = Type::VALIDATE_WEB_TOKEN_RESPONSE;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(response);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeValidateWebTokenResponse(WebTokenValidationResponse &response) {
+    return deserializeAndCompress(mUncompressedSize, mBody, response);
 }
 

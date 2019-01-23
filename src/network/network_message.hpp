@@ -4,9 +4,11 @@
 #include <list>
 #include <sstream>
 #include <variant>
+#include <optional>
 
 #include "core.hpp"
 #include "id.hpp"
+#include "web/web_types.hpp"
 
 class ApplicationVersion;
 class TournamentStore;
@@ -27,16 +29,16 @@ public:
         QUIT, // The participant or server has quit
 
         // Messages used for communication with the web server
-        WEB_REQUEST_TOKEN,
-        WEB_REQUEST_TOKEN_RESPONSE,
-        WEB_VALIDATE_TOKEN,
-        WEB_VALIDATE_TOKEN_RESPONSE,
-        WEB_REGISTER,
-        WEB_REGISTER_RESPONSE,
-        WEB_SET_URL,
-        WEB_SET_URL_RESPONSE,
-        WEB_TEST_URL,
-        WEB_TEST_URL_RESPONSE,
+        REQUEST_WEB_TOKEN,
+        REQUEST_WEB_TOKEN_RESPONSE,
+        VALIDATE_WEB_TOKEN,
+        VALIDATE_WEB_TOKEN_RESPONSE,
+        // REGISTER_USER,
+        // REGISTER_USER_RESPONSE,
+        // WEB_SET_URL,
+        // WEB_SET_URL_RESPONSE,
+        // WEB_TEST_URL,
+        // WEB_TEST_URL_RESPONSE,
     };
 
     NetworkMessage();
@@ -70,6 +72,18 @@ public:
 
     void encodeUndoAck(const ClientActionId &actionId);
     bool decodeUndoAck(ClientActionId &actionId);
+
+    void encodeRequestWebToken(const std::string &email, const std::string &password);
+    bool decodeRequestWebToken(std::string &email, std::string &password);
+
+    void encodeRequestWebTokenResponse(WebTokenRequestResponse response, const std::optional<WebToken> &token);
+    bool decodeRequestWebTokenResponse(WebTokenRequestResponse &response, std::optional<WebToken> &token);
+
+    void encodeValidateWebToken(const std::string &email, const WebToken &token);
+    bool decodeValidateWebToken(std::string &email, WebToken &token);
+
+    void encodeValidateWebTokenResponse(WebTokenValidationResponse response);
+    bool decodeValidateWebTokenResponse(WebTokenValidationResponse &response);
 
 private:
     void encodeHeader();
