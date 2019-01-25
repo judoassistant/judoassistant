@@ -4,7 +4,7 @@
 #include <vector>
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
 
-#include "core.hpp"
+#include "core/core.hpp"
 #include "web/web_server_worker.hpp"
 #include "web/web_server_database_worker.hpp"
 #include "web/web_participant.hpp"

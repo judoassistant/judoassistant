@@ -1,0 +1,15 @@
+ui_sources += ['src/ui/models/actions_model.cpp']
+ui_sources += ['src/ui/models/categories_model.cpp']
+ui_sources += ['src/ui/models/category_matches_model.cpp']
+ui_sources += ['src/ui/models/match_card.cpp']
+ui_sources += ['src/ui/models/players_model.cpp']
+ui_sources += ['src/ui/models/results_model.cpp']
+ui_sources += ['src/ui/models/tatami_matches_model.cpp']
+
+ui_moc_headers += ['src/ui/models/actions_model.hpp']
+ui_moc_headers += ['src/ui/models/categories_model.hpp']
+ui_moc_headers += ['src/ui/models/category_matches_model.hpp']
+ui_moc_headers += ['src/ui/models/players_model.hpp']
+ui_moc_headers += ['src/ui/models/results_model.hpp']
+ui_moc_headers += ['src/ui/models/tatami_matches_model.hpp']
+

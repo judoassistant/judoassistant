@@ -1,6 +1,4 @@
-hub_sources += ['src/web/web_client.cpp']
-
-hub_moc_headers += ['src/web/web_client.hpp']
+subdir('applications')
 
 web_sources += ['src/web/web_participant.cpp']
 web_sources += ['src/web/web_server_database_worker.cpp']

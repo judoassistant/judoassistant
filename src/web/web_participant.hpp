@@ -2,7 +2,7 @@
 
 #include <queue>
 
-#include "network/network_connection.hpp"
+#include "core/network/network_connection.hpp"
 
 class WebServer;
 class NetworkMessage;

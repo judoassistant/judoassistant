@@ -3,7 +3,7 @@
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
 #include <pqxx/pqxx>
 
-#include "web/web_types.hpp"
+#include "core/web/web_types.hpp"
 
 class TournamentId;
 

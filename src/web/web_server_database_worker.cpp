@@ -1,16 +1,19 @@
-#include "id.hpp"
-#include "log.hpp"
+#include <botan-2/botan/bcrypt.h>
+#include <botan-2/botan/rng.h>
+#include <botan-2/botan/system_rng.h>
+
+#include "core/id.hpp"
+#include "core/log.hpp"
 #include "web/web_server_database_worker.hpp"
-#include "config/web_server.hpp"
-#include "botan-2/botan/rng.h"
-#include "botan-2/botan/system_rng.h"
-#include "botan-2/botan/bcrypt.h"
+
+// TODO: Move into a json file and read on runtime
+constexpr char POSTGRES_CONFIG[] = "user=svendcs host=127.0.0.1 dbname=judoassistant";
 
 WebServerDatabaseWorker::WebServerDatabaseWorker(boost::asio::io_context &masterContext)
     : mContext()
     , mMasterContext(masterContext)
     , mWorkGuard(boost::asio::make_work_guard(mContext))
-    , mConnection(Config::POSTGRES_CONFIG)
+    , mConnection(POSTGRES_CONFIG)
 {
 
 }
