@@ -5,7 +5,7 @@ qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
 
 # Core dependencies
-boost_dep = dependency('boost', modules: ['system']) # Used for ASIO and on the web server
+boost_dep = dependency('boost', modules: ['system', 'program_options']) # Used for ASIO and on the web server
 lz4_dep = dependency('liblz4') # Compression library for networking and save-files
 thread_dep = dependency('threads')
 
