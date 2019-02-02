@@ -1,17 +1,17 @@
-#include "web/web_participant.hpp"
+#include "web/tcp_participant.hpp"
 #include "web/web_server.hpp"
 
-WebParticipant::WebParticipant(std::shared_ptr<NetworkConnection> connection, WebServer &server, WebServerDatabaseWorker &databaseWorker)
+TCPParticipant::TCPParticipant(std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
     : mConnection(std::move(connection))
     , mReadMessage(std::make_unique<NetworkMessage>())
     , mServer(server)
-    , mDatabaseWorker(databaseWorker)
+    , mDatabase(database)
     , mState(State::NOT_AUTHENTICATED)
 {
     asyncAuth();
 }
 
-void WebParticipant::asyncAuth() {
+void TCPParticipant::asyncAuth() {
     auto self = shared_from_this();
 
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
@@ -36,7 +36,7 @@ void WebParticipant::asyncAuth() {
                 return;
             }
 
-            mDatabaseWorker.asyncRequestWebToken(email, password, [this] (WebTokenRequestResponse response, const std::optional<WebToken> token, std::optional<int> userId) {
+            mDatabase.asyncRequestWebToken(email, password, [this] (WebTokenRequestResponse response, const std::optional<WebToken> token, std::optional<int> userId) {
                 assert(mState == State::NOT_AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeRequestWebTokenResponse(response, token);
@@ -61,7 +61,7 @@ void WebParticipant::asyncAuth() {
                 return;
             }
 
-            mDatabaseWorker.asyncValidateWebToken(email, token, [this] (WebTokenValidationResponse response, std::optional<int> userId) {
+            mDatabase.asyncValidateWebToken(email, token, [this] (WebTokenValidationResponse response, std::optional<int> userId) {
                 assert(mState == State::NOT_AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeValidateWebTokenResponse(response);
@@ -86,7 +86,7 @@ void WebParticipant::asyncAuth() {
 }
 
 // TODO: See if shared_from_this pattern can be avoided
-void WebParticipant::write() {
+void TCPParticipant::write() {
     auto self = shared_from_this();
 
     mConnection->asyncWrite(*(mMessageQueue.front()), [this, self](boost::system::error_code ec) {
@@ -102,7 +102,7 @@ void WebParticipant::write() {
     });
 }
 
-void WebParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
+void TCPParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
     bool writeInProgress = !mMessageQueue.empty();
     mMessageQueue.push(std::move(message));
 
@@ -110,7 +110,7 @@ void WebParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
         write();
 }
 
-void WebParticipant::asyncTournamentRegister() {
+void TCPParticipant::asyncTournamentRegister() {
     auto self = shared_from_this();
 
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
@@ -135,7 +135,7 @@ void WebParticipant::asyncTournamentRegister() {
                 return;
             }
 
-            mDatabaseWorker.asyncRegisterWebName(*mUserId, id, webName, [this, webName] (WebNameRegistrationResponse response) {
+            mDatabase.asyncRegisterWebName(*mUserId, id, webName, [this, webName] (WebNameRegistrationResponse response) {
                 assert(mState == State::AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeRegisterWebNameResponse(response);
@@ -159,7 +159,7 @@ void WebParticipant::asyncTournamentRegister() {
                 return;
             }
 
-            mDatabaseWorker.asyncCheckWebName(*mUserId, id, webName, [this] (WebNameCheckResponse response) {
+            mDatabase.asyncCheckWebName(*mUserId, id, webName, [this] (WebNameCheckResponse response) {
                 assert(mState == State::AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeCheckWebNameResponse(response);
@@ -176,7 +176,7 @@ void WebParticipant::asyncTournamentRegister() {
     });
 }
 
-void WebParticipant::quit() {
+void TCPParticipant::quit() {
     // TODO: Implement
 }
 

@@ -6,10 +6,10 @@
 
 class WebServer;
 class NetworkMessage;
-class WebServerDatabaseWorker;
+class Database;
 
 // Object passed between web server and web workers encapsulating a client
-class WebParticipant : public std::enable_shared_from_this<WebParticipant> {
+class TCPParticipant : public std::enable_shared_from_this<TCPParticipant> {
 public:
     enum class State {
         NOT_AUTHENTICATED,
@@ -17,9 +17,9 @@ public:
         TOURNAMENT_SELECTED,
     };
 
-    WebParticipant() = delete;
-    WebParticipant(const WebParticipant &other) = delete;
-    WebParticipant(std::shared_ptr<NetworkConnection> connection, WebServer &server, WebServerDatabaseWorker &databaseWorker);
+    TCPParticipant() = delete;
+    TCPParticipant(const TCPParticipant &other) = delete;
+    TCPParticipant(std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database);
 
     void quit();
 
@@ -34,7 +34,7 @@ private:
     std::unique_ptr<NetworkMessage> mReadMessage;
     std::queue<std::shared_ptr<NetworkMessage>> mMessageQueue;
     WebServer &mServer;
-    WebServerDatabaseWorker &mDatabaseWorker;
+    Database &mDatabase;
     State mState;
     std::optional<int> mUserId;
 };
