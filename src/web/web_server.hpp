@@ -5,34 +5,35 @@
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
 
 #include "core/core.hpp"
-#include "web/web_server_worker.hpp"
-#include "web/web_server_database_worker.hpp"
-#include "web/web_participant.hpp"
+#include "web/config.hpp"
+#include "web/database.hpp"
+#include "web/tcp_participant.hpp"
 
 class WebServer {
 public:
-    WebServer();
+    WebServer(const Config &config);
 
     void run();
     void quit();
 
 private:
+    void work();
     void tcpAccept();
-    void leave(std::shared_ptr<WebParticipant> participant);
-    void assignWebName(std::shared_ptr<WebParticipant> participant, std::string webName);
+    void leave(std::shared_ptr<TCPParticipant> participant);
+    void assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName);
 
+    Config mConfig;
     boost::asio::io_context mContext;
 
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
 
-    std::unordered_set<std::shared_ptr<WebParticipant>> mParticipants;
+    std::unordered_set<std::shared_ptr<TCPParticipant>> mParticipants;
     std::unordered_map<std::string, size_t> mLoadedTournament;
 
     std::vector<std::thread> mThreads;
-    std::unique_ptr<WebServerDatabaseWorker> mDatabaseWorker;
-    std::vector<std::unique_ptr<WebServerWorker>> mWorkers;
+    std::unique_ptr<Database> mDatabase;
 
-    friend WebParticipant;
+    friend TCPParticipant;
 };
 

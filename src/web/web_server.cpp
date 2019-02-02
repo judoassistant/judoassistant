@@ -3,36 +3,31 @@
 #include "core/web/web_types.hpp"
 #include "web/web_server.hpp"
 
-// TODO: Move into a json file and read on runtime
-constexpr size_t WORKER_COUNT = 2; // Number of threads to handle tournaments
-constexpr int WEB_PORT = 8000;
-
 using boost::asio::ip::tcp;
 
-WebServer::WebServer()
-    : mContext()
-    , mEndpoint(tcp::v4(), WEB_PORT)
+WebServer::WebServer(const Config &config)
+    : mConfig(config)
+    , mContext()
+    , mEndpoint(tcp::v4(), config.port)
     , mAcceptor(mContext, mEndpoint)
 {
     tcpAccept();
 }
 
 void WebServer::run() {
-    log_info().msg("Launching database worker");
-    mDatabaseWorker = std::make_unique<WebServerDatabaseWorker>(mContext);
-    mThreads.emplace_back(&WebServerDatabaseWorker::run, mDatabaseWorker.get());
+    log_info().msg("Launching database");
+    mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
+    // mThreads.emplace_back(&WebServerDatabaseWorker::run, mDatabase.get());
 
-    log_info().field("WORKER_COUNT", WORKER_COUNT).msg("Launching workers");
-    for (size_t i = 0; i < WORKER_COUNT; ++i) {
-        auto worker = std::make_unique<WebServerWorker>(mContext);
-        mThreads.emplace_back(&WebServerWorker::run, worker.get());
-        mWorkers.push_back(std::move(worker));
+    log_info().field("threadCount", mConfig.workers).msg("Launching threads");
+    for (size_t i = 0; i < mConfig.workers; ++i) {
+        mThreads.emplace_back(&WebServer::work, this);
     }
 
     // log_info().msg("Waiting for clients");
-    // mDatabaseWorker->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
+    // mDatabase->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
 
-    mContext.run();
+    work();
     log_info().msg("Joining threads");
 
     for (std::thread &thread : mThreads)
@@ -41,9 +36,8 @@ void WebServer::run() {
 
 void WebServer::quit() {
     mAcceptor.close();
-    mDatabaseWorker->quit();
-    for (auto &worker : mWorkers)
-        worker->quit();
+    // for (auto &worker : mWorkers)
+    //     worker->quit();
 }
 
 void WebServer::tcpAccept() {
@@ -59,7 +53,7 @@ void WebServer::tcpAccept() {
                     log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
                 }
                 else {
-                    auto participant = std::make_unique<WebParticipant>(std::move(connection), *this, *mDatabaseWorker);
+                    auto participant = std::make_unique<TCPParticipant>(std::move(connection), *this, *mDatabase);
                     mParticipants.insert(std::move(participant));
                 }
             });
@@ -70,11 +64,14 @@ void WebServer::tcpAccept() {
     });
 }
 
-void WebServer::leave(std::shared_ptr<WebParticipant> participant) {
+void WebServer::leave(std::shared_ptr<TCPParticipant> participant) {
     mParticipants.erase(participant);
 }
 
-void WebServer::assignWebName(std::shared_ptr<WebParticipant> participant, std::string webName) {
+void WebServer::assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName) {
     log_debug().msg("Assigning web name to participant");
 }
 
+void WebServer::work() {
+    mContext.run();
+}
