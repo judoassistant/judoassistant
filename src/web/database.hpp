@@ -7,14 +7,10 @@
 
 class TournamentId;
 
-class WebServerDatabaseWorker {
+class Database {
 public:
-    WebServerDatabaseWorker(boost::asio::io_context &masterContext);
+    Database(boost::asio::io_context &context, const std::string &config);
 
-    void run();
-    void quit();
-
-    // TODO: Use userid in interface
     typedef std::function<void(UserRegistrationResponse, const std::optional<WebToken>&, std::optional<int>)> UserRegistrationCallback;
     void asyncRegisterUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
 
@@ -45,8 +41,8 @@ private:
     std::string generateWebTokenExpiration();
 
 private:
-    boost::asio::io_context mContext;
-    boost::asio::io_context &mMasterContext;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
+    boost::asio::io_context &mContext;
+    boost::asio::io_context::strand mStrand;
     pqxx::connection mConnection;
 };
+

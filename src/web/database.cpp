@@ -4,49 +4,37 @@
 
 #include "core/id.hpp"
 #include "core/log.hpp"
-#include "web/web_server_database_worker.hpp"
+#include "web/database.hpp"
 
-// TODO: Move into a json file and read on runtime
-constexpr char POSTGRES_CONFIG[] = "user=svendcs host=127.0.0.1 dbname=judoassistant";
-
-WebServerDatabaseWorker::WebServerDatabaseWorker(boost::asio::io_context &masterContext)
-    : mContext()
-    , mMasterContext(masterContext)
-    , mWorkGuard(boost::asio::make_work_guard(mContext))
-    , mConnection(POSTGRES_CONFIG)
+Database::Database(boost::asio::io_context &context, const std::string &config)
+    : mContext(context)
+    , mStrand(context)
+    , mConnection(config)
 {
 
 }
 
-void WebServerDatabaseWorker::run() {
-    mContext.run();
+void Database::asyncRequestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::requestWebToken, this, email, password, callback));
 }
 
-void WebServerDatabaseWorker::quit() {
-    mWorkGuard.reset();
+void Database::asyncValidateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::validateWebToken, this, email, token, callback));
 }
 
-void WebServerDatabaseWorker::asyncRequestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::requestWebToken, this, email, password, callback));
+void Database::asyncRegisterUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::registerUser, this, email, password, callback));
 }
 
-void WebServerDatabaseWorker::asyncValidateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::validateWebToken, this, email, token, callback));
+void Database::asyncCheckWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::checkWebName, this, userId, id, webName, callback));
 }
 
-void WebServerDatabaseWorker::asyncRegisterUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerUser, this, email, password, callback));
+void Database::asyncRegisterWebName(int userId, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::registerWebName, this, userId, id, webName, callback));
 }
 
-void WebServerDatabaseWorker::asyncCheckWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::checkWebName, this, userId, id, webName, callback));
-}
-
-void WebServerDatabaseWorker::asyncRegisterWebName(int userId, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
-    boost::asio::post(mContext, std::bind(&WebServerDatabaseWorker::registerWebName, this, userId, id, webName, callback));
-}
-
-bool WebServerDatabaseWorker::hasUser(const std::string &email) {
+bool Database::hasUser(const std::string &email) {
     pqxx::work work(mConnection);
     pqxx::result r = work.exec("select 1 FROM users where email = " + work.quote(email));
     work.commit();
@@ -54,7 +42,7 @@ bool WebServerDatabaseWorker::hasUser(const std::string &email) {
     return (r.size() > 0);
 }
 
-bool WebServerDatabaseWorker::checkPassword(const std::string &email, const std::string &password) {
+bool Database::checkPassword(const std::string &email, const std::string &password) {
     pqxx::work work(mConnection);
     pqxx::result r = work.exec("select password_hash FROM users where email = " + work.quote(email));
     work.commit();
@@ -67,7 +55,7 @@ bool WebServerDatabaseWorker::checkPassword(const std::string &email, const std:
     return Botan::check_bcrypt(password, hash);
 }
 
-void WebServerDatabaseWorker::validateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
+void Database::validateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
     std::string maxWebTokenExpiration = "2019-02-16 04:05:06";
 
     try {
@@ -79,20 +67,20 @@ void WebServerDatabaseWorker::validateWebToken(const std::string &email, const W
 
         // TODO: Check web token expiration
         if (r.size() == 0) {
-            boost::asio::post(mMasterContext, std::bind(callback, WebTokenValidationResponse::INVALID_TOKEN, std::nullopt));
+            boost::asio::post(mContext, std::bind(callback, WebTokenValidationResponse::INVALID_TOKEN, std::nullopt));
         }
         else {
             int userId = r[0][0].as<int>();
-            boost::asio::post(mMasterContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL, userId));
+            boost::asio::post(mContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL, userId));
         }
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, WebTokenValidationResponse::SERVER_ERROR, std::nullopt));
+        boost::asio::post(mContext, std::bind(callback, WebTokenValidationResponse::SERVER_ERROR, std::nullopt));
     }
 }
 
-void WebServerDatabaseWorker::registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
+void Database::registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback) {
     try {
         if (hasUser(email)) {
             callback(UserRegistrationResponse::EMAIL_EXISTS, std::nullopt, std::nullopt);
@@ -116,18 +104,18 @@ void WebServerDatabaseWorker::registerUser(const std::string &email, const std::
         work.commit();
 
         auto userId = r[0][0].as<int>();
-        boost::asio::post(mMasterContext, std::bind(callback, UserRegistrationResponse::EMAIL_EXISTS, token, userId));
+        boost::asio::post(mContext, std::bind(callback, UserRegistrationResponse::EMAIL_EXISTS, token, userId));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, UserRegistrationResponse::SERVER_ERROR, std::nullopt, std::nullopt));
+        boost::asio::post(mContext, std::bind(callback, UserRegistrationResponse::SERVER_ERROR, std::nullopt, std::nullopt));
     }
 }
 
-void WebServerDatabaseWorker::requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
+void Database::requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
     try {
         if (!checkPassword(email, password)) {
-            boost::asio::post(mMasterContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt, std::nullopt));
+            boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt, std::nullopt));
             return;
         }
 
@@ -142,27 +130,27 @@ void WebServerDatabaseWorker::requestWebToken(const std::string &email, const st
         work.commit();
 
         auto userId = r[0][0].as<int>();
-        boost::asio::post(mMasterContext, std::bind(callback, WebTokenRequestResponse::SUCCESSFUL, token, userId));
+        boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::SUCCESSFUL, token, userId));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, WebTokenRequestResponse::SERVER_ERROR, std::nullopt, std::nullopt));
+        boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::SERVER_ERROR, std::nullopt, std::nullopt));
     }
 }
 
 
-WebToken WebServerDatabaseWorker::generateWebToken() {
+WebToken Database::generateWebToken() {
     WebToken res;
     Botan::system_rng().randomize(res.data(), res.size());
 
     return res;
 }
 
-std::string WebServerDatabaseWorker::generateWebTokenExpiration() {
+std::string Database::generateWebTokenExpiration() {
     return "2019-02-17"; // TODO: Implement
 }
 
-void WebServerDatabaseWorker::checkWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
+void Database::checkWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
     try {
         pqxx::work work(mConnection);
         pqxx::result r = work.exec("select owner, tournament_id FROM tournaments where web_name = "
@@ -170,21 +158,21 @@ void WebServerDatabaseWorker::checkWebName(int userId, const TournamentId &id, c
         work.commit();
 
         if (r.empty())
-            boost::asio::post(mMasterContext, std::bind(callback, WebNameCheckResponse::FREE));
+            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::FREE));
         else if (r.front()[0].as<int>() != userId)
-            boost::asio::post(mMasterContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_USER));
+            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_USER));
         else if (r.front()[1].as<TournamentId::InternalType>() != id.getValue())
-            boost::asio::post(mMasterContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_TOURNAMENT));
+            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_TOURNAMENT));
         else
-            boost::asio::post(mMasterContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_SAME_TOURNAMENT));
+            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_SAME_TOURNAMENT));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, WebNameCheckResponse::SERVER_ERROR));
+        boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::SERVER_ERROR));
     }
 }
 
-void WebServerDatabaseWorker::registerWebName(int userId, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
+void Database::registerWebName(int userId, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback) {
     try {
         pqxx::work work(mConnection);
         pqxx::result r = work.exec("select owner, tournament_id FROM tournaments where web_name = "
@@ -193,12 +181,12 @@ void WebServerDatabaseWorker::registerWebName(int userId, const TournamentId &id
 
 
         if (!r.empty() && r.front()[0].as<int>() != userId) {
-            boost::asio::post(mMasterContext, std::bind(callback, WebNameRegistrationResponse::OCCUPIED_OTHER_USER));
+            boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::OCCUPIED_OTHER_USER));
             return;
         }
 
         if (!r.empty() && r.front()[1].as<TournamentId::InternalType>() == id.getValue()) {
-            boost::asio::post(mMasterContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
+            boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
             return;
         }
 
@@ -217,11 +205,11 @@ void WebServerDatabaseWorker::registerWebName(int userId, const TournamentId &id
             work.commit();
         }
 
-        boost::asio::post(mMasterContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
+        boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mMasterContext, std::bind(callback, WebNameRegistrationResponse::SERVER_ERROR));
+        boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SERVER_ERROR));
     }
 }
 
