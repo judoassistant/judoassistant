@@ -1,8 +1,9 @@
 #include "web/tcp_participant.hpp"
 #include "web/web_server.hpp"
 
-TCPParticipant::TCPParticipant(std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
-    : mConnection(std::move(connection))
+TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
+    : mStrand(context)
+    , mConnection(std::move(connection))
     , mReadMessage(std::make_unique<NetworkMessage>())
     , mServer(server)
     , mDatabase(database)
@@ -89,7 +90,7 @@ void TCPParticipant::asyncAuth() {
 void TCPParticipant::write() {
     auto self = shared_from_this();
 
-    mConnection->asyncWrite(*(mMessageQueue.front()), [this, self](boost::system::error_code ec) {
+    mConnection->asyncWrite(*(mMessageQueue.front()), boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec) {
         if (ec) {
             log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
             mServer.leave(shared_from_this());
@@ -99,15 +100,18 @@ void TCPParticipant::write() {
         mMessageQueue.pop();
         if (!mMessageQueue.empty())
             write();
-    });
+    }));
 }
 
 void TCPParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
-    bool writeInProgress = !mMessageQueue.empty();
-    mMessageQueue.push(std::move(message));
+    // TODO: Capture message by move
+    boost::asio::post(mStrand, [this, message](){
+        bool writeInProgress = !mMessageQueue.empty();
+        mMessageQueue.push(std::move(message));
 
-    if (!writeInProgress)
-        write();
+        if (!writeInProgress)
+            write();
+    });
 }
 
 void TCPParticipant::asyncTournamentRegister() {

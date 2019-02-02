@@ -8,6 +8,7 @@ using boost::asio::ip::tcp;
 WebServer::WebServer(const Config &config)
     : mConfig(config)
     , mContext()
+    , mStrand(mContext)
     , mEndpoint(tcp::v4(), config.port)
     , mAcceptor(mContext, mEndpoint)
 {
@@ -35,9 +36,11 @@ void WebServer::run() {
 }
 
 void WebServer::quit() {
-    mAcceptor.close();
-    // for (auto &worker : mWorkers)
-    //     worker->quit();
+    mStrand.dispatch([this]() {
+        for (auto & participantPtr : mParticipants)
+            participantPtr->quit();
+        mAcceptor.close();
+    });
 }
 
 void WebServer::tcpAccept() {
@@ -48,15 +51,15 @@ void WebServer::tcpAccept() {
         else {
             auto connection = std::make_shared<NetworkConnection>(std::move(socket));
 
-            connection->asyncAccept([this, connection](boost::system::error_code ec) {
+            connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection](boost::system::error_code ec) {
                 if (ec) {
                     log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
+                    return;
                 }
-                else {
-                    auto participant = std::make_unique<TCPParticipant>(std::move(connection), *this, *mDatabase);
-                    mParticipants.insert(std::move(participant));
-                }
-            });
+
+                auto participant = std::make_unique<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
+                mParticipants.insert(std::move(participant));
+            }));
         }
 
         if (mAcceptor.is_open())
@@ -65,7 +68,9 @@ void WebServer::tcpAccept() {
 }
 
 void WebServer::leave(std::shared_ptr<TCPParticipant> participant) {
-    mParticipants.erase(participant);
+    mStrand.dispatch([this, participant]() {
+        mParticipants.erase(participant);
+    });
 }
 
 void WebServer::assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName) {
@@ -75,3 +80,4 @@ void WebServer::assignWebName(std::shared_ptr<TCPParticipant> participant, std::
 void WebServer::work() {
     mContext.run();
 }
+

@@ -24,6 +24,7 @@ private:
 
     Config mConfig;
     boost::asio::io_context mContext;
+    boost::asio::io_context::strand mStrand;
 
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
