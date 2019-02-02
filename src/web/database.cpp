@@ -67,16 +67,16 @@ void Database::validateWebToken(const std::string &email, const WebToken &token,
 
         // TODO: Check web token expiration
         if (r.size() == 0) {
-            boost::asio::post(mContext, std::bind(callback, WebTokenValidationResponse::INVALID_TOKEN, std::nullopt));
+            boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::INVALID_TOKEN, std::nullopt));
         }
         else {
             int userId = r[0][0].as<int>();
-            boost::asio::post(mContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL, userId));
+            boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL, userId));
         }
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mContext, std::bind(callback, WebTokenValidationResponse::SERVER_ERROR, std::nullopt));
+        boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::SERVER_ERROR, std::nullopt));
     }
 }
 
@@ -104,18 +104,18 @@ void Database::registerUser(const std::string &email, const std::string &passwor
         work.commit();
 
         auto userId = r[0][0].as<int>();
-        boost::asio::post(mContext, std::bind(callback, UserRegistrationResponse::EMAIL_EXISTS, token, userId));
+        boost::asio::dispatch(mContext, std::bind(callback, UserRegistrationResponse::EMAIL_EXISTS, token, userId));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mContext, std::bind(callback, UserRegistrationResponse::SERVER_ERROR, std::nullopt, std::nullopt));
+        boost::asio::dispatch(mContext, std::bind(callback, UserRegistrationResponse::SERVER_ERROR, std::nullopt, std::nullopt));
     }
 }
 
 void Database::requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
     try {
         if (!checkPassword(email, password)) {
-            boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt, std::nullopt));
+            boost::asio::dispatch(mContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt, std::nullopt));
             return;
         }
 
@@ -130,11 +130,11 @@ void Database::requestWebToken(const std::string &email, const std::string &pass
         work.commit();
 
         auto userId = r[0][0].as<int>();
-        boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::SUCCESSFUL, token, userId));
+        boost::asio::dispatch(mContext, std::bind(callback, WebTokenRequestResponse::SUCCESSFUL, token, userId));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::SERVER_ERROR, std::nullopt, std::nullopt));
+        boost::asio::dispatch(mContext, std::bind(callback, WebTokenRequestResponse::SERVER_ERROR, std::nullopt, std::nullopt));
     }
 }
 
@@ -158,17 +158,17 @@ void Database::checkWebName(int userId, const TournamentId &id, const std::strin
         work.commit();
 
         if (r.empty())
-            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::FREE));
+            boost::asio::dispatch(mContext, std::bind(callback, WebNameCheckResponse::FREE));
         else if (r.front()[0].as<int>() != userId)
-            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_USER));
+            boost::asio::dispatch(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_USER));
         else if (r.front()[1].as<TournamentId::InternalType>() != id.getValue())
-            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_TOURNAMENT));
+            boost::asio::dispatch(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_OTHER_TOURNAMENT));
         else
-            boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_SAME_TOURNAMENT));
+            boost::asio::dispatch(mContext, std::bind(callback, WebNameCheckResponse::OCCUPIED_SAME_TOURNAMENT));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mContext, std::bind(callback, WebNameCheckResponse::SERVER_ERROR));
+        boost::asio::dispatch(mContext, std::bind(callback, WebNameCheckResponse::SERVER_ERROR));
     }
 }
 
@@ -181,12 +181,12 @@ void Database::registerWebName(int userId, const TournamentId &id, const std::st
 
 
         if (!r.empty() && r.front()[0].as<int>() != userId) {
-            boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::OCCUPIED_OTHER_USER));
+            boost::asio::dispatch(mContext, std::bind(callback, WebNameRegistrationResponse::OCCUPIED_OTHER_USER));
             return;
         }
 
         if (!r.empty() && r.front()[1].as<TournamentId::InternalType>() == id.getValue()) {
-            boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
+            boost::asio::dispatch(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
             return;
         }
 
@@ -205,11 +205,11 @@ void Database::registerWebName(int userId, const TournamentId &id, const std::st
             work.commit();
         }
 
-        boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
+        boost::asio::dispatch(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SERVER_ERROR));
+        boost::asio::dispatch(mContext, std::bind(callback, WebNameRegistrationResponse::SERVER_ERROR));
     }
 }
 
