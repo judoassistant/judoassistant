@@ -241,7 +241,7 @@ bool NetworkMessage::decodeValidateWebTokenResponse(WebTokenValidationResponse &
 }
 
 void NetworkMessage::encodeRegisterWebName(const TournamentId &id, const std::string &webName) {
-    mType = Type::VALIDATE_WEB_TOKEN;
+    mType = Type::REGISTER_WEB_NAME;
     std::tie(mBody, mUncompressedSize) = serializeAndCompress(id, webName);
 
     encodeHeader();
