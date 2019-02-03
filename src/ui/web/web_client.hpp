@@ -34,6 +34,9 @@ public:
     void setWebName(TournamentId id, const QString &webName);
     void testWebName(TournamentId id, const QString &webName);
 
+private:
+    typedef std::function<void(boost::system::error_code)> connectionHandler;
+    void createConnection(connectionHandler handler);
 signals:
     void tokenValidationSucceeded();
     void tokenValidationFailed();
