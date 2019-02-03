@@ -88,6 +88,7 @@ bool MasterStoreManager::read(const QString &path) {
 void MasterStoreManager::resetTournament() {
     log_debug().msg("Resetting tournament");
     auto tournament = std::make_unique<QTournamentStore>();
+    tournament->setId(TournamentId::generate());
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];

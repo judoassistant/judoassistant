@@ -22,6 +22,7 @@ public:
     virtual ~TournamentStore();
 
     TournamentId getId() const;
+    void setId(TournamentId id);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

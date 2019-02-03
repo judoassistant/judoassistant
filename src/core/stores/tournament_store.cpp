@@ -118,6 +118,10 @@ TournamentId TournamentStore::getId() const {
     return mId;
 }
 
+void TournamentStore::setId(TournamentId id) {
+    mId = id;
+}
+
 const std::string & TournamentStore::getWebName() const {
     return mWebName;
 }
