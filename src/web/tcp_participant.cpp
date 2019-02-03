@@ -15,6 +15,7 @@ void TCPParticipant::asyncAuth() {
     log_debug().msg("TCPParticiant: Async auth called");
     auto self = shared_from_this();
 
+    mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         log_debug().msg("TCPParticiant: Async read handler called");
         assert(mState == State::NOT_AUTHENTICATED);
@@ -80,10 +81,8 @@ void TCPParticipant::asyncAuth() {
             });
         }
         else {
-            log_warning().field("type", (unsigned int) mReadMessage->getType()).msg("Received unexpected message type when authenticating");
+            log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when authenticating");
         }
-
-        mReadMessage = std::make_unique<NetworkMessage>();
     });
 }
 
@@ -117,9 +116,12 @@ void TCPParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
 
 void TCPParticipant::asyncTournamentRegister() {
     auto self = shared_from_this();
+    assert(mState == State::AUTHENTICATED);
 
+    mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         assert(mState == State::AUTHENTICATED);
+        log_debug().field("type", mReadMessage->getType()).msg("Async read message in register");
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             mServer.leave(shared_from_this());
@@ -174,7 +176,7 @@ void TCPParticipant::asyncTournamentRegister() {
             });
         }
         else {
-            log_warning().field("type", (unsigned int) mReadMessage->getType()).msg("Received unexpected message type when authenticating");
+            log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when registering web name");
         }
 
         mReadMessage = std::make_unique<NetworkMessage>();
