@@ -10,9 +10,14 @@ WebClient::WebClient()
     , mQuitPosted(false)
     , mStatus(Status::NOT_CONNECTED)
 {
+    qRegisterMetaType<WebToken>("WebToken");
+    qRegisterMetaType<UserRegistrationResponse>("UserRegistrationResponse");
+    qRegisterMetaType<WebTokenRequestResponse>("WebTokenRequestResponse");
+    qRegisterMetaType<WebTokenValidationResponse>("WebTokenValidationResponse");
     qRegisterMetaType<WebNameCheckResponse>("WebNameCheckResponse");
-    qRegisterMetaType<WebClient::Status>("WebClientStatus");
+    qRegisterMetaType<WebNameRegistrationResponse>("WebNameRegistrationResponse");
 
+    qRegisterMetaType<Status>("WebClient::Status");
 }
 
 void WebClient::validateToken(const QString &token) {
@@ -22,6 +27,7 @@ void WebClient::validateToken(const QString &token) {
 void WebClient::createConnection(connectionHandler handler) {
     assert(mStatus == Status::NOT_CONNECTED);
     mStatus = Status::CONNECTING;
+    emit statusChanged(mStatus);
 
     mContext.dispatch([this, handler]() {
         mQuitPosted = false;
@@ -67,17 +73,51 @@ void WebClient::loginUser(const QString &email, const QString &password) {
     createConnection([this, email, password](boost::system::error_code ec) {
         if (ec) {
             killConnection();
-            emit loginFailed();
+            emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
             return;
         }
 
-        // auto loginMessage = std::make_shared<NetworkMessage>();
-        // loginMessage->encodeRequestWebToken(
-        // mConnection->asyncWrite
+        auto loginMessage = std::make_shared<NetworkMessage>();
+        loginMessage->encodeRequestWebToken(email.toStdString(), password.toStdString());
+        mConnection->asyncWrite(*loginMessage, [this, loginMessage](boost::system::error_code ec) {
+            if (ec) {
+                log_error().field("message", ec.message()).msg("Encountered writing request token message. Killing connection");
+                killConnection();
+                emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
+                return;
+            }
 
-        log_debug().msg("Should send login message");
-        emit loginFailed();
-        // TODO: Send login message
+            auto responseMessage = std::make_shared<NetworkMessage>();
+            mConnection->asyncRead(*responseMessage, [this, responseMessage](boost::system::error_code ec) {
+                if (ec) {
+                    log_error().field("message", ec.message()).msg("Encountered reading request token response. Failing");
+                    killConnection();
+                    emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
+                    return;
+                }
+
+                if (responseMessage->getType() != NetworkMessage::Type::REQUEST_WEB_TOKEN_RESPONSE) {
+                    log_error().msg("Received response message of wrong type. Failing");
+                    killConnection();
+                    emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
+                    return;
+                }
+
+                WebTokenRequestResponse response;
+                std::optional<WebToken> token;
+                responseMessage->decodeRequestWebTokenResponse(response, token);
+
+                if (response != WebTokenRequestResponse::SUCCESSFUL) {
+                    killConnection();
+                    emit loginFailed(response);
+                    return;
+                }
+
+                mStatus = Status::CONNECTED;
+                emit loginSucceeded(token.value());
+                emit statusChanged(mStatus);
+            });
+        });
     });
 }
 
@@ -117,6 +157,8 @@ void WebClient::quit() {
 void WebClient::killConnection() {
     mConnection.reset();
     mSocket.reset();
+    mStatus = Status::NOT_CONNECTED;
+    emit statusChanged(mStatus);
     // while (!mWriteQueue.empty())
     //     mWriteQueue.pop();
 }

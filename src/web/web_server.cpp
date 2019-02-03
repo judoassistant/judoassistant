@@ -49,15 +49,19 @@ void WebServer::tcpAccept() {
             log_error().field("message", ec.message()).msg("Received error code in async_accept");
         }
         else {
+            log_debug().msg("Creating connection");
             auto connection = std::make_shared<NetworkConnection>(std::move(socket));
+            log_debug().msg("created connection");
 
             connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection](boost::system::error_code ec) {
+                log_debug().msg("Async accept handler called");
                 if (ec) {
                     log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
                     return;
                 }
 
-                auto participant = std::make_unique<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
+                auto participant = std::make_shared<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
+                participant->asyncAuth();
                 mParticipants.insert(std::move(participant));
             }));
         }
@@ -74,7 +78,7 @@ void WebServer::leave(std::shared_ptr<TCPParticipant> participant) {
 }
 
 void WebServer::assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName) {
-    log_debug().msg("Assigning web name to participant");
+    log_debug().field("webName", webName).msg("Assigning web name to participant");
 }
 
 void WebServer::work() {

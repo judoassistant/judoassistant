@@ -23,7 +23,7 @@ private:
     void beginResetTournament();
     void endResetTournament();
     void changeWebStatus(WebClient::Status status);
-    void succeedLogin(const QString &token);
+    void succeedLogin(const WebToken &token);
 
     void updateButton();
     void buttonClick();
@@ -32,7 +32,7 @@ private:
     std::stack<QMetaObject::Connection> mConnections;
     WebClient::Status mWebStatus;
 
-    std::string mToken;
+    std::optional<WebToken> mToken;
 
     QPushButton *mSetupButton;
     QLineEdit *mWebNameContent;

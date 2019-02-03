@@ -39,15 +39,15 @@ private:
     void createConnection(connectionHandler handler);
 signals:
     void tokenValidationSucceeded();
-    void tokenValidationFailed();
-    void loginSucceeded(const QString &token);
-    void loginFailed(); // TODO: Include reason for failure
+    void tokenValidationFailed(WebTokenValidationResponse response);
+    void loginSucceeded(const WebToken &token);
+    void loginFailed(WebTokenRequestResponse response);
     void registrationSucceeded(const QString &token);
     void registrationFailed();
     void disconnected();
     void webNameTested(const QString &webName, WebNameCheckResponse status);
     void webNameChanged(const QString &webNameSuffix);
-    void statusChanged(Status status);
+    void statusChanged(WebClient::Status status);
 
 private:
     void killConnection();
@@ -60,6 +60,11 @@ private:
     Status mStatus;
 };
 
-Q_DECLARE_METATYPE(WebClient::Status)
+Q_DECLARE_METATYPE(WebToken)
+Q_DECLARE_METATYPE(UserRegistrationResponse)
+Q_DECLARE_METATYPE(WebTokenRequestResponse)
+Q_DECLARE_METATYPE(WebTokenValidationResponse)
 Q_DECLARE_METATYPE(WebNameCheckResponse)
+Q_DECLARE_METATYPE(WebNameRegistrationResponse)
 
+Q_DECLARE_METATYPE(WebClient::Status)

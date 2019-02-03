@@ -22,9 +22,9 @@ public:
     TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database);
 
     void quit();
+    void asyncAuth();
 
 private:
-    void asyncAuth();
     void asyncTournamentRegister();
 
     void write();

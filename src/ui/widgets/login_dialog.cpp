@@ -1,7 +1,8 @@
-#include <QVBoxLayout>
-#include <QFormLayout>
 #include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QVBoxLayout>
 
 #include "core/log.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -20,11 +21,9 @@ LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
         QFormLayout *formLayout = new QFormLayout(group);
 
         mEmailContent = new QLineEdit;
-        mEmailContent->setText("svendcsvendsen@gmail.com");
 
         mPasswordContent = new QLineEdit;
         mPasswordContent->setEchoMode(QLineEdit::Password);
-        mPasswordContent->setText("password");
 
         formLayout->addRow(tr("Email"), mEmailContent);
         formLayout->addRow(tr("Password"), mPasswordContent);
@@ -63,14 +62,22 @@ void LoginDialog::cancelClick() {
     reject();
 }
 
-void LoginDialog::succeedLogin(const QString &token) {
-    log_debug().msg("Login suceeded");
+void LoginDialog::succeedLogin(const WebToken &token) {
+    mToken = token;
     accept();
 }
 
-void LoginDialog::failLogin() {
+void LoginDialog::failLogin(const WebTokenRequestResponse &response) {
     mLoginButton->setText(tr("Login"));
     mLoginButton->setEnabled(true);
-    log_debug().msg("Login failed");
+
+    if (response == WebTokenRequestResponse::SERVER_ERROR)
+        QMessageBox::warning(this, tr("Login failed"), tr("The connection attempt to live web failed. Try again later."), QMessageBox::Ok, QMessageBox::Ok);
+    else if (response == WebTokenRequestResponse::INCORRECT_CREDENTIALS)
+        QMessageBox::warning(this, tr("Login failed"), tr("Wrong email or password"), QMessageBox::Ok, QMessageBox::Ok);
+}
+
+const WebToken& LoginDialog::getToken() const {
+    return mToken.value();
 }
 

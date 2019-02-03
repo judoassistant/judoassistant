@@ -17,6 +17,7 @@ WebClientWidget::WebClientWidget(MasterStoreManager &storeManager, QWidget *pare
     connect(&mStoreManager, &MasterStoreManager::tournamentAboutToBeReset, this, &WebClientWidget::beginResetTournament);
     connect(&mStoreManager, &MasterStoreManager::tournamentReset, this, &WebClientWidget::endResetTournament);
     connect(&mStoreManager.getWebClient(), &WebClient::statusChanged, this, &WebClientWidget::changeWebStatus);
+    connect(&mStoreManager.getWebClient(), &WebClient::loginSucceeded, this, &WebClientWidget::succeedLogin);
 }
 
 void WebClientWidget::addWidgets() {
@@ -77,20 +78,23 @@ void WebClientWidget::buttonClick() {
 
     const auto webName = mStoreManager.getTournament().getWebName();
 
+    // Login if not already
     if (mWebStatus == WebClient::Status::NOT_CONNECTED) {
-        if (mToken.empty()) {
+        if (!mToken.has_value()) {
             LoginDialog dialog(mStoreManager);
             if (dialog.exec() != QDialog::Accepted)
                 return;
 
-            // Login succeeded
-            log_debug().msg("Login succeeded");
+            log_debug().msg("Dialog succees");
+            mToken = dialog.getToken();
         }
         else {
             log_debug().msg("Validate token");
         }
     }
-    else if (mWebStatus == WebClient::Status::CONNECTED) {
+
+    // Register name or disconnect
+    if (mWebStatus == WebClient::Status::CONNECTED) {
         if (webName.empty()) {
             log_debug().msg("Show configure dialog");
         }
@@ -114,7 +118,7 @@ void WebClientWidget::updateButton() {
     if (mWebStatus == WebClient::Status::NOT_CONNECTED) {
         mSetupButton->setEnabled(true);
 
-        if (mToken.empty())
+        if (!mToken.has_value())
             mSetupButton->setText("Login");
         else if (webName.empty())
             mSetupButton->setText("Configure");
@@ -151,7 +155,7 @@ void WebClientWidget::updateButton() {
     }
 }
 
-void WebClientWidget::succeedLogin(const QString &token) {
-    mToken = token.toStdString();
+void WebClientWidget::succeedLogin(const WebToken &token) {
+    mToken = token;
 }
 
