@@ -285,3 +285,39 @@ bool NetworkMessage::decodeCheckWebNameResponse(WebNameCheckResponse &response) 
     return deserializeAndCompress(mUncompressedSize, mBody, response);
 }
 
+std::ostream &operator<<(std::ostream &o, NetworkMessage::Type type) {
+    if (type == NetworkMessage::Type::HANDSHAKE)
+        return o << "HANDSHAKE";
+    if (type == NetworkMessage::Type::SYNC)
+        return o << "SYNC";
+    if (type == NetworkMessage::Type::SYNC_ACK)
+        return o << "SYNC_ACK";
+    if (type == NetworkMessage::Type::ACTION)
+        return o << "ACTION";
+    if (type == NetworkMessage::Type::ACTION_ACK)
+        return o << "ACTION_ACK";
+    if (type == NetworkMessage::Type::UNDO)
+        return o << "UNDO";
+    if (type == NetworkMessage::Type::UNDO_ACK)
+        return o << "UNDO_ACK";
+    if (type == NetworkMessage::Type::QUIT)
+        return o << "QUIT";
+    if (type == NetworkMessage::Type::REQUEST_WEB_TOKEN)
+        return o << "REQUEST_WEB_TOKEN";
+    if (type == NetworkMessage::Type::REQUEST_WEB_TOKEN_RESPONSE)
+        return o << "REQUEST_WEB_TOKEN_RESPONSE";
+    if (type == NetworkMessage::Type::VALIDATE_WEB_TOKEN)
+        return o << "VALIDATE_WEB_TOKEN";
+    if (type == NetworkMessage::Type::VALIDATE_WEB_TOKEN_RESPONSE)
+        return o << "VALIDATE_WEB_TOKEN_RESPONSE";
+    if (type == NetworkMessage::Type::REGISTER_WEB_NAME)
+        return o << "REGISTER_WEB_NAME";
+    if (type == NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE)
+        return o << "REGISTER_WEB_NAME_RESPONSE";
+    if (type == NetworkMessage::Type::CHECK_WEB_NAME)
+        return o << "CHECK_WEB_NAME";
+    if (type == NetworkMessage::Type::CHECK_WEB_NAME_RESPONSE)
+        return o << "CHECK_WEB_NAME_RESPONSE";
+    return o << "INVALID";
+}
+

@@ -104,3 +104,5 @@ private:
     std::string mBody;
 };
 
+std::ostream &operator<<(std::ostream &o, NetworkMessage::Type type);
+
