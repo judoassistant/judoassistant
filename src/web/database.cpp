@@ -51,7 +51,6 @@ bool Database::checkPassword(const std::string &email, const std::string &passwo
         return false;
 
     auto hash = r.front()[0].as<std::string>();
-    log_debug().field("hash",hash).msg("Got password hash");
     return Botan::check_bcrypt(password, hash);
 }
 
@@ -113,6 +112,7 @@ void Database::registerUser(const std::string &email, const std::string &passwor
 }
 
 void Database::requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
+    log_debug().field("email", email).field("password", password).msg("Requesting web token");
     try {
         if (!checkPassword(email, password)) {
             boost::asio::dispatch(mContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt, std::nullopt));

@@ -9,13 +9,14 @@ TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr
     , mDatabase(database)
     , mState(State::NOT_AUTHENTICATED)
 {
-    asyncAuth();
 }
 
 void TCPParticipant::asyncAuth() {
+    log_debug().msg("TCPParticiant: Async auth called");
     auto self = shared_from_this();
 
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
+        log_debug().msg("TCPParticiant: Async read handler called");
         assert(mState == State::NOT_AUTHENTICATED);
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
@@ -182,5 +183,6 @@ void TCPParticipant::asyncTournamentRegister() {
 
 void TCPParticipant::quit() {
     // TODO: Implement
+    log_debug().msg("Quit called");
 }
 
