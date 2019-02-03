@@ -3,6 +3,7 @@
 
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
+#include "ui/widgets/configure_dialog.hpp"
 #include "ui/widgets/login_dialog.hpp"
 #include "ui/widgets/web_client_widget.hpp"
 
@@ -85,7 +86,6 @@ void WebClientWidget::buttonClick() {
             if (dialog.exec() != QDialog::Accepted)
                 return;
 
-            log_debug().msg("Dialog succees");
             mToken = dialog.getToken();
         }
         else {
@@ -95,11 +95,14 @@ void WebClientWidget::buttonClick() {
 
     // Register name or disconnect
     if (mWebStatus == WebClient::Status::CONNECTED) {
-        if (webName.empty()) {
-            log_debug().msg("Show configure dialog");
+        if (!webName.empty()) {
+            log_debug().msg("Check webName");
         }
         else {
-            log_debug().msg("Test name");
+            log_debug().msg("Show configure dialog");
+            ConfigureDialog dialog(mStoreManager);
+            if (dialog.exec() != QDialog::Accepted)
+                return;
         }
     }
     else if (mWebStatus == WebClient::Status::CONFIGURED) {

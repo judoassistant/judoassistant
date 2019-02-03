@@ -31,7 +31,7 @@ public:
     void registerUser(const QString &email, const QString &password);
     void disconnect();
 
-    void setWebName(TournamentId id, const QString &webName);
+    void registerWebName(TournamentId id, const QString &webName);
     void testWebName(TournamentId id, const QString &webName);
 
 private:
@@ -43,9 +43,9 @@ signals:
     void loginSucceeded(const WebToken &token);
     void loginFailed(WebTokenRequestResponse response);
     void registrationSucceeded(const QString &token);
-    void registrationFailed();
+    void registrationFailed(WebNameRegistrationResponse response);
     void disconnected();
-    void webNameTested(const QString &webName, WebNameCheckResponse status);
+    void webNameChecked(const QString &webName, WebNameCheckResponse status);
     void webNameChanged(const QString &webNameSuffix);
     void statusChanged(WebClient::Status status);
 

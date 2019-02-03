@@ -129,8 +129,8 @@ void WebClient::disconnect() {
 
 }
 
-void WebClient::setWebName(TournamentId id, const QString &webName) {
-
+void WebClient::registerWebName(TournamentId id, const QString &webName) {
+    log_debug().field("id", id).field("webName", webName.toStdString()).msg("Registering web name");
 }
 
 void WebClient::testWebName(TournamentId id, const QString &webName) {
