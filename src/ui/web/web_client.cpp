@@ -128,6 +128,9 @@ void WebClient::registerUser(const QString &email, const QString &password) {
 }
 
 void WebClient::disconnect() {
+    assert(mStatus == Status::CONFIGURED);
+    mStatus = Status::DISCONNECTING;
+    emit statusChanged(mStatus);
     // TODO: Implement disconnect
 }
 

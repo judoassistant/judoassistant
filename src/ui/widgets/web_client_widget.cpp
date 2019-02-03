@@ -106,7 +106,7 @@ void WebClientWidget::buttonClick() {
         }
     }
     else if (mWebStatus == WebClient::Status::CONFIGURED) {
-        log_debug().msg("Disconnect");
+        mStoreManager.getWebClient().disconnect();
     }
 }
 
@@ -133,6 +133,12 @@ void WebClientWidget::updateButton() {
     if (mWebStatus == WebClient::Status::CONNECTING) {
         mSetupButton->setEnabled(false);
         mSetupButton->setText("Connecting...");
+        return;
+    }
+
+    if (mWebStatus == WebClient::Status::DISCONNECTING) {
+        mSetupButton->setEnabled(false);
+        mSetupButton->setText("Disconnecting...");
         return;
     }
 
