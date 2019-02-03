@@ -32,7 +32,7 @@ public:
     void disconnect();
 
     void registerWebName(TournamentId id, const QString &webName);
-    void testWebName(TournamentId id, const QString &webName);
+    void checkWebName(TournamentId id, const QString &webName);
 
 private:
     typedef std::function<void(boost::system::error_code)> connectionHandler;
@@ -42,11 +42,10 @@ signals:
     void tokenValidationFailed(WebTokenValidationResponse response);
     void loginSucceeded(const WebToken &token);
     void loginFailed(WebTokenRequestResponse response);
-    void registrationSucceeded(const QString &token);
+    void registrationSucceeded(const QString &webName);
     void registrationFailed(WebNameRegistrationResponse response);
     void disconnected();
     void webNameChecked(const QString &webName, WebNameCheckResponse status);
-    void webNameChanged(const QString &webNameSuffix);
     void statusChanged(WebClient::Status status);
 
 private:

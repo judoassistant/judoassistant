@@ -11,6 +11,7 @@
 
 class MasterStoreManager;
 
+// TODO: Rename configure to register
 class WebClientWidget : public QGroupBox {
     Q_OBJECT
 public:

@@ -50,6 +50,7 @@ void WebClient::createConnection(connectionHandler handler) {
         boost::asio::async_connect(*mSocket, endpoints, [this, handler](boost::system::error_code ec, tcp::endpoint) {
             if (ec) {
                 log_error().field("message", ec.message()).msg("Encountered error when connecting to web host. Failing");
+                killConnection();
                 handler(ec);
                 return;
             }
@@ -59,6 +60,7 @@ void WebClient::createConnection(connectionHandler handler) {
             mConnection->asyncJoin([this, handler](boost::system::error_code ec) {
                 if (ec) {
                     log_error().field("message", ec.message()).msg("Encountered error handshaking with web host. Killing connection");
+                    killConnection();
                     handler(ec);
                     return;
                 }
@@ -81,7 +83,7 @@ void WebClient::loginUser(const QString &email, const QString &password) {
         loginMessage->encodeRequestWebToken(email.toStdString(), password.toStdString());
         mConnection->asyncWrite(*loginMessage, [this, loginMessage](boost::system::error_code ec) {
             if (ec) {
-                log_error().field("message", ec.message()).msg("Encountered writing request token message. Killing connection");
+                log_error().field("message", ec.message()).msg("Encountered error writing request token message. Killing connection");
                 killConnection();
                 emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
                 return;
@@ -90,7 +92,7 @@ void WebClient::loginUser(const QString &email, const QString &password) {
             auto responseMessage = std::make_shared<NetworkMessage>();
             mConnection->asyncRead(*responseMessage, [this, responseMessage](boost::system::error_code ec) {
                 if (ec) {
-                    log_error().field("message", ec.message()).msg("Encountered reading request token response. Failing");
+                    log_error().field("message", ec.message()).msg("Encountered error reading request token response. Failing");
                     killConnection();
                     emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
                     return;
@@ -122,19 +124,63 @@ void WebClient::loginUser(const QString &email, const QString &password) {
 }
 
 void WebClient::registerUser(const QString &email, const QString &password) {
-
+    // TODO: Implement registration
 }
 
 void WebClient::disconnect() {
-
+    // TODO: Implement disconnect
 }
 
 void WebClient::registerWebName(TournamentId id, const QString &webName) {
     log_debug().field("id", id).field("webName", webName.toStdString()).msg("Registering web name");
+    assert(mStatus == Status::CONNECTED);
+    mStatus = Status::CONFIGURING;
+    emit statusChanged(mStatus);
+
+    auto registerMessage = std::make_shared<NetworkMessage>();
+    registerMessage->encodeRegisterWebName(id, webName.toStdString());
+    mConnection->asyncWrite(*registerMessage, [this, registerMessage, webName](boost::system::error_code ec) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error writing register message. Killing connection");
+            killConnection();
+            emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
+            return;
+        }
+
+        auto responseMessage = std::make_shared<NetworkMessage>();
+        mConnection->asyncRead(*responseMessage, [this, responseMessage, webName](boost::system::error_code ec) {
+            if (ec) {
+                log_error().field("message", ec.message()).msg("Encountered error reading registration response. Failing");
+                killConnection();
+                emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
+                return;
+            }
+
+            if (responseMessage->getType() != NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE) {
+                log_error().msg("Received response message of wrong type. Failing");
+                killConnection();
+                emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
+                return;
+            }
+
+            WebNameRegistrationResponse response;
+            responseMessage->decodeRegisterWebNameResponse(response);
+
+            if (response != WebNameRegistrationResponse::SUCCESSFUL) {
+                killConnection();
+                emit registrationFailed(response);
+                return;
+            }
+
+            mStatus = Status::CONFIGURED;
+            emit registrationSucceeded(webName);
+            emit statusChanged(mStatus);
+        });
+    });
 }
 
-void WebClient::testWebName(TournamentId id, const QString &webName) {
-
+void WebClient::checkWebName(TournamentId id, const QString &webName) {
+    // TODO: Implement checking of web names
 }
 
 void WebClient::run() {
