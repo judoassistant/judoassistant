@@ -5,14 +5,11 @@
 
 #include <QObject>
 
+#include "core/actions/action.hpp"
 #include "core/core.hpp"
 #include "core/id.hpp"
 
-class Action;
 class QTournamentStore;
-
-typedef std::list<std::pair<ClientActionId, std::shared_ptr<Action>>> SharedActionList;
-typedef std::list<std::pair<ClientActionId, std::unique_ptr<Action>>> UniqueActionList;
 
 struct SyncPayload {
     SyncPayload(std::unique_ptr<QTournamentStore> tournament, std::unique_ptr<UniqueActionList> confirmedActionList, std::unique_ptr<UniqueActionList> unconfirmedActionList, std::unique_ptr<std::unordered_set<ClientActionId>> unconfirmedUndos);

@@ -34,3 +34,7 @@ private:
     bool mDone;
 };
 
+class ClientActionId;
+typedef std::list<std::pair<ClientActionId, std::shared_ptr<Action>>> SharedActionList;
+typedef std::list<std::pair<ClientActionId, std::unique_ptr<Action>>> UniqueActionList;
+

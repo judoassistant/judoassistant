@@ -12,19 +12,30 @@
 constexpr size_t FILE_HEADER_SIZE = 9;
 
 MasterStoreManager::MasterStoreManager()
-    : mDirty(false)
+    : StoreManager()
+    , mWebClient(getWorkerThread().getContext())
+    , mDirty(false)
 {
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
+}
 
-    mWebClient.start();
+
+void MasterStoreManager::asyncStartServer(int port) {
+
+}
+
+void MasterStoreManager::asyncStopServer() {
+
 }
 
 MasterStoreManager::~MasterStoreManager() {
-    stopServer();
-    mWebClient.quit();
-    mWebClient.wait();
+}
+
+void MasterStoreManager::stop() {
+    mWebClient.stop();
+    StoreManager::stop();
 }
 
 bool MasterStoreManager::read(const QString &path) {

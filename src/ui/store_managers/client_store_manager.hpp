@@ -15,15 +15,10 @@ public:
     };
 
     ClientStoreManager();
-    ~ClientStoreManager();
 
-    void connect(QString host, unsigned int port);
-    void disconnect();
+    void asyncConnect(QString host, unsigned int port);
+    void asyncDisconnect();
 
-    void dispatch(std::unique_ptr<Action> action) override;
-    void undo() override;
-    void undo(ClientActionId action) override;
-    void redo() override;
     State getState() const;
 
 protected:
@@ -40,9 +35,6 @@ signals:
     void stateChanged(State state);
 
 private:
-    void startClient();
-    void stopClient();
-
     State mState;
     std::shared_ptr<NetworkClient> mInterface;
 };

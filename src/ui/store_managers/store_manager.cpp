@@ -18,9 +18,8 @@ StoreManager::~StoreManager() {
         stopInterface();
 }
 
-void StoreManager::startInterface(std::shared_ptr<NetworkInterface> interface) {
-    if (mNetworkInterface != nullptr)
-        throw std::runtime_error("Attempted to start StoreManager interface with another one running");
+void StoreManager::setInterface(std::unique_ptr<NetworkInterface> interface) {
+    assert(mNetworkInterface == nullptr);
 
     mNetworkInterface = std::move(interface);
 
@@ -34,12 +33,6 @@ void StoreManager::startInterface(std::shared_ptr<NetworkInterface> interface) {
     connect(mNetworkInterface.get(), &NetworkInterface::syncConfirmed, this, &StoreManager::confirmSync);
 
     mNetworkInterface->start();
-}
-
-void StoreManager::stopInterface() {
-    mNetworkInterface->quit();
-    mNetworkInterface->wait();
-    mNetworkInterface.reset();
 }
 
 QTournamentStore & StoreManager::getTournament() {
@@ -540,5 +533,18 @@ void StoreManager::undo(ClientActionId actionId) {
         emit undoStatusChanged(false);
     if (mRedoList.size() == 1) // list was empty before
         emit redoStatusChanged(true);
+}
+
+WorkerThread& StoreManager::getWorkerThread() {
+    return mThread;
+}
+
+void StoreManager::stop() {
+    getThread().stop();
+    mNetworkInterface->stop();
+}
+
+void StoreManager::wait() {
+    getWorkerThread().wait();
 }
 

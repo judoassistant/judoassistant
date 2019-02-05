@@ -141,15 +141,6 @@ const SharedActionList & NetworkServer::getActionStack() const {
     return mActionStack;
 }
 
-void NetworkServer::start() {
-    QThread::start();
-}
-
-void NetworkServer::quit() {
-    postQuit();
-    QThread::quit();
-}
-
 void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
     ClientActionId actionId;
     std::shared_ptr<Action> action;

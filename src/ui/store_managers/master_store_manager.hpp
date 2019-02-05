@@ -9,8 +9,8 @@ public:
     MasterStoreManager();
     ~MasterStoreManager();
 
-    void startServer(int port);
-    void stopServer();
+    void asyncStartServer(int port);
+    void asyncStopServer();
 
     void dispatch(std::unique_ptr<Action> action) override;
     void undo() override;
@@ -23,6 +23,8 @@ public:
 
     WebClient& getWebClient();
     const WebClient& getWebClient() const;
+
+    void stop() override;
 
 private:
     bool mDirty;

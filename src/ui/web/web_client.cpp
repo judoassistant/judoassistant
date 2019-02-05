@@ -25,11 +25,11 @@ void WebClient::validateToken(const QString &token) {
 }
 
 void WebClient::createConnection(connectionHandler handler) {
-    assert(mStatus == Status::NOT_CONNECTED);
-    mStatus = Status::CONNECTING;
-    emit statusChanged(mStatus);
-
     mContext.dispatch([this, handler]() {
+        assert(mStatus == Status::NOT_CONNECTED);
+        mStatus = Status::CONNECTING;
+        emit statusChanged(mStatus);
+
         mQuitPosted = false;
 
         tcp::resolver resolver(mContext);
@@ -128,56 +128,60 @@ void WebClient::registerUser(const QString &email, const QString &password) {
 }
 
 void WebClient::disconnect() {
-    assert(mStatus == Status::CONFIGURED);
-    mStatus = Status::DISCONNECTING;
-    emit statusChanged(mStatus);
-    // TODO: Implement disconnect
+    mContext.dispatch([this]() {
+        assert(mStatus == Status::CONFIGURED);
+        mStatus = Status::DISCONNECTING;
+        emit statusChanged(mStatus);
+        // TODO: Implement disconnect
+    });
 }
 
 void WebClient::registerWebName(TournamentId id, const QString &webName) {
     log_debug().field("id", id).field("webName", webName.toStdString()).msg("Registering web name");
-    assert(mStatus == Status::CONNECTED);
-    mStatus = Status::CONFIGURING;
-    emit statusChanged(mStatus);
+    mContext.dispatch([this, id, webName]() {
+        assert(mStatus == Status::CONNECTED);
+        mStatus = Status::CONFIGURING;
+        emit statusChanged(mStatus);
 
-    auto registerMessage = std::make_shared<NetworkMessage>();
-    registerMessage->encodeRegisterWebName(id, webName.toStdString());
-    mConnection->asyncWrite(*registerMessage, [this, registerMessage, webName](boost::system::error_code ec) {
-        if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error writing register message. Killing connection");
-            killConnection();
-            emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
-            return;
-        }
-
-        auto responseMessage = std::make_shared<NetworkMessage>();
-        mConnection->asyncRead(*responseMessage, [this, responseMessage, webName](boost::system::error_code ec) {
+        auto registerMessage = std::make_shared<NetworkMessage>();
+        registerMessage->encodeRegisterWebName(id, webName.toStdString());
+        mConnection->asyncWrite(*registerMessage, [this, registerMessage, webName](boost::system::error_code ec) {
             if (ec) {
-                log_error().field("message", ec.message()).msg("Encountered error reading registration response. Failing");
+                log_error().field("message", ec.message()).msg("Encountered error writing register message. Killing connection");
                 killConnection();
                 emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
                 return;
             }
 
-            if (responseMessage->getType() != NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE) {
-                log_error().msg("Received response message of wrong type. Failing");
-                killConnection();
-                emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
-                return;
-            }
+            auto responseMessage = std::make_shared<NetworkMessage>();
+            mConnection->asyncRead(*responseMessage, [this, responseMessage, webName](boost::system::error_code ec) {
+                if (ec) {
+                    log_error().field("message", ec.message()).msg("Encountered error reading registration response. Failing");
+                    killConnection();
+                    emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
+                    return;
+                }
 
-            WebNameRegistrationResponse response;
-            responseMessage->decodeRegisterWebNameResponse(response);
+                if (responseMessage->getType() != NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE) {
+                    log_error().msg("Received response message of wrong type. Failing");
+                    killConnection();
+                    emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
+                    return;
+                }
 
-            if (response != WebNameRegistrationResponse::SUCCESSFUL) {
-                killConnection();
-                emit registrationFailed(response);
-                return;
-            }
+                WebNameRegistrationResponse response;
+                responseMessage->decodeRegisterWebNameResponse(response);
 
-            mStatus = Status::CONFIGURED;
-            emit registrationSucceeded(webName);
-            emit statusChanged(mStatus);
+                if (response != WebNameRegistrationResponse::SUCCESSFUL) {
+                    killConnection();
+                    emit registrationFailed(response);
+                    return;
+                }
+
+                mStatus = Status::CONFIGURED;
+                emit registrationSucceeded(webName);
+                emit statusChanged(mStatus);
+            });
         });
     });
 }

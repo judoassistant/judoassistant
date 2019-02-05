@@ -41,6 +41,9 @@ public:
     StoreManager();
     ~StoreManager();
 
+    virtual void stop();
+    void wait();
+
     QTournamentStore & getTournament();
     const QTournamentStore & getTournament() const;
 
@@ -73,8 +76,7 @@ signals:
     void actionAdded(ClientActionId actionId, size_t pos);
 
 protected:
-    void startInterface(std::shared_ptr<NetworkInterface> interface);
-    void stopInterface();
+    void setInterface(std::unique_ptr<NetworkInterface> interface);
 
     void sync(std::unique_ptr<QTournamentStore> tournament);
     void sync();
@@ -86,8 +88,13 @@ protected:
     void receiveSync(SyncPayloadPtr syncPayload);
     void confirmSync();
 
+    WorkerThread& getWorkerThread();
+
 private:
+    WorkerThread mThread;
     static const size_t REDO_LIST_MAX_SIZE = 20;
+
+    std::unique_ptr<NetworkInterface> mNetworkInterface;
 
     ClientId mId;
     std::unique_ptr<QTournamentStore> mTournament;
@@ -106,9 +113,6 @@ private:
 
     size_t mSyncing;
 
-    std::shared_ptr<NetworkInterface> mNetworkInterface;
-
     friend class ConstActionListIterator;
 };
-
 

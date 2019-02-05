@@ -9,7 +9,7 @@
 #include "core/network/network_connection.hpp"
 
 // TODO: Make thread classes more consistent
-class WebClient : public QThread {
+class WebClient : public QObject {
 Q_OBJECT
 public:
     enum class Status {
@@ -23,8 +23,7 @@ public:
 
     WebClient();
 
-    void run() override;
-    void quit();
+    stop();
 
     void validateToken(const QString &token);
     void loginUser(const QString &email, const QString &password);

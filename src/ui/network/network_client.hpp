@@ -14,7 +14,7 @@
 class NetworkClient : public NetworkInterface {
     Q_OBJECT
 public:
-    NetworkClient();
+    NetworkClient(boost::asio::io_context &context);
 
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
@@ -23,10 +23,7 @@ public:
     void postConnect(const std::string &host, unsigned int port);
     void postDisconnect();
 
-    void start() override;
-    void quit() override;
-
-    void run() override;
+    void stop() override;
 
 signals:
     void connectionAttemptFailed();
