@@ -26,6 +26,7 @@ public:
 
 private:
     void asyncTournamentRegister();
+    void asyncTournamentSync(const std::string &webName);
 
     void write();
     void deliver(std::shared_ptr<NetworkMessage> message);
