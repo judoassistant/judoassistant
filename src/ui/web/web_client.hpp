@@ -8,19 +8,18 @@
 #include "core/web/web_types.hpp"
 #include "core/network/network_connection.hpp"
 
-// TODO: Make thread classes more consistent
+enum class WebClientState {
+    NOT_CONNECTED,
+    CONNECTING,
+    CONNECTED,
+    CONFIGURING,
+    CONFIGURED,
+    DISCONNECTING
+};
+
 class WebClient : public QObject {
 Q_OBJECT
 public:
-    enum class Status {
-        NOT_CONNECTED,
-        CONNECTING,
-        CONNECTED,
-        CONFIGURING,
-        CONFIGURED,
-        DISCONNECTING
-    };
-
     WebClient();
 
     stop();
@@ -65,4 +64,4 @@ Q_DECLARE_METATYPE(WebTokenValidationResponse)
 Q_DECLARE_METATYPE(WebNameCheckResponse)
 Q_DECLARE_METATYPE(WebNameRegistrationResponse)
 
-Q_DECLARE_METATYPE(WebClient::Status)
+Q_DECLARE_METATYPE(WebClientState)

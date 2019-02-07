@@ -9,7 +9,13 @@
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
 #include "ui/network/network_interface.hpp"
-#include "ui/store_managers/sync_payload.hpp"
+
+enum class NetworkClientState {
+    NOT_CONNECTED,
+    CONNECTED,
+    CONNECTING,
+    DISCONNECTING
+};
 
 class NetworkClient : public NetworkInterface {
     Q_OBJECT
@@ -38,8 +44,7 @@ private:
     void killConnection();
     void recoverUnconfirmed(TournamentStore *tournament, SharedActionList *actions);
 
-    boost::asio::io_context mContext;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
+    boost::asio::io_context &mContext;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
     std::string mHost;
@@ -53,3 +58,4 @@ private:
     std::unordered_set<ClientActionId> mUnconfirmedUndos;
 };
 
+Q_DECLARE_METATYPE(NetworkClientState)

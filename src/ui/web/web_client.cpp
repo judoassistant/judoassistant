@@ -17,7 +17,7 @@ WebClient::WebClient()
     qRegisterMetaType<WebNameCheckResponse>("WebNameCheckResponse");
     qRegisterMetaType<WebNameRegistrationResponse>("WebNameRegistrationResponse");
 
-    qRegisterMetaType<Status>("WebClient::Status");
+    qRegisterMetaType<WebClientState>("WebClientState");
 }
 
 void WebClient::validateToken(const QString &token) {

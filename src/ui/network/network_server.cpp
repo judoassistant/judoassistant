@@ -6,26 +6,17 @@
 
 using boost::asio::ip::tcp;
 
-NetworkServer::NetworkServer(int port)
-    : mContext()
-    , mEndpoint(tcp::v4(), port)
-    , mAcceptor(mContext, mEndpoint)
+NetworkServer::NetworkServer(boost::asio::io_context &context)
+    : mContext(context)
 {
-    accept();
+    qRegisterMetaType<NetworkServerState>();
 }
 
-void NetworkServer::run() {
-    while (true) {
-        try
-        {
-            mContext.run();
-            break; // run() exited normally
-        }
-        catch (std::exception& e)
-        {
-            log_error().field("msg", e.what()).msg("NetworkServer caught exception");
-        }
-    }
+NetworkServer::accept(int port) {
+    mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
+    mAcceptor = boost::asio::ip::tcp::acceptor(mContext, mEndpoint);
+
+    accept();
 }
 
 void NetworkServer::accept() {
@@ -109,22 +100,6 @@ void NetworkServer::postUndo(ClientActionId actionId) {
     });
 }
 
-void NetworkServer::postQuit() {
-    mContext.post([this]() {
-        mAcceptor.close();
-
-        auto message = std::make_shared<NetworkMessage>();
-        message->encodeQuit();
-
-        auto it = mParticipants.begin();
-        while (it != mParticipants.end()) {
-            auto &participant = *it;
-            participant->deliver(message);
-            it = mParticipants.erase(it);
-        }
-    });
-}
-
 void NetworkServer::join(std::shared_ptr<NetworkParticipant> participant) {
     mParticipants.insert(std::move(participant));
 }
@@ -198,4 +173,20 @@ void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::sh
 void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message) {
     for (auto & participant : mParticipants)
         participant->deliver(message);
+}
+
+void NetworkServer::stop() {
+    mContext.post([this]() {
+        mAcceptor.close();
+
+        auto message = std::make_shared<NetworkMessage>();
+        message->encodeQuit();
+
+        auto it = mParticipants.begin();
+        while (it != mParticipants.end()) {
+            auto &participant = *it;
+            participant->deliver(message);
+            it = mParticipants.erase(it);
+        }
+    });
 }

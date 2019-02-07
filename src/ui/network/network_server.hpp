@@ -9,11 +9,15 @@
 #include "core/constants/actions.hpp"
 #include "core/core.hpp"
 #include "ui/network/network_interface.hpp"
-#include "ui/store_managers/sync_payload.hpp"
 
 class NetworkConnection;
 class NetworkMessage;
 class NetworkParticipant;
+
+enum class NetworkServerState {
+    NOT_ACCEPTING,
+    ACCEPTING,
+};
 
 class NetworkServer : public NetworkInterface {
     Q_OBJECT
@@ -24,9 +28,7 @@ public:
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
     void postUndo(ClientActionId actionId) override;
 
-    void postStart(size_t port);
-    void postShutdown();
-
+    void accept(int port);
     void stop() override;
 
 signals:
@@ -48,8 +50,8 @@ protected:
     void accept();
 private:
     boost::asio::io_context &mContext;
-    boost::asio::ip::tcp::endpoint mEndpoint;
-    boost::asio::ip::tcp::acceptor mAcceptor;
+    std::optional<boost::asio::ip::tcp::endpoint> mEndpoint;
+    std::optional<boost::asio::ip::tcp::acceptor> mAcceptor;
     std::unordered_set<std::shared_ptr<NetworkParticipant>> mParticipants;
     std::shared_ptr<TournamentStore> mTournament; // Tournament always kept behind the tournament in the UI thread
     SharedActionList mActionStack;
@@ -57,4 +59,6 @@ private:
 
     friend class NetworkParticipant;
 };
+
+Q_DECLARE_METATYPE(NetworkServerState)
 

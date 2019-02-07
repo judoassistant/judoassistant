@@ -3,11 +3,11 @@
 
 using boost::asio::ip::tcp;
 
-NetworkClient::NetworkClient()
-    : mContext()
-    , mWorkGuard(boost::asio::make_work_guard(mContext))
+NetworkClient::NetworkClient(boost::asio::io_context &context)
+    : mContext(context)
     , mReadMessage(std::make_unique<NetworkMessage>())
 {
+    qRegisterMetaType<NetworkClientState>();
 }
 
 void NetworkClient::postSync(std::unique_ptr<TournamentStore> tournament) {
@@ -180,39 +180,13 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
     });
 }
 
-void NetworkClient::start() {
-    QThread::start();
-}
-
-void NetworkClient::quit() {
-    postDisconnect();
-    mWorkGuard.reset();
-    QThread::quit();
-}
-
-void NetworkClient::postDisconnect() {
+void NetworkClient::stop() {
     mContext.post([this]() {
         mQuitPosted = true; // writeMessage will kill the connection when finished
         auto message = std::make_unique<NetworkMessage>();
         message->encodeQuit();
         deliver(std::move(message));
     });
-}
-
-void NetworkClient::run() {
-    while (true) {
-        try
-        {
-            mContext.run();
-            break; // run() exited normally
-        }
-        catch (std::exception& e)
-        {
-            log_error().field("msg", e.what()).msg("NetworkClient caught exception");
-        }
-    }
-
-    log_info().msg("NetworkClient::run finished");
 }
 
 void NetworkClient::writeMessage() {
