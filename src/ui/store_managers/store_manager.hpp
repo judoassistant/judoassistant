@@ -1,7 +1,7 @@
 #pragma once
 
-#include <list>
 #include <chrono>
+#include <list>
 
 #include <QObject>
 #include <QString>
@@ -9,10 +9,10 @@
 #include "core/actions/action.hpp"
 #include "core/core.hpp"
 #include "core/id.hpp"
-#include "ui/store_managers/sync_payload.hpp"
+#include "ui/network/network_interface.hpp"
+#include "ui/store_managers/worker_thread.hpp"
 
 class QTournamentStore;
-class NetworkInterface;
 class StoreManager;
 
 class ConstActionListIterator {
@@ -39,7 +39,7 @@ class StoreManager : public QObject {
     Q_OBJECT
 public:
     StoreManager();
-    ~StoreManager();
+    virtual ~StoreManager();
 
     virtual void stop();
     void wait();
@@ -76,7 +76,7 @@ signals:
     void actionAdded(ClientActionId actionId, size_t pos);
 
 protected:
-    void setInterface(std::unique_ptr<NetworkInterface> interface);
+    void setInterface(std::shared_ptr<NetworkInterface> interface);
 
     void sync(std::unique_ptr<QTournamentStore> tournament);
     void sync();
@@ -94,7 +94,7 @@ private:
     WorkerThread mThread;
     static const size_t REDO_LIST_MAX_SIZE = 20;
 
-    std::unique_ptr<NetworkInterface> mNetworkInterface;
+    std::shared_ptr<NetworkInterface> mNetworkInterface;
 
     ClientId mId;
     std::unique_ptr<QTournamentStore> mTournament;

@@ -21,13 +21,20 @@ public:
     bool write(const QString &path);
     void resetTournament();
 
+    NetworkServer& getNetworkServer();
+    const NetworkServer& getNetworkServer() const;
+
     WebClient& getWebClient();
     const WebClient& getWebClient() const;
+
+    NetworkServer::State getNetworkServerState() const;
+    WebClient::State getWebClientState() const;
 
     void stop() override;
 
 private:
     bool mDirty;
+    NetworkServer::State mNetworkState;
     WebClient mWebClient;
 };
 

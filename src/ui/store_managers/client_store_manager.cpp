@@ -4,63 +4,63 @@
 
 ClientStoreManager::ClientStoreManager()
     : StoreManager()
-    : mState(State::NOT_CONNECTED)
+    , mNetworkClientState(NetworkClientState::NOT_CONNECTED)
 {
-    auto networkClient = std::make_unique<NetworkClient>(getWorkerThread.getContext());
+    mNetworkClient = std::make_unique<NetworkClient>(getWorkerThread().getContext());
 
-    QObject::connect(networkClient.get(), &NetworkClient::connectionLost, this, &ClientStoreManager::loseConnection);
-    QObject::connect(networkClient.get(), &NetworkClient::connectionAttemptFailed, this, &ClientStoreManager::failConnectionAttempt);
-    QObject::connect(networkClient.get(), &NetworkClient::connectionShutdown, this, &ClientStoreManager::shutdownConnection);
-    QObject::connect(networkClient.get(), &NetworkClient::connectionAttemptSucceeded, this, &ClientStoreManager::succeedConnectionAttempt);
+    QObject::connect(mNetworkClient.get(), &NetworkClient::connectionLost, this, &ClientStoreManager::loseConnection);
+    QObject::connect(mNetworkClient.get(), &NetworkClient::connectionAttemptFailed, this, &ClientStoreManager::failConnectionAttempt);
+    QObject::connect(mNetworkClient.get(), &NetworkClient::connectionShutdown, this, &ClientStoreManager::shutdownConnection);
+    QObject::connect(mNetworkClient.get(), &NetworkClient::connectionAttemptSucceeded, this, &ClientStoreManager::succeedConnectionAttempt);
 
-    setInterface(std::move(networkClient));
+    setInterface(mNetworkClient);
 }
 
 void ClientStoreManager::asyncConnect(QString host, unsigned int port) {
-    if (mState != State::NOT_CONNECTED) {
+    if (mNetworkClientState != NetworkClientState::NOT_CONNECTED) {
         log_warning().msg("Tried to call connect when already connecting");
         return;
     }
-    mState = State::CONNECTING;
-    emit stateChanged(mState);
-    mInterface->postConnect(host.toStdString(), port);
+    mNetworkClientState = NetworkClientState::CONNECTING;
+    emit networkClientStateChanged(mNetworkClientState);
+    mNetworkClient->postConnect(host.toStdString(), port);
 }
 
 void ClientStoreManager::asyncDisconnect() {
-    if (mState != State::CONNECTED) {
+    if (mNetworkClientState != NetworkClientState::CONNECTED) {
         log_warning().msg("Tried to call disconnect on non-connected client");
         return;
     }
-    mState = State::DISCONNECTING;
-    emit stateChanged(mState);
-    mInterface->postDisconnect();
+    mNetworkClientState = NetworkClientState::DISCONNECTING;
+    emit networkClientStateChanged(mNetworkClientState);
+    mNetworkClient->postDisconnect();
 }
 
-ClientStoreManager::State ClientStoreManager::getState() const {
-    return mState;
+NetworkClientState ClientStoreManager::getNetworkClientState() const {
+    return mNetworkClientState;
 }
 
 void ClientStoreManager::loseConnection() {
-    mState = State::NOT_CONNECTED;
-    emit stateChanged(mState);
+    mNetworkClientState = NetworkClientState::NOT_CONNECTED;
+    emit networkClientStateChanged(mNetworkClientState);
     emit connectionLost();
 }
 
 void ClientStoreManager::shutdownConnection() {
-    mState = State::NOT_CONNECTED;
-    emit stateChanged(mState);
+    mNetworkClientState = NetworkClientState::NOT_CONNECTED;
+    emit networkClientStateChanged(mNetworkClientState);
     emit connectionShutdown();
 }
 
 void ClientStoreManager::failConnectionAttempt() {
-    mState = State::NOT_CONNECTED;
-    emit stateChanged(mState);
+    mNetworkClientState = NetworkClientState::NOT_CONNECTED;
+    emit networkClientStateChanged(mNetworkClientState);
     emit connectionAttemptFailed();
 }
 
 void ClientStoreManager::succeedConnectionAttempt() {
-    mState = State::CONNECTED;
-    emit stateChanged(mState);
+    mNetworkClientState = NetworkClientState::CONNECTED;
+    emit networkClientStateChanged(mNetworkClientState);
     emit connectionAttemptSucceeded();
 }
 

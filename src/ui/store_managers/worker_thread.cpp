@@ -21,6 +21,7 @@ void WorkerThread::stop() {
     mWorkGuard.reset();
 }
 
-boost::asio::io_context& getContext() {
+boost::asio::io_context& WorkerThread::getContext() {
     return mContext;
 }
+

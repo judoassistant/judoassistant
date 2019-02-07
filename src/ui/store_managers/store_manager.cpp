@@ -10,15 +10,14 @@ StoreManager::StoreManager()
     , mSyncing(0)
 {
     mTournament->setId(TournamentId::generate());
-    registerMetatypes();
 }
 
 StoreManager::~StoreManager() {
-    if (mNetworkInterface)
-        stopInterface();
+    stop();
+    wait();
 }
 
-void StoreManager::setInterface(std::unique_ptr<NetworkInterface> interface) {
+void StoreManager::setInterface(std::shared_ptr<NetworkInterface> interface) {
     assert(mNetworkInterface == nullptr);
 
     mNetworkInterface = std::move(interface);
@@ -31,8 +30,6 @@ void StoreManager::setInterface(std::unique_ptr<NetworkInterface> interface) {
 
     connect(mNetworkInterface.get(), &NetworkInterface::syncReceived, this, &StoreManager::receiveSync);
     connect(mNetworkInterface.get(), &NetworkInterface::syncConfirmed, this, &StoreManager::confirmSync);
-
-    mNetworkInterface->start();
 }
 
 QTournamentStore & StoreManager::getTournament() {
@@ -540,7 +537,7 @@ WorkerThread& StoreManager::getWorkerThread() {
 }
 
 void StoreManager::stop() {
-    getThread().stop();
+    getWorkerThread().stop();
     mNetworkInterface->stop();
 }
 
