@@ -22,7 +22,7 @@ Q_OBJECT
 public:
     WebClient();
 
-    stop();
+    void stop();
 
     void validateToken(const QString &token);
     void loginUser(const QString &email, const QString &password);
@@ -35,6 +35,7 @@ public:
 private:
     typedef std::function<void(boost::system::error_code)> connectionHandler;
     void createConnection(connectionHandler handler);
+
 signals:
     void tokenValidationSucceeded();
     void tokenValidationFailed(WebTokenValidationResponse response);
@@ -44,7 +45,7 @@ signals:
     void registrationFailed(WebNameRegistrationResponse response);
     void disconnected();
     void webNameChecked(const QString &webName, WebNameCheckResponse status);
-    void statusChanged(WebClient::Status status);
+    void stateChanged(WebClientState status);
 
 private:
     void killConnection();
@@ -54,7 +55,7 @@ private:
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
     bool mQuitPosted;
-    Status mStatus;
+    WebClientState mState;
 };
 
 Q_DECLARE_METATYPE(WebToken)

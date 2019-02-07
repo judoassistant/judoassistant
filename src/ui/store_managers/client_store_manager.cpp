@@ -6,7 +6,7 @@ ClientStoreManager::ClientStoreManager()
     : StoreManager()
     , mNetworkClientState(NetworkClientState::NOT_CONNECTED)
 {
-    mNetworkClient = std::make_unique<NetworkClient>(getWorkerThread().getContext());
+    mNetworkClient = std::make_shared<NetworkClient>(getWorkerThread().getContext());
 
     QObject::connect(mNetworkClient.get(), &NetworkClient::connectionLost, this, &ClientStoreManager::loseConnection);
     QObject::connect(mNetworkClient.get(), &NetworkClient::connectionAttemptFailed, this, &ClientStoreManager::failConnectionAttempt);

@@ -8,7 +8,7 @@ WebClient::WebClient()
     : mContext()
     , mWorkGuard(boost::asio::make_work_guard(mContext))
     , mQuitPosted(false)
-    , mStatus(Status::NOT_CONNECTED)
+    , mState(WebClientState::NOT_CONNECTED)
 {
     qRegisterMetaType<WebToken>("WebToken");
     qRegisterMetaType<UserRegistrationResponse>("UserRegistrationResponse");
@@ -26,9 +26,9 @@ void WebClient::validateToken(const QString &token) {
 
 void WebClient::createConnection(connectionHandler handler) {
     mContext.dispatch([this, handler]() {
-        assert(mStatus == Status::NOT_CONNECTED);
-        mStatus = Status::CONNECTING;
-        emit statusChanged(mStatus);
+        assert(mState == WebClientState::NOT_CONNECTED);
+        mState = WebClientState::CONNECTING;
+        emit stateChanged(mState);
 
         mQuitPosted = false;
 
@@ -115,9 +115,9 @@ void WebClient::loginUser(const QString &email, const QString &password) {
                     return;
                 }
 
-                mStatus = Status::CONNECTED;
+                mState = WebClientState::CONNECTED;
                 emit loginSucceeded(token.value());
-                emit statusChanged(mStatus);
+                emit stateChanged(mState);
             });
         });
     });
@@ -129,9 +129,9 @@ void WebClient::registerUser(const QString &email, const QString &password) {
 
 void WebClient::disconnect() {
     mContext.dispatch([this]() {
-        assert(mStatus == Status::CONFIGURED);
-        mStatus = Status::DISCONNECTING;
-        emit statusChanged(mStatus);
+        assert(mState == WebClientState::CONFIGURED);
+        mState = WebClientState::DISCONNECTING;
+        emit stateChanged(mState);
         // TODO: Implement disconnect
     });
 }
@@ -139,9 +139,9 @@ void WebClient::disconnect() {
 void WebClient::registerWebName(TournamentId id, const QString &webName) {
     log_debug().field("id", id).field("webName", webName.toStdString()).msg("Registering web name");
     mContext.dispatch([this, id, webName]() {
-        assert(mStatus == Status::CONNECTED);
-        mStatus = Status::CONFIGURING;
-        emit statusChanged(mStatus);
+        assert(mState == WebClientState::CONNECTED);
+        mState = WebClientState::CONFIGURING;
+        emit stateChanged(mState);
 
         auto registerMessage = std::make_shared<NetworkMessage>();
         registerMessage->encodeRegisterWebName(id, webName.toStdString());
@@ -178,9 +178,9 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                     return;
                 }
 
-                mStatus = Status::CONFIGURED;
+                mState = WebClientState::CONFIGURED;
                 emit registrationSucceeded(webName);
-                emit statusChanged(mStatus);
+                emit stateChanged(mState);
             });
         });
     });
@@ -210,8 +210,8 @@ void WebClient::quit() {
 void WebClient::killConnection() {
     mConnection.reset();
     mSocket.reset();
-    mStatus = Status::NOT_CONNECTED;
-    emit statusChanged(mStatus);
+    mState = WebClientState::NOT_CONNECTED;
+    emit stateChanged(mState);
     // while (!mWriteQueue.empty())
     //     mWriteQueue.pop();
 }

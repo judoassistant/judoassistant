@@ -87,7 +87,7 @@ ConnectDialog::ConnectDialog(ClientStoreManager &storeManager, QString host, std
 void ConnectDialog::connectClick() {
     mConnectButton->setText(tr("Connecting.."));
     mConnectButton->setEnabled(false);
-    mStoreManager.connect(mHostContent->text(), mPortContent->value());
+    mStoreManager.asyncConnect(mHostContent->text(), mPortContent->value());
 }
 
 void ConnectDialog::cancelClick() {

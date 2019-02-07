@@ -23,7 +23,7 @@ private:
     void changeTournament();
     void beginResetTournament();
     void endResetTournament();
-    void changeWebStatus(WebClient::Status status);
+    void changeWebClientState(WebClientState state);
     void succeedLogin(const WebToken &token);
 
     void updateButton();
@@ -31,7 +31,6 @@ private:
 
     MasterStoreManager &mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;
-    WebClient::Status mWebStatus;
 
     std::optional<WebToken> mToken;
 
