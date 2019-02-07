@@ -28,12 +28,8 @@ public:
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
     void postUndo(ClientActionId actionId) override;
 
-    void accept(int port);
+    void accept(unsigned int port);
     void stop() override;
-
-signals:
-    void serverStopped();
-    void serverStarted();
 
 private:
     void join(std::shared_ptr<NetworkParticipant> participant);
@@ -49,6 +45,7 @@ protected:
     void postQuit();
     void accept();
 private:
+    NetworkServerState mState;
     boost::asio::io_context &mContext;
     std::optional<boost::asio::ip::tcp::endpoint> mEndpoint;
     std::optional<boost::asio::ip::tcp::acceptor> mAcceptor;

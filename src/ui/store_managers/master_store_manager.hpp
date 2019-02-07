@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ui/network/network_server.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/web/web_client.hpp"
 
@@ -9,8 +10,11 @@ public:
     MasterStoreManager();
     ~MasterStoreManager();
 
-    void asyncStartServer(int port);
+    void accept(int port);
     void asyncStopServer();
+
+    void stop() override;
+
 
     void dispatch(std::unique_ptr<Action> action) override;
     void undo() override;
@@ -27,14 +31,13 @@ public:
     WebClient& getWebClient();
     const WebClient& getWebClient() const;
 
-    NetworkServer::State getNetworkServerState() const;
-    WebClient::State getWebClientState() const;
-
-    void stop() override;
+    NetworkServerState getNetworkServerState() const;
+    WebClientState getWebClientState() const;
 
 private:
     bool mDirty;
-    NetworkServer::State mNetworkState;
+    NetworkServerState mNetworkServerState;
+    std::shared_ptr<NetworkServer> mNetworkServer;
     WebClient mWebClient;
 };
 

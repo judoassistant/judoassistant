@@ -7,20 +7,48 @@
 using boost::asio::ip::tcp;
 
 NetworkServer::NetworkServer(boost::asio::io_context &context)
-    : mContext(context)
+    : mState(NetworkServerState::NOT_ACCEPTING)
+    , mContext(context)
 {
     qRegisterMetaType<NetworkServerState>();
 }
 
-NetworkServer::accept(int port) {
+void NetworkServer::accept(unsigned int port) {
+    if (mState != NetworkServerState::NOT_ACCEPTING) { // TODO: This is technically not thread safe
+        log_warning().msg("Tried to call accept on already accepting server");
+        return;
+    }
+
     mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
-    mAcceptor = boost::asio::ip::tcp::acceptor(mContext, mEndpoint);
+    mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
 
     accept();
+
+    mState = NetworkServerState::ACCEPTING;
+}
+
+void NetworkServer::stop() {
+    mContext.post([this]() {
+        if (mState != NetworkServerState::ACCEPTING)
+            return;
+
+        mAcceptor->close();
+        mState = NetworkServerState::NOT_ACCEPTING;
+
+        auto message = std::make_shared<NetworkMessage>();
+        message->encodeQuit();
+
+        auto it = mParticipants.begin();
+        while (it != mParticipants.end()) {
+            auto &participant = *it;
+            participant->deliver(message);
+            it = mParticipants.erase(it);
+        }
+    });
 }
 
 void NetworkServer::accept() {
-    mAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+    mAcceptor->async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
             log_error().field("message", ec.message()).msg("Received error code in async_accept");
         }
@@ -37,7 +65,7 @@ void NetworkServer::accept() {
             });
         }
 
-        if (mAcceptor.is_open())
+        if (mAcceptor->is_open())
             accept();
     });
 }
@@ -67,7 +95,7 @@ void NetworkServer::postAction(ClientActionId actionId, std::unique_ptr<Action> 
         mActionStack.push_back(std::make_pair(actionId, sharedAction));
         mActionMap[actionId] = std::prev(mActionStack.end());
 
-        if (mActionStack.size() > ACTION_STACK_MAX_SIZE) {
+        if (mActionStack.size() > MAX_ACTION_STACK_SIZE) {
             mActionStack.front().second->redo(*mTournament);
             mActionMap.erase(mActionStack.front().first);
             mActionStack.pop_front();
@@ -124,7 +152,7 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
     mActionStack.push_back(std::make_pair(actionId, action));
     mActionMap[actionId] = std::prev(mActionStack.end());
 
-    if (mActionStack.size() > ACTION_STACK_MAX_SIZE) {
+    if (mActionStack.size() > MAX_ACTION_STACK_SIZE) {
         mActionStack.front().second->redo(*mTournament);
         mActionMap.erase(mActionStack.front().first);
         mActionStack.pop_front();
@@ -175,18 +203,3 @@ void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message) {
         participant->deliver(message);
 }
 
-void NetworkServer::stop() {
-    mContext.post([this]() {
-        mAcceptor.close();
-
-        auto message = std::make_shared<NetworkMessage>();
-        message->encodeQuit();
-
-        auto it = mParticipants.begin();
-        while (it != mParticipants.end()) {
-            auto &participant = *it;
-            participant->deliver(message);
-            it = mParticipants.erase(it);
-        }
-    });
-}

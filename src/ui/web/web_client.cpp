@@ -7,7 +7,6 @@ using boost::asio::ip::tcp;
 WebClient::WebClient()
     : mContext()
     , mWorkGuard(boost::asio::make_work_guard(mContext))
-    , mQuitPosted(false)
     , mState(WebClientState::NOT_CONNECTED)
 {
     qRegisterMetaType<WebToken>("WebToken");
@@ -29,8 +28,6 @@ void WebClient::createConnection(connectionHandler handler) {
         assert(mState == WebClientState::NOT_CONNECTED);
         mState = WebClientState::CONNECTING;
         emit stateChanged(mState);
-
-        mQuitPosted = false;
 
         tcp::resolver resolver(mContext);
         tcp::resolver::results_type endpoints;
@@ -188,23 +185,6 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
 
 void WebClient::checkWebName(TournamentId id, const QString &webName) {
     // TODO: Implement checking of web names
-}
-
-void WebClient::run() {
-    log_info().msg("WebClient thread started");
-    try {
-        mContext.run();
-    }
-    catch (std::exception& e)
-    {
-        log_error().field("msg", e.what()).msg("WebClient caught exception");
-    }
-    log_debug().msg("WebClient thread stopped");
-}
-
-void WebClient::quit() {
-    mQuitPosted = true;
-    mWorkGuard.reset();
 }
 
 void WebClient::killConnection() {

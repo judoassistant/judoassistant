@@ -16,18 +16,27 @@ MasterStoreManager::MasterStoreManager()
     , mWebClient(getWorkerThread().getContext())
     , mDirty(false)
 {
+    mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext());
+    setInterface(mNetworkServer);
+
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
 }
 
+void MasterStoreManager::accept(int port) {
+    if (mNetworkServerState != NetworkServerState::NOT_ACCEPTING) {
+        log_warning().msg("Tried to start network server when already started");
+        return;
+    }
 
-void MasterStoreManager::asyncStartServer(int port) {
-
+    mNetworkServer->accept(port);
+    mNetworkServerState = NetworkServerState::ACCEPTING;
 }
 
-void MasterStoreManager::asyncStopServer() {
-
+void MasterStoreManager::stop() {
+    mNetworkServer->stop();
+    mNetworkServerState = NetworkServerState::NOT_ACCEPTING;
 }
 
 MasterStoreManager::~MasterStoreManager() {
