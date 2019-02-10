@@ -34,10 +34,10 @@ void ClientWindow::retryTimerHit() {
         return;
     if (!mPreviousPort.has_value())
         return;
-    mStoreManager.asyncConnect(mPreviousHost, *mPreviousPort);
+    mStoreManager.connect(mPreviousHost, *mPreviousPort);
 }
 
 void ClientWindow::disconnect() {
-    mStoreManager.asyncDisconnect();
+    mStoreManager.disconnect();
 }
 

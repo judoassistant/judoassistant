@@ -15,8 +15,10 @@ class NetworkMessage;
 class NetworkParticipant;
 
 enum class NetworkServerState {
-    NOT_ACCEPTING,
-    ACCEPTING,
+    STOPPED,
+    STARTING,
+    STARTED,
+    STOPPING,
 };
 
 class NetworkServer : public NetworkInterface {
@@ -28,8 +30,11 @@ public:
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
     void postUndo(ClientActionId actionId) override;
 
-    void accept(unsigned int port);
+    void start(unsigned int port);
     void stop() override;
+
+signals:
+    void stateChanged(NetworkServerState state);
 
 private:
     void join(std::shared_ptr<NetworkParticipant> participant);

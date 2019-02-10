@@ -10,8 +10,8 @@ public:
     MasterStoreManager();
     ~MasterStoreManager();
 
-    void accept(int port);
-    void asyncStopServer();
+    void startServer(int port);
+    void stopServer();
 
     void stop() override;
 
@@ -35,6 +35,9 @@ public:
     WebClientState getWebClientState() const;
 
 private:
+    void changeNetworkServerState(NetworkServerState state);
+
+
     NetworkServerState mNetworkServerState;
     std::shared_ptr<NetworkServer> mNetworkServer;
     WebClient mWebClient;

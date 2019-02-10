@@ -8,10 +8,12 @@ class ClientStoreManager : public StoreManager {
 public:
     ClientStoreManager();
 
-    void asyncConnect(QString host, unsigned int port);
-    void asyncDisconnect();
+    void connect(QString host, unsigned int port);
+    void disconnect();
 
     NetworkClientState getNetworkClientState() const;
+    const NetworkClient& getNetworkClient() const;
+    NetworkClient& getNetworkClient();
 
 protected:
     void loseConnection();

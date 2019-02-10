@@ -21,25 +21,21 @@ MasterStoreManager::MasterStoreManager()
     tatamis[location.handle];
 
     mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext());
+    connect(mNetworkServer.get(), &NetworkServer::stateChanged, this, &MasterStoreManager::changeNetworkServerState);
     setInterface(mNetworkServer);
 }
 
-void MasterStoreManager::accept(int port) {
-    if (mNetworkServerState != NetworkServerState::NOT_ACCEPTING) {
+void MasterStoreManager::startServer(int port) {
+    if (mNetworkServerState != NetworkServerState::STOPPED) {
         log_warning().msg("Tried to start network server when already started");
         return;
     }
 
-    mNetworkServer->accept(port);
-    mNetworkServerState = NetworkServerState::ACCEPTING;
-}
-
-void MasterStoreManager::stop() {
-    mNetworkServer->stop();
-    mNetworkServerState = NetworkServerState::NOT_ACCEPTING;
+    mNetworkServer->start(port);
 }
 
 MasterStoreManager::~MasterStoreManager() {
+
 }
 
 void MasterStoreManager::stop() {
@@ -176,21 +172,8 @@ bool MasterStoreManager::write(const QString &path) {
     return true;
 }
 
-void MasterStoreManager::startServer(int port) {
-    try {
-        startInterface(std::make_unique<NetworkServer>(port));
-    }
-    catch (const boost::system::system_error &e) {
-        if (e.code() == boost::system::errc::address_in_use)
-            throw AddressInUseException(port);
-        else
-            throw e;
-    }
-    sync();
-}
-
 void MasterStoreManager::stopServer() {
-    stopInterface();
+    mNetworkServer->stop();
 }
 
 void MasterStoreManager::dispatch(std::unique_ptr<Action> action) {
@@ -219,3 +202,11 @@ WebClient& MasterStoreManager::getWebClient() {
 const WebClient& MasterStoreManager::getWebClient() const {
     return mWebClient;
 }
+
+void MasterStoreManager::changeNetworkServerState(NetworkServerState state) {
+    mNetworkServerState = state;
+
+    if (state == NetworkServerState::STARTED)
+        sync();
+}
+

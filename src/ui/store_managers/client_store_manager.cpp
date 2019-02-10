@@ -16,7 +16,7 @@ ClientStoreManager::ClientStoreManager()
     setInterface(mNetworkClient);
 }
 
-void ClientStoreManager::asyncConnect(QString host, unsigned int port) {
+void ClientStoreManager::connect(QString host, unsigned int port) {
     if (mNetworkClientState != NetworkClientState::NOT_CONNECTED) {
         log_warning().msg("Tried to call connect when already connecting");
         return;
@@ -26,7 +26,7 @@ void ClientStoreManager::asyncConnect(QString host, unsigned int port) {
     mNetworkClient->postConnect(host.toStdString(), port);
 }
 
-void ClientStoreManager::asyncDisconnect() {
+void ClientStoreManager::disconnect() {
     if (mNetworkClientState != NetworkClientState::CONNECTED) {
         log_warning().msg("Tried to call disconnect on non-connected client");
         return;
@@ -62,5 +62,13 @@ void ClientStoreManager::succeedConnectionAttempt() {
     mNetworkClientState = NetworkClientState::CONNECTED;
     emit networkClientStateChanged(mNetworkClientState);
     emit connectionAttemptSucceeded();
+}
+
+const NetworkClient& ClientStoreManager::getNetworkClient() const {
+    return *mNetworkClient;
+}
+
+NetworkClient& ClientStoreManager::getNetworkClient() {
+    return *mNetworkClient;
 }
 

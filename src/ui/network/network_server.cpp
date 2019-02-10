@@ -7,33 +7,38 @@
 using boost::asio::ip::tcp;
 
 NetworkServer::NetworkServer(boost::asio::io_context &context)
-    : mState(NetworkServerState::NOT_ACCEPTING)
+    : mState(NetworkServerState::STOPPED)
     , mContext(context)
+    , mTournament(std::make_shared<TournamentStore>())
 {
     qRegisterMetaType<NetworkServerState>();
 }
 
-void NetworkServer::accept(unsigned int port) {
-    if (mState != NetworkServerState::NOT_ACCEPTING) { // TODO: This is technically not thread safe
-        log_warning().msg("Tried to call accept on already accepting server");
-        return;
-    }
+void NetworkServer::start(unsigned int port) {
+    mContext.post([this, port]() {
+        if (mState != NetworkServerState::STOPPED) {
+            log_warning().msg("Tried to call accept on already accepting server");
+            return;
+        }
 
-    mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
-    mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
+        emit stateChanged(mState = NetworkServerState::STARTING);
 
-    accept();
+        mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
+        mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
 
-    mState = NetworkServerState::ACCEPTING;
+        accept();
+
+        emit stateChanged(mState = NetworkServerState::STARTED);
+    });
 }
 
 void NetworkServer::stop() {
     mContext.post([this]() {
-        if (mState != NetworkServerState::ACCEPTING)
+        if (mState != NetworkServerState::STARTED)
             return;
 
         mAcceptor->close();
-        mState = NetworkServerState::NOT_ACCEPTING;
+        emit stateChanged(mState = NetworkServerState::STOPPING);
 
         auto message = std::make_shared<NetworkMessage>();
         message->encodeQuit();
@@ -44,6 +49,8 @@ void NetworkServer::stop() {
             participant->deliver(message);
             it = mParticipants.erase(it);
         }
+
+        emit stateChanged(mState = NetworkServerState::STOPPED);
     });
 }
 
