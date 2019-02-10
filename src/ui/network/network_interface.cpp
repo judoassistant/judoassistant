@@ -1,3 +1,6 @@
+#include "ui/network/network_interface.hpp"
+#include "ui/stores/qtournament_store.hpp"
+
 NetworkInterface::NetworkInterface() {
     qRegisterMetaType<SyncPayloadPtr>();
     qRegisterMetaType<ActionPtr>();
