@@ -23,7 +23,7 @@ void ClientStoreManager::connect(QString host, unsigned int port) {
     }
     mNetworkClientState = NetworkClientState::CONNECTING;
     emit networkClientStateChanged(mNetworkClientState);
-    mNetworkClient->postConnect(host.toStdString(), port);
+    mNetworkClient->connect(host.toStdString(), port);
 }
 
 void ClientStoreManager::disconnect() {
@@ -33,7 +33,7 @@ void ClientStoreManager::disconnect() {
     }
     mNetworkClientState = NetworkClientState::DISCONNECTING;
     emit networkClientStateChanged(mNetworkClientState);
-    mNetworkClient->postDisconnect();
+    mNetworkClient->disconnect();
 }
 
 NetworkClientState ClientStoreManager::getNetworkClientState() const {

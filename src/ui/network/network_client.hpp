@@ -22,14 +22,14 @@ class NetworkClient : public NetworkInterface {
 public:
     NetworkClient(boost::asio::io_context &context);
 
+    void connect(const std::string &host, unsigned int port);
+    void disconnect();
+
+    void stop() override;
+
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
     void postUndo(ClientActionId actionId) override;
-
-    void postConnect(const std::string &host, unsigned int port);
-    void postDisconnect();
-
-    void stop() override;
 
 signals:
     void connectionAttemptFailed();
@@ -45,6 +45,7 @@ private:
     void killConnection();
     void recoverUnconfirmed(TournamentStore *tournament, SharedActionList *actions);
 
+    NetworkClientState mState;
     boost::asio::io_context &mContext;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
