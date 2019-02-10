@@ -13,7 +13,9 @@ constexpr size_t FILE_HEADER_SIZE = 9;
 
 MasterStoreManager::MasterStoreManager()
     : StoreManager()
+    , mWebClientState(WebClientState::NOT_CONNECTED)
     , mWebClient(getWorkerThread().getContext())
+    , mNetworkServerState(NetworkServerState::STOPPED)
     , mDirty(false)
 {
     auto &tatamis = getTournament().getTatamis();
@@ -208,5 +210,25 @@ void MasterStoreManager::changeNetworkServerState(NetworkServerState state) {
 
     if (state == NetworkServerState::STARTED)
         sync();
+}
+
+void MasterStoreManager::changeWebClientState(WebClientState state) {
+    mWebClientState = state;
+}
+
+NetworkServer& MasterStoreManager::getNetworkServer() {
+    return *mNetworkServer;
+}
+
+const NetworkServer& MasterStoreManager::getNetworkServer() const {
+    return *mNetworkServer;
+}
+
+NetworkServerState MasterStoreManager::getNetworkServerState() const {
+    return mNetworkServerState;
+}
+
+WebClientState MasterStoreManager::getWebClientState() const {
+    return mWebClientState;
 }
 

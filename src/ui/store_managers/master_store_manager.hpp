@@ -36,11 +36,14 @@ public:
 
 private:
     void changeNetworkServerState(NetworkServerState state);
+    void changeWebClientState(WebClientState state);
 
+    WebClientState mWebClientState;
+    WebClient mWebClient;
 
     NetworkServerState mNetworkServerState;
     std::shared_ptr<NetworkServer> mNetworkServer;
-    WebClient mWebClient;
+
     bool mDirty;
 };
 
