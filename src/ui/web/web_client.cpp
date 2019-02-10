@@ -4,9 +4,8 @@
 
 using boost::asio::ip::tcp;
 
-WebClient::WebClient()
-    : mContext()
-    , mWorkGuard(boost::asio::make_work_guard(mContext))
+WebClient::WebClient(boost::asio::io_context &context)
+    : mContext(context)
     , mState(WebClientState::NOT_CONNECTED)
 {
     qRegisterMetaType<WebToken>("WebToken");

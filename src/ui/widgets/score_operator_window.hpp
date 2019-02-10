@@ -71,7 +71,7 @@ private:
     QWidget* createMainArea();
     QWidget* createSideArea();
 
-    void changeConnectionState(ClientStoreManager::State state);
+    void changeNetworkClientState(NetworkClientState state);
 
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;

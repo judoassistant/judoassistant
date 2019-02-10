@@ -16,7 +16,7 @@ WebClientWidget::WebClientWidget(MasterStoreManager &storeManager, QWidget *pare
     endResetTournament();
     connect(&mStoreManager, &MasterStoreManager::tournamentAboutToBeReset, this, &WebClientWidget::beginResetTournament);
     connect(&mStoreManager, &MasterStoreManager::tournamentReset, this, &WebClientWidget::endResetTournament);
-    connect(&mStoreManager.getWebClient(), &WebClient::webClientStateChanged, this, &WebClientWidget::changeWebClientState);
+    connect(&mStoreManager.getWebClient(), &WebClient::stateChanged, this, &WebClientWidget::changeWebClientState);
     connect(&mStoreManager.getWebClient(), &WebClient::loginSucceeded, this, &WebClientWidget::succeedLogin);
 }
 
@@ -111,7 +111,7 @@ void WebClientWidget::buttonClick() {
     }
 }
 
-void WebClientWidget::changeWebStatus() {
+void WebClientWidget::changeWebClientState(WebClientState state) {
     updateButton();
 }
 

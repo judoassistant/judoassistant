@@ -20,7 +20,7 @@ enum class WebClientState {
 class WebClient : public QObject {
 Q_OBJECT
 public:
-    WebClient();
+    WebClient(boost::asio::io_context &context);
 
     void stop();
 
@@ -50,12 +50,10 @@ signals:
 private:
     void killConnection();
 
-    boost::asio::io_context mContext;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
+    boost::asio::io_context &mContext;
+    WebClientState mState;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
-    bool mQuitPosted;
-    WebClientState mState;
 };
 
 Q_DECLARE_METATYPE(WebToken)

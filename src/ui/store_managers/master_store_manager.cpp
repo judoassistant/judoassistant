@@ -16,12 +16,12 @@ MasterStoreManager::MasterStoreManager()
     , mWebClient(getWorkerThread().getContext())
     , mDirty(false)
 {
-    mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext());
-    setInterface(mNetworkServer);
-
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
+
+    mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext());
+    setInterface(mNetworkServer);
 }
 
 void MasterStoreManager::accept(int port) {

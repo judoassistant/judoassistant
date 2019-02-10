@@ -51,7 +51,7 @@ HubWindow::HubWindow() {
 
 void HubWindow::startServer() {
     try {
-        mStoreManager.startServer(Constants::DEFAULT_PORT);
+        mStoreManager.accept(Constants::DEFAULT_PORT);
     }
     catch (const AddressInUseException &e) {
         QMessageBox::warning(this, tr("Unable to open default port"), tr("JudoAssistant was unable to open port 8000 for communication.").arg(e.getPort()));

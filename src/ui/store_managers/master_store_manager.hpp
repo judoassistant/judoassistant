@@ -35,9 +35,9 @@ public:
     WebClientState getWebClientState() const;
 
 private:
-    bool mDirty;
     NetworkServerState mNetworkServerState;
     std::shared_ptr<NetworkServer> mNetworkServer;
     WebClient mWebClient;
+    bool mDirty;
 };
 

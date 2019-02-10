@@ -36,6 +36,7 @@ signals:
     void connectionLost();
     void connectionShutdown();
     void connectionAttemptSucceeded();
+    void stateChanged();
 
 private:
     void deliver(std::unique_ptr<NetworkMessage> message);

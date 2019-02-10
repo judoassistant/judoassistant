@@ -9,6 +9,7 @@ StoreManager::StoreManager()
     , mUndoneUnconfirmedActions(0)
     , mSyncing(0)
 {
+    mThread.start();
     mTournament->setId(TournamentId::generate());
 }
 
