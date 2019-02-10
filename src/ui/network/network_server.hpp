@@ -16,9 +16,7 @@ class NetworkParticipant;
 
 enum class NetworkServerState {
     STOPPED,
-    STARTING,
     STARTED,
-    STOPPING,
 };
 
 class NetworkServer : public NetworkInterface {
@@ -35,6 +33,7 @@ public:
 
 signals:
     void stateChanged(NetworkServerState state);
+    void startFailed();
 
 private:
     void join(std::shared_ptr<NetworkParticipant> participant);

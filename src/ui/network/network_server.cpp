@@ -21,10 +21,14 @@ void NetworkServer::start(unsigned int port) {
             return;
         }
 
-        emit stateChanged(mState = NetworkServerState::STARTING);
-
-        mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
-        mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
+        try {
+            mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
+            mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
+        }
+        catch (const std::exception &e) {
+            emit startFailed();
+            return;
+        }
 
         accept();
 
@@ -38,7 +42,6 @@ void NetworkServer::stop() {
             return;
 
         mAcceptor->close();
-        emit stateChanged(mState = NetworkServerState::STOPPING);
 
         auto message = std::make_shared<NetworkMessage>();
         message->encodeQuit();
