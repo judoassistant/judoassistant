@@ -154,7 +154,7 @@ void WebClientWidget::updateButton() {
 
     if (state == WebClientState::CONFIGURING) {
         mSetupButton->setEnabled(false);
-        mSetupButton->setText("Configuring...");
+        mSetupButton->setText("Configuring..");
         return;
     }
 

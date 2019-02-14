@@ -25,6 +25,8 @@ void WebClient::validateToken(const QString &token) {
 void WebClient::createConnection(connectionHandler handler) {
     mContext.dispatch([this, handler]() {
         assert(mState == WebClientState::NOT_CONNECTED);
+
+        mDisconnecting = false;
         mState = WebClientState::CONNECTING;
         emit stateChanged(mState);
 
@@ -51,6 +53,12 @@ void WebClient::createConnection(connectionHandler handler) {
                 return;
             }
 
+            if (mDisconnecting) {
+                killConnection();
+                handler(boost::system::errc::make_error_code(boost::system::errc::operation_canceled));
+                return;
+            }
+
             mConnection = NetworkConnection(std::move(*mSocket));
             mSocket.reset();
             mConnection->asyncJoin([this, handler](boost::system::error_code ec) {
@@ -58,6 +66,12 @@ void WebClient::createConnection(connectionHandler handler) {
                     log_error().field("message", ec.message()).msg("Encountered error handshaking with web host. Killing connection");
                     killConnection();
                     handler(ec);
+                    return;
+                }
+
+                if (mDisconnecting) {
+                    killConnection();
+                    handler(boost::system::errc::make_error_code(boost::system::errc::operation_canceled));
                     return;
                 }
 
@@ -75,6 +89,11 @@ void WebClient::loginUser(const QString &email, const QString &password) {
             return;
         }
 
+        if (mDisconnecting) {
+            killConnection();
+            return;
+        }
+
         auto loginMessage = std::make_shared<NetworkMessage>();
         loginMessage->encodeRequestWebToken(email.toStdString(), password.toStdString());
         mConnection->asyncWrite(*loginMessage, [this, loginMessage](boost::system::error_code ec) {
@@ -85,12 +104,22 @@ void WebClient::loginUser(const QString &email, const QString &password) {
                 return;
             }
 
+            if (mDisconnecting) {
+                killConnection();
+                return;
+            }
+
             auto responseMessage = std::make_shared<NetworkMessage>();
             mConnection->asyncRead(*responseMessage, [this, responseMessage](boost::system::error_code ec) {
                 if (ec) {
                     log_error().field("message", ec.message()).msg("Encountered error reading request token response. Failing");
                     killConnection();
                     emit loginFailed(WebTokenRequestResponse::SERVER_ERROR);
+                    return;
+                }
+
+                if (mDisconnecting) {
+                    killConnection();
                     return;
                 }
 
@@ -123,12 +152,16 @@ void WebClient::registerUser(const QString &email, const QString &password) {
     // TODO: Implement registration
 }
 
+void WebClient::stop() {
+    disconnect();
+}
+
 void WebClient::disconnect() {
     mContext.dispatch([this]() {
-        assert(mState == WebClientState::CONFIGURED);
-        mState = WebClientState::DISCONNECTING;
-        emit stateChanged(mState);
-        // TODO: Implement disconnect
+        if (mState == WebClientState::NOT_CONNECTED)
+            return;
+
+        mDisconnecting = true;
     });
 }
 
@@ -138,6 +171,11 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
         assert(mState == WebClientState::CONNECTED);
         mState = WebClientState::CONFIGURING;
         emit stateChanged(mState);
+
+        if (mDisconnecting) {
+            killConnection();
+            return;
+        }
 
         auto registerMessage = std::make_shared<NetworkMessage>();
         registerMessage->encodeRegisterWebName(id, webName.toStdString());
@@ -149,12 +187,22 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                 return;
             }
 
+            if (mDisconnecting) {
+                killConnection();
+                return;
+            }
+
             auto responseMessage = std::make_shared<NetworkMessage>();
             mConnection->asyncRead(*responseMessage, [this, responseMessage, webName](boost::system::error_code ec) {
                 if (ec) {
                     log_error().field("message", ec.message()).msg("Encountered error reading registration response. Failing");
                     killConnection();
                     emit registrationFailed(WebNameRegistrationResponse::SERVER_ERROR);
+                    return;
+                }
+
+                if (mDisconnecting) {
+                    killConnection();
                     return;
                 }
 
@@ -174,9 +222,9 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                     return;
                 }
 
-                mState = WebClientState::CONFIGURED;
                 emit registrationSucceeded(webName);
-                emit stateChanged(mState);
+                emit stateChanged(mState = WebClientState::CONFIGURED);
+                syncTournament();
             });
         });
     });
@@ -191,7 +239,46 @@ void WebClient::killConnection() {
     mSocket.reset();
     mState = WebClientState::NOT_CONNECTED;
     emit stateChanged(mState);
-    // while (!mWriteQueue.empty())
-    //     mWriteQueue.pop();
+    while (!mWriteQueue.empty())
+        mWriteQueue.pop();
+}
+
+void WebClient::syncTournament() {
+    mContext.dispatch([this]() {
+        if (mDisconnecting) {
+            killConnection();
+            return;
+        }
+
+        // TODO: Implement
+    });
+}
+
+void WebClient::deliver(std::unique_ptr<NetworkMessage> message) {
+    assert(mState == WebClientState::CONFIGURED);
+    bool empty = mWriteQueue.empty();
+    mWriteQueue.push(std::move(message));
+
+    if (empty)
+        writeMessage();
+}
+
+void WebClient::writeMessage() {
+    mConnection->asyncWrite(*(mWriteQueue.front()), [this](boost::system::error_code ec) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error when reading message. Disconnecting");
+            killConnection();
+            return;
+        }
+
+        mWriteQueue.pop();
+        if (!mWriteQueue.empty()) {
+            writeMessage();
+        }
+        else if (mDisconnecting) {
+            killConnection();
+            return;
+        }
+    });
 }
 
