@@ -41,9 +41,8 @@ private:
     typedef std::function<void(boost::system::error_code)> connectionHandler;
     void createConnection(connectionHandler handler);
 
-    void syncTournament();
-
     void writeMessage();
+    void enterConfigured();
 
 signals:
     // TODO: Setup signals when losing connection

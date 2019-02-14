@@ -234,12 +234,37 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                 emit registrationSucceeded(webName);
                 emit stateChanged(mState = WebClientState::CONFIGURED);
 
-                auto message = std::make_shared<NetworkMessage>();
-                message->encodeSync(*mNetworkServer->getTournament(), mNetworkServer->getActionStack());
-                deliver(std::move(message));
-
+                enterConfigured();
             });
         });
+    });
+}
+
+void WebClient::enterConfigured() {
+    auto message = std::make_shared<NetworkMessage>();
+    message->encodeSync(*mNetworkServer->getTournament(), mNetworkServer->getActionStack());
+    deliver(std::move(message));
+
+    auto responseMessage = std::make_shared<NetworkMessage>();
+    mConnection->asyncRead(*responseMessage, [this, responseMessage](boost::system::error_code ec) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error reading web server message. Failing");
+            killConnection();
+            return;
+        }
+
+        if (mDisconnecting) {
+            killConnection();
+            return;
+        }
+
+        if (responseMessage->getType() != NetworkMessage::Type::QUIT) {
+            log_error().msg("Received response message of wrong type. Failing");
+            killConnection();
+            return;
+        }
+
+        killConnection();
     });
 }
 
