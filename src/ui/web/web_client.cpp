@@ -161,7 +161,14 @@ void WebClient::disconnect() {
         if (mState == WebClientState::NOT_CONNECTED)
             return;
 
-        mDisconnecting = true;
+        // Let the client send in progress messages first
+        if (mState == WebClientState::CONFIGURED && mWriteQueue.empty()) {
+            killConnection();
+            return;
+        }
+        else {
+            mDisconnecting = true;
+        }
     });
 }
 
@@ -238,6 +245,7 @@ void WebClient::killConnection() {
     mConnection.reset();
     mSocket.reset();
     mState = WebClientState::NOT_CONNECTED;
+    mDisconnecting = false;
     emit stateChanged(mState);
     while (!mWriteQueue.empty())
         mWriteQueue.pop();
