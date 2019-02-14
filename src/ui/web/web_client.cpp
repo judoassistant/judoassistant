@@ -5,6 +5,7 @@
 
 using boost::asio::ip::tcp;
 
+// TODO: Setup read for server crash
 WebClient::WebClient(boost::asio::io_context &context)
     : mContext(context)
     , mState(WebClientState::NOT_CONNECTED)

@@ -188,7 +188,7 @@ void TCPParticipant::asyncTournamentSync(const std::string &webName) {
     log_debug().msg("Syncing tournament");
     mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
-        assert(mState == State::AUTHENTICATED);
+        assert(mState == State::TOURNAMENT_SELECTED);
         log_debug().field("type", mReadMessage->getType()).msg("Async read message in tournament sync");
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");

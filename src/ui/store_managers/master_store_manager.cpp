@@ -25,6 +25,7 @@ MasterStoreManager::MasterStoreManager()
     mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext(), mWebClient);
     mWebClient.setNetworkServer(mNetworkServer);
     connect(mNetworkServer.get(), &NetworkServer::stateChanged, this, &MasterStoreManager::changeNetworkServerState);
+    connect(&mWebClient, &WebClient::stateChanged, this, &MasterStoreManager::changeWebClientState);
     setInterface(mNetworkServer);
 }
 
