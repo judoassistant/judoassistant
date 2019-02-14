@@ -7,8 +7,8 @@
 #include "core/core.hpp"
 #include "web/config.hpp"
 #include "web/database.hpp"
+#include "web/loaded_tournament.hpp"
 #include "web/tcp_participant.hpp"
-#include "web/web_name_manager.hpp"
 
 class WebServer {
 public:
@@ -16,6 +16,9 @@ public:
 
     void run();
     void quit();
+
+    typedef std::function<void (std::shared_ptr<LoadedTournament>)> obtainTournamentCallback;
+    void obtainTournament(const std::string &webName, obtainTournamentCallback);
 
 private:
     void work();
@@ -31,7 +34,7 @@ private:
     boost::asio::ip::tcp::acceptor mAcceptor;
 
     std::unordered_set<std::shared_ptr<TCPParticipant>> mParticipants;
-    std::unordered_map<std::string, size_t> mLoadedTournament;
+    std::unordered_map<std::string, LoadedTournament> mLoadedTournaments;
 
     std::vector<std::thread> mThreads;
     std::unique_ptr<Database> mDatabase;

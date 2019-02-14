@@ -85,3 +85,6 @@ void WebServer::work() {
     mContext.run();
 }
 
+void WebServer::obtainTournament(const std::string &webName, obtainTournamentCallback) {
+
+}

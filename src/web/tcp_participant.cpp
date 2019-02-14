@@ -1,7 +1,7 @@
+#include "core/actions/action.hpp"
+#include "core/stores/tournament_store.hpp"
 #include "web/tcp_participant.hpp"
 #include "web/web_server.hpp"
-#include "core/stores/tournament_store.hpp"
-#include "core/actions/action.hpp"
 
 TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
     : mStrand(context)
@@ -187,7 +187,7 @@ void TCPParticipant::quit() {
 void TCPParticipant::asyncTournamentSync(const std::string &webName) {
     log_debug().msg("Syncing tournament");
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+    mConnection->asyncRead(*mReadMessage, [this, webName](boost::system::error_code ec) {
         assert(mState == State::TOURNAMENT_SELECTED);
         log_debug().field("type", mReadMessage->getType()).msg("Async read message in tournament sync");
         if (ec) {
@@ -212,6 +212,10 @@ void TCPParticipant::asyncTournamentSync(const std::string &webName) {
                 mServer.leave(shared_from_this());
                 return;
             }
+
+            mServer.obtainTournament(webName, [this, webName](std::shared_ptr<LoadedTournament> loadedTournament) {
+
+            });
 
             log_debug().msg("Do stuff");
         }
