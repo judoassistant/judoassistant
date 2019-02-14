@@ -1,6 +1,7 @@
 #include "core/log.hpp"
 #include "ui/constants/web.hpp"
 #include "ui/web/web_client.hpp"
+#include "ui/network/network_server.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -231,7 +232,11 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
 
                 emit registrationSucceeded(webName);
                 emit stateChanged(mState = WebClientState::CONFIGURED);
-                syncTournament();
+
+                auto message = std::make_shared<NetworkMessage>();
+                message->encodeSync(*mNetworkServer->getTournament(), mNetworkServer->getActionStack());
+                deliver(std::move(message));
+
             });
         });
     });
@@ -251,19 +256,10 @@ void WebClient::killConnection() {
         mWriteQueue.pop();
 }
 
-void WebClient::syncTournament() {
-    mContext.dispatch([this]() {
-        if (mDisconnecting) {
-            killConnection();
-            return;
-        }
+void WebClient::deliver(std::shared_ptr<NetworkMessage> message) {
+    if (mState != WebClientState::CONFIGURED || mDisconnecting)
+        return;
 
-        // TODO: Implement
-    });
-}
-
-void WebClient::deliver(std::unique_ptr<NetworkMessage> message) {
-    assert(mState == WebClientState::CONFIGURED);
     bool empty = mWriteQueue.empty();
     mWriteQueue.push(std::move(message));
 
@@ -288,5 +284,9 @@ void WebClient::writeMessage() {
             return;
         }
     });
+}
+
+void WebClient::setNetworkServer(std::shared_ptr<NetworkServer> networkServer) {
+    mNetworkServer = std::move(networkServer);
 }
 

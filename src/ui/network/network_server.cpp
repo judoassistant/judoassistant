@@ -3,13 +3,15 @@
 #include "ui/network/network_participant.hpp"
 #include "ui/network/network_server.hpp"
 #include "ui/stores/qtournament_store.hpp"
+#include "ui/web/web_client.hpp"
 
 using boost::asio::ip::tcp;
 
-NetworkServer::NetworkServer(boost::asio::io_context &context)
+NetworkServer::NetworkServer(boost::asio::io_context &context, WebClient &webClient)
     : mState(NetworkServerState::STOPPED)
     , mContext(context)
     , mTournament(std::make_shared<TournamentStore>())
+    , mWebClient(webClient)
 {
     qRegisterMetaType<NetworkServerState>();
 }
@@ -94,6 +96,8 @@ void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {
             participant->setIsSyncing(true);
             participant->deliver(message);
         }
+
+        mWebClient.deliver(message);
 
         emit syncConfirmed();
     });
@@ -180,6 +184,8 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
 
         participant->deliver(message);
     }
+
+    mWebClient.deliver(message);
 }
 
 void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
@@ -205,11 +211,14 @@ void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::sh
 
             participant->deliver(sharedMessage);
         }
+
+        mWebClient.deliver(sharedMessage);
     }
 }
 
 void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message) {
     for (auto & participant : mParticipants)
         participant->deliver(message);
+    mWebClient.deliver(message);
 }
 

@@ -19,10 +19,12 @@ enum class NetworkServerState {
     STARTED,
 };
 
+class WebClient;
+
 class NetworkServer : public NetworkInterface {
     Q_OBJECT
 public:
-    NetworkServer(boost::asio::io_context &context);
+    NetworkServer(boost::asio::io_context &context, WebClient &webClient);
 
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
@@ -58,7 +60,10 @@ private:
     SharedActionList mActionStack;
     std::unordered_map<ClientActionId, SharedActionList::iterator> mActionMap;
 
+    WebClient &mWebClient;
+
     friend class NetworkParticipant;
+    friend class WebClient;
 };
 
 Q_DECLARE_METATYPE(NetworkServerState)

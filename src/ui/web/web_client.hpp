@@ -18,16 +18,17 @@ enum class WebClientState {
     DISCONNECTING
 };
 
+class NetworkServer;
+
 class WebClient : public QObject {
 Q_OBJECT
 public:
     WebClient(boost::asio::io_context &context);
+    void setNetworkServer(std::shared_ptr<NetworkServer> networkServer);
 
     void stop();
 
-    // void postSync(std::unique_ptr<TournamentStore> tournament);
-    // void postAction(ClientActionId actionId, std::unique_ptr<Action> action);
-    // void postUndo(ClientActionId actionId);
+    void deliver(std::shared_ptr<NetworkMessage> message);
 
     void validateToken(const QString &token);
     void loginUser(const QString &email, const QString &password);
@@ -36,14 +37,12 @@ public:
 
     void registerWebName(TournamentId id, const QString &webName);
     void checkWebName(TournamentId id, const QString &webName);
-
-    void syncTournament();
-
 private:
     typedef std::function<void(boost::system::error_code)> connectionHandler;
     void createConnection(connectionHandler handler);
 
-    void deliver(std::unique_ptr<NetworkMessage> message);
+    void syncTournament();
+
     void writeMessage();
 
 signals:
@@ -66,7 +65,8 @@ private:
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
     bool mDisconnecting;
-    std::queue<std::unique_ptr<NetworkMessage>> mWriteQueue;
+    std::queue<std::shared_ptr<NetworkMessage>> mWriteQueue;
+    std::shared_ptr<NetworkServer> mNetworkServer;
 };
 
 Q_DECLARE_METATYPE(WebToken)

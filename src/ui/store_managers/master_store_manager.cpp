@@ -22,7 +22,8 @@ MasterStoreManager::MasterStoreManager()
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
 
-    mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext());
+    mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext(), mWebClient);
+    mWebClient.setNetworkServer(mNetworkServer);
     connect(mNetworkServer.get(), &NetworkServer::stateChanged, this, &MasterStoreManager::changeNetworkServerState);
     setInterface(mNetworkServer);
 }
