@@ -9,18 +9,17 @@ StoreManager::StoreManager()
     , mUndoneUnconfirmedActions(0)
     , mSyncing(0)
 {
+    mThread.start();
     mTournament->setId(TournamentId::generate());
-    registerMetatypes();
 }
 
 StoreManager::~StoreManager() {
-    if (mNetworkInterface)
-        stopInterface();
+    stop();
+    wait();
 }
 
-void StoreManager::startInterface(std::shared_ptr<NetworkInterface> interface) {
-    if (mNetworkInterface != nullptr)
-        throw std::runtime_error("Attempted to start StoreManager interface with another one running");
+void StoreManager::setInterface(std::shared_ptr<NetworkInterface> interface) {
+    assert(mNetworkInterface == nullptr);
 
     mNetworkInterface = std::move(interface);
 
@@ -32,14 +31,6 @@ void StoreManager::startInterface(std::shared_ptr<NetworkInterface> interface) {
 
     connect(mNetworkInterface.get(), &NetworkInterface::syncReceived, this, &StoreManager::receiveSync);
     connect(mNetworkInterface.get(), &NetworkInterface::syncConfirmed, this, &StoreManager::confirmSync);
-
-    mNetworkInterface->start();
-}
-
-void StoreManager::stopInterface() {
-    mNetworkInterface->quit();
-    mNetworkInterface->wait();
-    mNetworkInterface.reset();
 }
 
 QTournamentStore & StoreManager::getTournament() {
@@ -540,5 +531,18 @@ void StoreManager::undo(ClientActionId actionId) {
         emit undoStatusChanged(false);
     if (mRedoList.size() == 1) // list was empty before
         emit redoStatusChanged(true);
+}
+
+WorkerThread& StoreManager::getWorkerThread() {
+    return mThread;
+}
+
+void StoreManager::stop() {
+    getWorkerThread().stop();
+    mNetworkInterface->stop();
+}
+
+void StoreManager::wait() {
+    getWorkerThread().wait();
 }
 

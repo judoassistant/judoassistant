@@ -26,6 +26,7 @@ private slots:
     void openManual();
     void openReportIssue();
     void showAboutDialog();
+    void showServerStartFailure();
 
 private:
     void createStatusBar();

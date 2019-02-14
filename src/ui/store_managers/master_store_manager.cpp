@@ -12,19 +12,39 @@
 constexpr size_t FILE_HEADER_SIZE = 9;
 
 MasterStoreManager::MasterStoreManager()
-    : mDirty(false)
+    : StoreManager()
+    , mWebClientState(WebClientState::NOT_CONNECTED)
+    , mWebClient(getWorkerThread().getContext())
+    , mNetworkServerState(NetworkServerState::STOPPED)
+    , mDirty(false)
 {
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
 
-    mWebClient.start();
+    mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext(), mWebClient);
+    mWebClient.setNetworkServer(mNetworkServer);
+    connect(mNetworkServer.get(), &NetworkServer::stateChanged, this, &MasterStoreManager::changeNetworkServerState);
+    connect(&mWebClient, &WebClient::stateChanged, this, &MasterStoreManager::changeWebClientState);
+    setInterface(mNetworkServer);
+}
+
+void MasterStoreManager::startServer(int port) {
+    if (mNetworkServerState != NetworkServerState::STOPPED) {
+        log_warning().msg("Tried to start network server when already started");
+        return;
+    }
+
+    mNetworkServer->start(port);
 }
 
 MasterStoreManager::~MasterStoreManager() {
-    stopServer();
-    mWebClient.quit();
-    mWebClient.wait();
+
+}
+
+void MasterStoreManager::stop() {
+    mWebClient.stop();
+    StoreManager::stop();
 }
 
 bool MasterStoreManager::read(const QString &path) {
@@ -156,21 +176,8 @@ bool MasterStoreManager::write(const QString &path) {
     return true;
 }
 
-void MasterStoreManager::startServer(int port) {
-    try {
-        startInterface(std::make_unique<NetworkServer>(port));
-    }
-    catch (const boost::system::system_error &e) {
-        if (e.code() == boost::system::errc::address_in_use)
-            throw AddressInUseException(port);
-        else
-            throw e;
-    }
-    sync();
-}
-
 void MasterStoreManager::stopServer() {
-    stopInterface();
+    mNetworkServer->stop();
 }
 
 void MasterStoreManager::dispatch(std::unique_ptr<Action> action) {
@@ -199,3 +206,31 @@ WebClient& MasterStoreManager::getWebClient() {
 const WebClient& MasterStoreManager::getWebClient() const {
     return mWebClient;
 }
+
+void MasterStoreManager::changeNetworkServerState(NetworkServerState state) {
+    mNetworkServerState = state;
+
+    if (state == NetworkServerState::STARTED)
+        sync();
+}
+
+void MasterStoreManager::changeWebClientState(WebClientState state) {
+    mWebClientState = state;
+}
+
+NetworkServer& MasterStoreManager::getNetworkServer() {
+    return *mNetworkServer;
+}
+
+const NetworkServer& MasterStoreManager::getNetworkServer() const {
+    return *mNetworkServer;
+}
+
+NetworkServerState MasterStoreManager::getNetworkServerState() const {
+    return mNetworkServerState;
+}
+
+WebClientState MasterStoreManager::getWebClientState() const {
+    return mWebClientState;
+}
+

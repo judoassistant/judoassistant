@@ -64,8 +64,8 @@ void ScoreOperatorWindow::createTournamentMenu() {
     connect(mDisconnectAction, &QAction::triggered, this, &ScoreOperatorWindow::disconnect);
     menu->addAction(mDisconnectAction);
 
-    changeConnectionState(mStoreManager.getState());
-    connect(&mStoreManager, &ClientStoreManager::stateChanged, this, &ScoreOperatorWindow::changeConnectionState);
+    changeNetworkClientState(mStoreManager.getNetworkClientState());
+    connect(&mStoreManager.getNetworkClient(), &NetworkClient::stateChanged, this, &ScoreOperatorWindow::changeNetworkClientState);
 }
 
 void ScoreOperatorWindow::createEditMenu() {
@@ -696,7 +696,8 @@ void ScoreOperatorWindow::undoSelectedAction() {
     mStoreManager.undo(actionId);
 }
 
-void ScoreOperatorWindow::changeConnectionState(ClientStoreManager::State state) {
-    mConnectAction->setEnabled(state == ClientStoreManager::State::NOT_CONNECTED);
-    mDisconnectAction->setEnabled(state == ClientStoreManager::State::CONNECTED);
+void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
+    mConnectAction->setEnabled(state == NetworkClientState::NOT_CONNECTED);
+    mDisconnectAction->setEnabled(state == NetworkClientState::CONNECTED);
 }
+

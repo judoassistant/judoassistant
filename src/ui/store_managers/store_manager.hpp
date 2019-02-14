@@ -1,7 +1,7 @@
 #pragma once
 
-#include <list>
 #include <chrono>
+#include <list>
 
 #include <QObject>
 #include <QString>
@@ -9,10 +9,10 @@
 #include "core/actions/action.hpp"
 #include "core/core.hpp"
 #include "core/id.hpp"
-#include "ui/store_managers/sync_payload.hpp"
+#include "ui/network/network_interface.hpp"
+#include "ui/store_managers/worker_thread.hpp"
 
 class QTournamentStore;
-class NetworkInterface;
 class StoreManager;
 
 class ConstActionListIterator {
@@ -39,7 +39,10 @@ class StoreManager : public QObject {
     Q_OBJECT
 public:
     StoreManager();
-    ~StoreManager();
+    virtual ~StoreManager();
+
+    virtual void stop();
+    void wait();
 
     QTournamentStore & getTournament();
     const QTournamentStore & getTournament() const;
@@ -73,8 +76,7 @@ signals:
     void actionAdded(ClientActionId actionId, size_t pos);
 
 protected:
-    void startInterface(std::shared_ptr<NetworkInterface> interface);
-    void stopInterface();
+    void setInterface(std::shared_ptr<NetworkInterface> interface);
 
     void sync(std::unique_ptr<QTournamentStore> tournament);
     void sync();
@@ -86,8 +88,13 @@ protected:
     void receiveSync(SyncPayloadPtr syncPayload);
     void confirmSync();
 
+    WorkerThread& getWorkerThread();
+
 private:
+    WorkerThread mThread;
     static const size_t REDO_LIST_MAX_SIZE = 20;
+
+    std::shared_ptr<NetworkInterface> mNetworkInterface;
 
     ClientId mId;
     std::unique_ptr<QTournamentStore> mTournament;
@@ -106,9 +113,6 @@ private:
 
     size_t mSyncing;
 
-    std::shared_ptr<NetworkInterface> mNetworkInterface;
-
     friend class ConstActionListIterator;
 };
-
 

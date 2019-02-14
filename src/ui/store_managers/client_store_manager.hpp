@@ -1,30 +1,19 @@
 #pragma once
 
 #include "ui/store_managers/store_manager.hpp"
-
-class NetworkClient;
+#include "ui/network/network_client.hpp"
 
 class ClientStoreManager : public StoreManager {
     Q_OBJECT
 public:
-    enum class State {
-        NOT_CONNECTED,
-        CONNECTED,
-        CONNECTING,
-        DISCONNECTING
-    };
-
     ClientStoreManager();
-    ~ClientStoreManager();
 
     void connect(QString host, unsigned int port);
     void disconnect();
 
-    void dispatch(std::unique_ptr<Action> action) override;
-    void undo() override;
-    void undo(ClientActionId action) override;
-    void redo() override;
-    State getState() const;
+    NetworkClientState getNetworkClientState() const;
+    const NetworkClient& getNetworkClient() const;
+    NetworkClient& getNetworkClient();
 
 protected:
     void loseConnection();
@@ -37,13 +26,10 @@ signals:
     void connectionLost();
     void connectionShutdown();
     void connectionAttemptSucceeded();
-    void stateChanged(State state);
+    void networkClientStateChanged(NetworkClientState state);
 
 private:
-    void startClient();
-    void stopClient();
-
-    State mState;
-    std::shared_ptr<NetworkClient> mInterface;
+    std::shared_ptr<NetworkClient> mNetworkClient;
+    NetworkClientState mNetworkClientState;
 };
 

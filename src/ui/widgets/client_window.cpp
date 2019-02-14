@@ -28,9 +28,9 @@ void ClientWindow::succeedConnectionAttempt() {
 }
 
 void ClientWindow::retryTimerHit() {
-    if (mStoreManager.getState() == ClientStoreManager::State::CONNECTING)
+    if (mStoreManager.getNetworkClientState() == NetworkClientState::CONNECTING)
         return;
-    if (mStoreManager.getState() == ClientStoreManager::State::CONNECTED)
+    if (mStoreManager.getNetworkClientState() == NetworkClientState::CONNECTED)
         return;
     if (!mPreviousPort.has_value())
         return;

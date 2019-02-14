@@ -10,14 +10,13 @@
 WebClientWidget::WebClientWidget(MasterStoreManager &storeManager, QWidget *parent)
     : QGroupBox(tr("Live Web Results"), parent)
     , mStoreManager(storeManager)
-    , mWebStatus(WebClient::Status::NOT_CONNECTED)
 {
     addWidgets();
 
     endResetTournament();
     connect(&mStoreManager, &MasterStoreManager::tournamentAboutToBeReset, this, &WebClientWidget::beginResetTournament);
     connect(&mStoreManager, &MasterStoreManager::tournamentReset, this, &WebClientWidget::endResetTournament);
-    connect(&mStoreManager.getWebClient(), &WebClient::statusChanged, this, &WebClientWidget::changeWebStatus);
+    connect(&mStoreManager.getWebClient(), &WebClient::stateChanged, this, &WebClientWidget::changeWebClientState);
     connect(&mStoreManager.getWebClient(), &WebClient::loginSucceeded, this, &WebClientWidget::succeedLogin);
 }
 
@@ -72,15 +71,16 @@ void WebClientWidget::endResetTournament() {
 }
 
 void WebClientWidget::buttonClick() {
-    if (mWebStatus == WebClient::Status::CONNECTING || mWebStatus == WebClient::Status::CONFIGURING || mWebStatus == WebClient::Status::DISCONNECTING) {
+    const auto state = mStoreManager.getWebClientState();
+
+    if (state == WebClientState::CONNECTING || state == WebClientState::CONFIGURING || state == WebClientState::DISCONNECTING) {
         log_warning().msg("Can not press configure button when Web client is already working");
         return;
     }
 
     const auto webName = mStoreManager.getTournament().getWebName();
 
-    // Login if not already
-    if (mWebStatus == WebClient::Status::NOT_CONNECTED) {
+    if (state == WebClientState::NOT_CONNECTED) { // Login if not already
         if (!mToken.has_value()) {
             LoginDialog dialog(mStoreManager);
             if (dialog.exec() != QDialog::Accepted)
@@ -91,10 +91,10 @@ void WebClientWidget::buttonClick() {
         else {
             log_debug().msg("Validate token");
         }
-    }
 
-    // Register name or disconnect
-    if (mWebStatus == WebClient::Status::CONNECTED) {
+        return;
+    }
+    else if (state == WebClientState::CONNECTED) { // Register name or disconnect
         if (!webName.empty()) {
             log_debug().msg("Check webName");
         }
@@ -105,20 +105,20 @@ void WebClientWidget::buttonClick() {
                 return;
         }
     }
-    else if (mWebStatus == WebClient::Status::CONFIGURED) {
+    else if (state == WebClientState::CONFIGURED) {
         mStoreManager.getWebClient().disconnect();
     }
 }
 
-void WebClientWidget::changeWebStatus(WebClient::Status status) {
-    mWebStatus = status;
+void WebClientWidget::changeWebClientState(WebClientState state) {
     updateButton();
 }
 
 void WebClientWidget::updateButton() {
     const auto webName = mStoreManager.getTournament().getWebName();
+    const auto state = mStoreManager.getWebClientState();
 
-    if (mWebStatus == WebClient::Status::NOT_CONNECTED) {
+    if (state == WebClientState::NOT_CONNECTED) {
         mSetupButton->setEnabled(true);
 
         if (!mToken.has_value())
@@ -130,19 +130,19 @@ void WebClientWidget::updateButton() {
         return;
     }
 
-    if (mWebStatus == WebClient::Status::CONNECTING) {
+    if (state == WebClientState::CONNECTING) {
         mSetupButton->setEnabled(false);
         mSetupButton->setText("Connecting...");
         return;
     }
 
-    if (mWebStatus == WebClient::Status::DISCONNECTING) {
+    if (state == WebClientState::DISCONNECTING) {
         mSetupButton->setEnabled(false);
         mSetupButton->setText("Disconnecting...");
         return;
     }
 
-    if (mWebStatus == WebClient::Status::CONNECTED) {
+    if (state == WebClientState::CONNECTED) {
         mSetupButton->setEnabled(true);
         if (webName.empty())
             mSetupButton->setText("Configure");
@@ -151,13 +151,13 @@ void WebClientWidget::updateButton() {
         return;
     }
 
-    if (mWebStatus == WebClient::Status::CONFIGURING) {
+    if (state == WebClientState::CONFIGURING) {
         mSetupButton->setEnabled(false);
-        mSetupButton->setText("Configuring...");
+        mSetupButton->setText("Configuring..");
         return;
     }
 
-    if (mWebStatus == WebClient::Status::CONFIGURED) {
+    if (state == WebClientState::CONFIGURED) {
         mSetupButton->setEnabled(true);
         mSetupButton->setText("Disconnect");
         return;

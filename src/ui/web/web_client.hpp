@@ -1,5 +1,6 @@
 #pragma once
 
+#include <queue>
 #include <boost/asio.hpp> // TODO: Do not include boost convenience headers
 #include <QString>
 #include <QThread>
@@ -8,23 +9,26 @@
 #include "core/web/web_types.hpp"
 #include "core/network/network_connection.hpp"
 
-// TODO: Make thread classes more consistent
-class WebClient : public QThread {
+enum class WebClientState {
+    NOT_CONNECTED,
+    CONNECTING,
+    CONNECTED,
+    CONFIGURING,
+    CONFIGURED,
+    DISCONNECTING
+};
+
+class NetworkServer;
+
+class WebClient : public QObject {
 Q_OBJECT
 public:
-    enum class Status {
-        NOT_CONNECTED,
-        CONNECTING,
-        CONNECTED,
-        CONFIGURING,
-        CONFIGURED,
-        DISCONNECTING
-    };
+    WebClient(boost::asio::io_context &context);
+    void setNetworkServer(std::shared_ptr<NetworkServer> networkServer);
 
-    WebClient();
+    void stop();
 
-    void run() override;
-    void quit();
+    void deliver(std::shared_ptr<NetworkMessage> message);
 
     void validateToken(const QString &token);
     void loginUser(const QString &email, const QString &password);
@@ -33,11 +37,15 @@ public:
 
     void registerWebName(TournamentId id, const QString &webName);
     void checkWebName(TournamentId id, const QString &webName);
-
 private:
     typedef std::function<void(boost::system::error_code)> connectionHandler;
     void createConnection(connectionHandler handler);
+
+    void writeMessage();
+    void enterConfigured();
+
 signals:
+    // TODO: Setup signals when losing connection
     void tokenValidationSucceeded();
     void tokenValidationFailed(WebTokenValidationResponse response);
     void loginSucceeded(const WebToken &token);
@@ -46,17 +54,18 @@ signals:
     void registrationFailed(WebNameRegistrationResponse response);
     void disconnected();
     void webNameChecked(const QString &webName, WebNameCheckResponse status);
-    void statusChanged(WebClient::Status status);
+    void stateChanged(WebClientState status);
 
 private:
     void killConnection();
 
-    boost::asio::io_context mContext;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
+    boost::asio::io_context &mContext;
+    WebClientState mState;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
-    bool mQuitPosted;
-    Status mStatus;
+    bool mDisconnecting;
+    std::queue<std::shared_ptr<NetworkMessage>> mWriteQueue;
+    std::shared_ptr<NetworkServer> mNetworkServer;
 };
 
 Q_DECLARE_METATYPE(WebToken)
@@ -66,4 +75,5 @@ Q_DECLARE_METATYPE(WebTokenValidationResponse)
 Q_DECLARE_METATYPE(WebNameCheckResponse)
 Q_DECLARE_METATYPE(WebNameRegistrationResponse)
 
-Q_DECLARE_METATYPE(WebClient::Status)
+Q_DECLARE_METATYPE(WebClientState)
+

@@ -8,6 +8,7 @@
 #include "web/config.hpp"
 #include "web/database.hpp"
 #include "web/tcp_participant.hpp"
+#include "web/web_name_manager.hpp"
 
 class WebServer {
 public:

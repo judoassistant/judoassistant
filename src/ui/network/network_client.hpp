@@ -9,30 +9,34 @@
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
 #include "ui/network/network_interface.hpp"
-#include "ui/store_managers/sync_payload.hpp"
+
+enum class NetworkClientState {
+    NOT_CONNECTED,
+    CONNECTED,
+    CONNECTING,
+    DISCONNECTING
+};
 
 class NetworkClient : public NetworkInterface {
     Q_OBJECT
 public:
-    NetworkClient();
+    NetworkClient(boost::asio::io_context &context);
+
+    void connect(const std::string &host, unsigned int port);
+    void disconnect();
+
+    void stop() override;
 
     void postSync(std::unique_ptr<TournamentStore> tournament) override;
     void postAction(ClientActionId actionId, std::unique_ptr<Action> action) override;
     void postUndo(ClientActionId actionId) override;
-
-    void postConnect(const std::string &host, unsigned int port);
-    void postDisconnect();
-
-    void start() override;
-    void quit() override;
-
-    void run() override;
 
 signals:
     void connectionAttemptFailed();
     void connectionLost();
     void connectionShutdown();
     void connectionAttemptSucceeded();
+    void stateChanged(NetworkClientState state);
 
 private:
     void deliver(std::unique_ptr<NetworkMessage> message);
@@ -41,8 +45,8 @@ private:
     void killConnection();
     void recoverUnconfirmed(TournamentStore *tournament, SharedActionList *actions);
 
-    boost::asio::io_context mContext;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> mWorkGuard;
+    NetworkClientState mState;
+    boost::asio::io_context &mContext;
     std::optional<boost::asio::ip::tcp::socket> mSocket;
     std::optional<NetworkConnection> mConnection;
     std::string mHost;
@@ -56,3 +60,4 @@ private:
     std::unordered_set<ClientActionId> mUnconfirmedUndos;
 };
 
+Q_DECLARE_METATYPE(NetworkClientState)

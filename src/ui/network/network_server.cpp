@@ -3,33 +3,64 @@
 #include "ui/network/network_participant.hpp"
 #include "ui/network/network_server.hpp"
 #include "ui/stores/qtournament_store.hpp"
+#include "ui/web/web_client.hpp"
 
 using boost::asio::ip::tcp;
 
-NetworkServer::NetworkServer(int port)
-    : mContext()
-    , mEndpoint(tcp::v4(), port)
-    , mAcceptor(mContext, mEndpoint)
+NetworkServer::NetworkServer(boost::asio::io_context &context, WebClient &webClient)
+    : mState(NetworkServerState::STOPPED)
+    , mContext(context)
+    , mTournament(std::make_shared<TournamentStore>())
+    , mWebClient(webClient)
 {
-    accept();
+    qRegisterMetaType<NetworkServerState>();
 }
 
-void NetworkServer::run() {
-    while (true) {
-        try
-        {
-            mContext.run();
-            break; // run() exited normally
+void NetworkServer::start(unsigned int port) {
+    mContext.post([this, port]() {
+        if (mState != NetworkServerState::STOPPED) {
+            log_warning().msg("Tried to call accept on already accepting server");
+            return;
         }
-        catch (std::exception& e)
-        {
-            log_error().field("msg", e.what()).msg("NetworkServer caught exception");
+
+        try {
+            mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
+            mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
         }
-    }
+        catch (const std::exception &e) {
+            emit startFailed();
+            return;
+        }
+
+        accept();
+
+        emit stateChanged(mState = NetworkServerState::STARTED);
+    });
+}
+
+void NetworkServer::stop() {
+    mContext.post([this]() {
+        if (mState != NetworkServerState::STARTED)
+            return;
+
+        mAcceptor->close();
+
+        auto message = std::make_shared<NetworkMessage>();
+        message->encodeQuit();
+
+        auto it = mParticipants.begin();
+        while (it != mParticipants.end()) {
+            auto &participant = *it;
+            participant->deliver(message);
+            it = mParticipants.erase(it);
+        }
+
+        emit stateChanged(mState = NetworkServerState::STOPPED);
+    });
 }
 
 void NetworkServer::accept() {
-    mAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+    mAcceptor->async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
             log_error().field("message", ec.message()).msg("Received error code in async_accept");
         }
@@ -46,7 +77,7 @@ void NetworkServer::accept() {
             });
         }
 
-        if (mAcceptor.is_open())
+        if (mAcceptor->is_open())
             accept();
     });
 }
@@ -66,6 +97,8 @@ void NetworkServer::postSync(std::unique_ptr<TournamentStore> tournament) {
             participant->deliver(message);
         }
 
+        mWebClient.deliver(message);
+
         emit syncConfirmed();
     });
 }
@@ -76,7 +109,7 @@ void NetworkServer::postAction(ClientActionId actionId, std::unique_ptr<Action> 
         mActionStack.push_back(std::make_pair(actionId, sharedAction));
         mActionMap[actionId] = std::prev(mActionStack.end());
 
-        if (mActionStack.size() > ACTION_STACK_MAX_SIZE) {
+        if (mActionStack.size() > MAX_ACTION_STACK_SIZE) {
             mActionStack.front().second->redo(*mTournament);
             mActionMap.erase(mActionStack.front().first);
             mActionStack.pop_front();
@@ -109,22 +142,6 @@ void NetworkServer::postUndo(ClientActionId actionId) {
     });
 }
 
-void NetworkServer::postQuit() {
-    mContext.post([this]() {
-        mAcceptor.close();
-
-        auto message = std::make_shared<NetworkMessage>();
-        message->encodeQuit();
-
-        auto it = mParticipants.begin();
-        while (it != mParticipants.end()) {
-            auto &participant = *it;
-            participant->deliver(message);
-            it = mParticipants.erase(it);
-        }
-    });
-}
-
 void NetworkServer::join(std::shared_ptr<NetworkParticipant> participant) {
     mParticipants.insert(std::move(participant));
 }
@@ -141,15 +158,6 @@ const SharedActionList & NetworkServer::getActionStack() const {
     return mActionStack;
 }
 
-void NetworkServer::start() {
-    QThread::start();
-}
-
-void NetworkServer::quit() {
-    postQuit();
-    QThread::quit();
-}
-
 void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
     ClientActionId actionId;
     std::shared_ptr<Action> action;
@@ -158,7 +166,7 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
     mActionStack.push_back(std::make_pair(actionId, action));
     mActionMap[actionId] = std::prev(mActionStack.end());
 
-    if (mActionStack.size() > ACTION_STACK_MAX_SIZE) {
+    if (mActionStack.size() > MAX_ACTION_STACK_SIZE) {
         mActionStack.front().second->redo(*mTournament);
         mActionMap.erase(mActionStack.front().first);
         mActionStack.pop_front();
@@ -176,6 +184,8 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
 
         participant->deliver(message);
     }
+
+    mWebClient.deliver(message);
 }
 
 void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
@@ -201,10 +211,14 @@ void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::sh
 
             participant->deliver(sharedMessage);
         }
+
+        mWebClient.deliver(sharedMessage);
     }
 }
 
 void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message) {
     for (auto & participant : mParticipants)
         participant->deliver(message);
+    mWebClient.deliver(message);
 }
+

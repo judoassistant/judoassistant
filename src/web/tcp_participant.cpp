@@ -1,5 +1,7 @@
 #include "web/tcp_participant.hpp"
 #include "web/web_server.hpp"
+#include "core/stores/tournament_store.hpp"
+#include "core/actions/action.hpp"
 
 TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
     : mStrand(context)
@@ -13,10 +15,9 @@ TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr
 
 void TCPParticipant::asyncAuth() {
     log_debug().msg("TCPParticiant: Async auth called");
-    auto self = shared_from_this();
 
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
+    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         log_debug().msg("TCPParticiant: Async read handler called");
         assert(mState == State::NOT_AUTHENTICATED);
         if (ec) {
@@ -88,9 +89,7 @@ void TCPParticipant::asyncAuth() {
 
 // TODO: See if shared_from_this pattern can be avoided
 void TCPParticipant::write() {
-    auto self = shared_from_this();
-
-    mConnection->asyncWrite(*(mMessageQueue.front()), boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec) {
+    mConnection->asyncWrite(*(mMessageQueue.front()), boost::asio::bind_executor(mStrand, [this](boost::system::error_code ec) {
         if (ec) {
             log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
             mServer.leave(shared_from_this());
@@ -115,11 +114,10 @@ void TCPParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
 }
 
 void TCPParticipant::asyncTournamentRegister() {
-    auto self = shared_from_this();
     assert(mState == State::AUTHENTICATED);
 
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
+    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         assert(mState == State::AUTHENTICATED);
         log_debug().field("type", mReadMessage->getType()).msg("Async read message in register");
         if (ec) {
@@ -150,7 +148,7 @@ void TCPParticipant::asyncTournamentRegister() {
 
                 if (response == WebNameRegistrationResponse::SUCCESSFUL) {
                     mState = State::TOURNAMENT_SELECTED;
-                    mServer.assignWebName(shared_from_this(), webName);
+                    asyncTournamentSync(webName);
                 }
                 else {
                     asyncTournamentRegister();
@@ -178,13 +176,48 @@ void TCPParticipant::asyncTournamentRegister() {
         else {
             log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when registering web name");
         }
-
-        mReadMessage = std::make_unique<NetworkMessage>();
     });
 }
 
 void TCPParticipant::quit() {
     // TODO: Implement
     log_debug().msg("Quit called");
+}
+
+void TCPParticipant::asyncTournamentSync(const std::string &webName) {
+    log_debug().msg("Syncing tournament");
+    mReadMessage = std::make_unique<NetworkMessage>();
+    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+        assert(mState == State::TOURNAMENT_SELECTED);
+        log_debug().field("type", mReadMessage->getType()).msg("Async read message in tournament sync");
+        if (ec) {
+            log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
+            mServer.leave(shared_from_this());
+            return;
+        }
+
+        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
+            mServer.leave(shared_from_this());
+            return;
+        }
+
+        if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
+            TournamentId id;
+            auto tournament = std::make_unique<TournamentStore>();
+            SharedActionList actionStack;
+
+            std::string webName;
+            if (!mReadMessage->decodeSync(*tournament, actionStack)) {
+                log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
+                mServer.leave(shared_from_this());
+                return;
+            }
+
+            log_debug().msg("Do stuff");
+        }
+        else {
+            log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when registering web name");
+        }
+    });
 }
 

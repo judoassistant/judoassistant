@@ -3,11 +3,13 @@
 
 using boost::asio::ip::tcp;
 
-NetworkClient::NetworkClient()
-    : mContext()
-    , mWorkGuard(boost::asio::make_work_guard(mContext))
+// TODO: Cleanup code
+NetworkClient::NetworkClient(boost::asio::io_context &context)
+    : mState(NetworkClientState::NOT_CONNECTED)
+    , mContext(context)
     , mReadMessage(std::make_unique<NetworkMessage>())
 {
+    qRegisterMetaType<NetworkClientState>();
 }
 
 void NetworkClient::postSync(std::unique_ptr<TournamentStore> tournament) {
@@ -51,9 +53,10 @@ void NetworkClient::deliver(std::unique_ptr<NetworkMessage> message) {
         writeMessage();
 }
 
-void NetworkClient::postConnect(const std::string &host, unsigned int port) {
+void NetworkClient::connect(const std::string &host, unsigned int port) {
     mContext.post([this, host, port]() {
         log_debug().msg("Connecting..");
+        emit stateChanged(mState = NetworkClientState::CONNECTING);
         mQuitPosted = false;
         tcp::resolver resolver(mContext);
         tcp::resolver::results_type endpoints;
@@ -63,18 +66,18 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
         catch(const std::exception &e) {
             log_error().field("message", e.what()).msg("Encountered resolving host. Failing");
             emit connectionAttemptFailed();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             return;
         }
 
         mSocket = tcp::socket(mContext);
 
         // TODO: Somehow kill when taking too long
-        boost::asio::async_connect(*mSocket, endpoints,
-        [this](boost::system::error_code ec, tcp::endpoint)
-        {
+        boost::asio::async_connect(*mSocket, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
           if (ec) {
             log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
             killConnection();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             emit connectionAttemptFailed();
             return;
           }
@@ -85,6 +88,7 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                 if (ec) {
                     log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
                     killConnection();
+                    emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                     emit connectionAttemptFailed();
                     return;
                 }
@@ -93,6 +97,7 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                     if (mReadMessage->getType() != NetworkMessage::Type::SYNC) {
                         log_error().msg("Did not immediately receive sync on connection. Killing connection");
                         killConnection();
+                        emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                         emit connectionAttemptFailed();
                         return;
                     }
@@ -103,6 +108,7 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                     if (!mReadMessage->decodeSync(*tournament, sharedActions)) {
                         log_debug().msg("Failed decoding sync");
                         killConnection();
+                        emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                         emit connectionAttemptFailed();
                         return;
                     }
@@ -169,6 +175,7 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
                     }
 
                     emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::move(unconfirmedActionList), std::move(unconfirmedUndos)));
+                    emit stateChanged(mState = NetworkClientState::CONNECTED);
                     emit connectionAttemptSucceeded();
 
                     mReadMessage = std::make_unique<NetworkMessage>();
@@ -180,18 +187,14 @@ void NetworkClient::postConnect(const std::string &host, unsigned int port) {
     });
 }
 
-void NetworkClient::start() {
-    QThread::start();
-}
-
-void NetworkClient::quit() {
-    postDisconnect();
-    mWorkGuard.reset();
-    QThread::quit();
-}
-
-void NetworkClient::postDisconnect() {
+void NetworkClient::disconnect() {
     mContext.post([this]() {
+        if (mState != NetworkClientState::CONNECTED) {
+            log_warning().msg("Tried to disconnect not-connected network client");
+            return;
+        }
+
+        emit stateChanged(mState = NetworkClientState::DISCONNECTING);
         mQuitPosted = true; // writeMessage will kill the connection when finished
         auto message = std::make_unique<NetworkMessage>();
         message->encodeQuit();
@@ -199,20 +202,13 @@ void NetworkClient::postDisconnect() {
     });
 }
 
-void NetworkClient::run() {
-    while (true) {
-        try
-        {
-            mContext.run();
-            break; // run() exited normally
-        }
-        catch (std::exception& e)
-        {
-            log_error().field("msg", e.what()).msg("NetworkClient caught exception");
-        }
-    }
+void NetworkClient::stop() {
+    mContext.post([this]() {
+            if (mState == NetworkClientState::NOT_CONNECTED)
+                return;
 
-    log_info().msg("NetworkClient::run finished");
+            disconnect();
+    });
 }
 
 void NetworkClient::writeMessage() {
@@ -225,6 +221,7 @@ void NetworkClient::writeMessage() {
                 mWriteQueue.pop();
             killConnection();
             emit connectionLost();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             return;
         }
 
@@ -234,6 +231,7 @@ void NetworkClient::writeMessage() {
         }
         else if(mQuitPosted) {
             killConnection();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             emit connectionShutdown();
             mQuitPosted = false;
         }
@@ -248,6 +246,7 @@ void NetworkClient::readMessage() {
             log_error().field("message", ec.message()).msg("Encountered error when reading message. Disconnecting");
             killConnection();
             emit connectionLost();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             return;
         }
 
@@ -255,6 +254,7 @@ void NetworkClient::readMessage() {
             log_info().msg("Received quit message. Disconnecting.");
             killConnection();
             emit connectionShutdown();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             return;
         }
 
@@ -272,6 +272,7 @@ void NetworkClient::readMessage() {
                 log_error().msg("Failed to decode sync message. Disconnecting");
                 killConnection();
                 emit connectionLost();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 return;
             }
 
@@ -303,6 +304,7 @@ void NetworkClient::readMessage() {
                 log_error().msg("Failed to decode action message. Disconnecting");
                 killConnection();
                 emit connectionLost();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 return;
             }
 
@@ -314,6 +316,7 @@ void NetworkClient::readMessage() {
                 log_error().msg("Failed to decode action ack. Disconnecting");
                 killConnection();
                 emit connectionLost();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 return;
             }
 
@@ -331,6 +334,7 @@ void NetworkClient::readMessage() {
                 log_error().msg("Failed to decode undo. Disconnecting");
                 killConnection();
                 emit connectionLost();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 return;
             }
 
@@ -342,6 +346,7 @@ void NetworkClient::readMessage() {
                 log_error().msg("Failed to decode undo ack. Disconnecting");
                 killConnection();
                 emit connectionLost();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 return;
             }
 
