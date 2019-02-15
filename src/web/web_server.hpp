@@ -1,13 +1,16 @@
 #pragma once
 
+#include <boost/asio/io_context_strand.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/websocket.hpp>
 #include <thread>
 #include <vector>
-#include <boost/asio/io_context_strand.hpp>
 
 #include "core/core.hpp"
 #include "web/config.hpp"
 #include "web/database.hpp"
 #include "web/loaded_tournament.hpp"
+#include "web/web_participant.hpp"
 #include "web/tcp_participant.hpp"
 
 class WebServer {
@@ -26,12 +29,17 @@ private:
     void leave(std::shared_ptr<TCPParticipant> participant);
     void assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName);
 
+    void webAccept();
+
     Config mConfig;
     boost::asio::io_context mContext;
     boost::asio::io_context::strand mStrand;
 
-    boost::asio::ip::tcp::endpoint mEndpoint;
-    boost::asio::ip::tcp::acceptor mAcceptor;
+    boost::asio::ip::tcp::endpoint mTCPEndpoint;
+    boost::asio::ip::tcp::acceptor mTCPAcceptor;
+
+    boost::asio::ip::tcp::endpoint mWebEndpoint;
+    boost::asio::ip::tcp::acceptor mWebAcceptor;
 
     std::unordered_set<std::shared_ptr<TCPParticipant>> mParticipants;
     std::unordered_map<std::string, std::shared_ptr<LoadedTournament>> mLoadedTournaments;

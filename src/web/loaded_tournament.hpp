@@ -4,7 +4,8 @@
 
 #include "core/actions/action.hpp"
 #include "core/stores/tournament_store.hpp"
-#include "web/web_participant.hpp"
+
+class WebParticipant;
 
 class LoadedTournament {
 public:

@@ -2,6 +2,7 @@
 
 #include "core/log.hpp"
 #include "web/loaded_tournament.hpp"
+#include "web/web_participant.hpp"
 
 LoadedTournament::LoadedTournament(const std::string &webName, boost::asio::io_context &context)
     : mContext(context)
