@@ -4,6 +4,7 @@
 
 #include "core/actions/action.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "web/web_participant.hpp"
 
 class LoadedTournament {
 public:
@@ -20,4 +21,7 @@ private:
     std::string mWebName;
     std::unique_ptr<TournamentStore> mTournament;
     SharedActionList mActionList;
+    std::unordered_set<ClientActionId> mActionIds;
+    std::unordered_set<std::unique_ptr<WebParticipant>> mWebParticipants;
 };
+

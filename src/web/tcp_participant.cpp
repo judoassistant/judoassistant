@@ -187,6 +187,11 @@ void TCPParticipant::quit() {
     log_debug().msg("Quit called");
 }
 
+struct MoveWrapper {
+    std::unique_ptr<TournamentStore> tournament;
+    SharedActionList actionList;
+};
+
 void TCPParticipant::asyncTournamentSync() {
     log_debug().msg("Syncing tournament");
     mReadMessage = std::make_unique<NetworkMessage>();
@@ -206,18 +211,18 @@ void TCPParticipant::asyncTournamentSync() {
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
-            mServer.obtainTournament(mWebName, mStrand.wrap([this](std::shared_ptr<LoadedTournament> loadedTournament) {
-                auto tournament = std::make_unique<TournamentStore>();
-                SharedActionList actionList;
+            auto wrapper = std::make_shared<MoveWrapper>();
+            wrapper->tournament = std::make_unique<TournamentStore>();
 
-                if (!mReadMessage->decodeSync(*tournament, actionList)) {
-                    // TODO: Unown tournament
-                    log_debug().msg("Encountered error when decoding tournament. Kicking client");
-                    mServer.leave(shared_from_this());
-                    return;
-                }
+            if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
+                // TODO: Unown tournament
+                log_debug().msg("Encountered error when decoding tournament. Kicking client");
+                mServer.leave(shared_from_this());
+                return;
+            }
 
-                loadedTournament->sync(std::move(tournament), std::move(actionList));
+            mServer.obtainTournament(mWebName, mStrand.wrap([this, wrapper](std::shared_ptr<LoadedTournament> loadedTournament) {
+                loadedTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList));
                 mTournament = loadedTournament;
                 asyncTournamentListen();
             }));
