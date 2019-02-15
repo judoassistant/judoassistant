@@ -3,6 +3,8 @@
 #include "web/tcp_participant.hpp"
 #include "web/web_server.hpp"
 
+// TODO: Ensure strands are used correctly
+
 TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
     : mStrand(context)
     , mConnection(std::move(connection))
@@ -240,9 +242,49 @@ void TCPParticipant::asyncTournamentListen() {
             return;
         }
 
-        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
+        auto type = mReadMessage->getType();
+        if (type == NetworkMessage::Type::QUIT) {
             mServer.leave(shared_from_this());
             return;
+        }
+        else if (type == NetworkMessage::Type::UNDO) {
+            ClientActionId actionId;
+
+            if (!mReadMessage->decodeUndo(actionId)) {
+                log_warning().msg("Failed decoding undo. Kicking client.");
+                mServer.leave(shared_from_this());
+                return;
+            }
+
+            mTournament->undo(actionId);
+        }
+        else if (type == NetworkMessage::Type::ACTION) {
+            ClientActionId actionId;
+            std::shared_ptr<Action> action;
+
+            if (!mReadMessage->decodeAction(actionId, action)) {
+                log_warning().msg("Failed decoding action. Kicking client.");
+                mServer.leave(shared_from_this());
+                return;
+            }
+
+            mTournament->dispatch(actionId, std::move(action));
+        }
+        else if (type == NetworkMessage::Type::SYNC) {
+            auto tournament = std::make_unique<TournamentStore>();
+            SharedActionList actionList;
+
+            if (!mReadMessage->decodeSync(*tournament, actionList)) {
+                // TODO: Unown tournament
+                log_debug().msg("Failed decoding sync. Kicking client.");
+                mServer.leave(shared_from_this());
+                return;
+            }
+
+           mTournament->sync(std::move(tournament), std::move(actionList));
+        }
+        else {
+            log_warning().field("type", type).msg("Received message of unexpected type when listening");
         }
 
         // TODO: Implement method

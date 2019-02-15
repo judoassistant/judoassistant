@@ -9,5 +9,14 @@ LoadedTournament::LoadedTournament(const std::string &webName, boost::asio::io_c
 }
 
 void LoadedTournament::sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList) {
-
+    mStrand.post([this](){});
 }
+
+void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action> action) {
+    mStrand.post([this](){});
+}
+
+void LoadedTournament::undo(ClientActionId actionId) {
+    mStrand.post([this](){});
+}
+
