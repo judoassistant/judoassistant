@@ -1,10 +1,11 @@
 #pragma once
 
 #include <QObject>
-#include <set>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <map>
 #include <queue>
-#include <boost/asio.hpp> // TODO: Do not include boost convenience headers
+#include <set>
 
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/asio/io_context_strand.hpp>
 #include <queue>
 
 #include "core/network/network_connection.hpp"

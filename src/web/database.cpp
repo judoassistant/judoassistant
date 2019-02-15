@@ -1,3 +1,4 @@
+#include <boost/asio/dispatch.hpp>
 #include <botan-2/botan/bcrypt.h>
 #include <botan-2/botan/rng.h>
 #include <botan-2/botan/system_rng.h>

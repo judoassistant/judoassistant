@@ -1,6 +1,8 @@
 #pragma once
 
-#include <boost/asio.hpp> // TODO: Do not include boost convenience headers
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+
 #include <map>
 #include <set>
 #include <queue>

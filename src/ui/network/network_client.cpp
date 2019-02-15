@@ -1,3 +1,5 @@
+#include <boost/asio/connect.hpp>
+
 #include "ui/network/network_client.hpp"
 #include "ui/stores/qtournament_store.hpp"
 

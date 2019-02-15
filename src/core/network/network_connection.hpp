@@ -1,11 +1,13 @@
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 
 #include "core/core.hpp"
 #include "core/log.hpp"
-#include "core/version.hpp"
 #include "core/network/network_message.hpp"
+#include "core/version.hpp"
 
 class NetworkMessage;
 

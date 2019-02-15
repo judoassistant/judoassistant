@@ -1,3 +1,5 @@
+#include <boost/asio/bind_executor.hpp>
+
 #include "core/actions/action.hpp"
 #include "core/stores/tournament_store.hpp"
 #include "web/tcp_participant.hpp"

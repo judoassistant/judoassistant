@@ -1,9 +1,10 @@
 #pragma once
 
-#include <queue>
-#include <boost/asio.hpp> // TODO: Do not include boost convenience headers
 #include <QString>
 #include <QThread>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <queue>
 
 #include "core/id.hpp"
 #include "core/web/web_types.hpp"

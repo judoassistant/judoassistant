@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/asio.hpp> // TODO: Do not include boost convenience headers
+#include <boost/asio/io_context_strand.hpp>
 
 #include "core/actions/action.hpp"
 #include "core/stores/tournament_store.hpp"
