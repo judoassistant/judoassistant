@@ -7,6 +7,7 @@
 class WebServer;
 class NetworkMessage;
 class Database;
+class LoadedTournament;
 
 // Object passed between web server and web workers encapsulating a client
 class TCPParticipant : public std::enable_shared_from_this<TCPParticipant> {
@@ -26,7 +27,8 @@ public:
 
 private:
     void asyncTournamentRegister();
-    void asyncTournamentSync(const std::string &webName);
+    void asyncTournamentSync();
+    void asyncTournamentListen();
 
     void write();
     void deliver(std::shared_ptr<NetworkMessage> message);
@@ -39,5 +41,7 @@ private:
     Database &mDatabase;
     State mState;
     std::optional<int> mUserId;
+    std::string mWebName;
+    std::shared_ptr<LoadedTournament> mTournament;
 };
 

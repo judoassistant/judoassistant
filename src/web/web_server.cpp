@@ -5,6 +5,8 @@
 
 using boost::asio::ip::tcp;
 
+// TODO: Perform stricter sanitation of user input
+
 WebServer::WebServer(const Config &config)
     : mConfig(config)
     , mContext()
@@ -85,6 +87,20 @@ void WebServer::work() {
     mContext.run();
 }
 
-void WebServer::obtainTournament(const std::string &webName, obtainTournamentCallback) {
+void WebServer::obtainTournament(const std::string &webName, ObtainTournamentCallback callback) {
+    mStrand.dispatch([this, webName, callback]() {
+        auto it = mLoadedTournaments.find(webName);
+        std::shared_ptr<LoadedTournament> tournament;
+        if (it != mLoadedTournaments.end()) {
+            // TODO: Kick existing participant if any
+            tournament = it->second;
+        }
+        else {
+            tournament = std::make_shared<LoadedTournament>(webName, mContext);
+            mLoadedTournaments.insert({webName, tournament});
+        }
 
+        callback(std::move(tournament));
+    });
 }
+

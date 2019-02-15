@@ -17,8 +17,8 @@ public:
     void run();
     void quit();
 
-    typedef std::function<void (std::shared_ptr<LoadedTournament>)> obtainTournamentCallback;
-    void obtainTournament(const std::string &webName, obtainTournamentCallback);
+    typedef std::function<void (std::shared_ptr<LoadedTournament>)> ObtainTournamentCallback;
+    void obtainTournament(const std::string &webName, ObtainTournamentCallback callback);
 
 private:
     void work();
@@ -34,7 +34,7 @@ private:
     boost::asio::ip::tcp::acceptor mAcceptor;
 
     std::unordered_set<std::shared_ptr<TCPParticipant>> mParticipants;
-    std::unordered_map<std::string, LoadedTournament> mLoadedTournaments;
+    std::unordered_map<std::string, std::shared_ptr<LoadedTournament>> mLoadedTournaments;
 
     std::vector<std::thread> mThreads;
     std::unique_ptr<Database> mDatabase;

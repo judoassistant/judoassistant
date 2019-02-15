@@ -148,7 +148,8 @@ void TCPParticipant::asyncTournamentRegister() {
 
                 if (response == WebNameRegistrationResponse::SUCCESSFUL) {
                     mState = State::TOURNAMENT_SELECTED;
-                    asyncTournamentSync(webName);
+                    mWebName = std::move(webName);
+                    asyncTournamentSync();
                 }
                 else {
                     asyncTournamentRegister();
@@ -184,12 +185,13 @@ void TCPParticipant::quit() {
     log_debug().msg("Quit called");
 }
 
-void TCPParticipant::asyncTournamentSync(const std::string &webName) {
+void TCPParticipant::asyncTournamentSync() {
     log_debug().msg("Syncing tournament");
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this, webName](boost::system::error_code ec) {
+    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         assert(mState == State::TOURNAMENT_SELECTED);
         log_debug().field("type", mReadMessage->getType()).msg("Async read message in tournament sync");
+
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             mServer.leave(shared_from_this());
@@ -202,26 +204,49 @@ void TCPParticipant::asyncTournamentSync(const std::string &webName) {
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
-            TournamentId id;
-            auto tournament = std::make_unique<TournamentStore>();
-            SharedActionList actionStack;
+            mServer.obtainTournament(mWebName, mStrand.wrap([this](std::shared_ptr<LoadedTournament> loadedTournament) {
+                auto tournament = std::make_unique<TournamentStore>();
+                SharedActionList actionList;
 
-            std::string webName;
-            if (!mReadMessage->decodeSync(*tournament, actionStack)) {
-                log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-                mServer.leave(shared_from_this());
-                return;
-            }
+                if (!mReadMessage->decodeSync(*tournament, actionList)) {
+                    // TODO: Unown tournament
+                    log_debug().msg("Encountered error when decoding tournament. Kicking client");
+                    mServer.leave(shared_from_this());
+                    return;
+                }
 
-            mServer.obtainTournament(webName, [this, webName](std::shared_ptr<LoadedTournament> loadedTournament) {
+                loadedTournament->sync(std::move(tournament), std::move(actionList));
+                mTournament = loadedTournament;
+                asyncTournamentListen();
+            }));
 
-            });
-
-            log_debug().msg("Do stuff");
+            return;
         }
-        else {
-            log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when registering web name");
+
+        log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when registering web name");
+        asyncTournamentSync();
+    });
+}
+
+void TCPParticipant::asyncTournamentListen() {
+    log_debug().msg("Listening to tournament");
+    mReadMessage = std::make_unique<NetworkMessage>();
+    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+        assert(mState == State::TOURNAMENT_SELECTED);
+
+        if (ec) {
+            log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
+            mServer.leave(shared_from_this());
+            return;
         }
+
+        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
+            mServer.leave(shared_from_this());
+            return;
+        }
+
+        // TODO: Implement method
+        asyncTournamentListen();
     });
 }
 
