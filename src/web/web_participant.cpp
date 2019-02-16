@@ -88,6 +88,9 @@ void WebParticipant::listTournaments() {
 
 void WebParticipant::selectTournament(const std::string &webName) {
     log_debug().field("webName", webName).msg("Selecting tournament");
+    mServer.getTournament(webName, [this](std::shared_ptr<LoadedTournament> tournament) {
+        log_debug().field("isNull", tournament == nullptr).msg("Got tournament");
+    });
 }
 
 void WebParticipant::quit() {

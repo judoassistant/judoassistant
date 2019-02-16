@@ -44,6 +44,10 @@ void Database::asyncSetSaveTime(const std::string &webName, std::chrono::system_
     boost::asio::dispatch(mStrand, std::bind(&Database::setSaveTime, this, webName, time, callback));
 }
 
+void Database::asyncGetSaveStatus(const std::string &webName, SaveStatusGetCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::getSaveStatus, this, webName, callback));
+}
+
 bool Database::hasUser(const std::string &email) {
     pqxx::work work(mConnection);
     pqxx::result r = work.exec("select 1 FROM users where email = " + work.quote(email));
@@ -258,6 +262,21 @@ void Database::setSaveTime(const std::string &webName, std::chrono::system_clock
         work.commit();
 
         boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false));
+    }
+}
+
+void Database::getSaveStatus(const std::string &webName, SaveStatusGetCallback callback) {
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("select 1 FROM tournaments where web_name = " + work.quote(webName)
+                                   + " and synced = true and save_time IS NOT NULL");
+        work.commit();
+
+        boost::asio::dispatch(mContext, std::bind(callback, !r.empty()));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");

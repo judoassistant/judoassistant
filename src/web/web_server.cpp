@@ -162,3 +162,39 @@ void WebServer::acquireTournament(const std::string &webName, AcquireTournamentC
     });
 }
 
+void WebServer::getTournament(const std::string &webName, GetTournamentCallback callback) {
+    mStrand.dispatch([this, webName, callback]() {
+        auto it = mLoadedTournaments.find(webName);
+        if (it != mLoadedTournaments.end()) {
+            boost::asio::dispatch(mContext, std::bind(callback, it->second));
+            return;
+        }
+
+        mDatabase->asyncGetSaveStatus(webName, [this, webName, callback](bool isSaved) {
+            if (!isSaved) {
+                boost::asio::dispatch(mContext, std::bind(callback, nullptr));
+                return;
+            }
+
+            auto tournament = std::make_shared<LoadedTournament>(webName, mConfig.dataDirectory, mContext, *mDatabase);
+            tournament->load(boost::asio::bind_executor(mStrand, [this, webName, tournament, callback](bool success) {
+                auto it = mLoadedTournaments.find(webName);
+                if (it != mLoadedTournaments.end()) { // The tournament was loaded by someone else
+                    boost::asio::dispatch(mContext, std::bind(callback, it->second));
+                    return;
+                }
+
+                if (success) {
+                    mLoadedTournaments.insert({webName, tournament});
+                    boost::asio::dispatch(mContext, std::bind(callback, tournament));
+                    return;
+                }
+
+                boost::asio::dispatch(mContext, std::bind(callback, nullptr));
+                return;
+            }));
+        });
+
+    });
+}
+

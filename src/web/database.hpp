@@ -32,6 +32,9 @@ public:
 
     typedef std::function<void(bool)> SaveTimeSetCallback;
     void asyncSetSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback);
+
+    typedef std::function<void(bool)> SaveStatusGetCallback;
+    void asyncGetSaveStatus(const std::string &webName, SaveStatusGetCallback callback);
 private:
     void registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
 
@@ -43,6 +46,8 @@ private:
 
     void setSynced(const std::string &webName, SyncedSetCallback callback);
     void setSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback);
+
+    void getSaveStatus(const std::string &webName, SaveStatusGetCallback callback);
 
     bool hasUser(const std::string &email);
     bool checkPassword(const std::string &email, const std::string &password);
