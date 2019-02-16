@@ -15,7 +15,6 @@ LoadedTournament::LoadedTournament(const std::string &webName, const boost::file
     , mWebName(webName)
     , mFileInUse(false)
     , mFileLocation(dataDirectory / webName)
-    , mDirty(false)
 {
 }
 
@@ -32,7 +31,7 @@ void LoadedTournament::sync(std::unique_ptr<TournamentStore> tournament, SharedA
     boost::asio::post(mStrand, [this, wrapper](){
         mTournament = std::move(wrapper->tournament);
         mActionList = std::move(wrapper->actionList);
-        mDirty = true;
+        mModificationTime = std::chrono::system_clock::now();
     });
 }
 
@@ -42,13 +41,12 @@ void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action>
         action->redo(*mTournament);
         mActionList.push_back({actionId, std::move(action)});
         mActionIds.insert(actionId);
-        mDirty = true;
+        mModificationTime = std::chrono::system_clock::now();
     });
 }
 
 void LoadedTournament::undo(ClientActionId actionId) {
     mStrand.post([this, actionId](){
-        mDirty = true;
         // TODO: Handle exceptions
 
         auto idIt = mActionIds.find(actionId);
@@ -56,6 +54,8 @@ void LoadedTournament::undo(ClientActionId actionId) {
             log_warning().msg("Received invalid in tournament. Ignoring");
             return;
         }
+
+        mModificationTime = std::chrono::system_clock::now();
 
         mActionIds.erase(idIt);
 
@@ -85,12 +85,82 @@ void LoadedTournament::undo(ClientActionId actionId) {
 }
 
 void LoadedTournament::load(LoadCallback callback) {
-    boost::asio::post(mStrand, [this, callback](){
+    boost::asio::post(mStrand, [this, callback]() {
         if (mFileInUse) {
             log_warning().msg("Cancelled load operation: File already in use");
-            callback(false);
+            boost::asio::dispatch(mContext, std::bind(callback, false));
             return;
         }
+
+        mFileInUse = true;
+
+        std::ifstream file(mFileLocation.string(), std::ios::in | std::ios::binary);
+
+        if (!file.is_open()) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            mFileInUse = false;
+            return;
+        }
+
+        int compressedSize, uncompressedSize;
+        std::string header;
+        header.resize(FILE_HEADER_SIZE);
+        try {
+            file.read(header.data(), FILE_HEADER_SIZE);
+
+            std::istringstream stream(header);
+            cereal::PortableBinaryInputArchive archive(stream);
+            archive(compressedSize, uncompressedSize);
+        }
+        catch (const std::exception &e) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            mFileInUse = false;
+            return;
+        }
+
+        auto compressed = std::make_unique<char[]>(compressedSize);
+
+        std::string uncompressed;
+        uncompressed.resize(uncompressedSize);
+
+        try {
+            file.read(compressed.get(), compressedSize);
+            file.close();
+        }
+        catch (const std::exception &e) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            mFileInUse = false;
+            return;
+        }
+
+        auto returnCode = LZ4_decompress_safe(compressed.get(), uncompressed.data(), compressedSize, uncompressedSize);
+
+        if (returnCode <= 0) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            mFileInUse = false;
+            return;
+        }
+
+        auto tournament = std::make_unique<TournamentStore>();
+        try {
+            std::istringstream stream(uncompressed);
+            cereal::PortableBinaryInputArchive archive(stream);
+            archive(*tournament);
+        }
+        catch(const std::exception &e) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            mFileInUse = false;
+            return;
+        }
+
+        mTournament = std::move(tournament);
+        mActionIds.clear();
+        mActionList.clear();
+
+        // TODO: Notify participants
+        mSynchronizationTime = std::chrono::system_clock::now();
+        mFileInUse = false;
+        boost::asio::dispatch(mContext, std::bind(callback, true));
     });
 }
 
@@ -98,9 +168,11 @@ void LoadedTournament::save(SaveCallback callback) {
     boost::asio::post(mStrand, [this, callback](){
         if (mFileInUse) {
             log_warning().msg("Cancelled save operation: File already in use");
-            callback(false);
+            boost::asio::dispatch(mContext, std::bind(callback, false));
             return;
         }
+
+        mFileInUse = true;
 
         auto uncompressed = std::make_shared<std::string>();
 
@@ -112,11 +184,10 @@ void LoadedTournament::save(SaveCallback callback) {
         }
         catch(const std::exception &e) {
             log_error().msg("Failed serializing of tournament");
-            callback(false);
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            mFileInUse = false;
             return;
         }
-
-        mDirty = false;
 
         boost::asio::dispatch(mContext, [this, uncompressed, callback]() {
             // Compress string
@@ -128,7 +199,8 @@ void LoadedTournament::save(SaveCallback callback) {
 
             if (compressedSize <= 0) {
                 log_error().msg("Failed compressing tournament for disk");
-                callback(false);
+                boost::asio::dispatch(mContext, std::bind(callback, false));
+                mFileInUse = false;
                 return;
             }
 
@@ -141,7 +213,8 @@ void LoadedTournament::save(SaveCallback callback) {
                 header = stream.str();
             }
             catch(const std::exception &e) {
-                callback(false);
+                boost::asio::dispatch(mContext, std::bind(callback, false));
+                mFileInUse = false;
                 return;
             }
 
@@ -151,7 +224,8 @@ void LoadedTournament::save(SaveCallback callback) {
             std::ofstream file(mFileLocation.string(), std::ios::out | std::ios::binary | std::ios::trunc);
 
             if (!file.is_open()) {
-                callback(false);
+                boost::asio::dispatch(mContext, std::bind(callback, false));
+                mFileInUse = false;
                 return;
             }
 
@@ -161,13 +235,15 @@ void LoadedTournament::save(SaveCallback callback) {
                 file.close();
             }
             catch(const std::exception &e) {
-                callback(false);
+                boost::asio::dispatch(mContext, std::bind(callback, false));
+                mFileInUse = false;
                 return;
             }
 
             boost::asio::dispatch(mStrand, [this, callback]() {
                 mFileInUse = false;
-                callback(true);
+                mSynchronizationTime = std::chrono::system_clock::now();
+                boost::asio::dispatch(mContext, std::bind(callback, true));
             });
         });
     });

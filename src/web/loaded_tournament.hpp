@@ -2,6 +2,7 @@
 
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/filesystem/path.hpp>
+#include <chrono>
 #include <fstream>
 
 #include "core/actions/action.hpp"
@@ -37,6 +38,7 @@ private:
 
     bool mFileInUse;
     boost::filesystem::path mFileLocation;
-    bool mDirty;
+    std::chrono::system_clock::time_point mSynchronizationTime; // Time when the tournament was last saved/loaded
+    std::chrono::system_clock::time_point mModificationTime; // Time when the tournament was last modified
 };
 
