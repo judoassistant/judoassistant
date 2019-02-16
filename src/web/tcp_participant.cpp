@@ -6,6 +6,7 @@
 #include "web/web_server.hpp"
 
 // TODO: Ensure strands are used correctly
+// TODO: Make sure changes are saved every x minutes
 
 TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database)
     : mStrand(context)
@@ -19,7 +20,8 @@ TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr
 
 void TCPParticipant::asyncAuth() {
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+    auto self = shared_from_this();
+    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         assert(mState == State::NOT_AUTHENTICATED);
         if (ec) {
             forceQuit();
@@ -27,7 +29,7 @@ void TCPParticipant::asyncAuth() {
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -40,7 +42,7 @@ void TCPParticipant::asyncAuth() {
                 return;
             }
 
-            mDatabase.asyncRequestWebToken(email, password, [this] (WebTokenRequestResponse response, const std::optional<WebToken> token, std::optional<int> userId) {
+            mDatabase.asyncRequestWebToken(email, password, [this, self] (WebTokenRequestResponse response, const std::optional<WebToken> token, std::optional<int> userId) {
                 assert(mState == State::NOT_AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeRequestWebTokenResponse(response, token);
@@ -65,7 +67,7 @@ void TCPParticipant::asyncAuth() {
                 return;
             }
 
-            mDatabase.asyncValidateWebToken(email, token, [this] (WebTokenValidationResponse response, std::optional<int> userId) {
+            mDatabase.asyncValidateWebToken(email, token, [this, self] (WebTokenValidationResponse response, std::optional<int> userId) {
                 assert(mState == State::NOT_AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeValidateWebTokenResponse(response);
@@ -87,11 +89,16 @@ void TCPParticipant::asyncAuth() {
     });
 }
 
-// TODO: See if shared_from_this pattern can be avoided
 void TCPParticipant::write() {
-    mConnection->asyncWrite(*(mMessageQueue.front()), boost::asio::bind_executor(mStrand, [this](boost::system::error_code ec) {
+    auto self = shared_from_this();
+    mConnection->asyncWrite(*(mMessageQueue.front()), boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec) {
         if (ec) {
             log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
+            forceQuit();
+            return;
+        }
+
+        if (mMessageQueue.front()->getType() == NetworkMessage::Type::QUIT) {
             forceQuit();
             return;
         }
@@ -103,7 +110,8 @@ void TCPParticipant::write() {
 }
 
 void TCPParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
-    boost::asio::post(mStrand, [this, message](){
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, message, self](){
         bool writeInProgress = !mMessageQueue.empty();
         mMessageQueue.push(std::move(message));
 
@@ -116,7 +124,8 @@ void TCPParticipant::asyncTournamentRegister() {
     assert(mState == State::AUTHENTICATED);
 
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+    auto self = shared_from_this();
+    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         assert(mState == State::AUTHENTICATED);
         if (ec) {
             forceQuit();
@@ -124,7 +133,7 @@ void TCPParticipant::asyncTournamentRegister() {
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -136,7 +145,7 @@ void TCPParticipant::asyncTournamentRegister() {
                 return;
             }
 
-            mDatabase.asyncRegisterWebName(*mUserId, id, webName, [this, webName] (WebNameRegistrationResponse response) {
+            mDatabase.asyncRegisterWebName(*mUserId, id, webName, [this, webName, self] (WebNameRegistrationResponse response) {
                 assert(mState == State::AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeRegisterWebNameResponse(response);
@@ -160,7 +169,7 @@ void TCPParticipant::asyncTournamentRegister() {
                 return;
             }
 
-            mDatabase.asyncCheckWebName(*mUserId, id, webName, [this] (WebNameCheckResponse response) {
+            mDatabase.asyncCheckWebName(*mUserId, id, webName, [this, self] (WebNameCheckResponse response) {
                 assert(mState == State::AUTHENTICATED);
                 auto message = std::make_unique<NetworkMessage>();
                 message->encodeCheckWebNameResponse(response);
@@ -175,11 +184,6 @@ void TCPParticipant::asyncTournamentRegister() {
     });
 }
 
-void TCPParticipant::quit() {
-    // TODO: Implement
-    log_debug().msg("Quit called");
-}
-
 struct MoveWrapper {
     std::unique_ptr<TournamentStore> tournament;
     SharedActionList actionList;
@@ -187,7 +191,8 @@ struct MoveWrapper {
 
 void TCPParticipant::asyncTournamentSync() {
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+    auto self = shared_from_this();
+    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         assert(mState == State::TOURNAMENT_SELECTED);
 
         if (ec) {
@@ -196,7 +201,7 @@ void TCPParticipant::asyncTournamentSync() {
         }
 
         if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -210,11 +215,12 @@ void TCPParticipant::asyncTournamentSync() {
                 return;
             }
 
-            mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper](std::shared_ptr<LoadedTournament> loadedTournament) {
+            mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper, self](std::shared_ptr<LoadedTournament> loadedTournament) {
+                loadedTournament->setOwner(self);
                 loadedTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList));
                 mTournament = loadedTournament;
 
-                mDatabase.asyncSetSynced(mWebName, [this](bool success) {
+                mDatabase.asyncSetSynced(mWebName, [this, self](bool success) {
                     if (!success)
                         log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
                 });
@@ -232,7 +238,8 @@ void TCPParticipant::asyncTournamentSync() {
 
 void TCPParticipant::asyncTournamentListen() {
     mReadMessage = std::make_unique<NetworkMessage>();
-    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+    auto self = shared_from_this();
+    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         assert(mState == State::TOURNAMENT_SELECTED);
 
         if (ec) {
@@ -242,7 +249,7 @@ void TCPParticipant::asyncTournamentListen() {
 
         auto type = mReadMessage->getType();
         if (type == NetworkMessage::Type::QUIT) {
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
         else if (type == NetworkMessage::Type::UNDO) {
@@ -289,7 +296,16 @@ void TCPParticipant::asyncTournamentListen() {
     });
 }
 
+void TCPParticipant::quit() {
+    auto message = std::make_shared<NetworkMessage>();
+    message->encodeQuit();
+    deliver(std::move(message));
+}
+
 void TCPParticipant::forceQuit() {
+    if (mTournament != nullptr)
+        mTournament->clearOwner();
+    mConnection.reset();
     mServer.leave(shared_from_this());
 }
 

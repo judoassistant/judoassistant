@@ -62,6 +62,7 @@ void WebServer::run() {
 
 void WebServer::quit() {
     mStrand.dispatch([this]() {
+        log_debug().msg("WebServer::quit");
         for (auto & participant: mParticipants)
             participant->quit();
         for (auto & participant: mWebParticipants)
@@ -78,16 +79,14 @@ void WebServer::quit() {
 void WebServer::tcpAccept() {
     mTCPAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Received error code in async_accept");
+            log_error().field("message", ec.message()).msg("Received error code in tcp async_accept");
         }
         else {
             auto connection = std::make_shared<NetworkConnection>(std::move(socket));
 
             connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection](boost::system::error_code ec) {
-                if (ec) {
-                    log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
+                if (ec)
                     return;
-                }
 
                 auto participant = std::make_shared<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
                 participant->asyncAuth();
@@ -114,7 +113,10 @@ void WebServer::webAccept() {
                     return;
                 }
 
+                log_debug().msg("Creating web participant");
+
                 auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
+                participant->listen();
                 mWebParticipants.insert(std::move(participant));
                 log_info().msg("Accepted web socket");
             }));

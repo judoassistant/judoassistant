@@ -267,3 +267,27 @@ void LoadedTournament::saveIfNeccesary() {
     });
 }
 
+void LoadedTournament::setOwner(std::weak_ptr<TCPParticipant> owner) {
+    mOwner = owner;
+}
+
+void LoadedTournament::clearOwner() {
+    mOwner.reset();
+}
+
+std::weak_ptr<TCPParticipant> LoadedTournament::getOwner() {
+    return mOwner;
+}
+
+void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participant) {
+    boost::asio::dispatch(mStrand, [this, participant](){
+        mWebParticipants.insert(std::move(participant));
+    });
+}
+
+void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> participant) {
+    boost::asio::dispatch(mStrand, [this, participant](){
+        mWebParticipants.erase(std::move(participant));
+    });
+}
+

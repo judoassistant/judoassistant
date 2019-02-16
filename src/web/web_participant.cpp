@@ -1,12 +1,15 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/bind_executor.hpp>
+#include <boost/asio/dispatch.hpp>
 
 #include "core/network/network_connection.hpp"
 #include "web/database.hpp"
 #include "web/loaded_tournament.hpp"
 #include "web/web_participant.hpp"
 #include "web/web_server.hpp"
+
+// TODO: Fix segfault on server SIGINT
 
 WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)
@@ -15,19 +18,18 @@ WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr
     , mServer(server)
     , mDatabase(database)
 {
-    listen();
 }
 
 void WebParticipant::listen() {
-    mConnection->async_read(mBuffer, boost::asio::bind_executor(mStrand, [this](boost::beast::error_code ec, std::size_t bytes_transferred) {
+    log_debug().msg("Listening");
+    auto self = shared_from_this();
+    mConnection->async_read(mBuffer, boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
         if (ec) {
-            log_debug().field("message", ec.message()).msg("WebParticipant: failed async_read");
             forceQuit();
             return;
         }
 
         if (!parseMessage(boost::beast::buffers_to_string(mBuffer.data()))) {
-            log_debug().msg("WebParticipant: failed parsing message");
             forceQuit();
             return;
         }
@@ -61,7 +63,6 @@ bool WebParticipant::parseMessage(const std::string &message) {
     if (!validateMessage(message))
         return false;
 
-    log_debug().field("message", message).msg("Parsing message");
     std::vector<std::string> parts;
     boost::split(parts, message, boost::is_any_of(" "));
 
@@ -88,18 +89,30 @@ void WebParticipant::listTournaments() {
 
 void WebParticipant::selectTournament(const std::string &webName) {
     log_debug().field("webName", webName).msg("Selecting tournament");
-    mServer.getTournament(webName, [this](std::shared_ptr<LoadedTournament> tournament) {
+    auto self = shared_from_this();
+    mServer.getTournament(webName, [this, self](std::shared_ptr<LoadedTournament> tournament) {
         log_debug().field("isNull", tournament == nullptr).msg("Got tournament");
+        tournament->addParticipant(shared_from_this());
+        mTournament = std::move(tournament);
     });
 }
 
 void WebParticipant::quit() {
-    // TODO: Implement
-    mServer.leave(shared_from_this());
+    log_debug().msg("Quitting");
+    auto self = shared_from_this();
+    boost::asio::dispatch(mStrand, [this, self]() {
+        forceQuit();
+    });
 }
 
 void WebParticipant::forceQuit() {
-    // TODO: Implement
+    log_debug().msg("Force quitting");
+    if (mTournament != nullptr) {
+        mTournament->eraseParticipant(shared_from_this());
+        mTournament = nullptr;
+    }
+
+    mConnection.reset();
     mServer.leave(shared_from_this());
 }
 

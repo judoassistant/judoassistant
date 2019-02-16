@@ -10,6 +10,7 @@
 #include "web/database.hpp"
 
 class WebParticipant;
+class TCPParticipant;
 
 class LoadedTournament {
 public:
@@ -27,6 +28,13 @@ public:
 
     void saveIfNeccesary();
 
+    void setOwner(std::weak_ptr<TCPParticipant> owner);
+    void clearOwner();
+    std::weak_ptr<TCPParticipant> getOwner();
+
+    void addParticipant(std::shared_ptr<WebParticipant> participant);
+    void eraseParticipant(std::shared_ptr<WebParticipant> participant);
+
 private:
     static constexpr unsigned int FILE_HEADER_SIZE = 9;
 
@@ -39,7 +47,8 @@ private:
     std::unique_ptr<TournamentStore> mTournament;
     SharedActionList mActionList;
     std::unordered_set<ClientActionId> mActionIds;
-    std::unordered_set<std::unique_ptr<WebParticipant>> mWebParticipants;
+    std::unordered_set<std::shared_ptr<WebParticipant>> mWebParticipants;
+    std::weak_ptr<TCPParticipant> mOwner;
 
     bool mFileInUse;
     boost::filesystem::path mFileLocation;

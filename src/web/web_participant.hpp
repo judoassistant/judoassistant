@@ -14,10 +14,10 @@ public:
     WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database);
 
     void quit();
+    void listen();
 
 private:
     void forceQuit();
-    void listen();
     bool parseMessage(const std::string &message);
     bool validateMessage(const std::string &message);
 
