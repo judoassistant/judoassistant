@@ -2,6 +2,7 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include "core/id.hpp"
 #include "core/log.hpp"
@@ -27,10 +28,23 @@ WebServer::WebServer(const Config &config)
 }
 
 void WebServer::run() {
+    // Check data directory
+    if (!boost::filesystem::exists(mConfig.dataDirectory)) {
+        if (!boost::filesystem::create_directory(mConfig.dataDirectory)) {
+            log_error().field("path", mConfig.dataDirectory).msg("Failed creating data directory");
+            return;
+        }
+    }
+    else if (!boost::filesystem::is_directory(mConfig.dataDirectory)) {
+        log_error().field("path", mConfig.dataDirectory).msg("The given data directory is not a directory");
+        return;
+    }
+
+    // Launch database
     log_info().msg("Launching database");
     mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
-    // mThreads.emplace_back(&WebServerDatabaseWorker::run, mDatabase.get());
 
+    // Launch worker threads
     log_info().field("threadCount", mConfig.workers).msg("Launching threads");
     for (size_t i = 0; i < mConfig.workers; ++i) {
         mThreads.emplace_back(&WebServer::work, this);
