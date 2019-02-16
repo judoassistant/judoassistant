@@ -18,14 +18,10 @@ TCPParticipant::TCPParticipant(boost::asio::io_context &context, std::shared_ptr
 }
 
 void TCPParticipant::asyncAuth() {
-    log_debug().msg("TCPParticiant: Async auth called");
-
     mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
-        log_debug().msg("TCPParticiant: Async read handler called");
         assert(mState == State::NOT_AUTHENTICATED);
         if (ec) {
-            log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             forceQuit();
             return;
         }
@@ -107,7 +103,6 @@ void TCPParticipant::write() {
 }
 
 void TCPParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
-    // TODO: Capture message by move
     boost::asio::post(mStrand, [this, message](){
         bool writeInProgress = !mMessageQueue.empty();
         mMessageQueue.push(std::move(message));
@@ -123,9 +118,7 @@ void TCPParticipant::asyncTournamentRegister() {
     mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         assert(mState == State::AUTHENTICATED);
-        log_debug().field("type", mReadMessage->getType()).msg("Async read message in register");
         if (ec) {
-            log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             forceQuit();
             return;
         }
@@ -139,7 +132,6 @@ void TCPParticipant::asyncTournamentRegister() {
             TournamentId id;
             std::string webName;
             if (!mReadMessage->decodeRegisterWebName(id, webName)) {
-                log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
                 forceQuit();
                 return;
             }
@@ -164,7 +156,6 @@ void TCPParticipant::asyncTournamentRegister() {
             TournamentId id;
             std::string webName;
             if (!mReadMessage->decodeCheckWebName(id, webName)) {
-                log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
                 forceQuit();
                 return;
             }
@@ -195,14 +186,11 @@ struct MoveWrapper {
 };
 
 void TCPParticipant::asyncTournamentSync() {
-    log_debug().msg("Syncing tournament");
     mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         assert(mState == State::TOURNAMENT_SELECTED);
-        log_debug().field("type", mReadMessage->getType()).msg("Async read message in tournament sync");
 
         if (ec) {
-            log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             forceQuit();
             return;
         }
@@ -218,7 +206,6 @@ void TCPParticipant::asyncTournamentSync() {
 
             if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
                 // TODO: Unown tournament
-                log_debug().msg("Encountered error when decoding tournament. Kicking client");
                 forceQuit();
                 return;
             }
@@ -244,13 +231,11 @@ void TCPParticipant::asyncTournamentSync() {
 }
 
 void TCPParticipant::asyncTournamentListen() {
-    log_debug().msg("Listening to tournament");
     mReadMessage = std::make_unique<NetworkMessage>();
     mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         assert(mState == State::TOURNAMENT_SELECTED);
 
         if (ec) {
-            log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
             forceQuit();
             return;
         }
@@ -289,7 +274,6 @@ void TCPParticipant::asyncTournamentListen() {
 
             if (!mReadMessage->decodeSync(*tournament, actionList)) {
                 // TODO: Unown tournament
-                log_debug().msg("Failed decoding sync. Kicking client.");
                 forceQuit();
                 return;
             }

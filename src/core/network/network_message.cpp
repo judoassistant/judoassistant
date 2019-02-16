@@ -85,10 +85,8 @@ void NetworkMessage::encodeHeader() {
 
     size_t bodyLength = mBody.size();
     archive(mType, mUncompressedSize, bodyLength);
-    // log_debug().field("type", (size_t)mType).field("uncompressedSize", mUncompressedSize).field("bodyLength", bodyLength).msg("Encoding header");
 
     mHeader = stream.str();
-    // log_debug().field("length", mHeader.size()).msg("Encoding header");
     assert(mHeader.size() == HEADER_LENGTH);
 }
 
@@ -99,7 +97,6 @@ bool NetworkMessage::decodeHeader() {
 
         size_t bodyLength;
         archive(mType, mUncompressedSize, bodyLength);
-        log_debug().field("type", (size_t)mType).field("uncompressedSize", mUncompressedSize).field("bodyLength", bodyLength).msg("Decoding header");
         mBody.resize(bodyLength);
     }
     catch (const std::exception &e) {
