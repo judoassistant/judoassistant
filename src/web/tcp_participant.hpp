@@ -31,6 +31,7 @@ private:
     void asyncTournamentSync();
     void asyncTournamentListen();
 
+    void forceQuit();
     void write();
     void deliver(std::shared_ptr<NetworkMessage> message);
 

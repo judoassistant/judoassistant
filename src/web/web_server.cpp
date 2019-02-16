@@ -62,10 +62,11 @@ void WebServer::run() {
 
 void WebServer::quit() {
     mStrand.dispatch([this]() {
-        for (auto & participantPtr : mParticipants)
-            participantPtr->quit();
-        for (auto & participantPtr : mWebParticipants)
-            participantPtr->quit();
+        for (auto & participant: mParticipants)
+            participant->quit();
+        for (auto & participant: mWebParticipants)
+            participant->quit();
+
         mTCPAcceptor.close();
         mWebAcceptor.close();
     });

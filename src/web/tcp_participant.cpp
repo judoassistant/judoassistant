@@ -26,7 +26,7 @@ void TCPParticipant::asyncAuth() {
         assert(mState == State::NOT_AUTHENTICATED);
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -40,7 +40,7 @@ void TCPParticipant::asyncAuth() {
             std::string password;
             if (!mReadMessage->decodeRequestWebToken(email, password)) {
                 log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -65,7 +65,7 @@ void TCPParticipant::asyncAuth() {
             WebToken token;
             if (!mReadMessage->decodeValidateWebToken(email, token)) {
                 log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -96,7 +96,7 @@ void TCPParticipant::write() {
     mConnection->asyncWrite(*(mMessageQueue.front()), boost::asio::bind_executor(mStrand, [this](boost::system::error_code ec) {
         if (ec) {
             log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -126,7 +126,7 @@ void TCPParticipant::asyncTournamentRegister() {
         log_debug().field("type", mReadMessage->getType()).msg("Async read message in register");
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -140,7 +140,7 @@ void TCPParticipant::asyncTournamentRegister() {
             std::string webName;
             if (!mReadMessage->decodeRegisterWebName(id, webName)) {
                 log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -165,7 +165,7 @@ void TCPParticipant::asyncTournamentRegister() {
             std::string webName;
             if (!mReadMessage->decodeCheckWebName(id, webName)) {
                 log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -203,7 +203,7 @@ void TCPParticipant::asyncTournamentSync() {
 
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -219,7 +219,7 @@ void TCPParticipant::asyncTournamentSync() {
             if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
                 // TODO: Unown tournament
                 log_debug().msg("Encountered error when decoding tournament. Kicking client");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -245,7 +245,7 @@ void TCPParticipant::asyncTournamentListen() {
 
         if (ec) {
             log_debug().field("message", ec.message()).msg("Encountered error when reading message. Kicking client");
-            mServer.leave(shared_from_this());
+            forceQuit();
             return;
         }
 
@@ -259,7 +259,7 @@ void TCPParticipant::asyncTournamentListen() {
 
             if (!mReadMessage->decodeUndo(actionId)) {
                 log_warning().msg("Failed decoding undo. Kicking client.");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -271,7 +271,7 @@ void TCPParticipant::asyncTournamentListen() {
 
             if (!mReadMessage->decodeAction(actionId, action)) {
                 log_warning().msg("Failed decoding action. Kicking client.");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -284,7 +284,7 @@ void TCPParticipant::asyncTournamentListen() {
             if (!mReadMessage->decodeSync(*tournament, actionList)) {
                 // TODO: Unown tournament
                 log_debug().msg("Failed decoding sync. Kicking client.");
-                mServer.leave(shared_from_this());
+                forceQuit();
                 return;
             }
 
@@ -297,5 +297,9 @@ void TCPParticipant::asyncTournamentListen() {
         // TODO: Implement method
         asyncTournamentListen();
     });
+}
+
+void TCPParticipant::forceQuit() {
+    mServer.leave(shared_from_this());
 }
 
