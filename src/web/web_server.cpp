@@ -67,6 +67,9 @@ void WebServer::quit() {
         for (auto & participant: mWebParticipants)
             participant->quit();
 
+        for (auto & p : mLoadedTournaments)
+            p.second->saveIfNeccesary();
+
         mTCPAcceptor.close();
         mWebAcceptor.close();
     });
@@ -151,7 +154,7 @@ void WebServer::acquireTournament(const std::string &webName, AcquireTournamentC
             tournament = it->second;
         }
         else {
-            tournament = std::make_shared<LoadedTournament>(webName, mConfig.dataDirectory, mContext);
+            tournament = std::make_shared<LoadedTournament>(webName, mConfig.dataDirectory, mContext, *mDatabase);
             mLoadedTournaments.insert({webName, tournament});
         }
 

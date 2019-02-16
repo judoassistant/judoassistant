@@ -2,6 +2,7 @@
 #include <botan-2/botan/bcrypt.h>
 #include <botan-2/botan/rng.h>
 #include <botan-2/botan/system_rng.h>
+#include <iomanip>
 
 #include "core/id.hpp"
 #include "core/log.hpp"
@@ -223,7 +224,7 @@ void Database::registerWebName(int userId, const TournamentId &id, const std::st
 void Database::setSynced(const std::string &webName, SyncedSetCallback callback) {
     try {
         pqxx::work work(mConnection);
-        pqxx::result r = work.exec("update tournaments set synced=true where webName=" + work.quote(webName));
+        pqxx::result r = work.exec("update tournaments set synced=true where web_name=" + work.quote(webName));
         work.commit();
 
         boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));
@@ -234,12 +235,26 @@ void Database::setSynced(const std::string &webName, SyncedSetCallback callback)
     }
 }
 
+std::string timeToString(std::chrono::system_clock::time_point time) {
+    auto timeT = std::chrono::system_clock::to_time_t(time);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&timeT), "%Y-%m-%d %H:%M:%S");
+    return ss.str();
+}
+
+std::chrono::system_clock::time_point stringToTime(const std::string &str) {
+    std::tm tm = {};
+    std::stringstream ss(str);
+    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
 void Database::setSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback) {
     try {
-        auto posixTime = std::chrono::system_clock::to_time_t(time);
         pqxx::work work(mConnection);
-        pqxx::result r = work.exec("update tournaments set save_time=" + work.quote(posixTime)
-                                    + " where webName=" + work.quote(webName));
+        pqxx::result r = work.exec("update tournaments set save_time=" + work.quote(timeToString(time))
+                                    + " where web_name=" + work.quote(webName));
         work.commit();
 
         boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));

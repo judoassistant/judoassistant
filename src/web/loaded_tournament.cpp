@@ -9,9 +9,10 @@
 #include "web/web_participant.hpp"
 
 // TODO: Use newer style boost::asio::post in all code
-LoadedTournament::LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context)
+LoadedTournament::LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database)
     : mContext(context)
     , mStrand(context)
+    , mDatabase(database)
     , mWebName(webName)
     , mFileInUse(false)
     , mFileLocation(dataDirectory / webName)
@@ -172,6 +173,8 @@ void LoadedTournament::save(SaveCallback callback) {
             return;
         }
 
+        log_debug().msg("Saving tournament");
+
         mFileInUse = true;
 
         auto uncompressed = std::make_shared<std::string>();
@@ -243,9 +246,24 @@ void LoadedTournament::save(SaveCallback callback) {
             boost::asio::dispatch(mStrand, [this, callback]() {
                 mFileInUse = false;
                 mSynchronizationTime = std::chrono::system_clock::now();
+                mDatabase.asyncSetSaveTime(mWebName, mSynchronizationTime, [this](bool success) {
+                    if (!success)
+                        log_warning().field("webName", mWebName).msg("Failed updating database save_time column");
+                });
                 boost::asio::dispatch(mContext, std::bind(callback, true));
             });
         });
+    });
+}
+
+void LoadedTournament::saveIfNeccesary() {
+    boost::asio::dispatch(mStrand, [this](){
+        if (mModificationTime > mSynchronizationTime) {
+            save([this](bool success) {
+                if (!success)
+                    log_warning().field("webName", mWebName).msg("Failed saving tournament");
+            });
+        }
     });
 }
 
