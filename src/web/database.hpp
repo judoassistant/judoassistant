@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio/io_context_strand.hpp>
+#include <chrono>
 #include <pqxx/pqxx>
 
 #include "core/web/web_types.hpp"
@@ -26,6 +27,11 @@ public:
     typedef std::function<void(WebNameRegistrationResponse)> WebNameRegistrationCallback;
     void asyncRegisterWebName(int userId, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
 
+    typedef std::function<void(bool)> SyncedSetCallback;
+    void asyncSetSynced(const std::string &webName, SyncedSetCallback callback);
+
+    typedef std::function<void(bool)> SaveTimeSetCallback;
+    void asyncSetSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback);
 private:
     void registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
 
@@ -34,6 +40,9 @@ private:
 
     void checkWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback);
     void registerWebName(int userId, const TournamentId &id, const std::string &webName, WebNameRegistrationCallback callback);
+
+    void setSynced(const std::string &webName, SyncedSetCallback callback);
+    void setSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback);
 
     bool hasUser(const std::string &email);
     bool checkPassword(const std::string &email, const std::string &password);

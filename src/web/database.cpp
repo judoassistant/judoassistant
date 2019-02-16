@@ -35,6 +35,14 @@ void Database::asyncRegisterWebName(int userId, const TournamentId &id, const st
     boost::asio::dispatch(mStrand, std::bind(&Database::registerWebName, this, userId, id, webName, callback));
 }
 
+void Database::asyncSetSynced(const std::string &webName, SyncedSetCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::setSynced, this, webName, callback));
+}
+
+void Database::asyncSetSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::setSaveTime, this, webName, time, callback));
+}
+
 bool Database::hasUser(const std::string &email) {
     pqxx::work work(mConnection);
     pqxx::result r = work.exec("select 1 FROM users where email = " + work.quote(email));
@@ -92,7 +100,6 @@ void Database::registerUser(const std::string &email, const std::string &passwor
 
         auto &rng = Botan::system_rng();
         auto passwordHash = Botan::generate_bcrypt(password, rng);
-        log_debug().field("passwordHash", passwordHash).msg("Generated password");
 
         pqxx::work work(mConnection);
         pqxx::result r = work.exec("insert into users (email, password_hash, token, token_expiration) values ("
@@ -113,7 +120,6 @@ void Database::registerUser(const std::string &email, const std::string &passwor
 }
 
 void Database::requestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
-    log_debug().field("email", email).field("password", password).msg("Requesting web token");
     try {
         if (!checkPassword(email, password)) {
             boost::asio::dispatch(mContext, std::bind(callback, WebTokenRequestResponse::INCORRECT_CREDENTIALS, std::nullopt, std::nullopt));
@@ -211,6 +217,36 @@ void Database::registerWebName(int userId, const TournamentId &id, const std::st
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
         boost::asio::dispatch(mContext, std::bind(callback, WebNameRegistrationResponse::SERVER_ERROR));
+    }
+}
+
+void Database::setSynced(const std::string &webName, SyncedSetCallback callback) {
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("update tournaments set synced=true where webName=" + work.quote(webName));
+        work.commit();
+
+        boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false));
+    }
+}
+
+void Database::setSaveTime(const std::string &webName, std::chrono::system_clock::time_point time, SaveTimeSetCallback callback) {
+    try {
+        auto posixTime = std::chrono::system_clock::to_time_t(time);
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("update tournaments set save_time=" + work.quote(posixTime)
+                                    + " where webName=" + work.quote(webName));
+        work.commit();
+
+        boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false));
     }
 }
 
