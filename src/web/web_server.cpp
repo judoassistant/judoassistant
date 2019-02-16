@@ -50,6 +50,8 @@ void WebServer::quit() {
     mStrand.dispatch([this]() {
         for (auto & participantPtr : mParticipants)
             participantPtr->quit();
+        for (auto & participantPtr : mWebParticipants)
+            participantPtr->quit();
         mTCPAcceptor.close();
         mWebAcceptor.close();
     });
@@ -95,22 +97,9 @@ void WebServer::webAccept() {
                 }
 
                 auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
+                mWebParticipants.insert(std::move(participant));
                 log_info().msg("Accepted web socket");
             }));
-
-            // auto websocket = std::make_shared<>(std::move(socket));
-
-            // connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection](boost::system::error_code ec) {
-            //     log_debug().msg("Async accept handler called");
-            //     if (ec) {
-            //         log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
-            //         return;
-            //     }
-
-            //     auto participant = std::make_shared<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
-            //     participant->asyncAuth();
-            //     mParticipants.insert(std::move(participant));
-            // }));
         }
 
         if (mWebAcceptor.is_open())
@@ -121,6 +110,12 @@ void WebServer::webAccept() {
 void WebServer::leave(std::shared_ptr<TCPParticipant> participant) {
     mStrand.dispatch([this, participant]() {
         mParticipants.erase(participant);
+    });
+}
+
+void WebServer::leave(std::shared_ptr<WebParticipant> participant) {
+    mStrand.dispatch([this, participant]() {
+        mWebParticipants.erase(participant);
     });
 }
 
