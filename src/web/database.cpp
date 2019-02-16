@@ -208,7 +208,7 @@ void Database::registerWebName(int userId, const TournamentId &id, const std::st
         }
         else {
             pqxx::work work(mConnection);
-            pqxx::result r = work.exec("update tournaments set tournament_id=" + work.quote(id.getValue())
+            pqxx::result r = work.exec("update tournaments set synced=false, tournament_id=" + work.quote(id.getValue())
                                         + " WHERE web_name=" + work.quote(webName));
             work.commit();
         }

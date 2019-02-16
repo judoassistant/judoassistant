@@ -226,6 +226,12 @@ void TCPParticipant::asyncTournamentSync() {
             mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper](std::shared_ptr<LoadedTournament> loadedTournament) {
                 loadedTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList));
                 mTournament = loadedTournament;
+
+                mDatabase.asyncSetSynced(mWebName, [this](bool success) {
+                    if (!success)
+                        log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
+                });
+
                 asyncTournamentListen();
             }));
 
