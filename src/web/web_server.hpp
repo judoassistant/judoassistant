@@ -20,11 +20,20 @@ public:
     void run();
     void quit();
 
-    typedef std::function<void (std::shared_ptr<LoadedTournament>)> ObtainTournamentCallback;
-    void obtainTournament(const std::string &webName, ObtainTournamentCallback callback);
+    // Acquires ownership of a tournament. This is meant for overwritting tournament data
+    typedef std::function<void (std::shared_ptr<LoadedTournament>)> AcquireTournamentCallback;
+    void acquireTournament(const std::string &webName, AcquireTournamentCallback callback);
+
+    // Gets a tournament. If it already exists it will be loaded.
+    typedef std::function<void (std::shared_ptr<LoadedTournament>)> GetTournamentCallback;
+    void getTournament(const std::string &webName, GetTournamentCallback callback);
+
+    typedef std::function<void (bool)> SaveTournamentCallback;
+    void saveTournament(std::shared_ptr<LoadedTournament> tournament, SaveTournamentCallback);
 
     void leave(std::shared_ptr<TCPParticipant> participant);
     void leave(std::shared_ptr<WebParticipant> participant);
+
 private:
     void work();
     void tcpAccept();

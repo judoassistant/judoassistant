@@ -127,7 +127,7 @@ void WebServer::work() {
     mContext.run();
 }
 
-void WebServer::obtainTournament(const std::string &webName, ObtainTournamentCallback callback) {
+void WebServer::acquireTournament(const std::string &webName, AcquireTournamentCallback callback) {
     mStrand.dispatch([this, webName, callback]() {
         auto it = mLoadedTournaments.find(webName);
         std::shared_ptr<LoadedTournament> tournament;
@@ -136,11 +136,11 @@ void WebServer::obtainTournament(const std::string &webName, ObtainTournamentCal
             tournament = it->second;
         }
         else {
-            tournament = std::make_shared<LoadedTournament>(webName, mContext);
+            tournament = std::make_shared<LoadedTournament>(webName, mConfig.dataDirectory, mContext);
             mLoadedTournaments.insert({webName, tournament});
         }
 
-        callback(std::move(tournament));
+        boost::asio::dispatch(mContext, std::bind(callback, std::move(tournament)));
     });
 }
 

@@ -223,7 +223,7 @@ void TCPParticipant::asyncTournamentSync() {
                 return;
             }
 
-            mServer.obtainTournament(mWebName, mStrand.wrap([this, wrapper](std::shared_ptr<LoadedTournament> loadedTournament) {
+            mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper](std::shared_ptr<LoadedTournament> loadedTournament) {
                 loadedTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList));
                 mTournament = loadedTournament;
                 asyncTournamentListen();

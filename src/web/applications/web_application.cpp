@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
             ("web-port", po::value<unsigned int>(&configuration.webPort)->default_value(9001), "web socket server port")
             ("postgres", po::value<std::string>(&configuration.postgres)->default_value(""), "postgres connection info")
             ("workers", po::value<unsigned int>(&configuration.workers)->default_value(std::thread::hardware_concurrency()), "name of worker threads to launch")
+            ("data-dir", po::value<boost::filesystem::path>(&configuration.dataDirectory)->default_value("tournaments"), "directory to store tournament data")
             ;
 
         po::options_description cmdOptions;

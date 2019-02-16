@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/filesystem/path.hpp>
 #include <string>
 
 struct Config {
@@ -7,5 +8,6 @@ struct Config {
     unsigned int webPort;
     unsigned int workers;
     std::string postgres;
+    boost::filesystem::path dataDirectory;
 };
 
