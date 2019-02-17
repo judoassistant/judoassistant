@@ -33,7 +33,8 @@ void WebParticipant::listen() {
         }
 
         if (!parseMessage(boost::beast::buffers_to_string(mBuffer.data()))) {
-            forceQuit();
+            log_debug().msg("Failed parsing web message");
+            // forceQuit();
             return;
         }
 
@@ -159,7 +160,7 @@ void WebParticipant::write() {
 bool WebParticipant::subscribeCategory(const std::string &str) {
     log_debug().msg("Subscribing to category");
     try {
-        if (!mTournament)
+        if (mTournament == nullptr)
             return false;
         CategoryId id(str);
         mTournament->subscribeCategory(shared_from_this(), id);
@@ -172,7 +173,17 @@ bool WebParticipant::subscribeCategory(const std::string &str) {
 }
 
 bool WebParticipant::subscribePlayer(const std::string &str) {
-    log_debug().msg("Subscribing to player");
+    log_debug().field("id", str).msg("Subscribing to player");
+    try {
+        if (mTournament == nullptr)
+            return false;
+        PlayerId id(str);
+        mTournament->subscribePlayer(shared_from_this(), id);
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
     return true;
 }
 

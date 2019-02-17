@@ -8,6 +8,7 @@
 #include "web/json_encoder.hpp"
 #include "web/web_tournament_store.hpp"
 
+// TODO: Don't trust state of tournament to be correct
 JsonBuffer::JsonBuffer() {
 
 }
@@ -40,11 +41,11 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
         categories.PushBack(encodeCategory(*(p.second), allocator), allocator);
     document.AddMember("categories", categories, allocator);
 
-    // detailed category field
+    // subscribed category field
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory))
-        document.AddMember("detailedCategory", encodeDetailedCategory(tournament.getCategory(*subscribedCategory), allocator), allocator);
+        document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament.getCategory(*subscribedCategory), allocator), allocator);
     else
-        document.AddMember("detailedCategory", rapidjson::Value(), allocator);
+        document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
 
     // deletedPlayers field
     rapidjson::Value deletedPlayers(rapidjson::kArrayType);
@@ -56,11 +57,11 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
         players.PushBack(encodePlayer(*(p.second), allocator), allocator);
     document.AddMember("players", players, allocator);
 
-    // detailed category field
+    // subscribed category field
     if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer))
-        document.AddMember("detailedPlayer", encodeDetailedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
+        document.AddMember("subscribedPlayer", encodeSubscribedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
     else
-        document.AddMember("detailedPlayer", rapidjson::Value(), allocator);
+        document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
 
     // matches
 
@@ -86,23 +87,98 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeDetailedCategoryMessage(const CategoryStore &category) {
-    // TODO: Implement
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category) {
     rapidjson::Document document;
     document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("sync", false, allocator);
+
+    // Tournament meta data field
+    document.AddMember("tournament", rapidjson::Value(), allocator);
+
+    // deletedCategories field
+    rapidjson::Value deletedCategories(rapidjson::kArrayType);
+    document.AddMember("deletedCategories", deletedCategories, allocator);
+
+    // categories field
+    rapidjson::Value categories(rapidjson::kArrayType);
+    document.AddMember("categories", categories, allocator);
+
+    // subscribed category field
+    document.AddMember("subscribedCategory", encodeSubscribedCategory(category, allocator), allocator);
+
+    // deletedPlayers field
+    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
+    document.AddMember("deletedPlayers", deletedPlayers, allocator);
+
+    // players field
+    rapidjson::Value players(rapidjson::kArrayType);
+    document.AddMember("players", players, allocator);
+
+    // subscribed category field
+    document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
+
+    // matches
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+    for (const auto &match : category.getMatches())
+        matches.PushBack(encodeMatch(*match, allocator), allocator);
+    document.AddMember("matches", matches, allocator);
+
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
+
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeDetailedPlayerMessage(const PlayerStore &player) {
-    // TODO: Implement
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player) {
     rapidjson::Document document;
     document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("sync", false, allocator);
+
+    // Tournament meta data field
+    document.AddMember("tournament", rapidjson::Value(), allocator);
+
+    // deletedCategories field
+    rapidjson::Value deletedCategories(rapidjson::kArrayType);
+    document.AddMember("deletedCategories", deletedCategories, allocator);
+
+    // categories field
+    rapidjson::Value categories(rapidjson::kArrayType);
+    document.AddMember("categories", categories, allocator);
+
+    // subscribed category field
+    document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
+
+    // deletedPlayers field
+    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
+    document.AddMember("deletedPlayers", deletedPlayers, allocator);
+
+    // players field
+    rapidjson::Value players(rapidjson::kArrayType);
+    document.AddMember("players", players, allocator);
+
+    // subscribed category field
+    document.AddMember("subscribedPlayer", encodeSubscribedPlayer(player, allocator), allocator);
+
+    // matches
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+    log_debug().field("size", player.getMatches().size()).msg("Listing matches");
+    for (auto combinedId : player.getMatches()) {
+        const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+        matches.PushBack(encodeMatch(match, allocator), allocator);
+    }
+    document.AddMember("matches", matches, allocator);
+
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
+
     return std::move(buffer);
 }
 
@@ -149,7 +225,7 @@ rapidjson::Value JsonEncoder::encodePlayer(const PlayerStore &player, rapidjson:
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeDetailedPlayer(const PlayerStore &player, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeSubscribedPlayer(const PlayerStore &player, rapidjson::Document::AllocatorType &allocator) {
     // TODO: Implement
     return encodePlayer(player, allocator);
 }
@@ -164,7 +240,7 @@ rapidjson::Value JsonEncoder::encodeCategory(const CategoryStore &category, rapi
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeDetailedCategory(const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeSubscribedCategory(const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
     // TODO: Implement
     return encodeCategory(category, allocator);
 }

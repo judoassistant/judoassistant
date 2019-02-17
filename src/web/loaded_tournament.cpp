@@ -327,25 +327,27 @@ void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> particip
 }
 
 void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> participant, CategoryId category) {
+    log_debug().field("category", category).msg("LoadedTournament::subscribeCategory");
     boost::asio::dispatch(mStrand, [this, participant, category](){
         mCategorySubscriptions[participant] = category;
         mPlayerSubscriptions.erase(participant);
         JsonEncoder encoder;
         if (!mTournament->containsCategory(category))
             return;
-        auto message = encoder.encodeDetailedCategoryMessage(mTournament->getCategory(category));
+        auto message = encoder.encodeSubscribeCategoryMessage(*mTournament, mTournament->getCategory(category));
         participant->deliver(std::move(message));
     });
 }
 
 void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participant, PlayerId player) {
+    log_debug().msg("LoadedTournament::subscribePlayer");
     boost::asio::dispatch(mStrand, [this, participant, player](){
         mPlayerSubscriptions[participant] = player;
         mCategorySubscriptions.erase(participant);
         JsonEncoder encoder;
         if (!mTournament->containsPlayer(player))
             return;
-        auto message = encoder.encodeDetailedPlayerMessage(mTournament->getPlayer(player));
+        auto message = encoder.encodeSubscribePlayerMessage(*mTournament, mTournament->getPlayer(player));
         participant->deliver(std::move(message));
     });
 }
