@@ -37,6 +37,8 @@ void WebParticipant::listen() {
             return;
         }
 
+        mBuffer.consume(bytes_transferred);
+
         listen();
     }));
 }
