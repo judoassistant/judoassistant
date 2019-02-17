@@ -2,6 +2,8 @@
 
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/filesystem/path.hpp>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/document.h>
 #include <chrono>
 #include <fstream>
 
@@ -35,7 +37,14 @@ public:
     void addParticipant(std::shared_ptr<WebParticipant> participant);
     void eraseParticipant(std::shared_ptr<WebParticipant> participant);
 
+    // JSON generating methods
+    typedef std::function<void (std::shared_ptr<rapidjson::StringBuffer>)> GenerateSyncJsonCallback;
+    void generateSyncJson(GenerateSyncJsonCallback callback);
+
 private:
+    rapidjson::Value generatePlayerJson(const PlayerStore &player, rapidjson::Document::AllocatorType& allocator);
+    rapidjson::Value generateCategoryJson(const CategoryStore &category, rapidjson::Document::AllocatorType& allocator);
+
     static constexpr unsigned int FILE_HEADER_SIZE = 9;
 
     boost::asio::io_context &mContext;

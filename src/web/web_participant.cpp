@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/dispatch.hpp>
+#include <boost/asio/buffer.hpp>
 
 #include "core/network/network_connection.hpp"
 #include "web/database.hpp"
@@ -18,6 +19,7 @@ WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr
     , mServer(server)
     , mDatabase(database)
 {
+    mConnection->text(true);
 }
 
 void WebParticipant::listen() {
@@ -73,6 +75,12 @@ bool WebParticipant::parseMessage(const std::string &message) {
         return true;
     }
 
+    if (parts[0] == "select-category") {
+    }
+
+    if (parts[0] == "select-player") {
+    }
+
     if (parts[0] == "list-tournaments") {
         if (parts.size() != 1)
             return false;
@@ -90,11 +98,18 @@ void WebParticipant::listTournaments() {
 void WebParticipant::selectTournament(const std::string &webName) {
     log_debug().field("webName", webName).msg("Selecting tournament");
     auto self = shared_from_this();
-    mServer.getTournament(webName, [this, self](std::shared_ptr<LoadedTournament> tournament) {
+    mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
         log_debug().field("isNull", tournament == nullptr).msg("Got tournament");
         tournament->addParticipant(shared_from_this());
+        tournament->generateSyncJson(boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<rapidjson::StringBuffer> message) {
+            auto buffer = boost::asio::buffer(message->GetString(), message->GetSize());
+            // log_debug().field("dom", message->GetString()).msg("Got sync message");
+            mConnection->async_write(boost::asio::buffer(buffer), [this, self, message](boost::beast::error_code ec, std::size_t bytes_transferred) {
+                log_debug().msg("Wrote message");
+            });
+        }));
         mTournament = std::move(tournament);
-    });
+    }));
 }
 
 void WebParticipant::quit() {
