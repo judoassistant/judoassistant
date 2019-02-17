@@ -3,13 +3,13 @@
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
-#include <rapidjson/stringbuffer.h>
 #include <queue>
 
 class Database;
 class WebServer;
 class LoadedTournament;
 class NetworkConnection;
+class JsonBuffer;
 
 class WebParticipant : public std::enable_shared_from_this<WebParticipant> {
 public:
@@ -17,16 +17,18 @@ public:
 
     void quit();
     void listen();
+    void deliver(std::shared_ptr<JsonBuffer> message);
 
 private:
     void forceQuit();
     bool parseMessage(const std::string &message);
     bool validateMessage(const std::string &message);
 
-    void selectTournament(const std::string &webName);
-    void listTournaments();
+    bool selectTournament(const std::string &webName);
+    bool subscribeCategory(const std::string &id);
+    bool subscribePlayer(const std::string &id);
+    bool listTournaments();
 
-    void deliver(std::shared_ptr<rapidjson::StringBuffer> message);
     void write();
 
     boost::asio::io_context& mContext;
@@ -38,6 +40,6 @@ private:
     Database &mDatabase;
 
     std::shared_ptr<LoadedTournament> mTournament;
-    std::queue<std::shared_ptr<rapidjson::StringBuffer>> mWriteQueue;
+    std::queue<std::shared_ptr<JsonBuffer>> mWriteQueue;
 };
 

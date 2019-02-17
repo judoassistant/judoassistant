@@ -31,3 +31,4 @@ private:
     void encodeCategory(const PlayerStore &player);
     void encodeMatch(const PlayerStore &player);
 };
+

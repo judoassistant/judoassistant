@@ -1,15 +1,13 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <lz4.h>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 #include <sstream>
 
 #include "core/log.hpp"
 #include "core/serializables.hpp"
 #include "web/loaded_tournament.hpp"
 #include "web/web_participant.hpp"
+#include "web/json_encoder.hpp"
 
 // TODO: Use newer style boost::asio::post in all code
 LoadedTournament::LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database)
@@ -306,6 +304,10 @@ std::weak_ptr<TCPParticipant> LoadedTournament::getOwner() {
 
 void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participant) {
     boost::asio::dispatch(mStrand, [this, participant](){
+        JsonEncoder encoder;
+        auto message = encoder.encodeSync(*mTournament, std::nullopt, std::nullopt);
+        participant->deliver(std::move(message));
+
         mWebParticipants.insert(std::move(participant));
     });
 }
@@ -316,102 +318,23 @@ void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> particip
     });
 }
 
-rapidjson::Value jsonFromString(const std::string &str, rapidjson::Document::AllocatorType& allocator) {
-    rapidjson::Value json;
-    json.SetString(str.c_str(), str.size(), allocator);
-    return json;
-}
-
-void LoadedTournament::generateSyncJson(GenerateSyncJsonCallback callback) {
-    boost::asio::dispatch(mStrand, [this, callback](){
-        rapidjson::Document document;
-        document.SetObject();
-        auto &allocator = document.GetAllocator();
-
-        document.AddMember("name", jsonFromString(mTournament->getName(), allocator), allocator);
-
-        rapidjson::Value players(rapidjson::kArrayType);
-        for (const auto &p : mTournament->getPlayers())
-            players.PushBack(generatePlayerJson(*(p.second), allocator), allocator);
-        document.AddMember("players", players, allocator);
-
-        rapidjson::Value categories(rapidjson::kArrayType);
-        for (const auto &p : mTournament->getCategories())
-            categories.PushBack(generateCategoryJson(*(p.second), allocator), allocator);
-        document.AddMember("categories", categories, allocator);
-
-        auto buffer = std::make_shared<rapidjson::StringBuffer>();
-        rapidjson::Writer<rapidjson::StringBuffer> writer(*buffer);
-        document.Accept(writer);
-        boost::asio::dispatch(mContext, std::bind(callback, std::move(buffer)));
+void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> participant, CategoryId category) {
+    boost::asio::dispatch(mStrand, [this, participant, category](){
+        JsonEncoder encoder;
+        if (!mTournament->containsCategory(category))
+            return;
+        auto message = encoder.encodeDetailedCategory(mTournament->getCategory(category));
+        participant->deliver(std::move(message));
     });
 }
 
-rapidjson::Value LoadedTournament::generatePlayerJson(const PlayerStore &player, rapidjson::Document::AllocatorType& allocator) {
-    rapidjson::Value res;
-    res.SetObject();
-
-    res.AddMember("id", player.getId().getValue(), allocator);
-    res.AddMember("firstName", jsonFromString(player.getFirstName(), allocator), allocator);
-    res.AddMember("lastName", jsonFromString(player.getLastName(), allocator), allocator);
-
-    if (player.getCountry().has_value())
-        res.AddMember("country", jsonFromString(player.getCountry()->toString(), allocator), allocator);
-    else
-        res.AddMember("country", rapidjson::Value(), allocator);
-
-    if (player.getRank().has_value())
-        res.AddMember("rank", jsonFromString(player.getRank()->toString(), allocator), allocator);
-    else
-        res.AddMember("rank", rapidjson::Value(), allocator);
-
-    if (player.getSex().has_value())
-        res.AddMember("sex", jsonFromString(player.getSex()->toString(), allocator), allocator);
-    else
-        res.AddMember("sex", rapidjson::Value(), allocator);
-
-    res.AddMember("club", jsonFromString(player.getClub(), allocator), allocator);
-
-    rapidjson::Value categories(rapidjson::kArrayType);
-    for (const auto &categoryId : player.getCategories())
-        categories.PushBack(categoryId.getValue(), allocator);
-    res.AddMember("categories", categories, allocator);
-
-    // rapidjson::Value matches(rapidjson::kArrayType);
-    // for (const auto &p : player.getMatches()) {
-    //     rapidjson::Value match;
-    //     match.SetObject();
-    //     match.AddMember("categoryId", p.first.getValue());
-    //     match.AddMember("matchId", p.second.getValue());
-    //     matches.PushBack(match);
-    // }
-    // res.AddMember("matches", matches, allocator);
-
-    return res;
-}
-
-rapidjson::Value LoadedTournament::generateCategoryJson(const CategoryStore &category, rapidjson::Document::AllocatorType& allocator) {
-    rapidjson::Value res;
-    res.SetObject();
-
-    res.AddMember("id", category.getId().getValue(), allocator);
-    res.AddMember("name", jsonFromString(category.getName(), allocator), allocator);
-
-    rapidjson::Value players(rapidjson::kArrayType);
-    for (const auto &playerId : category.getPlayers())
-        players.PushBack(playerId.getValue(), allocator);
-    res.AddMember("players", players, allocator);
-
-    // rapidjson::Value matches(rapidjson::kArrayType);
-    // for (const auto &p : category.getMatches()) {
-    //     rapidjson::Value match;
-    //     match.SetObject();
-    //     match.AddMember("categoryId", p.first.getValue());
-    //     match.AddMember("matchId", p.second.getValue());
-    //     matches.PushBack(match);
-    // }
-    // res.AddMember("matches", matches, allocator);
-
-    return res;
+void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participant, PlayerId player) {
+    boost::asio::dispatch(mStrand, [this, participant, player](){
+        JsonEncoder encoder;
+        if (!mTournament->containsPlayer(player))
+            return;
+        auto message = encoder.encodeDetailedPlayer(mTournament->getPlayer(player));
+        participant->deliver(std::move(message));
+    });
 }
 

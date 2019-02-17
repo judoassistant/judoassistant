@@ -9,6 +9,7 @@
 #include "web/loaded_tournament.hpp"
 #include "web/web_participant.hpp"
 #include "web/web_server.hpp"
+#include "web/json_encoder.hpp"
 
 // TODO: Fix segfault on server SIGINT
 // TODO: Try to see if message size can be limited in async_read
@@ -67,42 +68,41 @@ bool WebParticipant::parseMessage(const std::string &message) {
     std::vector<std::string> parts;
     boost::split(parts, message, boost::is_any_of(" "));
 
-    if (parts[0] == "select-tournament") {
+    if (parts[0] == "subscribe-tournament") {
         if (parts.size() != 2)
             return false;
-        selectTournament(parts[1]);
-        return true;
+        return selectTournament(parts[1]);
     }
 
-    if (parts[0] == "select-category") {
+    if (parts[0] == "subscribe-category") {
+        if (parts.size() != 2)
+            return false;
+        return subscribeCategory(parts[1]);
     }
 
     if (parts[0] == "select-player") {
+        if (parts.size() != 2)
+            return false;
+        return subscribePlayer(parts[1]);
     }
 
     if (parts[0] == "list-tournaments") {
         if (parts.size() != 1)
             return false;
-        listTournaments();
-        return true;
+        return listTournaments();
     }
 
     return false;
 }
 
-void WebParticipant::listTournaments() {
-    log_debug().msg("Listing tournaments");
-}
-
-void WebParticipant::selectTournament(const std::string &webName) {
+bool WebParticipant::selectTournament(const std::string &webName) {
     auto self = shared_from_this();
     mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
         tournament->addParticipant(shared_from_this());
-        tournament->generateSyncJson(boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<rapidjson::StringBuffer> message) {
-            deliver(std::move(message));
-        }));
         mTournament = std::move(tournament);
     }));
+
+    return true;
 }
 
 void WebParticipant::quit() {
@@ -125,7 +125,7 @@ void WebParticipant::forceQuit() {
     mServer.leave(shared_from_this());
 }
 
-void WebParticipant::deliver(std::shared_ptr<rapidjson::StringBuffer> message) {
+void WebParticipant::deliver(std::shared_ptr<JsonBuffer> message) {
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, message, self](){
         bool writeInProgress = !mWriteQueue.empty();
@@ -138,9 +138,7 @@ void WebParticipant::deliver(std::shared_ptr<rapidjson::StringBuffer> message) {
 
 void WebParticipant::write() {
     auto self = shared_from_this();
-    const auto &message = mWriteQueue.front();
-    auto buffer = boost::asio::buffer(message->GetString(), message->GetSize());
-    mConnection->async_write(buffer, boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+    mConnection->async_write(mWriteQueue.front()->getBuffer(), boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
         if (ec) {
             forceQuit();
             return;
@@ -151,5 +149,30 @@ void WebParticipant::write() {
         if (!mWriteQueue.empty())
             write();
     }));
+}
+
+bool WebParticipant::subscribeCategory(const std::string &str) {
+    log_debug().msg("Subscribing to category");
+    try {
+        if (!mTournament)
+            return false;
+        CategoryId id(str);
+        mTournament->subscribeCategory(shared_from_this(), id);
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    return true;
+}
+
+bool WebParticipant::subscribePlayer(const std::string &str) {
+    log_debug().msg("Subscribing to player");
+    return true;
+}
+
+bool WebParticipant::listTournaments() {
+    log_debug().msg("Listing tournaments");
+    return true;
 }
 
