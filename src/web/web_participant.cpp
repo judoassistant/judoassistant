@@ -98,6 +98,8 @@ bool WebParticipant::parseMessage(const std::string &message) {
 bool WebParticipant::selectTournament(const std::string &webName) {
     auto self = shared_from_this();
     mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
+        if (tournament == nullptr)
+            return;
         tournament->addParticipant(shared_from_this());
         mTournament = std::move(tournament);
     }));
@@ -118,10 +120,10 @@ void WebParticipant::quit() {
 void WebParticipant::forceQuit() {
     if (mTournament != nullptr) {
         mTournament->eraseParticipant(shared_from_this());
-        mTournament = nullptr;
+        mTournament.reset();
     }
 
-    mConnection.reset();
+    // mConnection.reset();
     mServer.leave(shared_from_this());
 }
 
