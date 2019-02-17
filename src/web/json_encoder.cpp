@@ -227,7 +227,21 @@ rapidjson::Value JsonEncoder::encodePlayer(const PlayerStore &player, rapidjson:
 
 rapidjson::Value JsonEncoder::encodeSubscribedPlayer(const PlayerStore &player, rapidjson::Document::AllocatorType &allocator) {
     // TODO: Implement
-    return encodePlayer(player, allocator);
+    rapidjson::Value res = encodePlayer(player, allocator);
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+
+    for (auto combinedId : player.getMatches()) {
+        rapidjson::Value match;
+        match.SetObject();
+        match.AddMember("category", combinedId.first.getValue(), allocator);
+        match.AddMember("match", combinedId.second.getValue(), allocator);
+        matches.PushBack(match, allocator);
+    }
+
+    res.AddMember("matches", matches, allocator);
+
+    return res;
 }
 
 rapidjson::Value JsonEncoder::encodeCategory(const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
@@ -241,8 +255,18 @@ rapidjson::Value JsonEncoder::encodeCategory(const CategoryStore &category, rapi
 }
 
 rapidjson::Value JsonEncoder::encodeSubscribedCategory(const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
-    // TODO: Implement
-    return encodeCategory(category, allocator);
+    rapidjson::Value res = encodeCategory(category, allocator);
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+
+    for (const auto &match : category.getMatches()) {
+        rapidjson::Value val(match->getId().getValue());
+        matches.PushBack(val, allocator);
+    }
+
+    res.AddMember("matches", matches, allocator);
+
+    return res;
 }
 
 rapidjson::Value JsonEncoder::encodeMatch(const MatchStore &match, rapidjson::Document::AllocatorType &allocator) {
