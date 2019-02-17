@@ -23,7 +23,7 @@ conf_data.set('version_patch', '0')
 configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
 
 # Find all sources and headers
-include_dirs = include_directories(['.', 'src', 'cereal/include'])
+include_dirs = include_directories(['.', 'src'])
 
 core_sources = []
 ui_sources = []
