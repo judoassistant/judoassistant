@@ -237,6 +237,7 @@ public:
     void serialize(Archive& ar, const unsigned int version) {
         ar(cereal::make_nvp("id", mId));
         ar(cereal::make_nvp("categories", mCategories));
+        ar(cereal::make_nvp("matches", mMatches));
         ar(cereal::make_nvp("fields", mFields));
     }
 
