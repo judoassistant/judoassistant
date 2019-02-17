@@ -12,7 +12,6 @@
 #include "web/web_participant.hpp"
 
 // TODO: Use newer style boost::asio::post in all code
-// TODO: Handle exceptions
 LoadedTournament::LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database)
     : mContext(context)
     , mStrand(context)
@@ -44,7 +43,14 @@ void LoadedTournament::sync(std::unique_ptr<TournamentStore> tournament, SharedA
 
 void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action> action, DispatchCallback callback) {
     mStrand.post([this, actionId, action, callback](){
-        action->redo(*mTournament);
+        try {
+            action->redo(*mTournament);
+        }
+        catch (const std::exception &e) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            return;
+        }
+
         mActionList.push_back({actionId, std::move(action)});
         mActionIds.insert(actionId);
         mModificationTime = std::chrono::system_clock::now();
@@ -55,40 +61,50 @@ void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action>
 
 void LoadedTournament::undo(ClientActionId actionId, UndoCallback callback) {
     mStrand.post([this, actionId, callback](){
-        // TODO: Handle exceptions
-
         auto idIt = mActionIds.find(actionId);
         if (idIt == mActionIds.end()) {
-            log_warning().msg("Received invalid in tournament. Ignoring");
+            boost::asio::dispatch(mContext, std::bind(callback, false));
+            return;
+        }
+
+        // If the action is not found, the loop will be rolled back before failing
+        bool success = true;
+
+        try {
+            auto it = std::prev(mActionList.end());
+            while (it != mActionList.begin() && it->first != actionId) {
+                it->second->undo(*mTournament);
+                std::advance(it, -1);
+            }
+
+            if (it->first != actionId) {
+                success = false;
+                std::advance(it, 1);
+            }
+            else {
+                auto it2 = it;
+                it = std::next(it2);
+
+                it2->second->undo(*mTournament);
+                mActionList.erase(it2);
+            }
+
+            while (it != mActionList.end()) {
+                it->second->redo(*mTournament);
+                std::advance(it, 1);
+            }
+        }
+        catch (const std::exception &e) {
+            success = false;
+        }
+
+        if (!success) {
+            boost::asio::dispatch(mContext, std::bind(callback, false));
             return;
         }
 
         mModificationTime = std::chrono::system_clock::now();
-
         mActionIds.erase(idIt);
-
-        auto it = std::prev(mActionList.end());
-        while (it != mActionList.begin() && it->first != actionId) {
-            it->second->undo(*mTournament);
-            std::advance(it, -1);
-        }
-
-        if (it->first != actionId) {
-            log_warning().msg("Did not find action when undoing.");
-            std::advance(it, 1);
-        }
-        else {
-            auto it2 = it;
-            it = std::next(it2);
-
-            it2->second->undo(*mTournament);
-            mActionList.erase(it2);
-        }
-
-        while (it != mActionList.end()) {
-            it->second->redo(*mTournament);
-            std::advance(it, 1);
-        }
 
         boost::asio::dispatch(mContext, std::bind(callback, true));
     });
