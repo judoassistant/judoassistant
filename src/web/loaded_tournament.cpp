@@ -311,7 +311,7 @@ std::weak_ptr<TCPParticipant> LoadedTournament::getOwner() {
 void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participant) {
     boost::asio::dispatch(mStrand, [this, participant](){
         JsonEncoder encoder;
-        auto message = encoder.encodeSync(*mTournament, std::nullopt, std::nullopt);
+        auto message = encoder.encodeSyncMessage(*mTournament, std::nullopt, std::nullopt);
         participant->deliver(std::move(message));
 
         mWebParticipants.insert(std::move(participant));
@@ -329,10 +329,11 @@ void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> particip
 void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> participant, CategoryId category) {
     boost::asio::dispatch(mStrand, [this, participant, category](){
         mCategorySubscriptions[participant] = category;
+        mPlayerSubscriptions.erase(participant);
         JsonEncoder encoder;
         if (!mTournament->containsCategory(category))
             return;
-        auto message = encoder.encodeDetailedCategory(mTournament->getCategory(category));
+        auto message = encoder.encodeDetailedCategoryMessage(mTournament->getCategory(category));
         participant->deliver(std::move(message));
     });
 }
@@ -340,10 +341,11 @@ void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> partici
 void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participant, PlayerId player) {
     boost::asio::dispatch(mStrand, [this, participant, player](){
         mPlayerSubscriptions[participant] = player;
+        mCategorySubscriptions.erase(participant);
         JsonEncoder encoder;
         if (!mTournament->containsPlayer(player))
             return;
-        auto message = encoder.encodeDetailedPlayer(mTournament->getPlayer(player));
+        auto message = encoder.encodeDetailedPlayerMessage(mTournament->getPlayer(player));
         participant->deliver(std::move(message));
     });
 }
@@ -361,7 +363,7 @@ void LoadedTournament::deliverChanges() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
-        auto buffer = encoder.encodeChanges(*mTournament, category, player);
+        auto buffer = encoder.encodeChangesMessage(*mTournament, category, player);
         participant->deliver(std::move(buffer));
     }
 
@@ -381,7 +383,7 @@ void LoadedTournament::deliverSync() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
-        auto buffer = encoder.encodeSync(*mTournament, category, player);
+        auto buffer = encoder.encodeSyncMessage(*mTournament, category, player);
         participant->deliver(std::move(buffer));
     }
 

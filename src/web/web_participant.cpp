@@ -68,7 +68,7 @@ bool WebParticipant::parseMessage(const std::string &message) {
     std::vector<std::string> parts;
     boost::split(parts, message, boost::is_any_of(" "));
 
-    if (parts[0] == "subscribe-tournament") {
+    if (parts[0] == "select-tournament") {
         if (parts.size() != 2)
             return false;
         return selectTournament(parts[1]);
@@ -80,7 +80,7 @@ bool WebParticipant::parseMessage(const std::string &message) {
         return subscribeCategory(parts[1]);
     }
 
-    if (parts[0] == "select-player") {
+    if (parts[0] == "subscribe-player") {
         if (parts.size() != 2)
             return false;
         return subscribePlayer(parts[1]);
@@ -138,7 +138,8 @@ void WebParticipant::deliver(std::shared_ptr<JsonBuffer> message) {
 
 void WebParticipant::write() {
     auto self = shared_from_this();
-    mConnection->async_write(mWriteQueue.front()->getBuffer(), boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+    const auto &message = mWriteQueue.front();
+    mConnection->async_write(message->getBuffer(), boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
         if (ec) {
             forceQuit();
             return;
