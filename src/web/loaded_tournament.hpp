@@ -8,7 +8,7 @@
 #include <fstream>
 
 #include "core/actions/action.hpp"
-#include "core/stores/tournament_store.hpp"
+#include "web/web_tournament_store.hpp"
 #include "web/database.hpp"
 
 class WebParticipant;
@@ -19,7 +19,7 @@ public:
     LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database);
 
     typedef std::function<void (bool)> SyncCallback;
-    void sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList, SyncCallback callback);
+    void sync(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, SyncCallback callback);
 
     typedef std::function<void (bool)> DispatchCallback;
     void dispatch(ClientActionId actionId, std::shared_ptr<Action> action, DispatchCallback callback);
@@ -58,7 +58,7 @@ private:
 
     // TODO: Store tournament_id or make webName a key in the database
     std::string mWebName;
-    std::unique_ptr<TournamentStore> mTournament;
+    std::unique_ptr<WebTournamentStore> mTournament;
     SharedActionList mActionList;
     std::unordered_set<ClientActionId> mActionIds;
     std::unordered_set<std::shared_ptr<WebParticipant>> mWebParticipants;

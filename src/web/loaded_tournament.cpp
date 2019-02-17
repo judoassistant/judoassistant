@@ -23,11 +23,11 @@ LoadedTournament::LoadedTournament(const std::string &webName, const boost::file
 }
 
 struct MoveWrapper {
-    std::unique_ptr<TournamentStore> tournament;
+    std::unique_ptr<WebTournamentStore> tournament;
     SharedActionList actionList;
 };
 
-void LoadedTournament::sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList, SyncCallback callback) {
+void LoadedTournament::sync(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, SyncCallback callback) {
     auto wrapper = std::make_shared<MoveWrapper>();
     wrapper->tournament = std::move(tournament);
     wrapper->actionList = std::move(actionList);
@@ -167,7 +167,7 @@ void LoadedTournament::load(LoadCallback callback) {
             return;
         }
 
-        auto tournament = std::make_unique<TournamentStore>();
+        auto tournament = std::make_unique<WebTournamentStore>();
         try {
             std::istringstream stream(uncompressed);
             cereal::PortableBinaryInputArchive archive(stream);

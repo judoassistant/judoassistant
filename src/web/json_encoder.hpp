@@ -5,7 +5,7 @@
 #include <optional>
 #include <rapidjson/stringbuffer.h>
 
-class TournamentStore;
+class WebTournamentStore;
 class CategoryStore;
 class MatchStore;
 class PlayerStore;
@@ -20,11 +20,11 @@ struct JsonBuffer {
 
 class JsonEncoder {
 public:
-    std::unique_ptr<JsonBuffer> encodeSync(const TournamentStore &tournament, std::optional<MatchId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
+    std::unique_ptr<JsonBuffer> encodeSync(const WebTournamentStore &tournament, std::optional<MatchId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
     std::unique_ptr<JsonBuffer> encodeDetailedCategory(const CategoryStore &category);
     std::unique_ptr<JsonBuffer> encodeDetailedPlayer(const PlayerStore &player);
 
-    std::unique_ptr<JsonBuffer> encodeChanges(const TournamentStore &tournament, std::optional<MatchId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
+    std::unique_ptr<JsonBuffer> encodeChanges(const WebTournamentStore &tournament, std::optional<MatchId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
 
 private:
     void encodePlayer(const PlayerStore &player);

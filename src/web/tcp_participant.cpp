@@ -185,7 +185,7 @@ void TCPParticipant::asyncTournamentRegister() {
 }
 
 struct MoveWrapper {
-    std::unique_ptr<TournamentStore> tournament;
+    std::unique_ptr<WebTournamentStore> tournament;
     SharedActionList actionList;
 };
 
@@ -207,7 +207,7 @@ void TCPParticipant::asyncTournamentSync() {
 
         if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
             auto wrapper = std::make_shared<MoveWrapper>();
-            wrapper->tournament = std::make_unique<TournamentStore>();
+            wrapper->tournament = std::make_unique<WebTournamentStore>();
 
             if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
                 forceQuit();
@@ -296,7 +296,7 @@ void TCPParticipant::asyncTournamentListen() {
         }
 
         if (type == NetworkMessage::Type::SYNC) {
-            auto tournament = std::make_unique<TournamentStore>();
+            auto tournament = std::make_unique<WebTournamentStore>();
             SharedActionList actionList;
 
             if (!mReadMessage->decodeSync(*tournament, actionList)) {
