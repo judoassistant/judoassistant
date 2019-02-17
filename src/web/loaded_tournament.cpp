@@ -377,6 +377,16 @@ rapidjson::Value LoadedTournament::generatePlayerJson(const PlayerStore &player,
         categories.PushBack(categoryId.getValue(), allocator);
     res.AddMember("categories", categories, allocator);
 
+    // rapidjson::Value matches(rapidjson::kArrayType);
+    // for (const auto &p : player.getMatches()) {
+    //     rapidjson::Value match;
+    //     match.SetObject();
+    //     match.AddMember("categoryId", p.first.getValue());
+    //     match.AddMember("matchId", p.second.getValue());
+    //     matches.PushBack(match);
+    // }
+    // res.AddMember("matches", matches, allocator);
+
     return res;
 }
 
@@ -391,6 +401,16 @@ rapidjson::Value LoadedTournament::generateCategoryJson(const CategoryStore &cat
     for (const auto &playerId : category.getPlayers())
         players.PushBack(playerId.getValue(), allocator);
     res.AddMember("players", players, allocator);
+
+    // rapidjson::Value matches(rapidjson::kArrayType);
+    // for (const auto &p : category.getMatches()) {
+    //     rapidjson::Value match;
+    //     match.SetObject();
+    //     match.AddMember("categoryId", p.first.getValue());
+    //     match.AddMember("matchId", p.second.getValue());
+    //     matches.PushBack(match);
+    // }
+    // res.AddMember("matches", matches, allocator);
 
     return res;
 }
