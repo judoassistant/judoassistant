@@ -12,6 +12,7 @@
 #include "web/web_participant.hpp"
 
 // TODO: Use newer style boost::asio::post in all code
+// TODO: Handle exceptions
 LoadedTournament::LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database)
     : mContext(context)
     , mStrand(context)
@@ -27,31 +28,33 @@ struct MoveWrapper {
     SharedActionList actionList;
 };
 
-// TODO: Add callbacks
-void LoadedTournament::sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList) {
+void LoadedTournament::sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList, SyncCallback callback) {
     auto wrapper = std::make_shared<MoveWrapper>();
     wrapper->tournament = std::move(tournament);
     wrapper->actionList = std::move(actionList);
 
-    boost::asio::post(mStrand, [this, wrapper](){
+    boost::asio::post(mStrand, [this, wrapper, callback](){
         mTournament = std::move(wrapper->tournament);
         mActionList = std::move(wrapper->actionList);
         mModificationTime = std::chrono::system_clock::now();
+
+        boost::asio::dispatch(mContext, std::bind(callback, true));
     });
 }
 
-void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action> action) {
-    mStrand.post([this, actionId, action](){
-        // TODO: Handle exceptions
+void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action> action, DispatchCallback callback) {
+    mStrand.post([this, actionId, action, callback](){
         action->redo(*mTournament);
         mActionList.push_back({actionId, std::move(action)});
         mActionIds.insert(actionId);
         mModificationTime = std::chrono::system_clock::now();
+
+        boost::asio::dispatch(mContext, std::bind(callback, true));
     });
 }
 
-void LoadedTournament::undo(ClientActionId actionId) {
-    mStrand.post([this, actionId](){
+void LoadedTournament::undo(ClientActionId actionId, UndoCallback callback) {
+    mStrand.post([this, actionId, callback](){
         // TODO: Handle exceptions
 
         auto idIt = mActionIds.find(actionId);
@@ -86,6 +89,8 @@ void LoadedTournament::undo(ClientActionId actionId) {
             it->second->redo(*mTournament);
             std::advance(it, 1);
         }
+
+        boost::asio::dispatch(mContext, std::bind(callback, true));
     });
 }
 

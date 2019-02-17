@@ -18,9 +18,14 @@ class LoadedTournament {
 public:
     LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database);
 
-    void sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList);
-    void dispatch(ClientActionId actionId, std::shared_ptr<Action> action);
-    void undo(ClientActionId actionId);
+    typedef std::function<void (bool)> SyncCallback;
+    void sync(std::unique_ptr<TournamentStore> tournament, SharedActionList actionList, SyncCallback callback);
+
+    typedef std::function<void (bool)> DispatchCallback;
+    void dispatch(ClientActionId actionId, std::shared_ptr<Action> action, DispatchCallback callback);
+
+    typedef std::function<void (bool)> UndoCallback;
+    void undo(ClientActionId actionId, UndoCallback callback);
 
     typedef std::function<void (bool)> LoadCallback;
     void load(LoadCallback callback);

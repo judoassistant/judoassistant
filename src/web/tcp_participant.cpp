@@ -215,16 +215,22 @@ void TCPParticipant::asyncTournamentSync() {
             }
 
             mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper, self](std::shared_ptr<LoadedTournament> loadedTournament) {
-                loadedTournament->setOwner(self);
-                loadedTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList));
-                mTournament = loadedTournament;
+                mTournament = std::move(loadedTournament);
+                mTournament->setOwner(self);
+                mTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList), [this, self](bool success) {
+                    if (!success) {
+                        forceQuit();
+                        return;
+                    }
 
-                mDatabase.asyncSetSynced(mWebName, [this, self](bool success) {
-                    if (!success)
-                        log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
+                    mDatabase.asyncSetSynced(mWebName, [this, self](bool success) {
+                        if (!success)
+                            log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
+                    });
+
+                    asyncTournamentListen();
                 });
 
-                asyncTournamentListen();
             }));
 
             return;
@@ -251,18 +257,25 @@ void TCPParticipant::asyncTournamentListen() {
             forceQuit();
             return;
         }
-        else if (type == NetworkMessage::Type::UNDO) {
+
+        if (type == NetworkMessage::Type::UNDO) {
             ClientActionId actionId;
 
             if (!mReadMessage->decodeUndo(actionId)) {
-                log_warning().msg("Failed decoding undo. Kicking client.");
                 forceQuit();
                 return;
             }
 
-            mTournament->undo(actionId);
+            mTournament->undo(actionId, [this, self](bool success) {
+                if (success)
+                    asyncTournamentListen();
+                else
+                    forceQuit();
+            });
+            return;
         }
-        else if (type == NetworkMessage::Type::ACTION) {
+
+        if (type == NetworkMessage::Type::ACTION) {
             ClientActionId actionId;
             std::shared_ptr<Action> action;
 
@@ -272,9 +285,17 @@ void TCPParticipant::asyncTournamentListen() {
                 return;
             }
 
-            mTournament->dispatch(actionId, std::move(action));
+            mTournament->dispatch(actionId, std::move(action), [this, self](bool success) {
+                if (success)
+                    asyncTournamentListen();
+                else
+                    forceQuit();
+            });
+
+            return;
         }
-        else if (type == NetworkMessage::Type::SYNC) {
+
+        if (type == NetworkMessage::Type::SYNC) {
             auto tournament = std::make_unique<TournamentStore>();
             SharedActionList actionList;
 
@@ -283,12 +304,16 @@ void TCPParticipant::asyncTournamentListen() {
                 return;
             }
 
-           mTournament->sync(std::move(tournament), std::move(actionList));
-        }
-        else {
-            log_warning().field("type", type).msg("Received message of unexpected type when listening");
+            mTournament->sync(std::move(tournament), std::move(actionList), [this, self](bool success) {
+                if (success)
+                    asyncTournamentListen();
+                else
+                    forceQuit();
+            });
+           return;
         }
 
+        log_warning().field("type", type).msg("Received message of unexpected type when listening");
         asyncTournamentListen();
     });
 }
