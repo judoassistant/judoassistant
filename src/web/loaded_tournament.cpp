@@ -35,6 +35,8 @@ void LoadedTournament::sync(std::unique_ptr<WebTournamentStore> tournament, Shar
         mActionList = std::move(wrapper->actionList);
         mModificationTime = std::chrono::system_clock::now();
 
+        deliverSync();
+
         boost::asio::dispatch(mContext, std::bind(callback, true));
     });
 }
@@ -52,6 +54,8 @@ void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action>
         mActionList.push_back({actionId, std::move(action)});
         mActionIds.insert(actionId);
         mModificationTime = std::chrono::system_clock::now();
+
+        deliverChanges();
 
         boost::asio::dispatch(mContext, std::bind(callback, true));
     });
@@ -100,6 +104,8 @@ void LoadedTournament::undo(ClientActionId actionId, UndoCallback callback) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
             return;
         }
+
+        deliverChanges();
 
         mModificationTime = std::chrono::system_clock::now();
         mActionIds.erase(idIt);
@@ -314,12 +320,15 @@ void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participan
 
 void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> participant) {
     boost::asio::dispatch(mStrand, [this, participant](){
-        mWebParticipants.erase(std::move(participant));
+        mWebParticipants.erase(participant);
+        mPlayerSubscriptions.erase(participant);
+        mCategorySubscriptions.erase(participant);
     });
 }
 
 void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> participant, CategoryId category) {
     boost::asio::dispatch(mStrand, [this, participant, category](){
+        mCategorySubscriptions[participant] = category;
         JsonEncoder encoder;
         if (!mTournament->containsCategory(category))
             return;
@@ -330,6 +339,7 @@ void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> partici
 
 void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participant, PlayerId player) {
     boost::asio::dispatch(mStrand, [this, participant, player](){
+        mPlayerSubscriptions[participant] = player;
         JsonEncoder encoder;
         if (!mTournament->containsPlayer(player))
             return;
@@ -338,3 +348,42 @@ void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participa
     });
 }
 
+void LoadedTournament::deliverChanges() {
+    JsonEncoder encoder;
+    for (const auto & participant : mWebParticipants) {
+        std::optional<CategoryId> category;
+        auto categoryIt = mCategorySubscriptions.find(participant);
+        if (categoryIt != mCategorySubscriptions.end())
+            category = categoryIt->second;
+
+        std::optional<PlayerId> player;
+        auto playerIt = mPlayerSubscriptions.find(participant);
+        if (playerIt != mPlayerSubscriptions.end())
+            player = playerIt->second;
+
+        auto buffer = encoder.encodeChanges(*mTournament, category, player);
+        participant->deliver(std::move(buffer));
+    }
+
+    mTournament->clearChanges();
+}
+
+void LoadedTournament::deliverSync() {
+    JsonEncoder encoder;
+    for (const auto & participant : mWebParticipants) {
+        std::optional<CategoryId> category;
+        auto categoryIt = mCategorySubscriptions.find(participant);
+        if (categoryIt != mCategorySubscriptions.end())
+            category = categoryIt->second;
+
+        std::optional<PlayerId> player;
+        auto playerIt = mPlayerSubscriptions.find(participant);
+        if (playerIt != mPlayerSubscriptions.end())
+            player = playerIt->second;
+
+        auto buffer = encoder.encodeSync(*mTournament, category, player);
+        participant->deliver(std::move(buffer));
+    }
+
+    mTournament->clearChanges();
+}

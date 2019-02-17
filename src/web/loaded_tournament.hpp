@@ -46,6 +46,9 @@ public:
 private:
     static constexpr unsigned int FILE_HEADER_SIZE = 9;
 
+    void deliverChanges();
+    void deliverSync();
+
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Database &mDatabase;
@@ -56,6 +59,8 @@ private:
     SharedActionList mActionList;
     std::unordered_set<ClientActionId> mActionIds;
     std::unordered_set<std::shared_ptr<WebParticipant>> mWebParticipants;
+    std::unordered_map<std::shared_ptr<WebParticipant>, PlayerId> mPlayerSubscriptions;
+    std::unordered_map<std::shared_ptr<WebParticipant>, CategoryId> mCategorySubscriptions;
     std::weak_ptr<TCPParticipant> mOwner;
 
     bool mFileInUse;
