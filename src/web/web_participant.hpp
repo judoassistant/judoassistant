@@ -3,6 +3,8 @@
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
+#include <rapidjson/stringbuffer.h>
+#include <queue>
 
 class Database;
 class WebServer;
@@ -24,6 +26,9 @@ private:
     void selectTournament(const std::string &webName);
     void listTournaments();
 
+    void deliver(std::shared_ptr<rapidjson::StringBuffer> message);
+    void write();
+
     boost::asio::io_context& mContext;
     boost::asio::io_context::strand mStrand;
     std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> mConnection;
@@ -33,5 +38,6 @@ private:
     Database &mDatabase;
 
     std::shared_ptr<LoadedTournament> mTournament;
+    std::queue<std::shared_ptr<rapidjson::StringBuffer>> mWriteQueue;
 };
 

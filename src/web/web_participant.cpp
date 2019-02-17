@@ -11,6 +11,7 @@
 #include "web/web_server.hpp"
 
 // TODO: Fix segfault on server SIGINT
+// TODO: Try to see if message size can be limited in async_read
 
 WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)
@@ -23,7 +24,6 @@ WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr
 }
 
 void WebParticipant::listen() {
-    log_debug().msg("Listening");
     auto self = shared_from_this();
     mConnection->async_read(mBuffer, boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
         if (ec) {
@@ -41,7 +41,6 @@ void WebParticipant::listen() {
 }
 
 bool WebParticipant::validateMessage(const std::string &message) {
-    // TODO: Try to check message size earlier
     if (message.empty() || message.size() > 200)
         return false;
     for (const char c : message) {
@@ -96,24 +95,20 @@ void WebParticipant::listTournaments() {
 }
 
 void WebParticipant::selectTournament(const std::string &webName) {
-    log_debug().field("webName", webName).msg("Selecting tournament");
     auto self = shared_from_this();
     mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
-        log_debug().field("isNull", tournament == nullptr).msg("Got tournament");
         tournament->addParticipant(shared_from_this());
         tournament->generateSyncJson(boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<rapidjson::StringBuffer> message) {
-            auto buffer = boost::asio::buffer(message->GetString(), message->GetSize());
-            // log_debug().field("dom", message->GetString()).msg("Got sync message");
-            mConnection->async_write(boost::asio::buffer(buffer), [this, self, message](boost::beast::error_code ec, std::size_t bytes_transferred) {
-                log_debug().msg("Wrote message");
-            });
+            deliver(std::move(message));
         }));
         mTournament = std::move(tournament);
     }));
 }
 
 void WebParticipant::quit() {
-    log_debug().msg("Quitting");
+    // Since WebParticipants are read-only there is not risk of data corruption
+    // when killing
+
     auto self = shared_from_this();
     boost::asio::dispatch(mStrand, [this, self]() {
         forceQuit();
@@ -121,7 +116,6 @@ void WebParticipant::quit() {
 }
 
 void WebParticipant::forceQuit() {
-    log_debug().msg("Force quitting");
     if (mTournament != nullptr) {
         mTournament->eraseParticipant(shared_from_this());
         mTournament = nullptr;
@@ -129,5 +123,33 @@ void WebParticipant::forceQuit() {
 
     mConnection.reset();
     mServer.leave(shared_from_this());
+}
+
+void WebParticipant::deliver(std::shared_ptr<rapidjson::StringBuffer> message) {
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, message, self](){
+        bool writeInProgress = !mWriteQueue.empty();
+        mWriteQueue.push(std::move(message));
+
+        if (!writeInProgress)
+            write();
+    });
+}
+
+void WebParticipant::write() {
+    auto self = shared_from_this();
+    const auto &message = mWriteQueue.front();
+    auto buffer = boost::asio::buffer(message->GetString(), message->GetSize());
+    mConnection->async_write(buffer, boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+        if (ec) {
+            forceQuit();
+            return;
+        }
+
+        mWriteQueue.pop();
+
+        if (!mWriteQueue.empty())
+            write();
+    }));
 }
 

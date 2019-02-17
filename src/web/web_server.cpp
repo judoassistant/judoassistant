@@ -113,12 +113,10 @@ void WebServer::webAccept() {
                     return;
                 }
 
-                log_debug().msg("Creating web participant");
-
+                log_debug().msg("Accepted WebSocket connection");
                 auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
                 participant->listen();
                 mWebParticipants.insert(std::move(participant));
-                log_info().msg("Accepted web socket");
             }));
         }
 

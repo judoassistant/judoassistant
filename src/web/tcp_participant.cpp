@@ -210,7 +210,6 @@ void TCPParticipant::asyncTournamentSync() {
             wrapper->tournament = std::make_unique<TournamentStore>();
 
             if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
-                // TODO: Unown tournament
                 forceQuit();
                 return;
             }
@@ -280,7 +279,6 @@ void TCPParticipant::asyncTournamentListen() {
             SharedActionList actionList;
 
             if (!mReadMessage->decodeSync(*tournament, actionList)) {
-                // TODO: Unown tournament
                 forceQuit();
                 return;
             }
@@ -291,7 +289,6 @@ void TCPParticipant::asyncTournamentListen() {
             log_warning().field("type", type).msg("Received message of unexpected type when listening");
         }
 
-        // TODO: Implement method
         asyncTournamentListen();
     });
 }
