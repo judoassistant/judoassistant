@@ -1,3 +1,9 @@
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/filesystem/operations.hpp>
+
 #include "core/id.hpp"
 #include "core/log.hpp"
 #include "core/web/web_types.hpp"
@@ -5,21 +11,40 @@
 
 using boost::asio::ip::tcp;
 
+// TODO: Perform stricter sanitation of user input
+// TODO: Add ssl support
+
 WebServer::WebServer(const Config &config)
     : mConfig(config)
-    , mContext()
+    , mContext(config.workers)
     , mStrand(mContext)
-    , mEndpoint(tcp::v4(), config.port)
-    , mAcceptor(mContext, mEndpoint)
+    , mTCPEndpoint(tcp::v4(), config.port)
+    , mTCPAcceptor(mContext, mTCPEndpoint)
+    , mWebEndpoint(tcp::v4(), config.webPort)
+    , mWebAcceptor(mContext, mWebEndpoint)
 {
     tcpAccept();
+    webAccept();
 }
 
 void WebServer::run() {
+    // Check data directory
+    if (!boost::filesystem::exists(mConfig.dataDirectory)) {
+        if (!boost::filesystem::create_directory(mConfig.dataDirectory)) {
+            log_error().field("path", mConfig.dataDirectory).msg("Failed creating data directory");
+            return;
+        }
+    }
+    else if (!boost::filesystem::is_directory(mConfig.dataDirectory)) {
+        log_error().field("path", mConfig.dataDirectory).msg("The given data directory is not a directory");
+        return;
+    }
+
+    // Launch database
     log_info().msg("Launching database");
     mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
-    // mThreads.emplace_back(&WebServerDatabaseWorker::run, mDatabase.get());
 
+    // Launch worker threads
     log_info().field("threadCount", mConfig.workers).msg("Launching threads");
     for (size_t i = 0; i < mConfig.workers; ++i) {
         mThreads.emplace_back(&WebServer::work, this);
@@ -37,28 +62,31 @@ void WebServer::run() {
 
 void WebServer::quit() {
     mStrand.dispatch([this]() {
-        for (auto & participantPtr : mParticipants)
-            participantPtr->quit();
-        mAcceptor.close();
+        log_debug().msg("WebServer::quit");
+        for (auto & participant: mParticipants)
+            participant->quit();
+        for (auto & participant: mWebParticipants)
+            participant->quit();
+
+        for (auto & p : mLoadedTournaments)
+            p.second->saveIfNeccesary();
+
+        mTCPAcceptor.close();
+        mWebAcceptor.close();
     });
 }
 
 void WebServer::tcpAccept() {
-    mAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+    mTCPAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Received error code in async_accept");
+            log_error().field("message", ec.message()).msg("Received error code in tcp async_accept");
         }
         else {
-            log_debug().msg("Creating connection");
             auto connection = std::make_shared<NetworkConnection>(std::move(socket));
-            log_debug().msg("created connection");
 
             connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection](boost::system::error_code ec) {
-                log_debug().msg("Async accept handler called");
-                if (ec) {
-                    log_error().field("message", ec.message()).msg("Received error code in connection.asyncAccept");
+                if (ec)
                     return;
-                }
 
                 auto participant = std::make_shared<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
                 participant->asyncAuth();
@@ -66,8 +94,34 @@ void WebServer::tcpAccept() {
             }));
         }
 
-        if (mAcceptor.is_open())
+        if (mTCPAcceptor.is_open())
             tcpAccept();
+    });
+}
+
+void WebServer::webAccept() {
+    mWebAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Received error code in web async_accept");
+        }
+        else {
+            auto connection = std::make_shared<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(std::move(socket));
+
+            connection->async_accept(boost::asio::bind_executor(mStrand, [this, connection](boost::beast::error_code ec) {
+                if (ec) {
+                    log_error().field("message", ec.message()).msg("Received error code in websocket async accept");
+                    return;
+                }
+
+                log_debug().msg("Accepted WebSocket connection");
+                auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
+                participant->listen();
+                mWebParticipants.insert(std::move(participant));
+            }));
+        }
+
+        if (mWebAcceptor.is_open())
+            webAccept();
     });
 }
 
@@ -77,11 +131,70 @@ void WebServer::leave(std::shared_ptr<TCPParticipant> participant) {
     });
 }
 
+void WebServer::leave(std::shared_ptr<WebParticipant> participant) {
+    mStrand.dispatch([this, participant]() {
+        mWebParticipants.erase(participant);
+    });
+}
+
 void WebServer::assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName) {
     log_debug().field("webName", webName).msg("Assigning web name to participant");
 }
 
 void WebServer::work() {
     mContext.run();
+}
+
+void WebServer::acquireTournament(const std::string &webName, AcquireTournamentCallback callback) {
+    mStrand.dispatch([this, webName, callback]() {
+        auto it = mLoadedTournaments.find(webName);
+        std::shared_ptr<LoadedTournament> tournament;
+        if (it != mLoadedTournaments.end()) {
+            // TODO: Kick existing participant if any
+            tournament = it->second;
+        }
+        else {
+            tournament = std::make_shared<LoadedTournament>(webName, mConfig.dataDirectory, mContext, *mDatabase);
+            mLoadedTournaments.insert({webName, tournament});
+        }
+
+        boost::asio::dispatch(mContext, std::bind(callback, std::move(tournament)));
+    });
+}
+
+void WebServer::getTournament(const std::string &webName, GetTournamentCallback callback) {
+    mStrand.dispatch([this, webName, callback]() {
+        auto it = mLoadedTournaments.find(webName);
+        if (it != mLoadedTournaments.end()) {
+            boost::asio::dispatch(mContext, std::bind(callback, it->second));
+            return;
+        }
+
+        mDatabase->asyncGetSaveStatus(webName, [this, webName, callback](bool isSaved) {
+            if (!isSaved) {
+                boost::asio::dispatch(mContext, std::bind(callback, nullptr));
+                return;
+            }
+
+            auto tournament = std::make_shared<LoadedTournament>(webName, mConfig.dataDirectory, mContext, *mDatabase);
+            tournament->load(boost::asio::bind_executor(mStrand, [this, webName, tournament, callback](bool success) {
+                auto it = mLoadedTournaments.find(webName);
+                if (it != mLoadedTournaments.end()) { // The tournament was loaded by someone else
+                    boost::asio::dispatch(mContext, std::bind(callback, it->second));
+                    return;
+                }
+
+                if (success) {
+                    mLoadedTournaments.insert({webName, tournament});
+                    boost::asio::dispatch(mContext, std::bind(callback, tournament));
+                    return;
+                }
+
+                boost::asio::dispatch(mContext, std::bind(callback, nullptr));
+                return;
+            }));
+        });
+
+    });
 }
 

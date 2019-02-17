@@ -41,6 +41,14 @@ public:
 
     Id() {}
     Id(InternalType value) : mValue(value) {}
+    Id(const std::string &str) {
+        try {
+            mValue = std::stoul(str);
+        }
+        catch (const std::exception &e) {
+            throw std::invalid_argument(str);
+        }
+    }
 
     InternalType getValue() const {
         return mValue;
@@ -89,6 +97,7 @@ class CategoryId : public Id<CategoryId> {
 public:
     CategoryId() {}
     CategoryId(InternalType value) : Id(value) {}
+    CategoryId(const std::string &str) : Id(str) {}
 
     static CategoryId generate(const TournamentStore &tournament);
     static CategoryId generate(const TournamentStore &tournament, CategoryId::Generator &generator);
@@ -98,6 +107,7 @@ class PlayerId : public Id<PlayerId> {
 public:
     PlayerId() {}
     PlayerId(InternalType value) : Id(value) {}
+    PlayerId(const std::string &str) : Id(str) {}
 
     static PlayerId generate(const TournamentStore &tournament);
     static PlayerId generate(const TournamentStore &tournament, PlayerId::Generator &generator);

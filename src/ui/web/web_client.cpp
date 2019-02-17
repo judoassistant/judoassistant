@@ -1,3 +1,5 @@
+#include <boost/asio/connect.hpp>
+
 #include "core/log.hpp"
 #include "ui/constants/web.hpp"
 #include "ui/web/web_client.hpp"

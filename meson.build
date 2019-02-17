@@ -5,7 +5,7 @@ qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
 
 # Core dependencies
-boost_dep = dependency('boost', modules: ['system', 'program_options']) # Used for ASIO and on the web server
+boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 lz4_dep = dependency('liblz4') # Compression library for networking and save-files
 thread_dep = dependency('threads')
 
@@ -23,7 +23,7 @@ conf_data.set('version_patch', '0')
 configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
 
 # Find all sources and headers
-include_dirs = include_directories(['.', 'src', 'cereal/include'])
+include_dirs = include_directories(['.', 'src'])
 
 core_sources = []
 ui_sources = []

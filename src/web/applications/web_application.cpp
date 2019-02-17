@@ -39,8 +39,10 @@ int main(int argc, char *argv[]) {
         po::options_description config("Configuration");
         config.add_options()
             ("port", po::value<unsigned int>(&configuration.port)->default_value(9000), "tcp server port")
+            ("web-port", po::value<unsigned int>(&configuration.webPort)->default_value(9001), "web socket server port")
             ("postgres", po::value<std::string>(&configuration.postgres)->default_value(""), "postgres connection info")
-            ("workers", po::value<unsigned int>(&configuration.workers)->default_value(4), "name of worker threads to launch")
+            ("workers", po::value<unsigned int>(&configuration.workers)->default_value(std::thread::hardware_concurrency()), "name of worker threads to launch")
+            ("data-dir", po::value<boost::filesystem::path>(&configuration.dataDirectory)->default_value("tournaments"), "directory to store tournament data")
             ;
 
         po::options_description cmdOptions;
