@@ -65,10 +65,10 @@ private:
 CEREAL_REGISTER_TYPE(ErasePlayersAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ErasePlayersAction)
 
-class ChangePlayerFirstNameAction : public Action {
+class ChangePlayersFirstNameAction : public Action {
 public:
-    ChangePlayerFirstNameAction() = default;
-    ChangePlayerFirstNameAction(PlayerId playerId, const std::string &value);
+    ChangePlayersFirstNameAction () = default;
+    ChangePlayersFirstNameAction(std::vector<PlayerId> playerId, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -77,25 +77,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::string mValue;
 
     // undo members
-    std::string mOldValue;
+    std::vector<std::string> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerFirstNameAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerFirstNameAction)
+CEREAL_REGISTER_TYPE(ChangePlayersFirstNameAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersFirstNameAction)
 
-class ChangePlayerLastNameAction : public Action {
+class ChangePlayersLastNameAction : public Action {
 public:
-    ChangePlayerLastNameAction() = default;
-    ChangePlayerLastNameAction(PlayerId playerId, const std::string &value);
+    ChangePlayersLastNameAction() = default;
+    ChangePlayersLastNameAction(std::vector<PlayerId> playerId, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -104,25 +104,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::string mValue;
 
     // undo members
-    std::string mOldValue;
+    std::vector<std::string> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerLastNameAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerLastNameAction)
+CEREAL_REGISTER_TYPE(ChangePlayersLastNameAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersLastNameAction)
 
-class ChangePlayerAgeAction : public Action {
+class ChangePlayersAgeAction : public Action {
 public:
-    ChangePlayerAgeAction() = default;
-    ChangePlayerAgeAction(PlayerId playerId, std::optional<PlayerAge> value);
+    ChangePlayersAgeAction() = default;
+    ChangePlayersAgeAction(std::vector<PlayerId> playerIds, std::optional<PlayerAge> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -131,25 +131,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerAge> mValue;
 
     // undo members
-    std::optional<PlayerAge> mOldValue;
+    std::vector<std::optional<PlayerAge>> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerAgeAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerAgeAction)
+CEREAL_REGISTER_TYPE(ChangePlayersAgeAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersAgeAction)
 
-class ChangePlayerRankAction : public Action {
+class ChangePlayersRankAction : public Action {
 public:
-    ChangePlayerRankAction() = default;
-    ChangePlayerRankAction(PlayerId playerId, std::optional<PlayerRank> value);
+    ChangePlayersRankAction() = default;
+    ChangePlayersRankAction(std::vector<PlayerId> playerIds, std::optional<PlayerRank> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -158,25 +158,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerRank> mValue;
 
     // undo members
-    std::optional<PlayerRank> mOldValue;
+    std::vector<std::optional<PlayerRank>> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerRankAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerRankAction)
+CEREAL_REGISTER_TYPE(ChangePlayersRankAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersRankAction)
 
-class ChangePlayerClubAction : public Action {
+class ChangePlayersClubAction : public Action {
 public:
-    ChangePlayerClubAction() = default;
-    ChangePlayerClubAction(PlayerId playerId, const std::string &value);
+    ChangePlayersClubAction() = default;
+    ChangePlayersClubAction(std::vector<PlayerId> playerIds, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -185,25 +185,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::string mValue;
 
     // undo members
-    std::string mOldValue;
+    std::vector<std::string> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerClubAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerClubAction)
+CEREAL_REGISTER_TYPE(ChangePlayersClubAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersClubAction)
 
-class ChangePlayerWeightAction : public Action {
+class ChangePlayersWeightAction : public Action {
 public:
-    ChangePlayerWeightAction() = default;
-    ChangePlayerWeightAction(PlayerId playerId, std::optional<PlayerWeight> value);
+    ChangePlayersWeightAction() = default;
+    ChangePlayersWeightAction(std::vector<PlayerId> playerIds, std::optional<PlayerWeight> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -212,25 +212,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerWeight> mValue;
 
     // undo members
-    std::optional<PlayerWeight> mOldValue;
+    std::vector<std::optional<PlayerWeight>> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerWeightAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerWeightAction)
+CEREAL_REGISTER_TYPE(ChangePlayersWeightAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersWeightAction)
 
-class ChangePlayerCountryAction : public Action {
+class ChangePlayersCountryAction : public Action {
 public:
-    ChangePlayerCountryAction() = default;
-    ChangePlayerCountryAction(PlayerId playerId, std::optional<PlayerCountry> value);
+    ChangePlayersCountryAction() = default;
+    ChangePlayersCountryAction(std::vector<PlayerId> playerIds, std::optional<PlayerCountry> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -239,25 +239,25 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerCountry> mValue;
 
     // undo members
-    std::optional<PlayerCountry> mOldValue;
+    std::vector<std::optional<PlayerCountry>> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerCountryAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerCountryAction)
+CEREAL_REGISTER_TYPE(ChangePlayersCountryAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersCountryAction)
 
-class ChangePlayerSexAction : public Action {
+class ChangePlayersSexAction : public Action {
 public:
-    ChangePlayerSexAction() = default;
-    ChangePlayerSexAction(PlayerId playerId, std::optional<PlayerSex> value);
+    ChangePlayersSexAction() = default;
+    ChangePlayersSexAction(std::vector<PlayerId> playerId, std::optional<PlayerSex> value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -266,18 +266,18 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerId);
+        ar(mPlayerIds);
         ar(mValue);
     }
 
 private:
-    PlayerId mPlayerId;
+    std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerSex> mValue;
 
     // undo members
-    std::optional<PlayerSex> mOldValue;
+    std::vector<std::optional<PlayerSex>> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangePlayerSexAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayerSexAction)
+CEREAL_REGISTER_TYPE(ChangePlayersSexAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangePlayersSexAction)
 

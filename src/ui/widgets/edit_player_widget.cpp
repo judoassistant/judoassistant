@@ -188,7 +188,7 @@ void EditPlayerWidget::firstNameEdited() {
     std::string oldValue = player.getFirstName();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerFirstNameAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersFirstNameAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::lastNameEdited() {
@@ -202,7 +202,7 @@ void EditPlayerWidget::lastNameEdited() {
     std::string oldValue = player.getLastName();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerLastNameAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersLastNameAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::ageEdited() {
@@ -219,7 +219,7 @@ void EditPlayerWidget::ageEdited() {
     std::optional<PlayerAge> oldValue = player.getAge();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerAgeAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersAgeAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::rankEdited() {
@@ -236,7 +236,7 @@ void EditPlayerWidget::rankEdited() {
     std::optional<PlayerRank> oldValue = player.getRank();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerRankAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersRankAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::clubEdited() {
@@ -250,7 +250,7 @@ void EditPlayerWidget::clubEdited() {
     std::string oldValue = player.getClub();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerClubAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersClubAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::weightEdited() {
@@ -267,7 +267,7 @@ void EditPlayerWidget::weightEdited() {
     std::optional<PlayerWeight> oldValue = player.getWeight();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerWeightAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersWeightAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::countryEdited() {
@@ -285,7 +285,7 @@ void EditPlayerWidget::countryEdited() {
 
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerCountryAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersCountryAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
 void EditPlayerWidget::sexEdited() {
@@ -303,6 +303,6 @@ void EditPlayerWidget::sexEdited() {
 
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayerSexAction>(*mPlayerId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangePlayersSexAction>(std::vector<PlayerId>{*mPlayerId}, newValue));
 }
 
