@@ -146,7 +146,7 @@ void EditCategoryWidget::nameEdited() {
     std::string oldValue = category.getName();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangeCategoryNameAction>(*mCategoryId, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoriesNameAction>(std::vector<CategoryId>{*mCategoryId}, newValue));
 }
 
 void EditCategoryWidget::rulesetEdited() {
@@ -159,7 +159,7 @@ void EditCategoryWidget::rulesetEdited() {
     if (mRulesetContent->currentIndex() == mRulesetContent->findText(QString::fromStdString(category.getRuleset().getName())))
         return;
 
-    mStoreManager.dispatch(std::make_unique<ChangeCategoryRulesetAction>(*mCategoryId, mRulesetContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoriesRulesetAction>(std::vector<CategoryId>{*mCategoryId}, mRulesetContent->currentIndex()));
 }
 
 void EditCategoryWidget::drawSystemEdited() {
@@ -172,6 +172,6 @@ void EditCategoryWidget::drawSystemEdited() {
     if (mDrawSystemContent->currentIndex() == mDrawSystemContent->findText(QString::fromStdString(category.getDrawSystem().getName())))
         return;
 
-    mStoreManager.dispatch(std::make_unique<ChangeCategoryDrawSystemAction>(*mCategoryId, mDrawSystemContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoriesDrawSystemAction>(std::vector<CategoryId>{*mCategoryId}, mDrawSystemContent->currentIndex()));
 }
 
