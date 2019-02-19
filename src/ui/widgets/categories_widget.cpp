@@ -128,13 +128,13 @@ void CategoriesWidget::showContextMenu(const QPoint &pos) {
     if (categoryIds.empty())
         return;
 
-    QMenu *menu = new QMenu;
+    QMenu menu;
     {
-        QAction *action = menu->addAction(tr("Create a new category"));
+        QAction *action = menu.addAction(tr("Create a new category"));
         connect(action, &QAction::triggered, this, &CategoriesWidget::showCategoryCreateDialog);
     }
     {
-        QAction *action = menu->addAction(tr("Erase selected categories"));
+        QAction *action = menu.addAction(tr("Erase selected categories"));
         connect(action, &QAction::triggered, this, &CategoriesWidget::eraseSelectedCategories);
     }
     // menu->addSeparator();
@@ -168,6 +168,6 @@ void CategoriesWidget::showContextMenu(const QPoint &pos) {
     //     connect(action, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
     // }
 
-    menu->exec(mTableView->mapToGlobal(pos), 0);
-    delete menu;
+    menu.exec(mTableView->mapToGlobal(pos), 0);
 }
+

@@ -121,23 +121,23 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
             playerCategoryIds.insert(categoryId);
     }
 
-    QMenu *menu = new QMenu;
+    QMenu menu;
     {
-        QAction *action = menu->addAction(tr("Create a new player"));
+        QAction *action = menu.addAction(tr("Create a new player"));
         connect(action, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
     }
     {
-        QAction *action = menu->addAction(tr("Erase selected players"));
+        QAction *action = menu.addAction(tr("Erase selected players"));
         connect(action, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
     }
-    menu->addSeparator();
+    menu.addSeparator();
     {
-        QAction *action = menu->addAction(tr("Erase selected players from all categories"));
+        QAction *action = menu.addAction(tr("Erase selected players from all categories"));
         action->setEnabled(!playerCategoryIds.empty());
         connect(action, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayersFromAllCategories);
     }
     {
-        QMenu *submenu = menu->addMenu(tr("Erase selected players from category"));
+        QMenu *submenu = menu.addMenu(tr("Erase selected players from category"));
         submenu->setEnabled(!playerCategoryIds.empty());
 
         for (CategoryId categoryId : playerCategoryIds) {
@@ -147,7 +147,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
         }
     }
     {
-        QMenu *submenu = menu->addMenu(tr("Add selected players to category"));
+        QMenu *submenu = menu.addMenu(tr("Add selected players to category"));
         submenu->setEnabled(!tournament.getCategories().empty());
 
         for (const auto & it : tournament.getCategories()) {
@@ -157,12 +157,11 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
         }
     }
     {
-        QAction *action = menu->addAction(tr("Automatically create categories for the selected players.."));
+        QAction *action = menu.addAction(tr("Automatically create categories for the selected players.."));
         connect(action, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
     }
 
-    menu->exec(mTableView->mapToGlobal(pos), 0);
-    delete menu;
+    menu.exec(mTableView->mapToGlobal(pos), 0);
 }
 
 void PlayersWidget::eraseSelectedPlayers() {
