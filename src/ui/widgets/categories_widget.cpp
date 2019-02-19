@@ -1,9 +1,10 @@
+#include <QHeaderView>
 #include <QListView>
+#include <QMenu>
 #include <QSplitter>
 #include <QTabWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QHeaderView>
 
 #include "core/actions/category_actions.hpp"
 #include "core/stores/category_store.hpp"
@@ -51,8 +52,10 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
         mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         mTableView->setSortingEnabled(true);
         mTableView->sortByColumn(0, Qt::AscendingOrder);
+        mTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
         connect(mTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &CategoriesWidget::selectionChanged);
+        connect(mTableView, &QTableView::customContextMenuRequested, this, &CategoriesWidget::showContextMenu);
 
         splitter->addWidget(mTableView);
     }
@@ -118,3 +121,53 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
     mResultsModel->setCategory(categoryId);
 }
 
+void CategoriesWidget::showContextMenu(const QPoint &pos) {
+    std::vector<CategoryId> categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
+    const TournamentStore &tournament = mStoreManager.getTournament();
+
+    if (categoryIds.empty())
+        return;
+
+    QMenu *menu = new QMenu;
+    {
+        QAction *action = menu->addAction(tr("Create a new category"));
+        connect(action, &QAction::triggered, this, &CategoriesWidget::showCategoryCreateDialog);
+    }
+    {
+        QAction *action = menu->addAction(tr("Erase selected categories"));
+        connect(action, &QAction::triggered, this, &CategoriesWidget::eraseSelectedCategories);
+    }
+    // menu->addSeparator();
+    // {
+    //     QAction *action = menu->addAction(tr("Erase selected players from all categories"));
+    //     action->setEnabled(!playerCategoryIds.empty());
+    //     connect(action, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayersFromAllCategories);
+    // }
+    // {
+    //     QMenu *submenu = menu->addMenu(tr("Erase selected players from category"));
+    //     submenu->setEnabled(!playerCategoryIds.empty());
+
+    //     for (CategoryId categoryId : playerCategoryIds) {
+    //         const CategoryStore & category = tournament.getCategory(categoryId);
+    //         QAction *action = submenu->addAction(QString::fromStdString(category.getName()));
+    //         connect(action, &QAction::triggered, [&, categoryId](){eraseSelectedPlayersFromCategory(categoryId);});
+    //     }
+    // }
+    // {
+    //     QMenu *submenu = menu->addMenu(tr("Add selected players to category"));
+    //     submenu->setEnabled(!tournament.getCategories().empty());
+
+    //     for (const auto & it : tournament.getCategories()) {
+    //         QAction *action = submenu->addAction(QString::fromStdString(it.second->getName()));
+    //         CategoryId categoryId = it.first;
+    //         connect(action, &QAction::triggered, [&, categoryId](){addSelectedPlayersToCategory(categoryId);});
+    //     }
+    // }
+    // {
+    //     QAction *action = menu->addAction(tr("Automatically create categories for the selected players.."));
+    //     connect(action, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
+    // }
+
+    menu->exec(mTableView->mapToGlobal(pos), 0);
+    delete menu;
+}

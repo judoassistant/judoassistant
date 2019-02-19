@@ -22,6 +22,8 @@ public slots:
     void eraseSelectedCategories();
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 private:
+    void showContextMenu(const QPoint &pos);
+
     StoreManager &mStoreManager;
     QAction *mEraseAction;
     QTableView *mTableView;
