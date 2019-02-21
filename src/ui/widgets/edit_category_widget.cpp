@@ -40,7 +40,7 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
     formLayout->addRow(tr("Player Count"), mPlayerCountContent);
     formLayout->addRow(tr("Match Count"), mMatchCountContent);
 
-    setCategory(std::nullopt);
+    setCategories({});
     setLayout(formLayout);
 
     connect(&(mStoreManager.getTournament()), &QTournamentStore::categoriesChanged, this, &EditCategoryWidget::categoriesChanged);
@@ -56,7 +56,7 @@ void EditCategoryWidget::tournamentAboutToBeReset() {
         mConnections.pop();
     }
 
-    setCategory(std::nullopt);
+    setCategories({});
 }
 
 void EditCategoryWidget::tournamentReset() {
@@ -66,10 +66,10 @@ void EditCategoryWidget::tournamentReset() {
     mConnections.push(connect(&(mStoreManager.getTournament()), &QTournamentStore::playersErasedFromCategory, this, &EditCategoryWidget::changePlayerCount));
 }
 
-void EditCategoryWidget::setCategory(std::optional<CategoryId> id) {
-    mCategoryId = id;
+void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryIds) {
+    mCategoryIds = categoryIds;
 
-    if (!id) {
+    if (categoryIds.size() != 1) {
         mNameContent->clear();
         mNameContent->setEnabled(false);
 
@@ -84,7 +84,8 @@ void EditCategoryWidget::setCategory(std::optional<CategoryId> id) {
         mMatchCountContent->setText("");
     }
     else {
-        const CategoryStore & category = mStoreManager.getTournament().getCategory(*id);
+        auto id = categoryIds.front();
+        const CategoryStore & category = mStoreManager.getTournament().getCategory(id);
         mNameContent->setEnabled(true);
         mNameContent->setText(QString::fromStdString(category.getName()));
 
@@ -100,27 +101,46 @@ void EditCategoryWidget::setCategory(std::optional<CategoryId> id) {
 }
 
 void EditCategoryWidget::resetMatches(CategoryId categoryId) {
-    if (mCategoryId != categoryId)
+    if (mCategoryIds.size() != 1)
+        return;
+    if (mCategoryIds.front() != categoryId)
         return;
 
-    const CategoryStore & category = mStoreManager.getTournament().getCategory(*mCategoryId);
+    const CategoryStore & category = mStoreManager.getTournament().getCategory(mCategoryIds.front());
     mMatchCountContent->setText(QString::number(category.getMatches().size()));
 }
 
 void EditCategoryWidget::changePlayerCount(CategoryId categoryId, std::vector<PlayerId> playerIds) {
-    if (mCategoryId != categoryId)
+    if (mCategoryIds.size() != 1)
+        return;
+    if (mCategoryIds.front() != categoryId)
         return;
 
-    const CategoryStore & category = mStoreManager.getTournament().getCategory(*mCategoryId);
+    const CategoryStore & category = mStoreManager.getTournament().getCategory(mCategoryIds.front());
     mPlayerCountContent->setText(QString::number(category.getPlayers().size()));
 }
 
+bool doIntersect(const std::vector<CategoryId> &a, const std::vector<CategoryId> &b) {
+    std::unordered_set<CategoryId> aSet(a.begin(), b.end());
+
+    for (auto categoryId : b) {
+        if (aSet.find(categoryId) != aSet.end())
+            return true;
+    }
+
+    return false;
+}
+
 void EditCategoryWidget::categoriesChanged(std::vector<CategoryId> ids) {
-    if (!mCategoryId || std::find(ids.begin(), ids.end(), *mCategoryId) == ids.end())
+    if (mCategoryIds.size() != 1)
+        return;
+
+    if (!doIntersect(ids, mCategoryIds))
         return;
 
     TournamentStore &tournament = mStoreManager.getTournament();
-    CategoryStore &category = tournament.getCategory(*mCategoryId);
+    auto id = mCategoryIds.front();
+    CategoryStore &category = tournament.getCategory(id);
 
     QString name = QString::fromStdString(category.getName());
     if (name != mNameContent->text())
@@ -136,42 +156,42 @@ void EditCategoryWidget::categoriesChanged(std::vector<CategoryId> ids) {
 }
 
 void EditCategoryWidget::nameEdited() {
-    if (!mCategoryId)
+    if (mCategoryIds.size() != 1)
         return;
 
     TournamentStore &tournament = mStoreManager.getTournament();
-    CategoryStore &category = tournament.getCategory(*mCategoryId);
+    CategoryStore &category = tournament.getCategory(mCategoryIds.front());
 
     std::string newValue = mNameContent->text().toStdString();
     std::string oldValue = category.getName();
     if (newValue == oldValue) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangeCategoriesNameAction>(std::vector<CategoryId>{*mCategoryId}, newValue));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoriesNameAction>(mCategoryIds, newValue));
 }
 
 void EditCategoryWidget::rulesetEdited() {
-    if (!mCategoryId)
+    if (mCategoryIds.size() != 1)
         return;
 
     TournamentStore &tournament = mStoreManager.getTournament();
-    CategoryStore &category = tournament.getCategory(*mCategoryId);
+    CategoryStore &category = tournament.getCategory(mCategoryIds.front());
 
     if (mRulesetContent->currentIndex() == mRulesetContent->findText(QString::fromStdString(category.getRuleset().getName())))
         return;
 
-    mStoreManager.dispatch(std::make_unique<ChangeCategoriesRulesetAction>(std::vector<CategoryId>{*mCategoryId}, mRulesetContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoriesRulesetAction>(mCategoryIds, mRulesetContent->currentIndex()));
 }
 
 void EditCategoryWidget::drawSystemEdited() {
-    if (!mCategoryId)
+    if (mCategoryIds.size() != 1)
         return;
 
     TournamentStore &tournament = mStoreManager.getTournament();
-    CategoryStore &category = tournament.getCategory(*mCategoryId);
+    CategoryStore &category = tournament.getCategory(mCategoryIds.front());
 
     if (mDrawSystemContent->currentIndex() == mDrawSystemContent->findText(QString::fromStdString(category.getDrawSystem().getName())))
         return;
 
-    mStoreManager.dispatch(std::make_unique<ChangeCategoriesDrawSystemAction>(std::vector<CategoryId>{*mCategoryId}, mDrawSystemContent->currentIndex()));
+    mStoreManager.dispatch(std::make_unique<ChangeCategoriesDrawSystemAction>(mCategoryIds, mDrawSystemContent->currentIndex()));
 }
 

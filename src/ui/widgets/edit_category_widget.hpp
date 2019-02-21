@@ -16,7 +16,7 @@ class EditCategoryWidget : public QWidget {
     Q_OBJECT
 public:
     EditCategoryWidget(StoreManager & storeManager, QWidget *parent);
-    void setCategory(std::optional<CategoryId> id);
+    void setCategories(const std::vector<CategoryId> &categoryIds);
 
 private:
     void categoriesChanged(std::vector<CategoryId> ids);
@@ -29,7 +29,7 @@ private:
     void drawSystemEdited();
 
     StoreManager & mStoreManager;
-    std::optional<CategoryId> mCategoryId;
+    std::vector<CategoryId> mCategoryIds;
     QLineEdit *mNameContent;
     QComboBox *mRulesetContent;
     QComboBox *mDrawSystemContent;

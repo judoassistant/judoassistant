@@ -115,7 +115,7 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
 
     mEraseAction->setEnabled(!categoryIds.empty());
 
-    mEditCategoryWidget->setCategory(categoryId);
+    mEditCategoryWidget->setCategories(categoryIds);
     mEditCategoryPlayersWidget->setCategory(categoryId);
     mCategoryMatchesModel->setCategory(categoryId);
     mResultsModel->setCategory(categoryId);
