@@ -754,8 +754,8 @@ void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
 
         CategoryStore & category = tournament.getCategory(categoryId);
 
-        category.setDrawSystem(std::move(*i));
         (*j)->undo(tournament);
+        category.setDrawSystem(std::move(*i));
 
         std::advance(i, 1);
         std::advance(j, 1);

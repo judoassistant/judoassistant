@@ -6,6 +6,7 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
+#include "core/log.hpp"
 #include "core/actions/category_actions.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/models/categories_model.hpp"
@@ -110,7 +111,7 @@ void CategoriesWidget::eraseSelectedCategories() {
 }
 
 void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
-    auto categoryIds = mModel->getCategories(selected);
+    auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
     std::optional<CategoryId> categoryId = (categoryIds.size() == 1 ? std::make_optional<CategoryId>(categoryIds.front()) : std::nullopt);
 
     mEraseAction->setEnabled(!categoryIds.empty());
