@@ -329,6 +329,11 @@ void MatchEventAction::save(const MatchStore &match) {
 void MatchEventAction::recover(TournamentStore &tournament) {
     assert(mDidSave);
 
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     auto &category = tournament.getCategory(mCategoryId);
     auto &match = category.getMatch(mMatchId);
     auto updatedStatus = match.getStatus();
@@ -354,17 +359,6 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
     // Notify of match changed
     tournament.changeMatches(match.getCategory(), {match.getId()});
-
-    // Notify draw system
-    // Changes to draws can only occur if the match was finished or is finished
-    if (mPrevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::FINISHED) {
-         const auto &drawSystem = category.getDrawSystem();
-         auto drawActions = drawSystem.updateCategory(tournament, category);
-         for (std::unique_ptr<Action> &action : drawActions) {
-             action->redo(tournament);
-             mDrawActions.push(std::move(action));
-         }
-    }
 }
 
 bool MatchEventAction::shouldRecover() {
@@ -381,9 +375,6 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
         concurrentGroup.updateStatus(match);
     }
 
-    // Notify of match changed
-    tournament.changeMatches(match.getCategory(), {match.getId()});
-
     // Notify draw system
     // Changes to draws can only occur if the match was finished or is finished
     if (mPrevStatus == MatchStatus::FINISHED || match.getStatus() == MatchStatus::FINISHED) {
@@ -394,5 +385,8 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
              mDrawActions.push(std::move(action));
          }
     }
+
+    // Notify of match changed
+    tournament.changeMatches(match.getCategory(), {match.getId()});
 }
 
