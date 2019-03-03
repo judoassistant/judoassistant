@@ -402,8 +402,6 @@ void ScoreOperatorWindow::findNextMatch() {
                     return;
                 }
             }
-
-            assert(false); // should never reach this
         }
     }
 
