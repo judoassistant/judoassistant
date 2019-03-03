@@ -390,3 +390,45 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
     tournament.changeMatches(match.getCategory(), {match.getId()});
 }
 
+SetMatchPlayerAction::SetMatchPlayerAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::optional<PlayerId> playerId)
+    : mCategoryId(categoryId)
+    , mMatchId(matchId)
+    , mPlayerIndex(playerIndex)
+    , mPlayerId(playerId)
+{}
+
+void SetMatchPlayerAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+
+    mOldPlayerId = match.getPlayer(mPlayerIndex);
+    match.setPlayer(mPlayerIndex, mPlayerId);
+    tournament.changeMatches(mCategoryId, {mMatchId});
+}
+
+void SetMatchPlayerAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+
+    match.setPlayer(mPlayerIndex, mOldPlayerId);
+    tournament.changeMatches(mCategoryId, {mMatchId});
+}
+
+std::unique_ptr<Action> SetMatchPlayerAction::freshClone() const {
+    return std::make_unique<SetMatchPlayerAction>(mCategoryId, mMatchId, mPlayerIndex, mPlayerId);
+}
+
+std::string SetMatchPlayerAction::getDescription() const {
+    if (mPlayerIndex == MatchStore::PlayerIndex::WHITE)
+        return "Set white match player";
+    return "Set blue match player";
+}
+
