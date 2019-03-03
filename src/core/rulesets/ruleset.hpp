@@ -46,6 +46,7 @@ public:
     virtual bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
 
     virtual std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
+    virtual std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match) const = 0; // Get winner when match is finished
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}

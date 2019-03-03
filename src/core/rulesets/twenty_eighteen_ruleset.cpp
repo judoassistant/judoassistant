@@ -102,6 +102,34 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const Ma
     return std::nullopt;
 }
 
+// TODO: Avoid duplicating code
+std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const MatchStore &match) const {
+    if (!match.getWhitePlayer().has_value())
+        return MatchStore::PlayerIndex::BLUE;
+    if (!match.getBluePlayer().has_value())
+        return MatchStore::PlayerIndex::WHITE;
+
+    assert(match.getStatus() == MatchStatus::FINISHED);
+
+    const auto & whiteScore = match.getWhiteScore();
+    const auto & blueScore = match.getBlueScore();
+
+    if (whiteScore.ippon == 1)
+        return MatchStore::PlayerIndex::WHITE;
+    if (whiteScore.hansokuMake == 0 && blueScore.hansokuMake == 1) // also handle the case when both players are disqualified
+        return MatchStore::PlayerIndex::WHITE;
+    if (whiteScore.wazari > blueScore.wazari)
+        return MatchStore::PlayerIndex::WHITE;
+
+    if (blueScore.ippon == 1)
+        return MatchStore::PlayerIndex::BLUE;
+    if (blueScore.hansokuMake == 0 && whiteScore.hansokuMake == 1) // also handle the case when both players are disqualified
+        return MatchStore::PlayerIndex::BLUE;
+    if (blueScore.wazari > whiteScore.wazari)
+        return MatchStore::PlayerIndex::BLUE;
+    return std::nullopt;
+}
+
 std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
     return std::make_unique<TwentyEighteenRuleset>();
 }

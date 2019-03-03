@@ -34,6 +34,7 @@ public:
     bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
 
     std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
+    std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}
