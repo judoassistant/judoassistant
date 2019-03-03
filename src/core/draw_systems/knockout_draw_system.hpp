@@ -24,6 +24,7 @@ public:
     }
 
 private:
+    size_t mInitialRoundSize;
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;
 };

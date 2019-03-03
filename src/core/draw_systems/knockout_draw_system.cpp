@@ -1,5 +1,6 @@
-#include "core/draw_systems/knockout_draw_system.hpp"
 #include "core/actions/match_actions.hpp"
+#include "core/draw_systems/knockout_draw_system.hpp"
+#include "core/log.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 
@@ -38,8 +39,8 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const Tour
     if (mPlayers.size() <= 1)
         return actions;
 
-    std::default_random_engine random_eng(seed);
-    std::shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
+    std::default_random_engine randomEngine(seed);
+    std::shuffle(mPlayers.begin(), mPlayers.end(), randomEngine);
 
     // Size of round 1
     size_t nodeCount = 1;
@@ -48,6 +49,8 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const Tour
         nodeCount *= 2;
         ++rounds;
     }
+
+    mInitialRoundSize = nodeCount;
 
     // Create the list of players for the first round and add
     // (2*nodeCount-playerCount) byes
@@ -107,7 +110,66 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const Tour
 }
 
 std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
-    return {};
+    const auto &ruleset = category.getRuleset();
+    std::vector<std::unique_ptr<Action>> actions;
+
+    // Iterate over all matches from 2nd round and onwards
+    size_t prevLayer = 0; // Index to first node of previous layer
+    size_t currentLayer = mInitialRoundSize; // Index to first node of current layer
+    size_t roundSize = mInitialRoundSize / 2;
+
+    while (currentLayer < mMatches.size()) {
+        bool shouldBreak = true; // The loop can break early if no matches has finished in this round
+        for (size_t i = currentLayer; i < currentLayer + roundSize; ++i) {
+            auto matchId = mMatches[i];
+            const auto &match = category.getMatch(matchId);
+
+            if (match.isBye()) {
+                shouldBreak = false;
+                continue;
+            }
+
+            if (match.getStatus() == MatchStatus::FINISHED) {
+                shouldBreak = false;
+                continue;
+            }
+
+            if (!match.getWhitePlayer()) {
+                MatchId whiteChildId = mMatches[(i-currentLayer)*2+prevLayer];
+                const auto &whiteChild = category.getMatch(whiteChildId);
+
+                if (whiteChild.getStatus() == MatchStatus::FINISHED) {
+                    auto winner = ruleset.getWinner(whiteChild);
+                    if (winner)
+                        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::WHITE, whiteChild.getPlayer(*winner).value()));
+                    else
+                        log_warning().field("matchId", whiteChildId).msg("Match is finished but has no winner");
+                }
+            }
+
+            if (!match.getBluePlayer()) {
+                MatchId blueChildId = mMatches[(i-currentLayer)*2+prevLayer + 1];
+                const auto &blueChild = category.getMatch(blueChildId);
+
+                if (blueChild.getStatus() == MatchStatus::FINISHED) {
+                    auto winner = ruleset.getWinner(blueChild);
+                    if (winner)
+                        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::BLUE, blueChild.getPlayer(*winner).value()));
+                    else
+                        log_warning().field("matchId", blueChildId).msg("Match is finished but has no winner");
+                }
+            }
+        }
+
+        prevLayer = currentLayer;
+        currentLayer += roundSize;
+        roundSize /= 2;
+
+        if (shouldBreak)
+            break;
+    }
+
+    return actions;
 }
 
 bool KnockoutDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category) const {
