@@ -599,128 +599,171 @@ void AutoAddCategoriesAction::undoImpl(TournamentStore & tournament) {
     eraseAction.redo(tournament);
 }
 
-ChangeCategoryNameAction::ChangeCategoryNameAction(CategoryId categoryId, const std::string &value)
-    : mCategoryId(categoryId)
+ChangeCategoriesNameAction::ChangeCategoriesNameAction(std::vector<CategoryId> categoryIds, const std::string &value)
+    : mCategoryIds(categoryIds)
     , mValue(value)
 {}
 
-std::unique_ptr<Action> ChangeCategoryNameAction::freshClone() const {
-    return std::make_unique<ChangeCategoryNameAction>(mCategoryId, mValue);
+std::unique_ptr<Action> ChangeCategoriesNameAction::freshClone() const {
+    return std::make_unique<ChangeCategoriesNameAction>(mCategoryIds, mValue);
 }
 
-void ChangeCategoryNameAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
+void ChangeCategoriesNameAction::redoImpl(TournamentStore & tournament) {
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
 
-    CategoryStore & category = tournament.getCategory(mCategoryId);
-    mOldValue = category.getName();
-    category.setName(mValue);
-    tournament.changeCategories({mCategoryId});
+        CategoryStore & category = tournament.getCategory(categoryId);
+        mOldValues.push_back(category.getName());
+        category.setName(mValue);
+    }
+    tournament.changeCategories(mCategoryIds);
 }
 
-void ChangeCategoryNameAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
+void ChangeCategoriesNameAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        assert(i != mOldValues.end());
 
-    CategoryStore & category = tournament.getCategory(mCategoryId);
-    category.setName(mOldValue);
-    tournament.changeCategories({mCategoryId});
+        CategoryStore & category = tournament.getCategory(categoryId);
+
+        category.setName(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changeCategories(mCategoryIds);
+    mOldValues.clear();
 }
 
-ChangeCategoryRulesetAction::ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset)
-    : mCategoryId(categoryId)
+ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset)
+    : mCategoryIds(categoryIds)
     , mRuleset(ruleset)
     , mSeed(getSeed())
 {}
 
-ChangeCategoryRulesetAction::ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset, unsigned int seed)
-    : mCategoryId(categoryId)
+ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset, unsigned int seed)
+    : mCategoryIds(categoryIds)
     , mRuleset(ruleset)
     , mSeed(seed)
 {}
 
-std::unique_ptr<Action> ChangeCategoryRulesetAction::freshClone() const {
-    return std::make_unique<ChangeCategoryRulesetAction>(mCategoryId, mRuleset, mSeed);
+std::unique_ptr<Action> ChangeCategoriesRulesetAction::freshClone() const {
+    return std::make_unique<ChangeCategoriesRulesetAction>(mCategoryIds, mRuleset, mSeed);
 }
 
-void ChangeCategoryRulesetAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
-
-    CategoryStore & category = tournament.getCategory(mCategoryId);
-
+void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
     const auto &rulesets = Rulesets::getRulesets();
     if (mRuleset > rulesets.size())
-        throw ActionExecutionException("Failed to redo ChangeCategoryRulesetAction. Invalid ruleset specified.");
-    auto ruleset = rulesets[mRuleset]->clone();
+        throw ActionExecutionException("Failed to redo ChangeCategoriesRulesetAction. Invalid ruleset specified.");
+    const auto &ruleset = rulesets[mRuleset];
 
-    mOldRuleset = category.setRuleset(std::move(ruleset));
-    mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId, mSeed);
-    mDrawAction->redo(tournament);
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
 
-    tournament.changeCategories({mCategoryId});
+        CategoryStore & category = tournament.getCategory(categoryId);
+
+        mOldRulesets.push_back(category.setRuleset(ruleset->clone()));
+
+        auto drawAction = std::make_unique<DrawCategoryAction>(categoryId, mSeed);
+        drawAction->redo(tournament);
+        mDrawActions.push_back(std::move(drawAction));
+    }
+
+    tournament.changeCategories(mCategoryIds);
 }
 
-void ChangeCategoryRulesetAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
+void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldRulesets.rbegin();
+    auto j = mDrawActions.rbegin();
+    for (auto k = mCategoryIds.rbegin(); k != mCategoryIds.rend(); ++k) {
+        auto categoryId = *k;
 
-    CategoryStore & category = tournament.getCategory(mCategoryId);
+        if (!tournament.containsCategory(categoryId))
+            continue;
 
-    mOldRuleset = category.setRuleset(std::move(mOldRuleset));
-    mDrawAction->undo(tournament);
-    mDrawAction.reset();
+        assert(i != mOldRulesets.rend());
+        assert(j != mDrawActions.rend());
 
-    tournament.changeCategories({mCategoryId});
+        CategoryStore & category = tournament.getCategory(categoryId);
+
+        category.setRuleset(std::move(*i));
+        (*j)->undo(tournament);
+
+        std::advance(i, 1);
+        std::advance(j, 1);
+    }
+
+    mOldRulesets.clear();
+    mDrawActions.clear();
+    tournament.changeCategories(mCategoryIds);
 }
 
-ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem)
-    : mCategoryId(categoryId)
+ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem)
+    : mCategoryIds(categoryIds)
     , mDrawSystem(drawSystem)
     , mSeed(getSeed())
 {}
 
-ChangeCategoryDrawSystemAction::ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem, unsigned int seed)
-    : mCategoryId(categoryId)
+ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem, unsigned int seed)
+    : mCategoryIds(categoryIds)
     , mDrawSystem(drawSystem)
     , mSeed(seed)
 {}
 
-std::unique_ptr<Action> ChangeCategoryDrawSystemAction::freshClone() const {
-    return std::make_unique<ChangeCategoryDrawSystemAction>(mCategoryId, mDrawSystem, mSeed);
+std::unique_ptr<Action> ChangeCategoriesDrawSystemAction::freshClone() const {
+    return std::make_unique<ChangeCategoriesDrawSystemAction>(mCategoryIds, mDrawSystem, mSeed);
 }
 
-void ChangeCategoryDrawSystemAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
-
-    CategoryStore & category = tournament.getCategory(mCategoryId);
-
+void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
     const auto &drawSystems = DrawSystems::getDrawSystems();
     if (mDrawSystem > drawSystems.size())
-        throw ActionExecutionException("Failed to redo ChangeCategoryDrawSystemAction. Invalid drawSystem specified.");
-    auto drawSystem = drawSystems[mDrawSystem]->clone();
+        throw ActionExecutionException("Failed to redo ChangeCategoriesDrawSystemAction. Invalid drawSystem specified.");
+    const auto &drawSystem = drawSystems[mDrawSystem];
 
-    mOldDrawSystem = category.setDrawSystem(std::move(drawSystem));
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
 
-    mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId, mSeed);
-    mDrawAction->redo(tournament);
+        CategoryStore & category = tournament.getCategory(categoryId);
 
-    tournament.changeCategories({mCategoryId});
+        mOldDrawSystems.push_back(category.setDrawSystem(drawSystem->clone()));
+
+        auto drawAction = std::make_unique<DrawCategoryAction>(categoryId, mSeed);
+        drawAction->redo(tournament);
+        mDrawActions.push_back(std::move(drawAction));
+    }
+
+    tournament.changeCategories(mCategoryIds);
 }
 
-void ChangeCategoryDrawSystemAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
+void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldDrawSystems.rbegin();
+    auto j = mDrawActions.rbegin();
+    for (auto k = mCategoryIds.rbegin(); k != mCategoryIds.rend(); ++k) {
+        auto categoryId = *k;
 
-    CategoryStore & category = tournament.getCategory(mCategoryId);
+        if (!tournament.containsCategory(categoryId))
+            continue;
 
-    mOldDrawSystem = category.setDrawSystem(std::move(mOldDrawSystem));
+        assert(i != mOldDrawSystems.rend());
+        assert(j != mDrawActions.rend());
 
-    mDrawAction->undo(tournament);
-    mDrawAction.reset();
+        CategoryStore & category = tournament.getCategory(categoryId);
 
-    tournament.changeCategories({mCategoryId});
+        (*j)->undo(tournament);
+        category.setDrawSystem(std::move(*i));
+
+        std::advance(i, 1);
+        std::advance(j, 1);
+    }
+
+    mOldDrawSystems.clear();
+    mDrawActions.clear();
+    tournament.changeCategories(mCategoryIds);
 }
 
 std::string AddCategoryAction::getDescription() const {
@@ -751,15 +794,15 @@ std::string AutoAddCategoriesAction::getDescription() const {
     return "Automatically add categories for players";
 }
 
-std::string ChangeCategoryNameAction::getDescription() const {
-    return "Change category name";
+std::string ChangeCategoriesNameAction::getDescription() const {
+    return "Change categories name";
 }
 
-std::string ChangeCategoryRulesetAction::getDescription() const {
-    return "Change category ruleset";
+std::string ChangeCategoriesRulesetAction::getDescription() const {
+    return "Change categories ruleset";
 }
 
-std::string ChangeCategoryDrawSystemAction::getDescription() const {
-    return "Change category draw system";
+std::string ChangeCategoriesDrawSystemAction::getDescription() const {
+    return "Change categories draw system";
 }
 

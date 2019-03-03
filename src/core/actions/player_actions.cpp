@@ -97,232 +97,312 @@ void ErasePlayersAction::undoImpl(TournamentStore & tournament) {
     }
 }
 
-ChangePlayerFirstNameAction::ChangePlayerFirstNameAction(PlayerId playerId, const std::string &value)
-    : mPlayerId(playerId)
+ChangePlayersFirstNameAction::ChangePlayersFirstNameAction(std::vector<PlayerId> playerIds, const std::string &value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-std::unique_ptr<Action> ChangePlayerFirstNameAction::freshClone() const {
-    return std::make_unique<ChangePlayerFirstNameAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersFirstNameAction::freshClone() const {
+    return std::make_unique<ChangePlayersFirstNameAction>(mPlayerIds, mValue);
 }
 
-void ChangePlayerFirstNameAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersFirstNameAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getFirstName();
-    player.setFirstName(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getFirstName());
+        player.setFirstName(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerFirstNameAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersFirstNameAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setFirstName(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setFirstName(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerLastNameAction::ChangePlayerLastNameAction(PlayerId playerId, const std::string &value)
-    : mPlayerId(playerId)
+ChangePlayersLastNameAction::ChangePlayersLastNameAction(std::vector<PlayerId> playerIds, const std::string &value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerLastNameAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersLastNameAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getLastName();
-    player.setLastName(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getLastName());
+        player.setLastName(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerLastNameAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersLastNameAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setLastName(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setLastName(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerClubAction::ChangePlayerClubAction(PlayerId playerId, const std::string &value)
-    : mPlayerId(playerId)
+ChangePlayersClubAction::ChangePlayersClubAction(std::vector<PlayerId> playerIds, const std::string &value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerClubAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersClubAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getClub();
-    player.setClub(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getClub());
+        player.setClub(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerClubAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersClubAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setClub(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setClub(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerAgeAction::ChangePlayerAgeAction(PlayerId playerId, std::optional<PlayerAge> value)
-    : mPlayerId(playerId)
+ChangePlayersAgeAction::ChangePlayersAgeAction(std::vector<PlayerId> playerIds, std::optional<PlayerAge> value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerAgeAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersAgeAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getAge();
-    player.setAge(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getAge());
+        player.setAge(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerAgeAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersAgeAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setAge(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setAge(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerRankAction::ChangePlayerRankAction(PlayerId playerId, std::optional<PlayerRank> value)
-    : mPlayerId(playerId)
+ChangePlayersRankAction::ChangePlayersRankAction(std::vector<PlayerId> playerIds, std::optional<PlayerRank> value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerRankAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersRankAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getRank();
-    player.setRank(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getRank());
+        player.setRank(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerRankAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersRankAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setRank(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setRank(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerWeightAction::ChangePlayerWeightAction(PlayerId playerId, std::optional<PlayerWeight> value)
-    : mPlayerId(playerId)
+ChangePlayersWeightAction::ChangePlayersWeightAction(std::vector<PlayerId> playerIds, std::optional<PlayerWeight> value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerWeightAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersWeightAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getWeight();
-    player.setWeight(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getWeight());
+        player.setWeight(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerWeightAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersWeightAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setWeight(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setWeight(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerCountryAction::ChangePlayerCountryAction(PlayerId playerId, std::optional<PlayerCountry> value)
-    : mPlayerId(playerId)
+ChangePlayersCountryAction::ChangePlayersCountryAction(std::vector<PlayerId> playerIds, std::optional<PlayerCountry> value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerCountryAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersCountryAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getCountry();
-    player.setCountry(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getCountry());
+        player.setCountry(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerCountryAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersCountryAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setCountry(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setCountry(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
-ChangePlayerSexAction::ChangePlayerSexAction(PlayerId playerId, std::optional<PlayerSex> value)
-    : mPlayerId(playerId)
+ChangePlayersSexAction::ChangePlayersSexAction(std::vector<PlayerId> playerIds, std::optional<PlayerSex> value)
+    : mPlayerIds(playerIds)
     , mValue(value)
 {}
 
-void ChangePlayerSexAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersSexAction::redoImpl(TournamentStore & tournament) {
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    mOldValue = player.getSex();
-    player.setSex(mValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        mOldValues.push_back(player.getSex());
+        player.setSex(mValue);
+    }
+    tournament.changePlayers(mPlayerIds);
 }
 
-void ChangePlayerSexAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsPlayer(mPlayerId))
-        return;
+void ChangePlayersSexAction::undoImpl(TournamentStore & tournament) {
+    auto i = mOldValues.begin();
+    for (auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+        assert(i != mOldValues.end());
 
-    PlayerStore & player = tournament.getPlayer(mPlayerId);
-    player.setSex(mOldValue);
-    tournament.changePlayers({mPlayerId});
+        PlayerStore & player = tournament.getPlayer(playerId);
+        player.setSex(*i);
+
+        std::advance(i, 1);
+    }
+
+    tournament.changePlayers(mPlayerIds);
+    mOldValues.clear();
 }
 
 std::unique_ptr<Action> AddPlayersAction::freshClone() const {
     return std::make_unique<AddPlayersAction>(mIds, mFields);
 }
 
-std::unique_ptr<Action> ChangePlayerLastNameAction::freshClone() const {
-    return std::make_unique<ChangePlayerLastNameAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersLastNameAction::freshClone() const {
+    return std::make_unique<ChangePlayersLastNameAction>(mPlayerIds, mValue);
 }
 
-std::unique_ptr<Action> ChangePlayerAgeAction::freshClone() const {
-    return std::make_unique<ChangePlayerAgeAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersAgeAction::freshClone() const {
+    return std::make_unique<ChangePlayersAgeAction>(mPlayerIds, mValue);
 }
 
-std::unique_ptr<Action> ChangePlayerClubAction::freshClone() const {
-    return std::make_unique<ChangePlayerClubAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersClubAction::freshClone() const {
+    return std::make_unique<ChangePlayersClubAction>(mPlayerIds, mValue);
 }
 
-std::unique_ptr<Action> ChangePlayerRankAction::freshClone() const {
-    return std::make_unique<ChangePlayerRankAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersRankAction::freshClone() const {
+    return std::make_unique<ChangePlayersRankAction>(mPlayerIds, mValue);
 }
 
-std::unique_ptr<Action> ChangePlayerSexAction::freshClone() const {
-    return std::make_unique<ChangePlayerSexAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersSexAction::freshClone() const {
+    return std::make_unique<ChangePlayersSexAction>(mPlayerIds, mValue);
 }
 
-std::unique_ptr<Action> ChangePlayerWeightAction::freshClone() const {
-    return std::make_unique<ChangePlayerWeightAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersWeightAction::freshClone() const {
+    return std::make_unique<ChangePlayersWeightAction>(mPlayerIds, mValue);
 }
 
-std::unique_ptr<Action> ChangePlayerCountryAction::freshClone() const {
-    return std::make_unique<ChangePlayerCountryAction>(mPlayerId, mValue);
+std::unique_ptr<Action> ChangePlayersCountryAction::freshClone() const {
+    return std::make_unique<ChangePlayersCountryAction>(mPlayerIds, mValue);
 }
 
 std::string AddPlayersAction::getDescription() const {
@@ -333,35 +413,35 @@ std::string ErasePlayersAction::getDescription() const {
     return "Erase players";
 }
 
-std::string ChangePlayerFirstNameAction::getDescription() const {
-    return "Change player first name";
+std::string ChangePlayersFirstNameAction::getDescription() const {
+    return "Change players first name";
 }
 
-std::string ChangePlayerLastNameAction::getDescription() const {
-    return "Change player last name";
+std::string ChangePlayersLastNameAction::getDescription() const {
+    return "Change players last name";
 }
 
-std::string ChangePlayerAgeAction::getDescription() const {
-    return "Change player age";
+std::string ChangePlayersAgeAction::getDescription() const {
+    return "Change players age";
 }
 
-std::string ChangePlayerRankAction::getDescription() const {
-    return "Change player rank";
+std::string ChangePlayersRankAction::getDescription() const {
+    return "Change players rank";
 }
 
-std::string ChangePlayerClubAction::getDescription() const {
-    return "Change player club";
+std::string ChangePlayersClubAction::getDescription() const {
+    return "Change players club";
 }
 
-std::string ChangePlayerWeightAction::getDescription() const {
-    return "Change player weight";
+std::string ChangePlayersWeightAction::getDescription() const {
+    return "Change players weight";
 }
 
-std::string ChangePlayerCountryAction::getDescription() const {
-    return "Change player country";
+std::string ChangePlayersCountryAction::getDescription() const {
+    return "Change players country";
 }
 
-std::string ChangePlayerSexAction::getDescription() const {
-    return "Change player sex";
+std::string ChangePlayersSexAction::getDescription() const {
+    return "Change players sex";
 }
 

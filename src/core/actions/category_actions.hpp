@@ -213,10 +213,10 @@ private:
 CEREAL_REGISTER_TYPE(AutoAddCategoriesAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AutoAddCategoriesAction)
 
-class ChangeCategoryNameAction : public Action {
+class ChangeCategoriesNameAction : public Action {
 public:
-    ChangeCategoryNameAction() = default;
-    ChangeCategoryNameAction(CategoryId categoryId, const std::string &value);
+    ChangeCategoriesNameAction() = default;
+    ChangeCategoriesNameAction(std::vector<CategoryId> categoryIds, const std::string &value);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -225,26 +225,26 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId);
+        ar(mCategoryIds);
         ar(mValue);
     }
 
 private:
-    CategoryId mCategoryId;
+    std::vector<CategoryId> mCategoryIds;
     std::string mValue;
 
     // undo members
-    std::string mOldValue;
+    std::vector<std::string> mOldValues;
 };
 
-CEREAL_REGISTER_TYPE(ChangeCategoryNameAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoryNameAction)
+CEREAL_REGISTER_TYPE(ChangeCategoriesNameAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoriesNameAction)
 
-class ChangeCategoryRulesetAction : public Action {
+class ChangeCategoriesRulesetAction : public Action {
 public:
-    ChangeCategoryRulesetAction() = default;
-    ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset);
-    ChangeCategoryRulesetAction(CategoryId categoryId, size_t ruleset, unsigned int seed);
+    ChangeCategoriesRulesetAction() = default;
+    ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset);
+    ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -253,27 +253,27 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mRuleset, mSeed);
+        ar(mCategoryIds, mRuleset, mSeed);
     }
 
 private:
-    CategoryId mCategoryId;
+    std::vector<CategoryId> mCategoryIds;
     size_t mRuleset;
     unsigned int mSeed;
 
     // undo members
-    std::unique_ptr<Ruleset> mOldRuleset;
-    std::unique_ptr<DrawCategoryAction> mDrawAction;
+    std::vector<std::unique_ptr<Ruleset>> mOldRulesets;
+    std::vector<std::unique_ptr<DrawCategoryAction>> mDrawActions;
 };
 
-CEREAL_REGISTER_TYPE(ChangeCategoryRulesetAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoryRulesetAction)
+CEREAL_REGISTER_TYPE(ChangeCategoriesRulesetAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoriesRulesetAction)
 
-class ChangeCategoryDrawSystemAction : public Action {
+class ChangeCategoriesDrawSystemAction : public Action {
 public:
-    ChangeCategoryDrawSystemAction() = default;
-    ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem);
-    ChangeCategoryDrawSystemAction(CategoryId categoryId, size_t drawSystem, unsigned int seed);
+    ChangeCategoriesDrawSystemAction() = default;
+    ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem);
+    ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -282,19 +282,19 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mDrawSystem, mSeed);
+        ar(mCategoryIds, mDrawSystem, mSeed);
     }
 
 private:
-    CategoryId mCategoryId;
+    std::vector<CategoryId> mCategoryIds;
     size_t mDrawSystem;
     unsigned int mSeed;
 
     // undo members
-    std::unique_ptr<DrawSystem> mOldDrawSystem;
-    std::unique_ptr<DrawCategoryAction> mDrawAction;
+    std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
+    std::vector<std::unique_ptr<DrawCategoryAction>> mDrawActions;
 };
 
-CEREAL_REGISTER_TYPE(ChangeCategoryDrawSystemAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoryDrawSystemAction)
+CEREAL_REGISTER_TYPE(ChangeCategoriesDrawSystemAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ChangeCategoriesDrawSystemAction)
 
