@@ -53,6 +53,8 @@ public:
     std::optional<PlayerId> getWhitePlayer() const;
     std::optional<PlayerId> getBluePlayer() const;
 
+    void setPlayer(PlayerIndex index, std::optional<PlayerId> playerId);
+
     Score & getScore(PlayerIndex color);
     Score & getWhiteScore();
     Score & getBlueScore();

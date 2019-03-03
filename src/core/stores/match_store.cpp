@@ -158,3 +158,8 @@ std::chrono::milliseconds MatchStore::currentDuration(std::chrono::milliseconds 
 
     return (masterTime - mResumeTime) + mDuration;
 }
+
+void MatchStore::setPlayer(PlayerIndex index, std::optional<PlayerId> playerId) {
+    mPlayers[static_cast<size_t>(index)] = playerId;
+}
+
