@@ -28,7 +28,7 @@ std::string matchTitle(size_t round, size_t depth) {
     return std::to_string(round+1) + "th Round";
 }
 
-std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std::vector<PlayerId> &playerIds, const TournamentStore &tournament, const CategoryStore &category, unsigned int seed) {
+std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
     mMatches.clear();
     mPlayers = playerIds;
 
@@ -106,7 +106,7 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const std:
     return actions;
 }
 
-std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const TournamentStore & tournament, const CategoryStore & category) const {
+std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
     return {};
 }
 
