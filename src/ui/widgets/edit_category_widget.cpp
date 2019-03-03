@@ -134,10 +134,15 @@ bool doIntersect(const std::vector<CategoryId> &a, const std::unordered_set<Cate
 }
 
 void EditCategoryWidget::changeCategories(std::vector<CategoryId> ids) {
-    if (mCategoryIds.empty())
-        return;
+    bool intersect = false;
+    for (auto categoryId : ids) {
+        if (mCategoryIds.find(categoryId) != mCategoryIds.end()) {
+            intersect = true;
+            break;
+        }
+    }
 
-    if (!doIntersect(ids, mCategoryIds))
+    if (!intersect)
         return;
 
     updateName();
@@ -219,7 +224,6 @@ void EditCategoryWidget::updateRuleset() {
 
     mRulesetContent->setCurrentText(rulesetText);
     mRulesetContent->setEnabled(true);
-
 }
 
 void EditCategoryWidget::updateDrawSystem() {

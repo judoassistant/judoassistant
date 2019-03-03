@@ -25,9 +25,6 @@ private:
     QString getDrawSystemText();
     QString getRulesetText();
 
-    void updateDrawSystemComboBox();
-    void updateRulesetComboBox();
-
     void changeCategories(std::vector<CategoryId> ids);
     void updateName();
     void updateRuleset();
