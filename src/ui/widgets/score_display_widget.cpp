@@ -7,6 +7,7 @@
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/score_display_widget.hpp"
 
+// TODO: Make time blink and change color depending on state
 ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
     , mStoreManager(storeManager)

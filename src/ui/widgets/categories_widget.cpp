@@ -124,7 +124,7 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
 
 void CategoriesWidget::showContextMenu(const QPoint &pos) {
     std::vector<CategoryId> categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
-    const TournamentStore &tournament = mStoreManager.getTournament();
+    // const TournamentStore &tournament = mStoreManager.getTournament();
 
     if (categoryIds.empty())
         return;

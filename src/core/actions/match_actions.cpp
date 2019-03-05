@@ -329,6 +329,11 @@ void MatchEventAction::save(const MatchStore &match) {
 void MatchEventAction::recover(TournamentStore &tournament) {
     assert(mDidSave);
 
+    while (!mDrawActions.empty()) {
+        mDrawActions.top()->undo(tournament);
+        mDrawActions.pop();
+    }
+
     auto &category = tournament.getCategory(mCategoryId);
     auto &match = category.getMatch(mMatchId);
     auto updatedStatus = match.getStatus();
@@ -354,17 +359,6 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
     // Notify of match changed
     tournament.changeMatches(match.getCategory(), {match.getId()});
-
-    // Notify draw system
-    // Changes to draws can only occur if the match was finished or is finished
-    if (mPrevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::FINISHED) {
-         const auto &drawSystem = category.getDrawSystem();
-         auto drawActions = drawSystem.updateCategory(tournament, category);
-         for (std::unique_ptr<Action> &action : drawActions) {
-             action->redo(tournament);
-             mDrawActions.push(std::move(action));
-         }
-    }
 }
 
 bool MatchEventAction::shouldRecover() {
@@ -381,9 +375,6 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
         concurrentGroup.updateStatus(match);
     }
 
-    // Notify of match changed
-    tournament.changeMatches(match.getCategory(), {match.getId()});
-
     // Notify draw system
     // Changes to draws can only occur if the match was finished or is finished
     if (mPrevStatus == MatchStatus::FINISHED || match.getStatus() == MatchStatus::FINISHED) {
@@ -394,5 +385,50 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
              mDrawActions.push(std::move(action));
          }
     }
+
+    // Notify of match changed
+    tournament.changeMatches(match.getCategory(), {match.getId()});
+}
+
+SetMatchPlayerAction::SetMatchPlayerAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::optional<PlayerId> playerId)
+    : mCategoryId(categoryId)
+    , mMatchId(matchId)
+    , mPlayerIndex(playerIndex)
+    , mPlayerId(playerId)
+{}
+
+void SetMatchPlayerAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+
+    mOldPlayerId = match.getPlayer(mPlayerIndex);
+    match.setPlayer(mPlayerIndex, mPlayerId);
+    tournament.changeMatches(mCategoryId, {mMatchId});
+}
+
+void SetMatchPlayerAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+
+    match.setPlayer(mPlayerIndex, mOldPlayerId);
+    tournament.changeMatches(mCategoryId, {mMatchId});
+}
+
+std::unique_ptr<Action> SetMatchPlayerAction::freshClone() const {
+    return std::make_unique<SetMatchPlayerAction>(mCategoryId, mMatchId, mPlayerIndex, mPlayerId);
+}
+
+std::string SetMatchPlayerAction::getDescription() const {
+    if (mPlayerIndex == MatchStore::PlayerIndex::WHITE)
+        return "Set white match player";
+    return "Set blue match player";
 }
 

@@ -350,7 +350,7 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
     mOldDrawSystem = category.getDrawSystem().clone();
 
     std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
-    std::vector<std::unique_ptr<Action>> actions = category.getDrawSystem().initCategory(playerIds, tournament, category, mSeed);
+    std::vector<std::unique_ptr<Action>> actions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
 
     for (size_t i = 0; i < actions.size(); ++i) {
         actions[i]->redo(tournament);
