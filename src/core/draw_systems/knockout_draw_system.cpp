@@ -183,10 +183,50 @@ bool KnockoutDrawSystem::isFinished(const TournamentStore &tournament, const Cat
 }
 
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    // TODO: Implement
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
-    for (auto playerId : mPlayers)
-        results.emplace_back(std::nullopt, playerId);
+    const auto &ruleset = category.getRuleset();
+
+    // Iterate over each layer(starting from the final) and add the losers.
+    // Special case the root where we also add the winner
+    unsigned int pos = 1;
+    size_t layer_size = 1;
+    size_t next_layer = 1;
+
+    const auto &finalMatch = category.getMatch(mMatches.back());
+    if (finalMatch.getStatus() != MatchStatus::FINISHED) {
+        for (auto playerId : mPlayers)
+            results.emplace_back(std::nullopt, playerId);
+        return results;
+    }
+
+    for (size_t i = 0; i < mMatches.size(); ++i) {
+        if (i == next_layer) {
+            pos += layer_size;
+            if (i == 1)
+                pos += 1;
+            layer_size *= 2;
+            next_layer = i + layer_size;
+        }
+
+        size_t j = mMatches.size() - i - 1;
+        const auto &match = category.getMatch(mMatches[j]);
+
+        if (match.isBye())
+            continue;
+
+        assert(match.getStatus() == MatchStatus::FINISHED);
+
+        MatchStore::PlayerIndex winner = ruleset.getWinner(match).value();
+        MatchStore::PlayerIndex loser = (winner == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+        if (i != 0) {  // Special case root(add winner if we're at the root)
+            results.push_back({std::make_optional(pos), match.getPlayer(loser).value()});
+        }
+        else {
+            results.push_back({std::make_optional(pos), match.getPlayer(winner).value()});
+            results.push_back({std::make_optional(pos+1), match.getPlayer(loser).value()});
+        }
+    }
+
     return results;
 }
 
