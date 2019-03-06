@@ -21,6 +21,23 @@ class CategoryStore {
 public:
     typedef std::vector<std::unique_ptr<MatchStore>> MatchList;
 
+    struct Status {
+        Status()
+            : notStartedMatches(0)
+            , startedMatches(0)
+            , finishedMatches(0)
+        {}
+
+        template<typename Archive>
+        void serialize(Archive& ar, uint32_t const version) {
+            ar(notStartedMatches, startedMatches, finishedMatches);
+        }
+
+        unsigned int notStartedMatches;
+        unsigned int startedMatches;
+        unsigned int finishedMatches;
+    };
+
     CategoryStore() {}
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
     CategoryStore(const CategoryStore &other);
@@ -59,17 +76,21 @@ public:
     std::optional<BlockLocation> getLocation(MatchType type) const;
     void setLocation(MatchType type, std::optional<BlockLocation> location);
 
+    const Status& getStatus(MatchType type) const;
+    Status& getStatus(MatchType type);
+
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("id", mId));
-        ar(cereal::make_nvp("name", mName));
-        ar(cereal::make_nvp("players", mPlayers));
-        ar(cereal::make_nvp("matches", mMatches));
-        ar(cereal::make_nvp("matchMap", mMatchMap));
-        ar(cereal::make_nvp("matchCount", mMatchCount));
-        ar(cereal::make_nvp("location", mLocation));
-        ar(cereal::make_nvp("ruleset", mRuleset));
-        ar(cereal::make_nvp("drawSystem", mDrawSystem));
+        ar(mId);
+        ar(mName);
+        ar(mPlayers);
+        ar(mMatches);
+        ar(mMatchMap);
+        ar(mMatchCount);
+        ar(mStatus);
+        ar(mLocation);
+        ar(mRuleset);
+        ar(mDrawSystem);
     }
 private:
     CategoryId mId;
@@ -78,6 +99,7 @@ private:
     MatchList mMatches; // order matters in this case
     std::unordered_map<MatchId, size_t> mMatchMap;
     std::array<size_t, 2> mMatchCount;
+    std::array<Status, 2> mStatus;
     std::array<std::optional<BlockLocation>, 2> mLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;

@@ -20,6 +20,7 @@ CategoryStore::CategoryStore(const CategoryStore &other)
     , mPlayers(other.mPlayers)
     , mMatchMap(other.mMatchMap)
     , mMatchCount(other.mMatchCount)
+    , mStatus(other.mStatus)
     , mLocation(other.mLocation)
     , mRuleset(other.mRuleset->clone())
     , mDrawSystem(other.mDrawSystem->clone())
@@ -161,3 +162,12 @@ std::optional<BlockLocation> CategoryStore::getLocation(MatchType type) const {
 void CategoryStore::setLocation(MatchType type, std::optional<BlockLocation> location) {
     mLocation[static_cast<int>(type)] = location;
 }
+
+const CategoryStore::Status& CategoryStore::getStatus(MatchType type) const {
+    return mStatus[static_cast<size_t>(type)];
+}
+
+CategoryStore::Status& CategoryStore::getStatus(MatchType type) {
+    return mStatus[static_cast<size_t>(type)];
+}
+
