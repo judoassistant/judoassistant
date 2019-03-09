@@ -385,6 +385,14 @@ BlockItem::BlockItem(StoreManager * storeManager, std::pair<CategoryId, MatchTyp
     mName = QString::fromStdString(category->getName(block.second));
     mMatchCount = static_cast<int>(category->getMatchCount(block.second));
 
+    const auto &categoryStatus = category->getStatus(block.second);
+    if (categoryStatus.startedMatches == 0 && categoryStatus.finishedMatches == 0)
+        mStatus = Status::NOT_STARTED;
+    else if (categoryStatus.startedMatches > 0 || categoryStatus.notStartedMatches > 0)
+        mStatus = Status::STARTED;
+    else
+        mStatus = Status::FINISHED;
+
     setCursor(Qt::OpenHandCursor);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
@@ -404,7 +412,13 @@ void BlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     pen.setColor(COLOR_3);
 
     painter->setPen(pen);
-    painter->setBrush(COLOR_6);
+
+    if (mStatus == Status::NOT_STARTED)
+        painter->setBrush(COLOR_6);
+    else if (mStatus == Status::STARTED)
+        painter->setBrush(COLOR_13);
+    else if (mStatus == Status::FINISHED)
+        painter->setBrush(COLOR_11);
 
     QRect rect(0, 0, WIDTH, getHeight());
     QRect nameRect(PADDING, PADDING, WIDTH-2*PADDING, 25);

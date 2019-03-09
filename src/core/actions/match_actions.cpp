@@ -378,6 +378,9 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
         auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
         concurrentGroup.updateStatus(match);
+
+        std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
+        tournament.changeTatamis({*blockLocation}, {block});
     }
 
     // Notify of match changed
@@ -418,6 +421,9 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
 
         auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
         concurrentGroup.updateStatus(match);
+
+        std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
+        tournament.changeTatamis({*blockLocation}, {block});
     }
 
     // Notify draw system
