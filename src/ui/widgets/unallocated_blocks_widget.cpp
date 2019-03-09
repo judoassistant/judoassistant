@@ -19,7 +19,7 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QW
 {
     mScene = new QGraphicsScene(this);
     mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    mScene->setSceneRect(0, 0, UnallocatedBlockItem::WIDTH + PADDING*2, 800);
+    setAlignment(Qt::AlignTop|Qt::AlignHCenter);
     setScene(mScene);
     setCacheMode(CacheNone);
     setViewportUpdateMode(MinimalViewportUpdate);
@@ -30,6 +30,8 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QW
 
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &UnallocatedBlocksWidget::beginTournamentReset);
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &UnallocatedBlocksWidget::endTournamentReset);
+
+    reloadBlocks();
 }
 
 void UnallocatedBlocksWidget::endAddCategories(std::vector<CategoryId> categoryIds) {
@@ -122,7 +124,7 @@ void UnallocatedBlocksWidget::reloadBlocks() {
     mBlockItems.clear();
     mScene->clear();
 
-    size_t offset = 0;
+    size_t offset = PADDING;
     for (auto block : mBlocks) {
         const CategoryStore & category = tournament.getCategory(block.first);
         auto * item = new UnallocatedBlockItem(category, block.second);
@@ -131,6 +133,8 @@ void UnallocatedBlocksWidget::reloadBlocks() {
         offset += UnallocatedBlockItem::HEIGHT + ITEM_MARGIN;
         mScene->addItem(item);
     }
+
+    mScene->setSceneRect(0, 0, UnallocatedBlockItem::WIDTH + PADDING*2, offset);
 }
 
 BlockComparator::BlockComparator(const TournamentStore &tournament) : mTournament(&tournament) {}
@@ -162,6 +166,14 @@ QRectF UnallocatedBlockItem::boundingRect() const {
 void UnallocatedBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(COLOR_14);
+
+    const auto &categoryStatus = mCategory->getStatus(mType);
+    if (categoryStatus.startedMatches == 0 && categoryStatus.finishedMatches == 0)
+        painter->setBrush(COLOR_14);
+    else if (categoryStatus.startedMatches > 0 || categoryStatus.notStartedMatches > 0)
+        painter->setBrush(COLOR_13);
+    else
+        painter->setBrush(COLOR_11);
 
     QRect rect(0, 0, WIDTH, HEIGHT);
     painter->drawRect(rect);
@@ -225,12 +237,14 @@ void UnallocatedBlockItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void UnallocatedBlocksWidget::shiftBlocks() {
-    size_t offset = 0;
+    size_t offset = PADDING;
     for (auto block : mBlocks) {
         UnallocatedBlockItem *item = mBlockItems[block];
         item->setPos(PADDING, offset);
         offset += UnallocatedBlockItem::HEIGHT + ITEM_MARGIN;
     }
+
+    mScene->setSceneRect(0, 0, UnallocatedBlockItem::WIDTH + PADDING*2, offset);
 }
 
 bool UnallocatedBlocksWidget::insertBlock(const CategoryStore &category, MatchType type) {
