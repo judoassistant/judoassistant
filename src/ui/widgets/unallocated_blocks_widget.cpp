@@ -160,20 +160,31 @@ QRectF UnallocatedBlockItem::boundingRect() const {
 }
 
 void UnallocatedBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    QPen pen;
-    pen.setWidth(1);
-    pen.setStyle(Qt::SolidLine);
-    pen.setColor(COLOR_3);
-
-    painter->setPen(pen);
-    painter->setBrush(COLOR_6);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(COLOR_14);
 
     QRect rect(0, 0, WIDTH, HEIGHT);
     painter->drawRect(rect);
 
-    QString name = QString::fromStdString(mCategory->getName(mType));
-    QString str = QString("%1 (%2 matches)").arg(name).arg(QString::number(mCategory->getMatchCount(mType))); // TODO: translate
-    painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, str);
+    QPen pen;
+    pen.setWidth(1);
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(COLOR_0);
+    painter->setPen(pen);
+
+    QRect titleRect(PADDING, PADDING, WIDTH-PADDING*2, 20);
+    QRect typeRect(PADDING*5, 20+PADDING, WIDTH-PADDING*6, 20);
+    QRect timeRect(PADDING*5, 40+PADDING, WIDTH-PADDING*6, 20);
+
+    QString title = QString::fromStdString(mCategory->getName());
+    painter->drawText(titleRect, Qt::AlignTop | Qt::AlignLeft, title);
+
+    QString type = (mType == MatchType::FINAL ? QObject::tr("Finals") : QObject::tr("Elimination"));
+    painter->drawText(typeRect, Qt::AlignTop | Qt::AlignLeft, type);
+
+    unsigned int minutes = std::chrono::duration_cast<std::chrono::minutes>(mCategory->getRuleset().getEstimatedTime()).count() * mCategory->getMatchCount(mType);
+    QString time = QObject::tr("~ %1 min").arg(minutes);
+    painter->drawText(timeRect, Qt::AlignTop | Qt::AlignLeft, time);
 }
 
 void UnallocatedBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {

@@ -20,7 +20,8 @@ class UnallocatedBlockItem : public QGraphicsItem
 {
 public:
     static const int WIDTH = 200;
-    static const int HEIGHT = 30;
+    static const int HEIGHT = 80;
+    static const int PADDING = 3;
 
     UnallocatedBlockItem(const CategoryStore &category, MatchType type);
 

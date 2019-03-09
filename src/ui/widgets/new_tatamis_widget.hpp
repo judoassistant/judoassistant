@@ -28,7 +28,7 @@ private:
     void endTatamiCountChange();
 
     StoreManager &mStoreManager;
-    QGraphicsScene *mScene;
+    // QGraphicsScene *mScene;
     FixedScrollArea *mFixedScrollArea;
     std::stack<QMetaObject::Connection> mConnections;
 };
