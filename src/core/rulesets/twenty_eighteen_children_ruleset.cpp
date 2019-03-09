@@ -13,3 +13,8 @@ std::chrono::milliseconds TwentyEighteenChildrenRuleset::getNormalTime() const {
     return std::chrono::minutes(3);
 }
 
+std::chrono::milliseconds TwentyEighteenChildrenRuleset::getEstimatedTime() const {
+    return std::chrono::minutes(3);
+}
+
+

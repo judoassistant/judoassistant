@@ -143,6 +143,10 @@ std::chrono::milliseconds TwentyEighteenRuleset::getNormalTime() const {
     return std::chrono::minutes(4);
 }
 
+std::chrono::milliseconds TwentyEighteenRuleset::getEstimatedTime() const {
+    return std::chrono::minutes(6);
+}
+
 // TODO: Implement banning of players on direct hansoku make
 bool TwentyEighteenRuleset::canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);

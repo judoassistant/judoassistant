@@ -12,6 +12,7 @@ public:
     std::string getName() const override;
 
     std::chrono::milliseconds getNormalTime() const override;
+    std::chrono::milliseconds getEstimatedTime() const override;
 
     std::unique_ptr<Ruleset> clone() const override;
 };
