@@ -163,11 +163,15 @@ void CategoryStore::setLocation(MatchType type, std::optional<BlockLocation> loc
     mLocation[static_cast<int>(type)] = location;
 }
 
-const CategoryStore::Status& CategoryStore::getStatus(MatchType type) const {
+const CategoryStatus& CategoryStore::getStatus(MatchType type) const {
     return mStatus[static_cast<size_t>(type)];
 }
 
-CategoryStore::Status& CategoryStore::getStatus(MatchType type) {
+CategoryStatus& CategoryStore::getStatus(MatchType type) {
     return mStatus[static_cast<size_t>(type)];
+}
+
+void CategoryStore::setStatus(MatchType type, const CategoryStatus &status) {
+    return mStatus[static_cast<size_t>(type)] = status;
 }
 

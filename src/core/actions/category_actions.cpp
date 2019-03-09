@@ -8,11 +8,10 @@
 #include "core/log.hpp"
 #include "core/random.hpp"
 #include "core/rulesets/rulesets.hpp"
-#include "core/stores/tournament_store.hpp"
-#include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
-#include "core/stores/tatami/tatami_list.hpp"
 #include "core/stores/tatami/location.hpp"
+#include "core/stores/tatami/tatami_list.hpp"
+#include "core/stores/tournament_store.hpp"
 
 AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem)
     : mId(id)
@@ -348,6 +347,8 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
 
     mOldMatches = std::move(category.clearMatches());
     mOldDrawSystem = category.getDrawSystem().clone();
+    mOldStatus[static_cast<size_t>(MatchType::KNOCKOUT)] = category.getStatus(MatchType::KNOCKOUT);
+    mOldStatus[static_cast<size_t>(MatchType::FINAL)] = category.getStatus(MatchType::FINAL);
 
     std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
     std::vector<std::unique_ptr<Action>> actions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
@@ -356,6 +357,9 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
         actions[i]->redo(tournament);
         mActions.push(std::move(actions[i]));
     }
+
+    category.setStatus(MatchType::KNOCKOUT, CategoryStatus());
+    category.setStatus(MatchType::FINAL, CategoryStatus());
 
     tournament.endResetMatches(mCategoryId);
 
@@ -388,6 +392,8 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
     }
 
     category.setDrawSystem(std::move(mOldDrawSystem));
+    category.setStatus(MatchType::KNOCKOUT, mOldStatus[static_cast<size_t>(MatchType::KNOCKOUT)]);
+    category.setStatus(MatchType::FINAL, mOldStatus[static_cast<size_t>(MatchType::FINAL)]);
 
     for (std::unique_ptr<MatchStore> & match : mOldMatches) {
         std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);

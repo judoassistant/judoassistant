@@ -17,26 +17,27 @@ enum class MatchType;
 
 // TODO: Make 'magic' categories that update automatically
 
+struct CategoryStatus {
+    CategoryStatus()
+        : notStartedMatches(0)
+        , startedMatches(0)
+        , finishedMatches(0)
+    {}
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(notStartedMatches, startedMatches, finishedMatches);
+    }
+
+    unsigned int notStartedMatches;
+    unsigned int startedMatches;
+    unsigned int finishedMatches;
+};
+
+
 class CategoryStore {
 public:
     typedef std::vector<std::unique_ptr<MatchStore>> MatchList;
-
-    struct Status {
-        Status()
-            : notStartedMatches(0)
-            , startedMatches(0)
-            , finishedMatches(0)
-        {}
-
-        template<typename Archive>
-        void serialize(Archive& ar, uint32_t const version) {
-            ar(notStartedMatches, startedMatches, finishedMatches);
-        }
-
-        unsigned int notStartedMatches;
-        unsigned int startedMatches;
-        unsigned int finishedMatches;
-    };
 
     CategoryStore() {}
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
@@ -76,8 +77,9 @@ public:
     std::optional<BlockLocation> getLocation(MatchType type) const;
     void setLocation(MatchType type, std::optional<BlockLocation> location);
 
-    const Status& getStatus(MatchType type) const;
-    Status& getStatus(MatchType type);
+    const CategoryStatus& getStatus(MatchType type) const;
+    CategoryStatus& getStatus(MatchType type);
+    void setStatus(MatchType type, const CategoryStatus &status);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -99,7 +101,7 @@ private:
     MatchList mMatches; // order matters in this case
     std::unordered_map<MatchId, size_t> mMatchMap;
     std::array<size_t, 2> mMatchCount;
-    std::array<Status, 2> mStatus;
+    std::array<CategoryStatus, 2> mStatus;
     std::array<std::optional<BlockLocation>, 2> mLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;
