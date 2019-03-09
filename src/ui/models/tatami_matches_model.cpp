@@ -380,7 +380,7 @@ void TatamiMatchesModel::changeTatamis(std::vector<BlockLocation> locations, std
         }
 
         if (tatami.containsGroup(handle)) {
-            if (tatami.getIndex(handle) > mLoadedGroups.size()) {
+            if (tatami.getIndex(handle) < mLoadedGroups.size()) {
                 shouldReset = true;
                 break;
             }
