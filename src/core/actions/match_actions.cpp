@@ -337,6 +337,27 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     auto &category = tournament.getCategory(mCategoryId);
     auto &match = category.getMatch(mMatchId);
     auto updatedStatus = match.getStatus();
+    auto &categoryStatus = category.getStatus(match.getType());
+
+    if (updatedStatus == MatchStatus::NOT_STARTED) {
+        assert(categoryStatus.notStartedMatches > 0);
+        --(categoryStatus.notStartedMatches);
+    }
+    else if (updatedStatus == MatchStatus::PAUSED || updatedStatus == MatchStatus::UNPAUSED) {
+        assert(categoryStatus.startedMatches > 0);
+        --(categoryStatus.startedMatches);
+    }
+    else if (updatedStatus == MatchStatus::FINISHED) {
+        assert(categoryStatus.finishedMatches > 0);
+        --(categoryStatus.finishedMatches);
+    }
+
+    if (mPrevStatus == MatchStatus::NOT_STARTED)
+        ++(categoryStatus.notStartedMatches);
+    else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED)
+        ++(categoryStatus.startedMatches);
+    else if (mPrevStatus == MatchStatus::FINISHED)
+        ++(categoryStatus.finishedMatches);
 
     match.setStatus(mPrevStatus);
     match.getScore(MatchStore::PlayerIndex::WHITE) = mPrevWhiteScore;
@@ -373,6 +394,28 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
     if (blockLocation && match.getStatus() != mPrevStatus) {
         auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
         concurrentGroup.updateStatus(match);
+
+        auto & categoryStatus = category.getStatus(match.getType());
+
+        if (mPrevStatus == MatchStatus::NOT_STARTED) {
+            assert(categoryStatus.notStartedMatches > 0);
+            --(categoryStatus.notStartedMatches);
+        }
+        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
+            assert(categoryStatus.startedMatches > 0);
+            --(categoryStatus.startedMatches);
+        }
+        else if (mPrevStatus == MatchStatus::FINISHED) {
+            assert(categoryStatus.finishedMatches > 0);
+            --(categoryStatus.finishedMatches);
+        }
+
+        if (match.getStatus() == MatchStatus::NOT_STARTED)
+            ++(categoryStatus.notStartedMatches);
+        else if (match.getStatus() == MatchStatus::PAUSED || match.getStatus() == MatchStatus::UNPAUSED)
+            ++(categoryStatus.startedMatches);
+        else if (match.getStatus() == MatchStatus::FINISHED)
+            ++(categoryStatus.finishedMatches);
     }
 
     // Notify draw system

@@ -358,8 +358,13 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
         mActions.push(std::move(actions[i]));
     }
 
-    category.setStatus(MatchType::KNOCKOUT, CategoryStatus());
-    category.setStatus(MatchType::FINAL, CategoryStatus());
+    CategoryStatus knockoutStatus;
+    knockoutStatus.notStartedMatches = category.getMatchCount(MatchType::KNOCKOUT);
+    category.setStatus(MatchType::KNOCKOUT, knockoutStatus);
+
+    CategoryStatus finalStatus;
+    finalStatus.notStartedMatches = category.getMatchCount(MatchType::FINAL);
+    category.setStatus(MatchType::FINAL, finalStatus);
 
     tournament.endResetMatches(mCategoryId);
 

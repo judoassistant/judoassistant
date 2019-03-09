@@ -172,6 +172,6 @@ CategoryStatus& CategoryStore::getStatus(MatchType type) {
 }
 
 void CategoryStore::setStatus(MatchType type, const CategoryStatus &status) {
-    return mStatus[static_cast<size_t>(type)] = status;
+    mStatus[static_cast<size_t>(type)] = status;
 }
 
