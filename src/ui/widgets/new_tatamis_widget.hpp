@@ -4,6 +4,7 @@
 
 #include <QWidget>
 #include <QHBoxLayout>
+#include <QGraphicsScene>
 
 #include "core/core.hpp"
 #include "ui/widgets/fixed_scroll_area.hpp"
@@ -28,8 +29,7 @@ private:
     void endTatamiCountChange();
 
     StoreManager &mStoreManager;
-    // QGraphicsScene *mScene;
-    FixedScrollArea *mFixedScrollArea;
+    QGraphicsScene *mScene;
     std::stack<QMetaObject::Connection> mConnections;
 };
 

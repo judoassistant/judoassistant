@@ -43,8 +43,22 @@ NewTatamisWidget::NewTatamisWidget(StoreManager &storeManager)
     }
 
     {
-        mFixedScrollArea = new FixedScrollArea(300, mainSplitWidget);
-        mainSplit->addWidget(mFixedScrollArea);
+        mScene = new QGraphicsScene(this);
+        mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
+
+        QGraphicsView *view = new QGraphicsView(this);
+
+        view->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+        view->setScene(mScene);
+        view->setCacheMode(QGraphicsView::CacheNone);
+        view->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
+        view->setRenderHint(QPainter::Antialiasing, false);
+        view->setMinimumSize(300, 300);
+        // view->setMaximumWidth(UnallocatedBlockItem::WIDTH + PADDING*2 + 16);
+        view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        // mFixedScrollArea = new FixedScrollArea(300, mainSplitWidget);
+        mainSplit->addWidget(view);
     }
 
     mainSplitWidget->setLayout(mainSplit);
@@ -78,15 +92,15 @@ void NewTatamisWidget::endTournamentReset() {
 }
 
 void NewTatamisWidget::beginTatamiCountChange() {
-    mFixedScrollArea->clear();
+    // mFixedScrollArea->clear();
 }
 
 void NewTatamisWidget::endTatamiCountChange() {
-    TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
+    // TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
 
-    for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
-        auto *tatami = new TatamiWidget(mStoreManager, {tatamis.getHandle(i)}, mFixedScrollArea);
-        mFixedScrollArea->addWidget(tatami);
-    }
+    // for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
+    //     auto *tatami = new TatamiWidget(mStoreManager, {tatamis.getHandle(i)}, mFixedScrollArea);
+    //     mFixedScrollArea->addWidget(tatami);
+    // }
 }
 
