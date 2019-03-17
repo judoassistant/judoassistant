@@ -122,7 +122,6 @@ void NewTatamisWidget::endTatamiCountChange() {
         TatamiLocation location{tatamis.getHandle(i)};
 
         TatamiGraphicsManager tatami(mStoreManager, mScene, location, x, y);
-        log_debug().field("x", x).field("y", y).msg("Creating tatami");
         minutes = std::max(minutes, tatami.getMinutes());
         mTatamis.emplace_back(std::move(tatami));
     }
@@ -179,7 +178,6 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     }
 
     for (int i = VERTICAL_OFFSET, minutes = 0; i < height; i += GRID_HEIGHT, minutes += GRID_RESOLUTION) {
-        log_debug().field("i", i).msg("Creating line");
         auto item = new GridLineGraphicsItem(minutes, width);
         item->setPos(0, i);
         mScene->addItem(item);
@@ -309,7 +307,6 @@ void TatamiGraphicsManager::reloadBlocks() {
     size_t offset = mY;
 
     {
-        log_debug().field("offset", offset).msg("Drawing empty concurrent item");
         auto *emptyItem = new NewEmptyConcurrentGraphicsItem(&mStoreManager, mLocation, 0);
         mEmptyGroups.push_back(emptyItem);
         mScene->addItem(emptyItem);
@@ -320,7 +317,6 @@ void TatamiGraphicsManager::reloadBlocks() {
 
     for (size_t i = 0; i < tatami.groupCount(); ++i) {
         {
-            log_debug().field("offset", offset).msg("Drawing concurrent item");
             ConcurrentGroupLocation location{mLocation, tatami.getHandle(i)};
             auto *item = new NewConcurrentGraphicsItem(&mStoreManager, location);
             mScene->addItem(item);
@@ -331,7 +327,6 @@ void TatamiGraphicsManager::reloadBlocks() {
         }
 
         {
-            log_debug().field("offset", offset).msg("Drawing empty concurrent item");
             auto *item = new NewEmptyConcurrentGraphicsItem(&mStoreManager, mLocation, i+1);
             mEmptyGroups.push_back(item);
             mScene->addItem(item);
