@@ -11,6 +11,7 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/unallocated_blocks_widget.hpp"
+#include "ui/widgets/graphics_items/unallocated_block_graphics_item.hpp"
 
 UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent)
     : QGraphicsView(parent)
@@ -24,8 +25,8 @@ UnallocatedBlocksWidget::UnallocatedBlocksWidget(StoreManager & storeManager, QW
     setCacheMode(CacheNone);
     setViewportUpdateMode(MinimalViewportUpdate);
     setRenderHint(QPainter::Antialiasing, false);
-    setMinimumSize(UnallocatedBlockItem::WIDTH + PADDING*2 + 16, 800);
-    setMaximumWidth(UnallocatedBlockItem::WIDTH + PADDING*2 + 16);
+    setMinimumSize(UnallocatedBlockGraphicsItem::WIDTH + PADDING*2 + 16, 800);
+    setMaximumWidth(UnallocatedBlockGraphicsItem::WIDTH + PADDING*2 + 16);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &UnallocatedBlocksWidget::beginTournamentReset);
@@ -127,14 +128,14 @@ void UnallocatedBlocksWidget::reloadBlocks() {
     size_t offset = PADDING;
     for (auto block : mBlocks) {
         const CategoryStore & category = tournament.getCategory(block.first);
-        auto * item = new UnallocatedBlockItem(category, block.second);
+        auto * item = new UnallocatedBlockGraphicsItem(category, block.second);
         item->setPos(PADDING, offset);
         mBlockItems[block] = item;
-        offset += UnallocatedBlockItem::HEIGHT + ITEM_MARGIN;
+        offset += UnallocatedBlockGraphicsItem::HEIGHT + ITEM_MARGIN;
         mScene->addItem(item);
     }
 
-    mScene->setSceneRect(0, 0, UnallocatedBlockItem::WIDTH + PADDING*2, offset);
+    mScene->setSceneRect(0, 0, UnallocatedBlockGraphicsItem::WIDTH + PADDING*2, offset);
 }
 
 BlockComparator::BlockComparator(const TournamentStore &tournament) : mTournament(&tournament) {}
@@ -151,100 +152,15 @@ bool BlockComparator::operator()(const std::pair<CategoryId, MatchType> first, c
     return first < second;
 }
 
-UnallocatedBlockItem::UnallocatedBlockItem(const CategoryStore &category, MatchType type)
-    : mCategory(&category)
-    , mType(type)
-{
-    setCursor(Qt::OpenHandCursor);
-    setAcceptedMouseButtons(Qt::LeftButton);
-}
-
-QRectF UnallocatedBlockItem::boundingRect() const {
-    return QRectF(0, 0, WIDTH, HEIGHT);
-}
-
-void UnallocatedBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(COLOR_14);
-
-    const auto &categoryStatus = mCategory->getStatus(mType);
-    if (categoryStatus.startedMatches == 0 && categoryStatus.finishedMatches == 0)
-        painter->setBrush(COLOR_14);
-    else if (categoryStatus.startedMatches > 0 || categoryStatus.notStartedMatches > 0)
-        painter->setBrush(COLOR_13);
-    else
-        painter->setBrush(COLOR_11);
-
-    QRect rect(0, 0, WIDTH, HEIGHT);
-    painter->drawRect(rect);
-
-    QPen pen;
-    pen.setWidth(1);
-    pen.setStyle(Qt::SolidLine);
-    pen.setColor(COLOR_0);
-    painter->setPen(pen);
-
-    QRect titleRect(PADDING, PADDING, WIDTH-PADDING*2, 20);
-    QRect typeRect(PADDING*5, 20+PADDING, WIDTH-PADDING*6, 20);
-    QRect timeRect(PADDING*5, 40+PADDING, WIDTH-PADDING*6, 20);
-
-    QString title = QString::fromStdString(mCategory->getName());
-    painter->drawText(titleRect, Qt::AlignTop | Qt::AlignLeft, title);
-
-    QString type = (mType == MatchType::FINAL ? QObject::tr("Finals") : QObject::tr("Elimination"));
-    painter->drawText(typeRect, Qt::AlignTop | Qt::AlignLeft, type);
-
-    unsigned int minutes = std::chrono::duration_cast<std::chrono::minutes>(mCategory->getRuleset().getEstimatedTime()).count() * mCategory->getMatchCount(mType);
-    QString time = QObject::tr("~ %1 min").arg(minutes);
-    painter->drawText(timeRect, Qt::AlignTop | Qt::AlignLeft, time);
-}
-
-void UnallocatedBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    setCursor(Qt::ClosedHandCursor);
-}
-
-void UnallocatedBlockItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    auto dist = QLineF(event->screenPos(), event->buttonDownScreenPos(Qt::LeftButton)).length();
-    if (dist < QApplication::startDragDistance())
-        return;
-
-    QDrag *drag = new QDrag(event->widget());
-    auto *mime = new JudoassistantMime;
-    drag->setMimeData(mime);
-
-    // mime->setColorData(color);
-    mime->setText(QString::fromStdString(mCategory->getName(mType)));
-    mime->setBlock(mCategory->getId(), mType);
-
-    QPixmap pixmap(WIDTH, HEIGHT);
-    pixmap.fill(Qt::white);
-
-    QPainter painter(&pixmap);
-    // painter.translate(15, 15);
-    painter.setRenderHint(QPainter::Antialiasing, false);
-    paint(&painter, 0, 0);
-    painter.end();
-
-    pixmap.setMask(pixmap.createHeuristicMask());
-
-    drag->setPixmap(pixmap);
-    drag->setHotSpot(QPoint(WIDTH/2, HEIGHT/2));
-    drag->exec();
-}
-
-void UnallocatedBlockItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    setCursor(Qt::OpenHandCursor);
-}
-
 void UnallocatedBlocksWidget::shiftBlocks() {
     size_t offset = PADDING;
     for (auto block : mBlocks) {
-        UnallocatedBlockItem *item = mBlockItems[block];
+        UnallocatedBlockGraphicsItem *item = mBlockItems[block];
         item->setPos(PADDING, offset);
-        offset += UnallocatedBlockItem::HEIGHT + ITEM_MARGIN;
+        offset += UnallocatedBlockGraphicsItem::HEIGHT + ITEM_MARGIN;
     }
 
-    mScene->setSceneRect(0, 0, UnallocatedBlockItem::WIDTH + PADDING*2, offset);
+    mScene->setSceneRect(0, 0, UnallocatedBlockGraphicsItem::WIDTH + PADDING*2, offset);
 }
 
 bool UnallocatedBlocksWidget::insertBlock(const CategoryStore &category, MatchType type) {
@@ -252,7 +168,7 @@ bool UnallocatedBlocksWidget::insertBlock(const CategoryStore &category, MatchTy
 
     auto res = mBlocks.insert(block);
     if (res.second) {
-        auto * item = new UnallocatedBlockItem(category, type);
+        auto * item = new UnallocatedBlockGraphicsItem(category, type);
         mBlockItems[block] = item;
         mScene->addItem(item);
     }
