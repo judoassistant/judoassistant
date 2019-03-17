@@ -12,6 +12,8 @@ class BlockLocation;
 
 class SequentialBlockGroup {
 public:
+    static constexpr std::chrono::milliseconds MIN_EXPECTED_DURATION = std::chrono::minutes(15);
+
     class ConstMatchIterator {
     public:
         ConstMatchIterator & operator++();
@@ -50,10 +52,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mBlocks, mMatchCount);
+        ar(mBlocks, mMatchCount, mExpectedDuration);
     }
+
+    std::chrono::milliseconds getExpectedDuration() const;
 private:
     std::vector<std::pair<CategoryId, MatchType>> mBlocks;
     size_t mMatchCount;
+    std::chrono::milliseconds mExpectedDuration;
 };
 

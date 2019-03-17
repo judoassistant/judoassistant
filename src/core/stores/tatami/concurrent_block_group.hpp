@@ -53,8 +53,10 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mGroups, mMatches, mStatus, mMatchMap, mStartedMatches, mFinishedMatches);
+        ar(mGroups, mMatches, mStatus, mMatchMap, mStartedMatches, mFinishedMatches, mExpectedDuration);
     }
+
+    std::chrono::milliseconds getExpectedDuration() const;
 private:
     void recomputeStatus();
 
@@ -62,6 +64,7 @@ private:
     MatchList mMatches;
     Status mStatus;
     std::unordered_map<std::pair<CategoryId, MatchId>,size_t> mMatchMap;
+    std::chrono::milliseconds mExpectedDuration;
 
     std::unordered_set<std::pair<CategoryId, MatchId>> mStartedMatches;
     std::unordered_set<std::pair<CategoryId, MatchId>> mFinishedMatches;
