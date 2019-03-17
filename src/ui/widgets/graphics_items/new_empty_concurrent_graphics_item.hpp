@@ -11,7 +11,7 @@ enum class MatchType;
 
 class NewEmptyConcurrentGraphicsItem : public QGraphicsItem {
 public:
-    static constexpr int HEIGHT = 12;
+    static constexpr int HEIGHT = 14;
 
     NewEmptyConcurrentGraphicsItem(StoreManager * storeManager, TatamiLocation tatami, size_t index);
     QRectF boundingRect() const override;

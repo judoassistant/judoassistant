@@ -10,6 +10,7 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/graphics_items/new_concurrent_graphics_item.hpp"
+#include "ui/widgets/graphics_items/new_sequential_graphics_item.hpp"
 #include "ui/widgets/new_tatamis_widget.hpp"
 
 NewConcurrentGraphicsItem::NewConcurrentGraphicsItem(StoreManager * storeManager, ConcurrentGroupLocation location)
@@ -29,7 +30,7 @@ QRectF NewConcurrentGraphicsItem::boundingRect() const {
     constexpr int x = GridGraphicsManager::MARGIN;
     constexpr int y = GridGraphicsManager::MARGIN;
     constexpr int width = GridGraphicsManager::GRID_WIDTH - 2 * GridGraphicsManager::MARGIN;
-    int height = getHeight() - 2 * GridGraphicsManager::MARGIN;
+    int height = getHeight() - GridGraphicsManager::MARGIN;
     return QRectF(x, y, width, height);
 }
 
@@ -50,9 +51,9 @@ void NewConcurrentGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
 }
 
 void NewConcurrentGraphicsItem::reloadBlocks() {
-    // for (auto * group : mSequentialGroups) {
-    //     delete group;
-    // }
+    for (auto * group : mSequentialGroups) {
+        delete group;
+    }
 
     // mSequentialGroups.clear();
 
@@ -72,7 +73,7 @@ void NewConcurrentGraphicsItem::reloadBlocks() {
     // newHeight += PADDING*2;
     // prepareGeometryChange();
     // mHeight = newHeight;
-    // update();
+    update();
 }
 
 ConcurrentGroupLocation NewConcurrentGraphicsItem::getLocation() const {

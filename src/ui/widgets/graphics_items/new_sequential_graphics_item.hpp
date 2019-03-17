@@ -6,16 +6,16 @@
 #include "core/position_manager.hpp"
 #include "core/stores/tatami/location.hpp"
 
-class NewSequentialGraphicsItem;
+class StoreManager;
 
-class NewConcurrentGraphicsItem : public QGraphicsItem {
+class NewSequentialGraphicsItem : public QGraphicsItem {
 public:
-    NewConcurrentGraphicsItem(StoreManager * storeManager, ConcurrentGroupLocation location);
-    int getHeight() const;
+    NewSequentialGraphicsItem(StoreManager *storeManager, SequentialGroupLocation location, int height);
+
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     void reloadBlocks();
-    ConcurrentGroupLocation getLocation() const;
+    SequentialGroupLocation getLocation() const;
 
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
     void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
@@ -23,9 +23,9 @@ public:
 
 private:
     StoreManager *mStoreManager;
-    ConcurrentGroupLocation mLocation;
+    SequentialGroupLocation mLocation;
     int mHeight;
     bool mDragOver;
-    std::vector<NewSequentialGraphicsItem*> mSequentialGroups;
+    // std::vector<SequentialBlockItem*> mSequentialGroups;
 };
 

@@ -24,7 +24,7 @@ QRectF NewEmptyConcurrentGraphicsItem::boundingRect() const {
     constexpr int x = GridGraphicsManager::MARGIN;
     constexpr int y = GridGraphicsManager::MARGIN;
     constexpr int width = GridGraphicsManager::GRID_WIDTH - 2 * GridGraphicsManager::MARGIN;
-    constexpr int height = HEIGHT - 2 * GridGraphicsManager::MARGIN;
+    constexpr int height = HEIGHT - GridGraphicsManager::MARGIN;
     return QRectF(x, y, width, height);
 }
 

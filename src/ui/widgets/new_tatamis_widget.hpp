@@ -29,7 +29,7 @@ public:
     static constexpr int GRID_WIDTH = 300; // The pixel size of a grid unit
     static constexpr int VERTICAL_OFFSET = 80; // The amount of vertical space used for headers
     static constexpr int HORIZONTAL_OFFSET = 80; // The amount of vertical space used for ticks
-    static constexpr int MARGIN = 2;
+    static constexpr int MARGIN = 4;
 
     void setMinutes(int minutes);
     void setTatamiCount(int tatamiCount);
