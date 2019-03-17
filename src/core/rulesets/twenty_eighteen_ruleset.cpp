@@ -143,7 +143,7 @@ std::chrono::milliseconds TwentyEighteenRuleset::getNormalTime() const {
     return std::chrono::minutes(4);
 }
 
-std::chrono::milliseconds TwentyEighteenRuleset::getEstimatedTime() const {
+std::chrono::milliseconds TwentyEighteenRuleset::getExpectedTime() const {
     return std::chrono::minutes(6);
 }
 

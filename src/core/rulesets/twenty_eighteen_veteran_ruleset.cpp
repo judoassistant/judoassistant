@@ -12,3 +12,7 @@ std::chrono::milliseconds TwentyEighteenVeteranRuleset::getNormalTime() const {
     return std::chrono::minutes(3);
 }
 
+std::chrono::milliseconds TwentyEighteenVeteranRuleset::getExpectedTime() const {
+    return std::chrono::minutes(4);
+}
+

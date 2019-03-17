@@ -12,7 +12,7 @@ public:
     std::string getName() const override;
 
     std::chrono::milliseconds getNormalTime() const override;
-    std::chrono::milliseconds getEstimatedTime() const override;
+    std::chrono::milliseconds getExpectedTime() const override;
 
     bool canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
     void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
