@@ -220,69 +220,70 @@ int TatamiGraphicsManager::getMinutes() const {
 }
 
 void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
-    // std::unordered_set<PositionId> affectedConcurrentGroups;
-    // for (auto location : locations) {
-    //     if (!location.sequentialGroup.concurrentGroup.tatami.equiv(mLocation)) continue;
+    std::unordered_set<PositionId> affectedConcurrentGroups;
+    for (auto location : locations) {
+        if (!location.sequentialGroup.concurrentGroup.tatami.equiv(mLocation)) continue;
 
-    //     affectedConcurrentGroups.insert(location.sequentialGroup.concurrentGroup.handle.id);
-    // }
+        affectedConcurrentGroups.insert(location.sequentialGroup.concurrentGroup.handle.id);
+    }
 
-    // if (affectedConcurrentGroups.empty())
-    //     return;
+    if (affectedConcurrentGroups.empty())
+        return;
 
-    // const auto &tatamis = mStoreManager.getTournament().getTatamis();
-    // const auto &tatami = tatamis.at(mLocation);
+    const auto &tatamis = mStoreManager.getTournament().getTatamis();
+    const auto &tatami = tatamis.at(mLocation);
 
-    // for (auto i = mGroups.begin(); i != mGroups.end();) {
-    //     auto next = std::next(i);
-    //     PositionHandle handle = (*i)->getLocation().handle;
-    //     if (!tatami.containsGroup(handle)) {
-    //         mScene->removeItem(*i);
-    //         delete (*i);
-    //         mGroups.erase(i);
-    //     }
+    for (auto i = mGroups.begin(); i != mGroups.end();) {
+        auto next = std::next(i);
+        PositionHandle handle = (*i)->getLocation().handle;
+        if (!tatami.containsGroup(handle)) {
+            mScene->removeItem(*i);
+            delete (*i);
+            mGroups.erase(i);
+        }
 
-    //     i = next;
-    // }
+        i = next;
+    }
 
-    // // There is always an empty block at the top
-    // size_t offset = EmptyConcurrentBlockItem::HEIGHT + 2 * PADDING;
-    // auto it = mGroups.begin();
-    // for (size_t i = 0; i < tatami.groupCount(); ++i) {
-    //     ConcurrentBlockItem *item = nullptr;
-    //     PositionHandle handle = tatami.getHandle(i);
-    //     if (it == mGroups.end() || !(handle.equiv((*it)->getLocation().handle))) {
-    //         // insert group
-    //         item = new ConcurrentBlockItem(mStoreManager, {mLocation, handle});
-    //         mScene->addItem(item);
-    //         mGroups.insert(it, item);
+    // There is always an empty block at the top
+    size_t offset = mY + NewEmptyConcurrentGraphicsItem::HEIGHT;
 
-    //     }
-    //     else {
-    //         item = *it;
-    //         if (affectedConcurrentGroups.find(item->getLocation().handle.id) != affectedConcurrentGroups.end())
-    //             item->reloadBlocks();
+    auto it = mGroups.begin();
+    for (size_t i = 0; i < tatami.groupCount(); ++i) {
+        NewConcurrentGraphicsItem *item = nullptr;
+        PositionHandle handle = tatami.getHandle(i);
+        if (it == mGroups.end() || !(handle.equiv((*it)->getLocation().handle))) {
+            // insert group
+            ConcurrentGroupLocation location{mLocation, handle};
+            item = new NewConcurrentGraphicsItem(&mStoreManager, location);
+            mScene->addItem(item);
+            mGroups.insert(it, item);
+        }
+        else {
+            item = *it;
+            if (affectedConcurrentGroups.find(item->getLocation().handle.id) != affectedConcurrentGroups.end())
+                item->reloadBlocks();
 
-    //         std::advance(it, 1);
-    //     }
+            std::advance(it, 1);
+        }
 
-    //     item->setPos(PADDING, offset);
-    //     offset += item->getHeight() + PADDING;
+        item->setPos(mX, offset);
+        offset += item->getHeight();
 
-    //     if (mEmptyGroups.size() < i + 2) {
-    //         mEmptyGroups.push_back(new EmptyConcurrentBlockItem(mStoreManager, mLocation, i+1));
-    //         mScene->addItem(mEmptyGroups.back());
-    //     }
+        if (mEmptyGroups.size() < i + 2) {
+            mEmptyGroups.push_back(new NewEmptyConcurrentGraphicsItem(&mStoreManager, mLocation, i+1));
+            mScene->addItem(mEmptyGroups.back());
+        }
 
-    //     mEmptyGroups[i+1]->setPos(PADDING, offset);
-    //     offset += EmptyConcurrentBlockItem::HEIGHT + PADDING;
-    // }
+        mEmptyGroups[i+1]->setPos(mX, offset);
+        offset += NewEmptyConcurrentGraphicsItem::HEIGHT;
+    }
 
-    // while (mEmptyGroups.size() > mGroups.size() + 1) {
-    //     mScene->removeItem(mEmptyGroups.back());
-    //     delete (mEmptyGroups.back());
-    //     mEmptyGroups.pop_back();
-    // }
+    while (mEmptyGroups.size() > mGroups.size() + 1) {
+        mScene->removeItem(mEmptyGroups.back());
+        delete (mEmptyGroups.back());
+        mEmptyGroups.pop_back();
+    }
 }
 
 void TatamiGraphicsManager::clearBlocks() {
