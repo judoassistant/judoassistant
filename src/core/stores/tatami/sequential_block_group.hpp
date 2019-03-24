@@ -12,8 +12,6 @@ class BlockLocation;
 
 class SequentialBlockGroup {
 public:
-    static constexpr std::chrono::milliseconds MIN_EXPECTED_DURATION = std::chrono::minutes(15);
-
     class ConstMatchIterator {
     public:
         ConstMatchIterator & operator++();

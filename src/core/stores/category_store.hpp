@@ -1,8 +1,9 @@
 #pragma once
 
+#include <chrono>
+#include <map>
 #include <string>
 #include <unordered_set>
-#include <map>
 
 #include "core/core.hpp"
 #include "core/id.hpp"
@@ -38,6 +39,7 @@ struct CategoryStatus {
 class CategoryStore {
 public:
     typedef std::vector<std::unique_ptr<MatchStore>> MatchList;
+    static constexpr std::chrono::milliseconds MIN_EXPECTED_DURATION = std::chrono::minutes(15); // TODO: Have a more robust way drawing very short categories
 
     CategoryStore() {}
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
@@ -94,6 +96,9 @@ public:
         ar(mRuleset);
         ar(mDrawSystem);
     }
+
+    std::chrono::milliseconds expectedDuration(MatchType type) const;
+
 private:
     CategoryId mId;
     std::string mName;

@@ -175,3 +175,11 @@ void CategoryStore::setStatus(MatchType type, const CategoryStatus &status) {
     mStatus[static_cast<size_t>(type)] = status;
 }
 
+std::chrono::milliseconds CategoryStore::expectedDuration(MatchType type) const {
+    auto expectedDuration = mRuleset->getExpectedTime() * getMatchCount(type);
+
+    if (expectedDuration < MIN_EXPECTED_DURATION)
+        return MIN_EXPECTED_DURATION;
+    return expectedDuration;
+}
+
