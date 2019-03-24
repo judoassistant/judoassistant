@@ -163,7 +163,9 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     mMinWidth = minWidth;
     mMinHeight = minHeight;
 
-    int height = std::max(minHeight, VERTICAL_OFFSET + GRID_HEIGHT * ((mMinutes + GRID_RESOLUTION - 1) / GRID_RESOLUTION));
+    int minuteBound = (mMinutes + GRID_RESOLUTION - 1) / GRID_RESOLUTION;
+    log_debug().field("minuteBound", minuteBound).msg("Updating grid");
+    int height = std::max(minHeight, VERTICAL_OFFSET + GRID_HEIGHT * minuteBound);
     int width = std::max(mTatamiCount * GRID_WIDTH + HORIZONTAL_OFFSET, mMinWidth);
     QPen pen;
     pen.setWidth(1);
@@ -177,7 +179,7 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
         mItems.push_back(item);
     }
 
-    for (int i = VERTICAL_OFFSET, minutes = 0; i < height; i += GRID_HEIGHT, minutes += GRID_RESOLUTION) {
+    for (int i = VERTICAL_OFFSET, minutes = 0; i <= height; i += GRID_HEIGHT, minutes += GRID_RESOLUTION) {
         auto item = new GridLineGraphicsItem(minutes, width);
         item->setPos(0, i);
         mScene->addItem(item);
