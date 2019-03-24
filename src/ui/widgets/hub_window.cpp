@@ -260,7 +260,7 @@ void HubWindow::openTournament() {
         if (reply == QMessageBox::Cancel)
             return;
     }
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.judo);;All Files (*)"));
 
     if (fileName.isEmpty())
         return;
@@ -286,13 +286,13 @@ void HubWindow::saveTournament() {
 }
 
 void HubWindow::saveAsTournament() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.judo);;All Files (*)"));
 
     if (fileName.isEmpty())
         return;
 
-    if (!fileName.endsWith(".qj"))
-        fileName += ".qj";
+    if (!fileName.endsWith(".judo"))
+        fileName += ".judo";
 
     mFileName = fileName;
     writeTournament();
