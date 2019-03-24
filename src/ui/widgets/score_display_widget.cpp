@@ -328,8 +328,8 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
     const int flagHeight = (rect.height() - PADDING * 3) / 2;
     const int flagWidth = flagHeight * 4 / 3;
 
-    const int columnOne = flagWidth + 2 * PADDING;
-    const int columnThree = columnOne + (rect.width() - columnOne) * 3 / 4;
+    // const int columnOne = flagWidth + 2 * PADDING;
+    // const int columnThree = columnOne + (rect.width() - columnOne) * 3 / 4;
 
     painter.save();
     painter.translate(rect.x(), rect.y());
