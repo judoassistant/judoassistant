@@ -261,9 +261,6 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
 
     tournament.endEraseCategories();
 
-    mLocations.clear();
-    mBlocks.clear();
-
     for (auto tuple : locations) {
         mBlocks.push_back({std::get<0>(tuple), std::get<1>(tuple)});
         mLocations.push_back(std::get<2>(tuple));
