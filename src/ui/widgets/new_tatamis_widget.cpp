@@ -299,7 +299,7 @@ void TatamiGraphicsManager::clearBlocks() {
 }
 
 void TatamiGraphicsManager::reloadBlocks() {
-    mMinutes = 0;
+    std::chrono::milliseconds expectedDuration = std::chrono::milliseconds(0);
     const TournamentStore &tournament = mStoreManager.getTournament();
     const TatamiStore &tatami = tournament.getTatamis().at(mLocation);
 
@@ -318,7 +318,12 @@ void TatamiGraphicsManager::reloadBlocks() {
 
     for (size_t i = 0; i < tatami.groupCount(); ++i) {
         {
-            ConcurrentGroupLocation location{mLocation, tatami.getHandle(i)};
+            const auto &handle = tatami.getHandle(i);
+            const auto &group = tatami.at(handle);
+
+            expectedDuration += group.getExpectedDuration();
+
+            ConcurrentGroupLocation location{mLocation, handle};
             auto *item = new NewConcurrentGraphicsItem(&mStoreManager, location);
             mScene->addItem(item);
             mGroups.push_back(item);
@@ -336,6 +341,8 @@ void TatamiGraphicsManager::reloadBlocks() {
             offset += NewEmptyConcurrentGraphicsItem::HEIGHT;
         }
     }
+
+    mMinutes = std::chrono::duration_cast<std::chrono::minutes>(expectedDuration).count();
 }
 
 void TatamiGraphicsManager::shiftBlocks() {
