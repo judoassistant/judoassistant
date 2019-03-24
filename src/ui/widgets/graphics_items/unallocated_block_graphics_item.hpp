@@ -10,9 +10,9 @@ class CategoryStore;
 
 class UnallocatedBlockGraphicsItem : public QGraphicsItem {
 public:
-    static const int WIDTH = 200;
-    static const int HEIGHT = 80;
-    static const int PADDING = 3;
+    static constexpr int WIDTH = 200;
+    static constexpr int HEIGHT = 80;
+    static constexpr int PADDING = 3;
 
     UnallocatedBlockGraphicsItem(const CategoryStore &category, MatchType type);
 
