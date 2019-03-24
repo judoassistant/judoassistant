@@ -1,4 +1,5 @@
 hub_sources += ['src/ui/widgets/graphics_items/grid_line_graphics_item.cpp']
+hub_sources += ['src/ui/widgets/graphics_items/new_block_graphics_item.cpp']
 hub_sources += ['src/ui/widgets/graphics_items/new_concurrent_graphics_item.cpp']
 hub_sources += ['src/ui/widgets/graphics_items/new_empty_concurrent_graphics_item.cpp']
 hub_sources += ['src/ui/widgets/graphics_items/new_sequential_graphics_item.cpp']
