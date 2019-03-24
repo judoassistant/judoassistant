@@ -60,8 +60,6 @@ public:
     int getMinutes() const;
 
 private:
-    void shiftBlocks();
-
     std::vector<EmptyConcurrentGraphicsItem*> mEmptyGroups;
     std::list<ConcurrentGraphicsItem*> mGroups;
     StoreManager & mStoreManager;

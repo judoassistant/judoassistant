@@ -164,7 +164,6 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     mMinHeight = minHeight;
 
     int minuteBound = (mMinutes + GRID_RESOLUTION - 1) / GRID_RESOLUTION;
-    log_debug().field("minuteBound", minuteBound).msg("Updating grid");
     int height = std::max(minHeight, VERTICAL_OFFSET + GRID_HEIGHT * minuteBound);
     int width = std::max(mTatamiCount * GRID_WIDTH + HORIZONTAL_OFFSET, mMinWidth);
     QPen pen;
@@ -353,9 +352,5 @@ void TatamiGraphicsManager::reloadBlocks() {
     }
 
     mMinutes = std::chrono::duration_cast<std::chrono::minutes>(expectedDuration).count();
-}
-
-void TatamiGraphicsManager::shiftBlocks() {
-
 }
 
