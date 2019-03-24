@@ -48,10 +48,15 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
+    enum class Status {
+        NOT_STARTED, STARTED, FINISHED
+    };
+
     StoreManager *mStoreManager;
     std::pair<CategoryId, MatchType> mBlock;
     int mMatchCount;
     QString mName;
+    Status mStatus;
 };
 
 class SequentialBlockItem : public QGraphicsItem {

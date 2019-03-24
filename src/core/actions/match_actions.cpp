@@ -352,9 +352,35 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
     // Updates tatami groups
     auto blockLocation = category.getLocation(match.getType());
+
     if (blockLocation && updatedStatus != mPrevStatus) {
+        auto &categoryStatus = category.getStatus(match.getType());
+
+        if (updatedStatus == MatchStatus::NOT_STARTED) {
+            assert(categoryStatus.notStartedMatches > 0);
+            --(categoryStatus.notStartedMatches);
+        }
+        else if (updatedStatus == MatchStatus::PAUSED || updatedStatus == MatchStatus::UNPAUSED) {
+            assert(categoryStatus.startedMatches > 0);
+            --(categoryStatus.startedMatches);
+        }
+        else if (updatedStatus == MatchStatus::FINISHED) {
+            assert(categoryStatus.finishedMatches > 0);
+            --(categoryStatus.finishedMatches);
+        }
+
+        if (mPrevStatus == MatchStatus::NOT_STARTED)
+            ++(categoryStatus.notStartedMatches);
+        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED)
+            ++(categoryStatus.startedMatches);
+        else if (mPrevStatus == MatchStatus::FINISHED)
+            ++(categoryStatus.finishedMatches);
+
         auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
         concurrentGroup.updateStatus(match);
+
+        std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
+        tournament.changeTatamis({*blockLocation}, {block});
     }
 
     // Notify of match changed
@@ -371,8 +397,33 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
     // Updates tatami groups
     auto blockLocation = category.getLocation(match.getType());
     if (blockLocation && match.getStatus() != mPrevStatus) {
+        auto & categoryStatus = category.getStatus(match.getType());
+
+        if (mPrevStatus == MatchStatus::NOT_STARTED) {
+            assert(categoryStatus.notStartedMatches > 0);
+            --(categoryStatus.notStartedMatches);
+        }
+        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
+            assert(categoryStatus.startedMatches > 0);
+            --(categoryStatus.startedMatches);
+        }
+        else if (mPrevStatus == MatchStatus::FINISHED) {
+            assert(categoryStatus.finishedMatches > 0);
+            --(categoryStatus.finishedMatches);
+        }
+
+        if (match.getStatus() == MatchStatus::NOT_STARTED)
+            ++(categoryStatus.notStartedMatches);
+        else if (match.getStatus() == MatchStatus::PAUSED || match.getStatus() == MatchStatus::UNPAUSED)
+            ++(categoryStatus.startedMatches);
+        else if (match.getStatus() == MatchStatus::FINISHED)
+            ++(categoryStatus.finishedMatches);
+
         auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
         concurrentGroup.updateStatus(match);
+
+        std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
+        tournament.changeTatamis({*blockLocation}, {block});
     }
 
     // Notify draw system

@@ -15,27 +15,7 @@
 
 class StoreManager;
 class CategoryStore;
-
-class UnallocatedBlockItem : public QGraphicsItem
-{
-public:
-    static const int WIDTH = 200;
-    static const int HEIGHT = 30;
-
-    UnallocatedBlockItem(const CategoryStore &category, MatchType type);
-
-    QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-
-protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-
-private:
-    const CategoryStore *mCategory;
-    MatchType mType;
-};
+class UnallocatedBlockGraphicsItem;
 
 class BlockComparator {
 public:
@@ -73,7 +53,7 @@ private:
     QGraphicsScene *mScene;
     StoreManager & mStoreManager;
     std::set<std::pair<CategoryId, MatchType>, BlockComparator> mBlocks;
-    std::map<std::pair<CategoryId, MatchType>, UnallocatedBlockItem*> mBlockItems;
+    std::map<std::pair<CategoryId, MatchType>, UnallocatedBlockGraphicsItem*> mBlockItems;
     std::stack<QMetaObject::Connection> mConnections;
 };
 

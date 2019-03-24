@@ -11,6 +11,7 @@ public:
     virtual std::string getName() const = 0;
 
     virtual std::chrono::milliseconds getNormalTime() const = 0;
+    virtual std::chrono::milliseconds getExpectedTime() const = 0;
 
     virtual bool canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
     virtual void addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;

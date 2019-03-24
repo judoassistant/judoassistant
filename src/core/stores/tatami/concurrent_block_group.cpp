@@ -9,6 +9,7 @@
 
 ConcurrentBlockGroup::ConcurrentBlockGroup()
     : mStatus(Status::NOT_STARTED)
+    , mExpectedDuration(0)
 {}
 
 const ConcurrentBlockGroup::MatchList & ConcurrentBlockGroup::getMatches() const {
@@ -104,6 +105,7 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mMatchMap.clear();
     mStartedMatches.clear();
     mFinishedMatches.clear();
+    mExpectedDuration = std::chrono::seconds(0);
 
     // Merging algorithm: Keep fetching matches from the group with smallest progress(#(matches fetched) / #(matches total))
     std::priority_queue<QueueElement> progressQueue;
@@ -114,6 +116,8 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
         iterators.push_back(group.matchesBegin(tournament));
         if (group.getMatchCount() == 0) continue;
         progressQueue.push(QueueElement(i, 0, group.getMatchCount()));
+
+        mExpectedDuration += group.getExpectedDuration();
     }
 
     while (!progressQueue.empty()) {
@@ -130,7 +134,8 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
         if (element.matchCount == element.totalMatchCount) continue;
         progressQueue.push(element);
 
-        const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+        const auto &category = tournament.getCategory(combinedId.first);
+        const auto &match = category.getMatch(combinedId.second);
 
         if (match.getStatus() == MatchStatus::FINISHED)
             mFinishedMatches.insert(combinedId);
@@ -168,5 +173,9 @@ void ConcurrentBlockGroup::updateStatus(const MatchStore &match) {
     }
 
     recomputeStatus();
+}
+
+std::chrono::milliseconds ConcurrentBlockGroup::getExpectedDuration() const {
+    return mExpectedDuration;
 }
 

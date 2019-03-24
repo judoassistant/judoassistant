@@ -23,6 +23,7 @@
 #include "ui/widgets/matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 #include "ui/widgets/tatamis_widget.hpp"
+#include "ui/widgets/new_tatamis_widget.hpp"
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
@@ -39,8 +40,9 @@ HubWindow::HubWindow() {
     tabWidget->addTab(new PlayersWidget(mStoreManager), tr("Players"));
     tabWidget->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
     tabWidget->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
+    tabWidget->addTab(new NewTatamisWidget(mStoreManager), tr("New Tatamis"));
     tabWidget->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    tabWidget->setCurrentIndex(0);
+    tabWidget->setCurrentIndex(4);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);
 
     setCentralWidget(tabWidget);
@@ -258,7 +260,7 @@ void HubWindow::openTournament() {
         if (reply == QMessageBox::Cancel)
             return;
     }
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.judo);;All Files (*)"));
 
     if (fileName.isEmpty())
         return;
@@ -284,13 +286,13 @@ void HubWindow::saveTournament() {
 }
 
 void HubWindow::saveAsTournament() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.qj);;All Files (*)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Tournament"), QStandardPaths::writableLocation(QStandardPaths::HomeLocation), tr("Tournament Files (*.judo);;All Files (*)"));
 
     if (fileName.isEmpty())
         return;
 
-    if (!fileName.endsWith(".qj"))
-        fileName += ".qj";
+    if (!fileName.endsWith(".judo"))
+        fileName += ".judo";
 
     mFileName = fileName;
     writeTournament();

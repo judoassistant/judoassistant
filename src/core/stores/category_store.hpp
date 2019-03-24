@@ -1,8 +1,9 @@
 #pragma once
 
+#include <chrono>
+#include <map>
 #include <string>
 #include <unordered_set>
-#include <map>
 
 #include "core/core.hpp"
 #include "core/id.hpp"
@@ -17,9 +18,28 @@ enum class MatchType;
 
 // TODO: Make 'magic' categories that update automatically
 
+struct CategoryStatus {
+    CategoryStatus()
+        : notStartedMatches(0)
+        , startedMatches(0)
+        , finishedMatches(0)
+    {}
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(notStartedMatches, startedMatches, finishedMatches);
+    }
+
+    unsigned int notStartedMatches;
+    unsigned int startedMatches;
+    unsigned int finishedMatches;
+};
+
+
 class CategoryStore {
 public:
     typedef std::vector<std::unique_ptr<MatchStore>> MatchList;
+    static constexpr std::chrono::milliseconds MIN_EXPECTED_DURATION = std::chrono::minutes(15); // TODO: Have a more robust way drawing very short categories
 
     CategoryStore() {}
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);
@@ -59,18 +79,26 @@ public:
     std::optional<BlockLocation> getLocation(MatchType type) const;
     void setLocation(MatchType type, std::optional<BlockLocation> location);
 
+    const CategoryStatus& getStatus(MatchType type) const;
+    CategoryStatus& getStatus(MatchType type);
+    void setStatus(MatchType type, const CategoryStatus &status);
+
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("id", mId));
-        ar(cereal::make_nvp("name", mName));
-        ar(cereal::make_nvp("players", mPlayers));
-        ar(cereal::make_nvp("matches", mMatches));
-        ar(cereal::make_nvp("matchMap", mMatchMap));
-        ar(cereal::make_nvp("matchCount", mMatchCount));
-        ar(cereal::make_nvp("location", mLocation));
-        ar(cereal::make_nvp("ruleset", mRuleset));
-        ar(cereal::make_nvp("drawSystem", mDrawSystem));
+        ar(mId);
+        ar(mName);
+        ar(mPlayers);
+        ar(mMatches);
+        ar(mMatchMap);
+        ar(mMatchCount);
+        ar(mStatus);
+        ar(mLocation);
+        ar(mRuleset);
+        ar(mDrawSystem);
     }
+
+    std::chrono::milliseconds expectedDuration(MatchType type) const;
+
 private:
     CategoryId mId;
     std::string mName;
@@ -78,6 +106,7 @@ private:
     MatchList mMatches; // order matters in this case
     std::unordered_map<MatchId, size_t> mMatchMap;
     std::array<size_t, 2> mMatchCount;
+    std::array<CategoryStatus, 2> mStatus;
     std::array<std::optional<BlockLocation>, 2> mLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;

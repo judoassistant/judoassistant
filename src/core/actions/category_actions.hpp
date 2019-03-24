@@ -4,14 +4,14 @@
 #include "core/id.hpp"
 #include "core/serialize.hpp"
 #include "core/actions/action.hpp"
+#include "core/stores/category_store.hpp"
 
-class CategoryStore;
-class DrawSystem;
-class TournamentStore;
 class BlockLocation;
+class DrawSystem;
 class MatchStore;
-enum class MatchType;
 class Ruleset;
+class TournamentStore;
+enum class MatchType;
 
 class AddCategoryAction : public Action {
 public:
@@ -68,6 +68,7 @@ private:
     std::vector<std::unique_ptr<MatchStore>> mOldMatches;
     std::stack<std::unique_ptr<Action>> mActions;
     std::unique_ptr<DrawSystem> mOldDrawSystem;
+    std::array<CategoryStatus, 2> mOldStatus;
 };
 
 CEREAL_REGISTER_TYPE(DrawCategoryAction)

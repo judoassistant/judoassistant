@@ -9,6 +9,7 @@
 
 SequentialBlockGroup::SequentialBlockGroup()
     : mMatchCount(0)
+    , mExpectedDuration(std::chrono::milliseconds(0))
 {}
 
 void SequentialBlockGroup::eraseBlock(std::pair<CategoryId, MatchType> block) {
@@ -56,9 +57,14 @@ size_t SequentialBlockGroup::getMatchCount() const {
 
 void SequentialBlockGroup::recompute(const TournamentStore &tournament) {
     mMatchCount = 0;
+    mExpectedDuration = std::chrono::seconds(0);
+
     for (size_t i = 0; i < mBlocks.size(); ++i) {
         auto block = mBlocks[i];
-        mMatchCount += tournament.getCategory(block.first).getMatchCount(block.second);
+        const auto &category = tournament.getCategory(block.first);
+
+        mExpectedDuration += category.expectedDuration(block.second);
+        mMatchCount += category.getMatchCount(block.second);
     }
 }
 
@@ -125,3 +131,8 @@ bool SequentialBlockGroup::ConstMatchIterator::operator!=(const SequentialBlockG
 bool SequentialBlockGroup::ConstMatchIterator::operator==(const SequentialBlockGroup::ConstMatchIterator &other) const {
     return mCurrentBlock == other.mCurrentBlock && mCurrentMatch == other.mCurrentMatch;
 }
+
+std::chrono::milliseconds SequentialBlockGroup::getExpectedDuration() const {
+    return mExpectedDuration;
+}
+
