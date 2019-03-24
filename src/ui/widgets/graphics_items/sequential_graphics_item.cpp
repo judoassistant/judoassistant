@@ -1,4 +1,4 @@
-#include "ui/widgets/graphics_items/new_sequential_graphics_item.hpp"
+#include "ui/widgets/graphics_items/sequential_graphics_item.hpp"
 
 #include <QBitmap>
 #include <QDrag>
@@ -12,12 +12,12 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/colors.hpp"
-#include "ui/widgets/graphics_items/new_block_graphics_item.hpp"
-#include "ui/widgets/graphics_items/new_concurrent_graphics_item.hpp"
-#include "ui/widgets/graphics_items/new_sequential_graphics_item.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/graphics_items/block_graphics_item.hpp"
+#include "ui/widgets/graphics_items/concurrent_graphics_item.hpp"
+#include "ui/widgets/graphics_items/sequential_graphics_item.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 
-NewSequentialGraphicsItem::NewSequentialGraphicsItem(StoreManager *storeManager, SequentialGroupLocation location, int height, NewConcurrentGraphicsItem *parent)
+SequentialGraphicsItem::SequentialGraphicsItem(StoreManager *storeManager, SequentialGroupLocation location, int height, ConcurrentGraphicsItem *parent)
     : QGraphicsItem(parent)
     , mStoreManager(storeManager)
     , mLocation(location)
@@ -47,25 +47,25 @@ NewSequentialGraphicsItem::NewSequentialGraphicsItem(StoreManager *storeManager,
         else
             height = heightTotal - heightAccSum;
 
-        auto *item = new NewBlockGraphicsItem(mStoreManager, block, height, this);
+        auto *item = new BlockGraphicsItem(mStoreManager, block, height, this);
         item->setPos(GridGraphicsManager::MARGIN, offset);
         offset += height;
         heightAccSum += height;
     }
 }
 
-int NewSequentialGraphicsItem::getWidth() const {
+int SequentialGraphicsItem::getWidth() const {
     auto totalWidth = GridGraphicsManager::GRID_WIDTH - 3 * GridGraphicsManager::MARGIN; // Include margin to the right
     return totalWidth / 3;
 }
 
-QRectF NewSequentialGraphicsItem::boundingRect() const {
+QRectF SequentialGraphicsItem::boundingRect() const {
     auto height = mHeight - 2 * GridGraphicsManager::MARGIN;
     auto width = getWidth() - GridGraphicsManager::MARGIN;
     return QRectF(GridGraphicsManager::MARGIN, GridGraphicsManager::MARGIN, width, height);
 }
 
-void NewSequentialGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void SequentialGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::DashLine);
@@ -82,11 +82,11 @@ void NewSequentialGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     painter->drawRect(boundingRect());
 }
 
-SequentialGroupLocation NewSequentialGraphicsItem::getLocation() const {
+SequentialGroupLocation SequentialGraphicsItem::getLocation() const {
     return mLocation;
 }
 
-void NewSequentialGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
+void SequentialGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
     if (event->mimeData()->hasFormat("application/judoassistant-block")) {
         event->setAccepted(true);
         mDragOver = true;
@@ -98,12 +98,12 @@ void NewSequentialGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent *even
     update();
 }
 
-void NewSequentialGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
+void SequentialGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
     mDragOver = false;
     update();
 }
 
-void NewSequentialGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
+void SequentialGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
     auto block = mime->block();
 

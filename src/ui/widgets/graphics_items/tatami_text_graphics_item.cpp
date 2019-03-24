@@ -1,7 +1,7 @@
 #include <QPainter>
 
 #include "ui/widgets/graphics_items/tatami_text_graphics_item.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/colors.hpp"
 
 TatamiTextGraphicsItem::TatamiTextGraphicsItem(int index)

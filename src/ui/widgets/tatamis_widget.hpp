@@ -16,8 +16,8 @@
 class StoreManager;
 class TatamiWidget;
 class GridGraphicsItem;
-class NewConcurrentGraphicsItem;
-class NewEmptyConcurrentGraphicsItem;
+class ConcurrentGraphicsItem;
+class EmptyConcurrentGraphicsItem;
 enum class MatchType;
 
 class GridGraphicsManager {
@@ -62,8 +62,8 @@ public:
 private:
     void shiftBlocks();
 
-    std::vector<NewEmptyConcurrentGraphicsItem*> mEmptyGroups;
-    std::list<NewConcurrentGraphicsItem*> mGroups;
+    std::vector<EmptyConcurrentGraphicsItem*> mEmptyGroups;
+    std::list<ConcurrentGraphicsItem*> mGroups;
     StoreManager & mStoreManager;
     QGraphicsScene *mScene;
     TatamiLocation mLocation;
@@ -73,10 +73,10 @@ private:
 };
 
 
-class NewTatamisWidget : public QWidget {
+class TatamisWidget : public QWidget {
     Q_OBJECT
 public:
-    NewTatamisWidget(StoreManager &storeManager);
+    TatamisWidget(StoreManager &storeManager);
 
 private:
     void beginTournamentReset();

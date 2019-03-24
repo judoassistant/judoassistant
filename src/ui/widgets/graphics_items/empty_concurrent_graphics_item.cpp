@@ -8,10 +8,10 @@
 #include "ui/misc/judoassistant_mime.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/widgets/colors.hpp"
-#include "ui/widgets/graphics_items/new_empty_concurrent_graphics_item.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/graphics_items/empty_concurrent_graphics_item.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 
-NewEmptyConcurrentGraphicsItem::NewEmptyConcurrentGraphicsItem(StoreManager * storeManager, TatamiLocation tatami, size_t index)
+EmptyConcurrentGraphicsItem::EmptyConcurrentGraphicsItem(StoreManager * storeManager, TatamiLocation tatami, size_t index)
     : mStoreManager(storeManager)
     , mTatami(tatami)
     , mIndex(index)
@@ -20,7 +20,7 @@ NewEmptyConcurrentGraphicsItem::NewEmptyConcurrentGraphicsItem(StoreManager * st
     setAcceptDrops(true);
 }
 
-QRectF NewEmptyConcurrentGraphicsItem::boundingRect() const {
+QRectF EmptyConcurrentGraphicsItem::boundingRect() const {
     constexpr int x = GridGraphicsManager::MARGIN;
     constexpr int y = GridGraphicsManager::MARGIN;
     constexpr int width = GridGraphicsManager::GRID_WIDTH - 2 * GridGraphicsManager::MARGIN;
@@ -28,7 +28,7 @@ QRectF NewEmptyConcurrentGraphicsItem::boundingRect() const {
     return QRectF(x, y, width, height);
 }
 
-void NewEmptyConcurrentGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void EmptyConcurrentGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::DashLine);
@@ -44,7 +44,7 @@ void NewEmptyConcurrentGraphicsItem::paint(QPainter *painter, const QStyleOption
     painter->drawRect(boundingRect());
 }
 
-void NewEmptyConcurrentGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
+void EmptyConcurrentGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
     if (event->mimeData()->hasFormat("application/judoassistant-block")) {
         event->setAccepted(true);
         mDragOver = true;
@@ -56,12 +56,12 @@ void NewEmptyConcurrentGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent 
     update();
 }
 
-void NewEmptyConcurrentGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
+void EmptyConcurrentGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event) {
     mDragOver = false;
     update();
 }
 
-void NewEmptyConcurrentGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
+void EmptyConcurrentGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
     const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
     auto block = mime->block();
     auto &tournament = mStoreManager->getTournament();

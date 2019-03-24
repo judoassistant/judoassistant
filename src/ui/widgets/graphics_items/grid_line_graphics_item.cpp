@@ -1,5 +1,5 @@
 #include "ui/widgets/graphics_items/grid_line_graphics_item.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/colors.hpp"
 #include <QPainter>
 // #include <QFont>

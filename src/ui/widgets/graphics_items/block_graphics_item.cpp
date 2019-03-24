@@ -10,11 +10,11 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/colors.hpp"
-#include "ui/widgets/graphics_items/new_block_graphics_item.hpp"
-#include "ui/widgets/graphics_items/new_sequential_graphics_item.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/graphics_items/block_graphics_item.hpp"
+#include "ui/widgets/graphics_items/sequential_graphics_item.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 
-NewBlockGraphicsItem::NewBlockGraphicsItem(StoreManager *storeManager, std::pair<CategoryId, MatchType> block, int height, NewSequentialGraphicsItem *parent)
+BlockGraphicsItem::BlockGraphicsItem(StoreManager *storeManager, std::pair<CategoryId, MatchType> block, int height, SequentialGraphicsItem *parent)
     : QGraphicsItem(parent)
     , mStoreManager(storeManager)
     , mBlock(block)
@@ -30,12 +30,12 @@ NewBlockGraphicsItem::NewBlockGraphicsItem(StoreManager *storeManager, std::pair
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-QRectF NewBlockGraphicsItem::boundingRect() const {
+QRectF BlockGraphicsItem::boundingRect() const {
     // TODO: Try to use QRect instead of QRectF
     return QRectF(GridGraphicsManager::MARGIN, GridGraphicsManager::MARGIN, mWidth - 2*GridGraphicsManager::MARGIN, mHeight - GridGraphicsManager::MARGIN);
 }
 
-void NewBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(COLOR_14);
 
@@ -73,15 +73,15 @@ void NewBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
     painter->drawText(timeRect, Qt::AlignTop | Qt::AlignLeft, time);
 }
 
-void NewBlockGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void BlockGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     setCursor(Qt::ClosedHandCursor);
 }
 
-void NewBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void BlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     setCursor(Qt::OpenHandCursor);
 }
 
-void NewBlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void BlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     auto dist = QLineF(event->screenPos(), event->buttonDownScreenPos(Qt::LeftButton)).length();
     if (dist < QApplication::startDragDistance())
         return;

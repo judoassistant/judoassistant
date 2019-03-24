@@ -8,15 +8,15 @@
 #include "core/stores/category_store.hpp"
 
 class StoreManager;
-class NewConcurrentGraphicsItem;
-class NewSequentialGraphicsItem;
+class ConcurrentGraphicsItem;
+class SequentialGraphicsItem;
 enum class MatchType;
 
-class NewBlockGraphicsItem : public QGraphicsItem {
+class BlockGraphicsItem : public QGraphicsItem {
 public:
     static constexpr int PADDING = 3;
 
-    NewBlockGraphicsItem(StoreManager *storeManager, std::pair<CategoryId, MatchType> block, int height, NewSequentialGraphicsItem *parent);
+    BlockGraphicsItem(StoreManager *storeManager, std::pair<CategoryId, MatchType> block, int height, SequentialGraphicsItem *parent);
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;

@@ -6,19 +6,19 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/graphics_items/grid_line_graphics_item.hpp"
-#include "ui/widgets/graphics_items/new_empty_concurrent_graphics_item.hpp"
-#include "ui/widgets/graphics_items/new_concurrent_graphics_item.hpp"
+#include "ui/widgets/graphics_items/empty_concurrent_graphics_item.hpp"
+#include "ui/widgets/graphics_items/concurrent_graphics_item.hpp"
 #include "ui/widgets/graphics_items/tatami_text_graphics_item.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/unallocated_blocks_widget.hpp"
 
-NewTatamisWidget::NewTatamisWidget(StoreManager &storeManager)
+TatamisWidget::TatamisWidget(StoreManager &storeManager)
     : mStoreManager(storeManager)
 {
     // QTournamentStore &tournament = mStoreManager.getTournament();
 
-    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &NewTatamisWidget::beginTournamentReset);
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &NewTatamisWidget::endTournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &TatamisWidget::beginTournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &TatamisWidget::endTournamentReset);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -79,7 +79,7 @@ NewTatamisWidget::NewTatamisWidget(StoreManager &storeManager)
     setLayout(layout);
 }
 
-void NewTatamisWidget::beginTournamentReset() {
+void TatamisWidget::beginTournamentReset() {
     while (!mConnections.empty()) {
         disconnect(mConnections.top());
         mConnections.pop();
@@ -88,22 +88,22 @@ void NewTatamisWidget::beginTournamentReset() {
     beginTatamiCountChange();
 }
 
-void NewTatamisWidget::endTournamentReset() {
+void TatamisWidget::endTournamentReset() {
     auto &tournament = mStoreManager.getTournament();
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &NewTatamisWidget::beginTatamiCountChange));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &NewTatamisWidget::endTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &TatamisWidget::beginTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &TatamisWidget::endTatamiCountChange));
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &NewTatamisWidget::beginTatamiCountChange));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &NewTatamisWidget::endTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &TatamisWidget::beginTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &TatamisWidget::endTatamiCountChange));
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &NewTatamisWidget::changeTatamis));
-    mConnections.push(connect(&tournament, &QTournamentStore::categoriesReset, this, &NewTatamisWidget::endCategoriesReset));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &TatamisWidget::changeTatamis));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesReset, this, &TatamisWidget::endCategoriesReset));
 
     endTatamiCountChange();
 }
 
-void NewTatamisWidget::beginTatamiCountChange() {
+void TatamisWidget::beginTatamiCountChange() {
     for (auto & tatami: mTatamis) {
         tatami.clearBlocks();
     }
@@ -111,7 +111,7 @@ void NewTatamisWidget::beginTatamiCountChange() {
     mTatamis.clear();
 }
 
-void NewTatamisWidget::endTatamiCountChange() {
+void TatamisWidget::endTatamiCountChange() {
     TatamiList & tatamis = mStoreManager.getTournament().getTatamis();
 
     int minutes = 0;
@@ -185,7 +185,7 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     }
 }
 
-void NewTatamisWidget::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+void TatamisWidget::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
     int minutes = 0;
     for (auto & tatami : mTatamis) {
         tatami.changeTatamis(locations, blocks);
@@ -195,7 +195,7 @@ void NewTatamisWidget::changeTatamis(std::vector<BlockLocation> locations, std::
     mGrid->setMinutes(minutes);
 }
 
-void NewTatamisWidget::endCategoriesReset() {
+void TatamisWidget::endCategoriesReset() {
     int minutes = 0;
     for (auto & tatami : mTatamis) {
         tatami.reloadBlocks();
@@ -246,16 +246,16 @@ void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, 
     }
 
     // There is always an empty block at the top
-    size_t offset = mY + NewEmptyConcurrentGraphicsItem::HEIGHT;
+    size_t offset = mY + EmptyConcurrentGraphicsItem::HEIGHT;
 
     auto it = mGroups.begin();
     for (size_t i = 0; i < tatami.groupCount(); ++i) {
-        NewConcurrentGraphicsItem *item = nullptr;
+        ConcurrentGraphicsItem *item = nullptr;
         PositionHandle handle = tatami.getHandle(i);
         if (it == mGroups.end() || !(handle.equiv((*it)->getLocation().handle))) {
             // insert group
             ConcurrentGroupLocation location{mLocation, handle};
-            item = new NewConcurrentGraphicsItem(&mStoreManager, location);
+            item = new ConcurrentGraphicsItem(&mStoreManager, location);
             mScene->addItem(item);
             mGroups.insert(it, item);
         }
@@ -271,12 +271,12 @@ void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, 
         offset += item->getHeight();
 
         if (mEmptyGroups.size() < i + 2) {
-            mEmptyGroups.push_back(new NewEmptyConcurrentGraphicsItem(&mStoreManager, mLocation, i+1));
+            mEmptyGroups.push_back(new EmptyConcurrentGraphicsItem(&mStoreManager, mLocation, i+1));
             mScene->addItem(mEmptyGroups.back());
         }
 
         mEmptyGroups[i+1]->setPos(mX, offset);
-        offset += NewEmptyConcurrentGraphicsItem::HEIGHT;
+        offset += EmptyConcurrentGraphicsItem::HEIGHT;
     }
 
     while (mEmptyGroups.size() > mGroups.size() + 1) {
@@ -308,12 +308,12 @@ void TatamiGraphicsManager::reloadBlocks() {
     size_t offset = mY;
 
     {
-        auto *emptyItem = new NewEmptyConcurrentGraphicsItem(&mStoreManager, mLocation, 0);
+        auto *emptyItem = new EmptyConcurrentGraphicsItem(&mStoreManager, mLocation, 0);
         mEmptyGroups.push_back(emptyItem);
         mScene->addItem(emptyItem);
 
         emptyItem->setPos(mX, offset);
-        offset += NewEmptyConcurrentGraphicsItem::HEIGHT;
+        offset += EmptyConcurrentGraphicsItem::HEIGHT;
     }
 
     for (size_t i = 0; i < tatami.groupCount(); ++i) {
@@ -324,7 +324,7 @@ void TatamiGraphicsManager::reloadBlocks() {
             expectedDuration += group.getExpectedDuration();
 
             ConcurrentGroupLocation location{mLocation, handle};
-            auto *item = new NewConcurrentGraphicsItem(&mStoreManager, location);
+            auto *item = new ConcurrentGraphicsItem(&mStoreManager, location);
             mScene->addItem(item);
             mGroups.push_back(item);
 
@@ -333,12 +333,12 @@ void TatamiGraphicsManager::reloadBlocks() {
         }
 
         {
-            auto *item = new NewEmptyConcurrentGraphicsItem(&mStoreManager, mLocation, i+1);
+            auto *item = new EmptyConcurrentGraphicsItem(&mStoreManager, mLocation, i+1);
             mEmptyGroups.push_back(item);
             mScene->addItem(item);
 
             item->setPos(mX, offset);
-            offset += NewEmptyConcurrentGraphicsItem::HEIGHT;
+            offset += EmptyConcurrentGraphicsItem::HEIGHT;
         }
     }
 

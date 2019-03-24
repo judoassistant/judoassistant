@@ -7,11 +7,11 @@
 #include "core/stores/tatami/location.hpp"
 
 class StoreManager;
-class NewConcurrentGraphicsItem;
+class ConcurrentGraphicsItem;
 
-class NewSequentialGraphicsItem : public QGraphicsItem {
+class SequentialGraphicsItem : public QGraphicsItem {
 public:
-    NewSequentialGraphicsItem(StoreManager *storeManager, SequentialGroupLocation location, int height, NewConcurrentGraphicsItem *parent);
+    SequentialGraphicsItem(StoreManager *storeManager, SequentialGroupLocation location, int height, ConcurrentGraphicsItem *parent);
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;

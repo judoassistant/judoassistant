@@ -22,7 +22,7 @@
 #include "ui/widgets/import_players_csv_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
-#include "ui/widgets/new_tatamis_widget.hpp"
+#include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
@@ -38,7 +38,7 @@ HubWindow::HubWindow() {
     tabWidget->addTab(new TournamentWidget(mStoreManager), tr("Tournament"));
     tabWidget->addTab(new PlayersWidget(mStoreManager), tr("Players"));
     tabWidget->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
-    tabWidget->addTab(new NewTatamisWidget(mStoreManager), tr("Tatamis"));
+    tabWidget->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
     tabWidget->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
     tabWidget->setCurrentIndex(0);
     tabWidget->setTabPosition(QTabWidget::TabPosition::West);

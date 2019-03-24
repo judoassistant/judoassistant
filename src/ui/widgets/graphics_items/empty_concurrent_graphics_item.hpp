@@ -1,21 +1,21 @@
 #pragma once
 
-#include <QGraphicsItem>
 
 #include "core/id.hpp"
 #include "core/position_manager.hpp"
 #include "core/stores/tatami/location.hpp"
+#include <QGraphicsItem>
 
-class NewSequentialGraphicsItem;
+class StoreManager;
+enum class MatchType;
 
-class NewConcurrentGraphicsItem : public QGraphicsItem {
+class EmptyConcurrentGraphicsItem : public QGraphicsItem {
 public:
-    NewConcurrentGraphicsItem(StoreManager * storeManager, ConcurrentGroupLocation location);
-    int getHeight() const;
+    static constexpr int HEIGHT = 14;
+
+    EmptyConcurrentGraphicsItem(StoreManager * storeManager, TatamiLocation tatami, size_t index);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-    void reloadBlocks();
-    ConcurrentGroupLocation getLocation() const;
 
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
     void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
@@ -23,9 +23,8 @@ public:
 
 private:
     StoreManager *mStoreManager;
-    ConcurrentGroupLocation mLocation;
-    int mHeight;
+    TatamiLocation mTatami;
+    size_t mIndex;
     bool mDragOver;
-    std::vector<NewSequentialGraphicsItem*> mSequentialGroups;
 };
 
