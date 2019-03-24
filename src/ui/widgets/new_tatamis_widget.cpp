@@ -10,7 +10,6 @@
 #include "ui/widgets/graphics_items/new_concurrent_graphics_item.hpp"
 #include "ui/widgets/graphics_items/tatami_text_graphics_item.hpp"
 #include "ui/widgets/new_tatamis_widget.hpp"
-#include "ui/widgets/tatami_widget.hpp"
 #include "ui/widgets/unallocated_blocks_widget.hpp"
 
 NewTatamisWidget::NewTatamisWidget(StoreManager &storeManager)
