@@ -69,9 +69,9 @@ void NewSequentialGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     pen.setStyle(Qt::DashLine);
 
     if (mDragOver)
-        pen.setColor(COLOR_13); // COLOR_8
+        pen.setColor(COLOR_8);
     else
-        pen.setColor(COLOR_14); // COLOR_3
+        pen.setColor(COLOR_4);
 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
