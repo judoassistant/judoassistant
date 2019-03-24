@@ -27,6 +27,7 @@ private:
     StoreManager *mStoreManager;
     SequentialGroupLocation mLocation;
     int mHeight;
+    size_t mBlockCount;
     bool mDragOver;
 };
 

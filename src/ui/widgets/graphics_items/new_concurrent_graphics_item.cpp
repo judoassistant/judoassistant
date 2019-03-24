@@ -99,17 +99,17 @@ void NewConcurrentGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *even
 }
 
 void NewConcurrentGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
-    // const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
-    // auto block = mime->block();
+    const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
+    auto block = mime->block();
 
-    // auto &tournament = mStoreManager->getTournament();
-    // auto &group = tournament.getTatamis().at(mLocation);
+    auto &tournament = mStoreManager->getTournament();
+    auto &group = tournament.getTatamis().at(mLocation);
 
-    // BlockLocation location;
-    // location.sequentialGroup = group.generateLocation(mLocation, mSequentialGroups.size());
-    // location.pos = 0;
+    BlockLocation location;
+    location.sequentialGroup = group.generateLocation(mLocation, mSequentialGroups.size());
+    location.pos = 0;
 
-    // mStoreManager->dispatch(std::make_unique<SetTatamiLocationAction>(block, location));
+    mStoreManager->dispatch(std::make_unique<SetTatamiLocationAction>(block, location));
     mDragOver = false;
     update();
 }

@@ -34,6 +34,8 @@ NewSequentialGraphicsItem::NewSequentialGraphicsItem(StoreManager *storeManager,
     int heightTotal = static_cast<int>(boundingRect().height()) - GridGraphicsManager::MARGIN; // Total shared height for all blocks
     int heightAccSum = 0;
 
+    mBlockCount = group.blockCount();
+
     size_t offset = GridGraphicsManager::MARGIN;
     for (size_t i = 0; i < group.blockCount(); ++i) {
         auto block = group.at(i);
@@ -102,8 +104,15 @@ void NewSequentialGraphicsItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *even
 }
 
 void NewSequentialGraphicsItem::dropEvent(QGraphicsSceneDragDropEvent *event) {
-    // TODO: Implement
+    const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
+    auto block = mime->block();
+
+    BlockLocation location;
+    location.sequentialGroup = mLocation;
+    location.pos = mBlockCount;
+
     mDragOver = false;
     update();
+    mStoreManager->dispatch(std::make_unique<SetTatamiLocationAction>(block, location));
 }
 
