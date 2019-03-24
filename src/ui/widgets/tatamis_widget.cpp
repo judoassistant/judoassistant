@@ -220,6 +220,8 @@ int TatamiGraphicsManager::getMinutes() const {
 }
 
 void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+    std::chrono::milliseconds expectedDuration = std::chrono::milliseconds(0);
+
     std::unordered_set<PositionId> affectedConcurrentGroups;
     for (auto location : locations) {
         if (!location.sequentialGroup.concurrentGroup.tatami.equiv(mLocation)) continue;
@@ -251,7 +253,11 @@ void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, 
     auto it = mGroups.begin();
     for (size_t i = 0; i < tatami.groupCount(); ++i) {
         ConcurrentGraphicsItem *item = nullptr;
-        PositionHandle handle = tatami.getHandle(i);
+        const auto &handle = tatami.getHandle(i);
+        const auto &group = tatami.at(handle);
+
+        expectedDuration += group.getExpectedDuration();
+
         if (it == mGroups.end() || !(handle.equiv((*it)->getLocation().handle))) {
             // insert group
             ConcurrentGroupLocation location{mLocation, handle};
@@ -284,6 +290,8 @@ void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, 
         delete (mEmptyGroups.back());
         mEmptyGroups.pop_back();
     }
+
+    mMinutes = std::chrono::duration_cast<std::chrono::minutes>(expectedDuration).count();
 }
 
 void TatamiGraphicsManager::clearBlocks() {
