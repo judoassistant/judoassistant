@@ -10,6 +10,7 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/graphics_items/new_concurrent_graphics_item.hpp"
+#include "ui/widgets/graphics_items/new_empty_concurrent_graphics_item.hpp"
 #include "ui/widgets/graphics_items/new_sequential_graphics_item.hpp"
 #include "ui/widgets/new_tatamis_widget.hpp"
 
@@ -23,7 +24,7 @@ NewConcurrentGraphicsItem::NewConcurrentGraphicsItem(StoreManager * storeManager
 }
 
 int NewConcurrentGraphicsItem::getHeight() const {
-    return 100;
+    return mHeight;
 }
 
 QRectF NewConcurrentGraphicsItem::boundingRect() const {
@@ -55,24 +56,24 @@ void NewConcurrentGraphicsItem::reloadBlocks() {
         delete group;
     }
 
-    // mSequentialGroups.clear();
+    mSequentialGroups.clear();
 
-    // const auto &tatamis = mStoreManager->getTournament().getTatamis();
-    // const auto &group = tatamis.at(mLocation);
+    const auto &tatamis = mStoreManager->getTournament().getTatamis();
+    const auto &group = tatamis.at(mLocation);
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(group.getExpectedDuration()).count();
+    mHeight = minutes * GridGraphicsManager::GRID_HEIGHT / GridGraphicsManager::GRID_RESOLUTION - NewEmptyConcurrentGraphicsItem::HEIGHT;
 
-    // size_t offset = PADDING;
-    // int newHeight = 0;
-    // for (size_t i = 0; i < group.groupCount(); ++i) {
-    //     auto * item = new SequentialBlockItem(mStoreManager, {mLocation, group.getHandle(i)}, this);
-    //     item->setPos(offset, PADDING);
-    //     offset += SequentialBlockItem::WIDTH + PADDING;
-    //     newHeight = std::max(newHeight, item->getHeight());
-    //     mSequentialGroups.push_back(item);
-    // }
+    auto actualHeight = static_cast<int>(boundingRect().height());
 
-    // newHeight += PADDING*2;
-    // prepareGeometryChange();
-    // mHeight = newHeight;
+    size_t offset = GridGraphicsManager::MARGIN;
+    for (size_t i = 0; i < group.groupCount(); ++i) {
+        auto * item = new NewSequentialGraphicsItem(mStoreManager, {mLocation, group.getHandle(i)}, actualHeight, this);
+        item->setPos(offset, GridGraphicsManager::MARGIN);
+        offset += item->getWidth();
+        mSequentialGroups.push_back(item);
+    }
+
+    prepareGeometryChange();
     update();
 }
 
