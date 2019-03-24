@@ -66,6 +66,7 @@ NewTatamisWidget::NewTatamisWidget(StoreManager &storeManager)
         // view->setMaximumWidth(UnallocatedBlockItem::WIDTH + PADDING*2 + 16);
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        view->setDragMode(QGraphicsView::ScrollHandDrag);
         // mFixedScrollArea = new FixedScrollArea(300, mainSplitWidget);
         mainSplit->addWidget(view);
     }
