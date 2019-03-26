@@ -77,7 +77,6 @@ void SequentialGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphics
 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);
-    painter->setBrush(Qt::white);
 
     painter->drawRect(boundingRect());
 }

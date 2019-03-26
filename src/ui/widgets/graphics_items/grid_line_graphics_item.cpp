@@ -7,7 +7,9 @@
 GridLineGraphicsItem::GridLineGraphicsItem(int minutes, int width)
     : mMinutes(minutes)
     , mWidth(width)
-{}
+{
+    setZValue(-1);
+}
 
 QRectF GridLineGraphicsItem::boundingRect() const {
     return QRectF(0, -10, mWidth, 20);
