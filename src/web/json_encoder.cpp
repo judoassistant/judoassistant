@@ -304,3 +304,31 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
     return res;
 }
 
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("subscribe-category-fail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return std::move(buffer);
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("subscribe-player-fail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return std::move(buffer);
+}
+

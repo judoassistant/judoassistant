@@ -27,7 +27,9 @@ class JsonEncoder {
 public:
     std::unique_ptr<JsonBuffer> encodeSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
     std::unique_ptr<JsonBuffer> encodeSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category);
+    std::unique_ptr<JsonBuffer> encodeSubscribeCategoryFailMessage();
     std::unique_ptr<JsonBuffer> encodeSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player);
+    std::unique_ptr<JsonBuffer> encodeSubscribePlayerFailMessage();
 
     std::unique_ptr<JsonBuffer> encodeChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
 
