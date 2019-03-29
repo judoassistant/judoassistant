@@ -26,14 +26,10 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("sync", true, allocator);
+    document.AddMember("messageType", encodeString("sync", allocator), allocator);
 
     // Tournament meta data field
     document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
-
-    // deletedCategories field
-    rapidjson::Value deletedCategories(rapidjson::kArrayType);
-    document.AddMember("deletedCategories", deletedCategories, allocator);
 
     // categories field
     rapidjson::Value categories(rapidjson::kArrayType);
@@ -46,10 +42,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
         document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament.getCategory(*subscribedCategory), allocator), allocator);
     else
         document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
-
-    // deletedPlayers field
-    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
-    document.AddMember("deletedPlayers", deletedPlayers, allocator);
 
     // players field
     rapidjson::Value players(rapidjson::kArrayType);
@@ -64,7 +56,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
         document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
 
     // matches
-
+    // TODO: Encode tatami matches
     rapidjson::Value matches(rapidjson::kArrayType);
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches())
@@ -92,35 +84,12 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryMessage(const We
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("sync", false, allocator);
-
-    // Tournament meta data field
-    document.AddMember("tournament", rapidjson::Value(), allocator);
-
-    // deletedCategories field
-    rapidjson::Value deletedCategories(rapidjson::kArrayType);
-    document.AddMember("deletedCategories", deletedCategories, allocator);
-
-    // categories field
-    rapidjson::Value categories(rapidjson::kArrayType);
-    document.AddMember("categories", categories, allocator);
+    document.AddMember("messageType", encodeString("subscribe-category", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedCategory", encodeSubscribedCategory(category, allocator), allocator);
 
-    // deletedPlayers field
-    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
-    document.AddMember("deletedPlayers", deletedPlayers, allocator);
-
-    // players field
-    rapidjson::Value players(rapidjson::kArrayType);
-    document.AddMember("players", players, allocator);
-
-    // subscribed category field
-    document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
-
     // matches
-
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &match : category.getMatches())
         matches.PushBack(encodeMatch(*match, allocator), allocator);
@@ -138,35 +107,12 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerMessage(const WebT
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("sync", false, allocator);
-
-    // Tournament meta data field
-    document.AddMember("tournament", rapidjson::Value(), allocator);
-
-    // deletedCategories field
-    rapidjson::Value deletedCategories(rapidjson::kArrayType);
-    document.AddMember("deletedCategories", deletedCategories, allocator);
-
-    // categories field
-    rapidjson::Value categories(rapidjson::kArrayType);
-    document.AddMember("categories", categories, allocator);
-
-    // subscribed category field
-    document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
-
-    // deletedPlayers field
-    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
-    document.AddMember("deletedPlayers", deletedPlayers, allocator);
-
-    // players field
-    rapidjson::Value players(rapidjson::kArrayType);
-    document.AddMember("players", players, allocator);
+    document.AddMember("messageType", encodeString("subscribe-player", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedPlayer", encodeSubscribedPlayer(player, allocator), allocator);
 
     // matches
-
     rapidjson::Value matches(rapidjson::kArrayType);
     log_debug().field("size", player.getMatches().size()).msg("Listing matches");
     for (auto combinedId : player.getMatches()) {
