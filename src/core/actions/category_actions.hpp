@@ -47,6 +47,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddCategoryAction)
 class DrawCategoryAction : public Action {
 public:
     DrawCategoryAction() = default;
+    DrawCategoryAction(CategoryId categoryId);
     DrawCategoryAction(CategoryId categoryId, unsigned int seed);
     // DrawCategoryAction(CategoryId categoryId);
     void redoImpl(TournamentStore & tournament) override;

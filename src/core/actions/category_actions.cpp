@@ -58,9 +58,7 @@ void AddCategoryAction::undoImpl(TournamentStore & tournament) {
 }
 
 AddPlayersToCategoryAction::AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds)
-    : mCategoryId(categoryId)
-    , mPlayerIds(playerIds)
-    , mSeed(getSeed())
+    : AddPlayersToCategoryAction(categoryId, playerIds, getSeed())
 {}
 
 AddPlayersToCategoryAction::AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds, unsigned int seed)
@@ -118,9 +116,7 @@ void AddPlayersToCategoryAction::undoImpl(TournamentStore & tournament) {
 }
 
 ErasePlayersFromCategoryAction::ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds)
-    : mCategoryId(categoryId)
-    , mPlayerIds(playerIds)
-    , mSeed(getSeed())
+    : ErasePlayersFromCategoryAction(categoryId, playerIds, getSeed())
 {}
 
 ErasePlayersFromCategoryAction::ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds, unsigned int seed)
@@ -309,15 +305,14 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
     mLocations.clear();
 }
 
+DrawCategoryAction::DrawCategoryAction(CategoryId categoryId)
+    : DrawCategoryAction(categoryId, getSeed())
+{}
+
 DrawCategoryAction::DrawCategoryAction(CategoryId categoryId, unsigned int seed)
     : mCategoryId(categoryId)
     , mSeed(seed)
 {}
-
-// DrawCategoryAction::DrawCategoryAction(CategoryId categoryId)
-//     : mCategoryId(categoryId)
-//     , mSeed(getSeed())
-// {}
 
 std::unique_ptr<Action> DrawCategoryAction::freshClone() const {
     return std::make_unique<DrawCategoryAction>(mCategoryId, mSeed);
@@ -429,8 +424,7 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 }
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds)
-    : mPlayerIds(playerIds)
-    , mSeed(getSeed())
+    : ErasePlayersFromAllCategoriesAction(playerIds, getSeed())
 {}
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds, unsigned int seed)
@@ -646,9 +640,7 @@ void ChangeCategoriesNameAction::undoImpl(TournamentStore & tournament) {
 }
 
 ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset)
-    : mCategoryIds(categoryIds)
-    , mRuleset(ruleset)
-    , mSeed(getSeed())
+    : ChangeCategoriesRulesetAction(categoryIds, ruleset, getSeed())
 {}
 
 ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset, unsigned int seed)
@@ -710,9 +702,7 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
 }
 
 ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem)
-    : mCategoryIds(categoryIds)
-    , mDrawSystem(drawSystem)
-    , mSeed(getSeed())
+    : ChangeCategoriesDrawSystemAction(categoryIds, drawSystem, getSeed())
 {}
 
 ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem, unsigned int seed)
