@@ -45,8 +45,7 @@ void AddPlayersAction::undoImpl(TournamentStore & tournament) {
 }
 
 ErasePlayersAction::ErasePlayersAction(const std::vector<PlayerId> &playerIds)
-    : mPlayerIds(playerIds)
-    , mSeed(getSeed())
+    : ErasePlayersAction(playerIds, getSeed())
 {}
 
 ErasePlayersAction::ErasePlayersAction(const std::vector<PlayerId> &playerIds, unsigned int seed)
