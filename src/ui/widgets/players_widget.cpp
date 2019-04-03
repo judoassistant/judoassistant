@@ -13,6 +13,7 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/auto_add_category_dialog.hpp"
 #include "ui/widgets/create_player_dialog.hpp"
+#include "ui/widgets/create_category_dialog.hpp"
 #include "ui/widgets/edit_player_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 
@@ -157,6 +158,10 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
         }
     }
     {
+        QAction *action = menu.addAction(tr("Create new category for selected players..."));
+        connect(action, &QAction::triggered, this, &PlayersWidget::showCategoryCreateDialog);
+    }
+    {
         QAction *action = menu.addAction(tr("Automatically create categories for the selected players.."));
         connect(action, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
     }
@@ -194,3 +199,10 @@ void PlayersWidget::addSelectedPlayersToCategory(CategoryId categoryId) {
     mStoreManager.dispatch(std::make_unique<AddPlayersToCategoryAction>(categoryId, std::move(playerIds)));
 }
 
+void PlayersWidget::showCategoryCreateDialog() {
+    std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
+
+    CreateCategoryDialog dialog(mStoreManager, playerIds, this);
+
+    dialog.exec();
+}

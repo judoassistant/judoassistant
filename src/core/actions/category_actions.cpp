@@ -24,7 +24,6 @@ AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::st
     : AddCategoryAction(CategoryId::generate(tournament), name, ruleset, drawSystem)
 {}
 
-
 std::unique_ptr<Action> AddCategoryAction::freshClone() const {
     return std::make_unique<AddCategoryAction>(mId, mName, mRuleset, mDrawSystem);
 }
@@ -812,5 +811,49 @@ std::string ChangeCategoriesRulesetAction::getDescription() const {
 
 std::string ChangeCategoriesDrawSystemAction::getDescription() const {
     return "Change categories draw system";
+}
+
+AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem, const std::vector<PlayerId> &playerIds, unsigned int seed)
+    : mId(id)
+    , mName(name)
+    , mRuleset(ruleset)
+    , mDrawSystem(drawSystem)
+    , mPlayerIds(playerIds)
+    , mSeed(seed)
+{}
+
+AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(TournamentStore & tournament, const std::string &name, size_t ruleset, size_t drawSystem, const std::vector<PlayerId> &playerIds)
+    : AddCategoryWithPlayersAction(CategoryId::generate(tournament), name, ruleset, drawSystem, playerIds, getSeed())
+{}
+
+
+std::unique_ptr<Action> AddCategoryWithPlayersAction::freshClone() const {
+    return std::make_unique<AddCategoryWithPlayersAction>(mId, mName, mRuleset, mDrawSystem, mPlayerIds, mSeed);
+}
+
+void AddCategoryWithPlayersAction::redoImpl(TournamentStore & tournament) {
+    mCategoryAction = std::make_unique<AddCategoryAction>(mId, mName, mRuleset, mDrawSystem);
+    mCategoryAction->redo(tournament);
+
+    if (!mPlayerIds.empty()) {
+        mPlayersAction = std::make_unique<AddPlayersToCategoryAction>(mId, mPlayerIds, mSeed);
+        mPlayersAction->redo(tournament);
+    }
+}
+
+void AddCategoryWithPlayersAction::undoImpl(TournamentStore & tournament) {
+    if (!mPlayerIds.empty()) {
+        mPlayersAction->undo(tournament);
+        mPlayersAction.reset();
+    }
+
+    mCategoryAction->undo(tournament);
+    mCategoryAction.reset();
+}
+
+std::string AddCategoryWithPlayersAction::getDescription() const {
+    if (mPlayerIds.empty())
+        return "Add category";
+    return "Add category with players";
 }
 

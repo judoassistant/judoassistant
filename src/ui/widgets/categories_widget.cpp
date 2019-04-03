@@ -100,7 +100,7 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
 }
 
 void CategoriesWidget::showCategoryCreateDialog() {
-    CreateCategoryDialog dialog(mStoreManager, this);
+    CreateCategoryDialog dialog(mStoreManager, {}, this);
 
     dialog.exec();
 }

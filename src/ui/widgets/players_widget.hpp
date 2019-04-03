@@ -17,6 +17,7 @@ public:
 public slots:
     void showPlayerCreateDialog();
     void showAutoAddCategoriesWidget();
+    void showCategoryCreateDialog();
     void eraseSelectedPlayers();
     void eraseSelectedPlayersFromAllCategories();
     void eraseSelectedPlayersFromCategory(CategoryId categoryId);

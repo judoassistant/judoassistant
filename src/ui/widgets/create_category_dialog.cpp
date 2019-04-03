@@ -12,9 +12,10 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/create_category_dialog.hpp"
 
-CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, QWidget *parent)
+CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, const std::vector<PlayerId> &playerIds, QWidget *parent)
     : QDialog(parent)
     , mStoreManager(storeManager)
+    , mPlayerIds(playerIds)
 {
     mNameContent = new QLineEdit;
 
@@ -46,7 +47,8 @@ CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, QWidget 
 }
 
 void CreateCategoryDialog::acceptClick() {
-    mStoreManager.dispatch(std::make_unique<AddCategoryAction>(mStoreManager.getTournament(), mNameContent->text().toStdString(), mRulesetContent->currentIndex(), mDrawSystemContent->currentIndex()));
+    auto action = std::make_unique<AddCategoryWithPlayersAction>(mStoreManager.getTournament(), mNameContent->text().toStdString(), mRulesetContent->currentIndex(), mDrawSystemContent->currentIndex(), mPlayerIds);
+    mStoreManager.dispatch(std::move(action));
     accept();
 }
 
