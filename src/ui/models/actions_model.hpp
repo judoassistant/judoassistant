@@ -32,7 +32,7 @@ public slots:
 private:
     const int COLUMN_COUNT = 2;
     StoreManager & mStoreManager;
-    std::vector<ClientActionId> mIds; // TODO: Consider using std::list and map instead
+    std::vector<ClientActionId> mIds;
 };
 
 class ActionsProxyModel : public QSortFilterProxyModel {

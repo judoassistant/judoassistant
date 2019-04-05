@@ -65,7 +65,5 @@ private:
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnpausedMatches;
 
     std::stack<QMetaObject::Connection> mConnections;
-
-    // TODO: Find an implementation of a RB-tree augmented with size
 };
 

@@ -1,8 +1,6 @@
 #pragma once
 
-// Header containing the color scheme (Nord)
-// TODO: Move into QPalette
-
+// Header containing the color scheme for score board
 #include <QColor>
 
 static const QColor COLOR_0("#2E3440");
