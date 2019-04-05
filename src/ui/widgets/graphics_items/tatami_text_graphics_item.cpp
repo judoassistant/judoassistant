@@ -16,8 +16,10 @@ void TatamiTextGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphics
     QFont font("Noto Sans");
     font.setCapitalization(QFont::AllUppercase);
 
+    auto palette = widget->palette();
+
     painter->setFont(font);
-    painter->setPen(COLOR_0);
+    painter->setPen(palette.color(QPalette::Text));
     painter->setBrush(Qt::NoBrush);
 
     painter->drawText(boundingRect(), Qt::AlignCenter, QObject::tr("Tatami %1").arg(mIndex + 1));

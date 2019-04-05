@@ -12,7 +12,7 @@ class UnallocatedBlockGraphicsItem : public QGraphicsItem {
 public:
     static constexpr int WIDTH = 200;
     static constexpr int HEIGHT = 80;
-    static constexpr int PADDING = 3;
+    static constexpr int PADDING = 5;
 
     UnallocatedBlockGraphicsItem(const CategoryStore &category, MatchType type);
 
