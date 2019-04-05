@@ -198,8 +198,8 @@ void HubWindow::createPreferencesMenu() {
 
         connect(lightAction, &QAction::triggered, [this]() {
             LightPalette palette;
-            setPalette(palette);
             QApplication::setPalette(palette);
+            setPalette(palette);
         });
 
         submenu->addAction(darkAction);
