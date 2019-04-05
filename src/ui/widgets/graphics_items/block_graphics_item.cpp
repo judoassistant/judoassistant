@@ -40,7 +40,7 @@ void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(palette.color(QPalette::Shadow).darker());
+    pen.setColor(palette.color(QPalette::Dark));
     painter->setPen(pen);
 
     if (mStatus.startedMatches == 0 && mStatus.finishedMatches == 0) {

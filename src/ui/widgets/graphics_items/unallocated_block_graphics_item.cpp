@@ -32,7 +32,7 @@ void UnallocatedBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGr
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(palette.color(QPalette::Shadow).darker());
+    pen.setColor(palette.color(QPalette::Dark));
     painter->setPen(pen);
 
     const auto &categoryStatus = mCategory->getStatus(mType);

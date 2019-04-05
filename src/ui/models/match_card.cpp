@@ -94,7 +94,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     // Draw bounding rect
     QPen pen;
     pen.setWidth(lineWidth);
-    pen.setColor(palette.color(QPalette::Shadow).darker());
+    pen.setColor(palette.color(QPalette::Dark));
     painter->setPen(pen);
     painter->setBrush(palette.color(QPalette::Button).lighter(120));
     painter->drawRect(0, 0, insideWidth+lineWidth*2, insideHeight+lineWidth*2);
