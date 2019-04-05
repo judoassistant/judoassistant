@@ -32,6 +32,7 @@ private:
     int mHeight;
     int mWidth;
     int mMinutes;
+    bool mEmpty;
     QString mName;
     CategoryStatus mStatus;
 };

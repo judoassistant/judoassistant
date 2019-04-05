@@ -62,8 +62,14 @@ void UnallocatedBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGr
     QString type = (mType == MatchType::FINAL ? QObject::tr("Finals") : QObject::tr("Elimination"));
     painter->drawText(typeRect, Qt::AlignTop | Qt::AlignLeft, type);
 
-    unsigned int minutes = std::chrono::duration_cast<std::chrono::minutes>(mCategory->expectedDuration(mType)).count();
-    QString time = QObject::tr("~ %1 min").arg(minutes);
+    QString time;
+    if (!mCategory->getMatches().empty()) {
+        unsigned int minutes = std::chrono::duration_cast<std::chrono::minutes>(mCategory->expectedDuration(mType)).count();
+        time = QObject::tr("~ %1 min").arg(minutes);
+    }
+    else {
+        time = QObject::tr("no matches");
+    }
     painter->drawText(timeRect, Qt::AlignTop | Qt::AlignLeft, time);
 }
 

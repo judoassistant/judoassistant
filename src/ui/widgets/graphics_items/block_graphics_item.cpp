@@ -24,6 +24,7 @@ BlockGraphicsItem::BlockGraphicsItem(StoreManager *storeManager, std::pair<Categ
     const auto &category = mStoreManager->getTournament().getCategory(block.first);
     mName = QString::fromStdString(category.getName());
     mMinutes = std::chrono::duration_cast<std::chrono::minutes>(category.expectedDuration(mBlock.second)).count();
+    mEmpty = category.getMatches().empty();
     mStatus = category.getStatus(block.second);
 
     setCursor(Qt::OpenHandCursor);
@@ -73,7 +74,11 @@ void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     QString type = (mBlock.second == MatchType::FINAL ? QObject::tr("Finals") : QObject::tr("Elimination"));
     painter->drawText(typeRect, Qt::AlignTop | Qt::AlignLeft, type);
 
-    QString time = QObject::tr("~ %1 min").arg(mMinutes);
+    QString time;
+    if (!mEmpty)
+        time = QObject::tr("~ %1 min").arg(mMinutes);
+    else
+        time = QObject::tr("no matches");
     painter->drawText(timeRect, Qt::AlignTop | Qt::AlignLeft, time);
 }
 
