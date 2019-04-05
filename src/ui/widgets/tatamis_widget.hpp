@@ -26,7 +26,7 @@ public:
 
     static constexpr int GRID_RESOLUTION = 20; // The number of minutes per grid unit
     static constexpr int GRID_HEIGHT = 120; // The pixel size of a grid unit
-    static constexpr int GRID_WIDTH = 300; // The pixel size of a grid unit
+    static constexpr int GRID_WIDTH = 450; // The pixel size of a grid unit
     static constexpr int VERTICAL_OFFSET = 80; // The amount of vertical space used for headers
     static constexpr int HORIZONTAL_OFFSET = 80; // The amount of vertical space used for ticks
     static constexpr int MARGIN = 4;
