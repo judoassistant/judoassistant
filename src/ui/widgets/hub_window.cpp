@@ -1,12 +1,13 @@
-#include <QMenu>
-#include <QMenuBar>
 #include <QAction>
+#include <QApplication>
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QStandardPaths>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QStandardPaths>
 #include <QStatusBar>
-#include <QCoreApplication>
 #include <QUrl>
 
 #include <fstream>
@@ -16,6 +17,7 @@
 #include "ui/constants/homepage.hpp"
 #include "ui/constants/network.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
+#include "ui/misc/dark_palette.hpp"
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
@@ -26,6 +28,9 @@
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+
     // TODO: Add todostack sidebar
     createStatusBar();
     createTournamentMenu();
@@ -40,8 +45,7 @@ HubWindow::HubWindow() {
     sidebar->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
     sidebar->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
     sidebar->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    sidebar->setCurrentIndex(0);
-    sidebar->setTabPosition(QTabWidget::TabPosition::West);
+    sidebar->setCurrentIndex(3);
 
     setCentralWidget(sidebar);
 
