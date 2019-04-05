@@ -1,23 +1,28 @@
-#include <QMenu>
-#include <QMenuBar>
 #include <QAction>
-#include <QMessageBox>
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDesktopServices>
-#include <QVBoxLayout>
 #include <QGroupBox>
-#include <QSplitter>
 #include <QHeaderView>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSplitter>
+#include <QVBoxLayout>
 
 #include "core/actions/match_actions.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
 #include "ui/constants/homepage.hpp"
+#include "ui/misc/dark_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/score_operator_window.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
 {
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
