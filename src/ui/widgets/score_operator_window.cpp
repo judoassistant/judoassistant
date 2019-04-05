@@ -15,14 +15,12 @@
 #include "core/stores/match_store.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/misc/dark_palette.hpp"
+#include "ui/misc/light_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/score_operator_window.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
 {
-    DarkPalette palette;
-    QApplication::setPalette(palette);
-
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
@@ -135,11 +133,40 @@ void ScoreOperatorWindow::createViewMenu() {
 }
 
 void ScoreOperatorWindow::createPreferencesMenu() {
+    // TODO: Consider refactoring this into super class
     QMenu *menu = menuBar()->addMenu(tr("Preferences"));
     {
         QMenu *submenu = menu->addMenu("Language");
         QAction *englishAction = new QAction(tr("English"), this);
         submenu->addAction(englishAction);
+    }
+    {
+        DarkPalette palette;
+        setPalette(palette);
+
+        QMenu *submenu = menu->addMenu("Color Scheme");
+        auto *actionGroup = new QActionGroup(this);
+
+        QAction *darkAction = new QAction(tr("Dark"), this);
+        darkAction->setCheckable(true);
+        darkAction->setChecked(true);
+        actionGroup->addAction(darkAction);
+
+        connect(darkAction, &QAction::triggered, [this]() {
+            setPalette(DarkPalette());
+        });
+
+        QAction *lightAction = new QAction(tr("Light"), this);
+        lightAction->setCheckable(true);
+        actionGroup->addAction(lightAction);
+
+        connect(lightAction, &QAction::triggered, [this]() {
+            log_debug().msg("Setting light palette");
+            setPalette(LightPalette());
+        });
+
+        submenu->addAction(darkAction);
+        submenu->addAction(lightAction);
     }
 }
 

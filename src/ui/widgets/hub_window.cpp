@@ -18,6 +18,7 @@
 #include "ui/constants/network.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/misc/dark_palette.hpp"
+#include "ui/misc/light_palette.hpp"
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
@@ -28,9 +29,6 @@
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
-    DarkPalette palette;
-    QApplication::setPalette(palette);
-
     // TODO: Add todostack sidebar
     createStatusBar();
     createTournamentMenu();
@@ -176,15 +174,32 @@ void HubWindow::createPreferencesMenu() {
         submenu->addAction(englishAction);
     }
     {
-        QMenu *submenu = menu->addMenu("Theme");
+        DarkPalette palette;
+        setPalette(palette);
+
+        QMenu *submenu = menu->addMenu("Color Scheme");
         auto *actionGroup = new QActionGroup(this);
 
-        QAction *englishAction = new QAction(tr("Dark"), this);
-        actionGroup->addAction(englishAction);
+        QAction *darkAction = new QAction(tr("Dark"), this);
+        darkAction->setCheckable(true);
+        darkAction->setChecked(true);
+        actionGroup->addAction(darkAction);
 
-        englishAction->setCheckable(true);
-        englishAction->setChecked(true);
-        submenu->addAction(englishAction);
+        connect(darkAction, &QAction::triggered, [this]() {
+            setPalette(DarkPalette());
+        });
+
+        QAction *lightAction = new QAction(tr("Light"), this);
+        lightAction->setCheckable(true);
+        actionGroup->addAction(lightAction);
+
+        connect(lightAction, &QAction::triggered, [this]() {
+            log_debug().msg("Setting light palette");
+            setPalette(LightPalette());
+        });
+
+        submenu->addAction(darkAction);
+        submenu->addAction(lightAction);
     }
 }
 
