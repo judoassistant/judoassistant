@@ -1,4 +1,5 @@
 #include <QPainter>
+#include <QPalette>
 
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
@@ -15,7 +16,7 @@ MatchCard::MatchCard(const TournamentStore & tournament, const CategoryStore &ca
     setMatch(category, match, masterTime);
 }
 
-void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const {
+void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, const QPalette &palette, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const {
     { // Draw country name and flag
         // TODO: Draw country name and flag
     }
@@ -24,8 +25,8 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         QRect rect(columnTwoOffset, padding, columnThreeOffset-columnTwoOffset, insideHeight/3 - padding*2);
 
         painter->save();
-        painter->setPen(COLOR_0);
-        painter->setBrush(COLOR_0);
+        painter->setPen(palette.color(QPalette::Text));
+        // painter->setBrush(COLOR_0);
         font.setPixelSize((insideHeight/3)/3);
         painter->setFont(font);
 
@@ -47,8 +48,7 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         QRect secondPenaltyRect(columnThreeOffset + columnOffset*2 + penaltyWidth+3, (insideHeight/3)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
 
         painter->save();
-        painter->setPen(COLOR_0);
-        painter->setBrush(COLOR_0);
+        painter->setPen(palette.color(QPalette::Text));
         font.setPixelSize((insideHeight/3)/3);
         painter->setFont(font);
 
@@ -93,15 +93,20 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
     // Draw bounding rect
     QPen pen;
-    pen.setWidth(1);
-    pen.setColor(COLOR_3);
+    pen.setWidth(lineWidth);
+    pen.setColor(palette.color(QPalette::Shadow).darker());
     painter->setPen(pen);
-    painter->setBrush(COLOR_5);
+    painter->setBrush(palette.color(QPalette::Button).lighter(120));
     painter->drawRect(0, 0, insideWidth+lineWidth*2, insideHeight+lineWidth*2);
 
     // Draw header rect
     {
         int headerHeight = insideHeight - (insideHeight/3)*2;
+
+        // painter->setPen(Qt::NoPen);
+        // painter->setBrush(palette.color(QPalette::Base));
+        // painter->drawRect(1, 1, insideWidth, headerHeight);
+
         painter->save();
         painter->translate(lineWidth, lineWidth);
 
@@ -112,22 +117,18 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             QRect rect(padding, padding, headerHeight-padding*2, headerHeight-padding*2);
 
             painter->setPen(Qt::NoPen);
-            painter->setBrush(COLOR_3);
+            painter->setBrush(palette.color(QPalette::Button));
 
             painter->drawRect(rect);
 
-            painter->setPen(Qt::white);
-            painter->setBrush(Qt::white);
+            painter->setPen(palette.color(QPalette::WindowText));
 
             painter->drawText(rect, Qt::AlignVCenter | Qt::AlignHCenter, QString::number((*mTatami)+1));
         }
 
         { // Draw Category Text
             QRect rect(columnTwoOffset, padding, columnThreeOffset-columnTwoOffset, headerHeight-padding*2);
-
-            painter->setPen(COLOR_0);
-            painter->setBrush(COLOR_0);
-
+            painter->setPen(palette.color(QPalette::WindowText));
             painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, mCategory);
         }
 
@@ -135,8 +136,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         QRect pauseRect(columnThreeOffset, headerHeight/2-pauseRectSize/2, pauseRectSize, pauseRectSize);
         QRect textRect(columnThreeOffset + pauseRectSize + padding, padding, insideWidth-(columnThreeOffset + pauseRectSize + padding), headerHeight-padding*2);
         if (mBye) {
-            painter->setPen(COLOR_0);
-            painter->setBrush(COLOR_0);
+            painter->setPen(palette.color(QPalette::WindowText));
             painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("bye"));
         }
         else if (mStatus != MatchStatus::NOT_STARTED && mStatus != MatchStatus::FINISHED) { // Draw Time
@@ -147,8 +147,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
                 painter->setBrush(COLOR_14);
             painter->drawRect(pauseRect);
 
-            painter->setPen(COLOR_0);
-            painter->setBrush(COLOR_0);
+            painter->setPen(palette.color(QPalette::WindowText));
 
             QString seconds = QString::number((mTime % std::chrono::minutes(1)).count()).rightJustified(2, '0');
             QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(mTime).count());
@@ -173,12 +172,12 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     // Draw white player rect
     painter->save();
     painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3)*2);
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(Qt::white);
-    painter->drawRect(0, 0, insideWidth, insideHeight/3);
+    // painter->setPen(Qt::NoPen);
+    // painter->setBrush(palette.color(QPalette::Base));
+    // painter->drawRect(0, 0, insideWidth, insideHeight/3);
 
     if (mWhitePlayer)
-        paintPlayer(*mWhitePlayer, painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
+        paintPlayer(*mWhitePlayer, painter, palette, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
 
     painter->restore();
     // painter->setPen(Qt::NoPen);
@@ -187,12 +186,12 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     // Draw blue player rect
     painter->save();
     painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3));
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(COLOR_10);
-    painter->drawRect(0, 0, insideWidth, insideHeight/3);
+    // painter->setPen(Qt::NoPen);
+    // painter->setBrush(palette.color(QPalette::AlternateBase));
+    // painter->drawRect(0, 0, insideWidth, insideHeight/3);
 
     if (mBluePlayer)
-        paintPlayer(*mBluePlayer, painter, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
+        paintPlayer(*mBluePlayer, painter, palette, font, insideWidth, insideHeight, columnTwoOffset, columnThreeOffset, padding);
 
     painter->restore();
 

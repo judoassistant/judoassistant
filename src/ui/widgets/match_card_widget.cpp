@@ -25,20 +25,25 @@ void MatchCardWidget::paintEvent(QPaintEvent *event) {
     }
     else {
         // Show no next match available
+        painter.setRenderHint(QPainter::Antialiasing, false);
         int padding = 5;
         int lineWidth = 1;
         QFont font("Noto Sans");
-
-        painter.setRenderHint(QPainter::Antialiasing, false);
         // Draw bounding rect
-        QPen pen;
-        pen.setWidth(lineWidth);
-        pen.setColor(COLOR_3);
-        painter.setPen(pen);
-        painter.setBrush(COLOR_5);
 
+        QPen pen;
+        pen.setWidth(1);
+        pen.setStyle(Qt::SolidLine);
+        pen.setColor(palette().color(QPalette::Shadow).darker());
+        painter.setPen(pen);
+        painter.setBrush(palette().color(QPalette::Base));
         QRect rect(padding, padding, width()-padding*2, height()-padding*2);
         painter.drawRect(rect);
+
+        pen.setWidth(lineWidth);
+        pen.setColor(palette().color(QPalette::Text));
+        painter.setPen(pen);
+        painter.setBrush(palette().color(QPalette::Base));
         painter.drawText(rect, Qt::AlignCenter, tr("There are no more matches on this tatami"));
     }
 }
