@@ -36,23 +36,27 @@ QRectF BlockGraphicsItem::boundingRect() const {
 }
 
 void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(COLOR_14);
+    QPalette palette = (widget != nullptr ? widget->palette() : QApplication::palette());
+    QPen pen;
+    pen.setWidth(1);
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(palette.color(QPalette::Dark));
+    painter->setPen(pen);
 
-    if (mStatus.startedMatches == 0 && mStatus.finishedMatches == 0)
-        painter->setBrush(COLOR_14);
+    if (mStatus.startedMatches == 0 && mStatus.finishedMatches == 0) {
+        painter->setBrush(palette.color(QPalette::Button).lighter(120)); // TODO: Setup colors for different states
+    }
     else if (mStatus.startedMatches > 0 || mStatus.notStartedMatches > 0)
-        painter->setBrush(COLOR_13);
+        painter->setBrush(palette.color(QPalette::Button).lighter(120));
     else
-        painter->setBrush(COLOR_11);
+        painter->setBrush(palette.color(QPalette::Button).lighter(120));
 
     QRectF rect = boundingRect();
     painter->drawRect(rect);
 
-    QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(COLOR_0);
+    pen.setColor(palette.color(QPalette::ButtonText));
     painter->setPen(pen);
 
     auto offsetX = GridGraphicsManager::MARGIN + PADDING;
@@ -60,8 +64,8 @@ void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     auto innerWidth = static_cast<int>(boundingRect().width()) - 2 * PADDING;
 
     QRect nameRect(offsetX, offsetY, innerWidth, 20);
-    QRect typeRect(offsetX + 3*PADDING, offsetY+20, innerWidth-3*PADDING, 20);
-    QRect timeRect(offsetX + 3*PADDING, offsetY+40, innerWidth-3*PADDING, 20);
+    QRect typeRect(offsetX + 2*PADDING, offsetY+20, innerWidth-2*PADDING, 20);
+    QRect timeRect(offsetX + 2*PADDING, offsetY+40, innerWidth-2*PADDING, 20);
 
     painter->drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, mName);
 

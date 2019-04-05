@@ -33,10 +33,12 @@ void EmptyConcurrentGraphicsItem::paint(QPainter *painter, const QStyleOptionGra
     pen.setWidth(1);
     pen.setStyle(Qt::DashLine);
 
+    auto palette = widget->palette();
+
     if (mDragOver)
-        pen.setColor(COLOR_8);
+        pen.setColor(palette.color(QPalette::Highlight));
     else
-        pen.setColor(COLOR_4);
+        pen.setColor(palette.color(QPalette::AlternateBase));
 
     painter->setPen(pen);
     painter->setBrush(Qt::NoBrush);

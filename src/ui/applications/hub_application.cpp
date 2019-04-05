@@ -19,6 +19,8 @@ HubApplication::HubApplication(int &argc, char *argv[]) : QApplication(argc, arg
     parser.process(*this);
 
     mArgs = parser.positionalArguments();
+
+    setStyle(QStyleFactory::create("fusion"));
 }
 
 int HubApplication::exec() {

@@ -35,7 +35,7 @@ private:
     static const int WIDTH_HINT = 250;
     static const int HEIGHT_HINT = 120;
 
-    void paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const;
+    void paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, const QPalette &palette, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const;
 
     std::optional<MatchCardPlayerFields> mWhitePlayer;
     std::optional<MatchCardPlayerFields> mBluePlayer;

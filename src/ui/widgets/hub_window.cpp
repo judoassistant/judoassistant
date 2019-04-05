@@ -1,13 +1,13 @@
-#include <QMenu>
-#include <QMenuBar>
-#include <QTabWidget>
 #include <QAction>
+#include <QApplication>
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QStandardPaths>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QStandardPaths>
 #include <QStatusBar>
-#include <QCoreApplication>
 #include <QUrl>
 
 #include <fstream>
@@ -17,11 +17,14 @@
 #include "ui/constants/homepage.hpp"
 #include "ui/constants/network.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
+#include "ui/misc/dark_palette.hpp"
+#include "ui/misc/light_palette.hpp"
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
+#include "ui/widgets/sidebar_widget.hpp"
 #include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/tournament_widget.hpp"
 
@@ -34,16 +37,15 @@ HubWindow::HubWindow() {
     createPreferencesMenu();
     createHelpMenu();
 
-    QTabWidget * tabWidget = new QTabWidget(this);
-    tabWidget->addTab(new TournamentWidget(mStoreManager), tr("Tournament"));
-    tabWidget->addTab(new PlayersWidget(mStoreManager), tr("Players"));
-    tabWidget->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
-    tabWidget->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
-    tabWidget->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    tabWidget->setCurrentIndex(0);
-    tabWidget->setTabPosition(QTabWidget::TabPosition::West);
+    SidebarWidget * sidebar = new SidebarWidget(this);
+    sidebar->addTab(new TournamentWidget(mStoreManager), tr("Tournament"));
+    sidebar->addTab(new PlayersWidget(mStoreManager), tr("Players"));
+    sidebar->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
+    sidebar->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
+    sidebar->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
+    sidebar->setCurrentIndex(0);
 
-    setCentralWidget(tabWidget);
+    setCentralWidget(sidebar);
 
     resize(250,250);
     setWindowTitle(tr("JudoAssistant"));
@@ -170,6 +172,35 @@ void HubWindow::createPreferencesMenu() {
         englishAction->setCheckable(true);
         englishAction->setChecked(true);
         submenu->addAction(englishAction);
+    }
+    {
+        {
+            DarkPalette palette;
+            setPalette(palette);
+        }
+
+        QMenu *submenu = menu->addMenu("Color Scheme");
+        auto *actionGroup = new QActionGroup(this);
+
+        QAction *darkAction = new QAction(tr("Dark"), this);
+        darkAction->setCheckable(true);
+        darkAction->setChecked(true);
+        actionGroup->addAction(darkAction);
+
+        connect(darkAction, &QAction::triggered, [this]() {
+            setPalette(DarkPalette());
+        });
+
+        QAction *lightAction = new QAction(tr("Light"), this);
+        lightAction->setCheckable(true);
+        actionGroup->addAction(lightAction);
+
+        connect(lightAction, &QAction::triggered, [this]() {
+            setPalette(LightPalette());
+        });
+
+        submenu->addAction(darkAction);
+        submenu->addAction(lightAction);
     }
 }
 

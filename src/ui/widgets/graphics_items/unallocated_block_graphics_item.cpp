@@ -12,6 +12,7 @@
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/graphics_items/unallocated_block_graphics_item.hpp"
 #include "ui/misc/judoassistant_mime.hpp"
+#include "core/log.hpp"
 
 UnallocatedBlockGraphicsItem::UnallocatedBlockGraphicsItem(const CategoryStore &category, MatchType type)
     : mCategory(&category)
@@ -26,24 +27,29 @@ QRectF UnallocatedBlockGraphicsItem::boundingRect() const {
 }
 
 void UnallocatedBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(COLOR_14);
-
-    const auto &categoryStatus = mCategory->getStatus(mType);
-    if (categoryStatus.startedMatches == 0 && categoryStatus.finishedMatches == 0)
-        painter->setBrush(COLOR_14);
-    else if (categoryStatus.startedMatches > 0 || categoryStatus.notStartedMatches > 0)
-        painter->setBrush(COLOR_13);
-    else
-        painter->setBrush(COLOR_11);
-
-    QRect rect(0, 0, WIDTH, HEIGHT);
-    painter->drawRect(rect);
+    QPalette palette = (widget != nullptr ? widget->palette() : QApplication::palette());
 
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(COLOR_0);
+    pen.setColor(palette.color(QPalette::Dark));
+    painter->setPen(pen);
+
+    const auto &categoryStatus = mCategory->getStatus(mType);
+    if (categoryStatus.startedMatches == 0 && categoryStatus.finishedMatches == 0) {
+        painter->setBrush(palette.color(QPalette::Button).lighter(120)); // TODO: Setup colors for different states
+    }
+    else if (categoryStatus.startedMatches > 0 || categoryStatus.notStartedMatches > 0)
+        painter->setBrush(palette.color(QPalette::Button).lighter(120));
+    else
+        painter->setBrush(palette.color(QPalette::Button).lighter(120));
+
+    QRect rect(0, 0, WIDTH, HEIGHT);
+    painter->drawRect(rect);
+
+    pen.setWidth(1);
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(palette.color(QPalette::ButtonText));
     painter->setPen(pen);
 
     QRect titleRect(PADDING, PADDING, WIDTH-PADDING*2, 20);

@@ -14,7 +14,7 @@ enum class MatchType;
 
 class BlockGraphicsItem : public QGraphicsItem {
 public:
-    static constexpr int PADDING = 3;
+    static constexpr int PADDING = 5;
 
     BlockGraphicsItem(StoreManager *storeManager, std::pair<CategoryId, MatchType> block, int height, SequentialGraphicsItem *parent);
 
