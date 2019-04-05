@@ -114,10 +114,10 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     for (size_t i = 0; i < groupCount(); ++i) {
         const SequentialBlockGroup & group = at(i);
         iterators.push_back(group.matchesBegin(tournament));
-        if (group.getMatchCount() == 0) continue;
-        progressQueue.push(QueueElement(i, 0, group.getMatchCount()));
-
         mExpectedDuration += group.getExpectedDuration();
+
+        if (group.getMatchCount() > 0)
+            progressQueue.push(QueueElement(i, 0, group.getMatchCount()));
     }
 
     while (!progressQueue.empty()) {
