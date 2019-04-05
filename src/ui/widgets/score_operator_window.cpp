@@ -143,7 +143,6 @@ void ScoreOperatorWindow::createPreferencesMenu() {
     {
         DarkPalette palette;
         setPalette(palette);
-        QApplication::setPalette(palette);
 
         QMenu *submenu = menu->addMenu("Color Scheme");
         auto *actionGroup = new QActionGroup(this);
@@ -156,7 +155,6 @@ void ScoreOperatorWindow::createPreferencesMenu() {
         connect(darkAction, &QAction::triggered, [this]() {
             DarkPalette palette;
             setPalette(palette);
-            QApplication::setPalette(palette);
         });
 
         QAction *lightAction = new QAction(tr("Light"), this);
@@ -166,7 +164,6 @@ void ScoreOperatorWindow::createPreferencesMenu() {
         connect(lightAction, &QAction::triggered, [this]() {
             LightPalette palette;
             setPalette(palette);
-            QApplication::setPalette(palette);
         });
 
         submenu->addAction(darkAction);

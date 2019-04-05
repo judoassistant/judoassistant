@@ -43,7 +43,7 @@ HubWindow::HubWindow() {
     sidebar->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
     sidebar->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
     sidebar->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    sidebar->setCurrentIndex(3);
+    sidebar->setCurrentIndex(0);
 
     setCentralWidget(sidebar);
 
@@ -174,9 +174,10 @@ void HubWindow::createPreferencesMenu() {
         submenu->addAction(englishAction);
     }
     {
-        DarkPalette palette;
-        setPalette(palette);
-        QApplication::setPalette(palette);
+        {
+            DarkPalette palette;
+            setPalette(palette);
+        }
 
         QMenu *submenu = menu->addMenu("Color Scheme");
         auto *actionGroup = new QActionGroup(this);
@@ -187,9 +188,7 @@ void HubWindow::createPreferencesMenu() {
         actionGroup->addAction(darkAction);
 
         connect(darkAction, &QAction::triggered, [this]() {
-            DarkPalette palette;
-            setPalette(palette);
-            QApplication::setPalette(palette);
+            setPalette(DarkPalette());
         });
 
         QAction *lightAction = new QAction(tr("Light"), this);
@@ -197,9 +196,7 @@ void HubWindow::createPreferencesMenu() {
         actionGroup->addAction(lightAction);
 
         connect(lightAction, &QAction::triggered, [this]() {
-            LightPalette palette;
-            QApplication::setPalette(palette);
-            setPalette(palette);
+            setPalette(LightPalette());
         });
 
         submenu->addAction(darkAction);
