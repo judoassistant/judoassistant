@@ -1,6 +1,5 @@
 #include <QMenu>
 #include <QMenuBar>
-#include <QTabWidget>
 #include <QAction>
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -22,6 +21,7 @@
 #include "ui/widgets/import_players_csv_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
+#include "ui/widgets/sidebar_widget.hpp"
 #include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/tournament_widget.hpp"
 
@@ -34,16 +34,16 @@ HubWindow::HubWindow() {
     createPreferencesMenu();
     createHelpMenu();
 
-    QTabWidget * tabWidget = new QTabWidget(this);
-    tabWidget->addTab(new TournamentWidget(mStoreManager), tr("Tournament"));
-    tabWidget->addTab(new PlayersWidget(mStoreManager), tr("Players"));
-    tabWidget->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
-    tabWidget->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
-    tabWidget->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    tabWidget->setCurrentIndex(0);
-    tabWidget->setTabPosition(QTabWidget::TabPosition::West);
+    SidebarWidget * sidebar = new SidebarWidget(this);
+    sidebar->addTab(new TournamentWidget(mStoreManager), tr("Tournament"));
+    sidebar->addTab(new PlayersWidget(mStoreManager), tr("Players"));
+    sidebar->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
+    sidebar->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
+    sidebar->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
+    sidebar->setCurrentIndex(0);
+    sidebar->setTabPosition(QTabWidget::TabPosition::West);
 
-    setCentralWidget(tabWidget);
+    setCentralWidget(sidebar);
 
     resize(250,250);
     setWindowTitle(tr("JudoAssistant"));
@@ -165,6 +165,17 @@ void HubWindow::createPreferencesMenu() {
         auto *actionGroup = new QActionGroup(this);
 
         QAction *englishAction = new QAction(tr("English"), this);
+        actionGroup->addAction(englishAction);
+
+        englishAction->setCheckable(true);
+        englishAction->setChecked(true);
+        submenu->addAction(englishAction);
+    }
+    {
+        QMenu *submenu = menu->addMenu("Theme");
+        auto *actionGroup = new QActionGroup(this);
+
+        QAction *englishAction = new QAction(tr("Dark"), this);
         actionGroup->addAction(englishAction);
 
         englishAction->setCheckable(true);
