@@ -13,6 +13,8 @@
 
 // TODO: Fix segfault on server SIGINT
 // TODO: Try to see if message size can be limited in async_read
+// TODO: Fix tournaments not saving correctly
+// TODO: Fix web participant not receiving tournament correctly
 
 WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)
@@ -160,7 +162,7 @@ void WebParticipant::write() {
 }
 
 bool WebParticipant::subscribeCategory(const std::string &str) {
-    log_debug().msg("Subscribing to category");
+    log_debug().field("id", str).msg("Subscribing to category");
     try {
         if (mTournament == nullptr)
             return false;

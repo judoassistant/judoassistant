@@ -408,6 +408,7 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
     rapidjson::Value res;
     res.SetObject();
 
+    log_debug().field("name", tournament.getName()).msg("Encoding meta");
     res.AddMember("name", encodeString(tournament.getName(), allocator), allocator);
     res.AddMember("webName", encodeString(tournament.getWebName(), allocator), allocator);
 
