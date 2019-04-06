@@ -12,6 +12,8 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
 
+const QColor ERROR_COLOR = QColor("#7a0000"); // Dark red
+
 ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVReader *reader, QWidget *parent)
     : QDialog(parent)
     , mStoreManager(storeManager)
@@ -288,18 +290,18 @@ void ImportPlayersCSVDialog::resetPreview() {
             mPreviewWidget->setItem(row, column, item);
             if (!mImporter.isValid(row + offset, column)) {
                 isValid = false;
-                item->setBackground(Qt::red);
+                item->setBackground(ERROR_COLOR);
             }
             else {
-                item->setBackground(Qt::white);
+                item->setBackground(palette().color(QPalette::Base));
             }
         }
 
         QTableWidgetItem *header = new QTableWidgetItem(QString::fromStdString(mImporter.getHeader(column)));
         if (!isValid)
-            header->setBackground(Qt::red);
+            header->setBackground(ERROR_COLOR);
         else
-            header->setBackground(Qt::white);
+            header->setBackground(palette().color(QPalette::Base));
 
         mPreviewWidget->setHorizontalHeaderItem(column, header);
         mIsColumnValid.push_back(isValid);
@@ -314,18 +316,18 @@ void ImportPlayersCSVDialog::updatePreviewColumn(size_t column) {
         QTableWidgetItem *item = mPreviewWidget->item(row, column);
         if (!mImporter.isValid(row+offset, column)) {
             isValid = false;
-            item->setBackground(Qt::red);
+            item->setBackground(ERROR_COLOR);
         }
         else {
-            item->setBackground(Qt::white);
+            item->setBackground(palette().color(QPalette::Base));
         }
     }
 
     QTableWidgetItem *header = new QTableWidgetItem(QString::fromStdString(mImporter.getHeader(column)));
     if (!isValid)
-        header->setBackground(Qt::red);
+        header->setBackground(ERROR_COLOR);
     else
-        header->setBackground(Qt::white);
+        header->setBackground(palette().color(QPalette::Base));
     mPreviewWidget->setHorizontalHeaderItem(column, header);
     mIsColumnValid[column] = isValid;
 }
