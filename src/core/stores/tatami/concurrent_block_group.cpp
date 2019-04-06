@@ -179,3 +179,7 @@ std::chrono::milliseconds ConcurrentBlockGroup::getExpectedDuration() const {
     return mExpectedDuration;
 }
 
+bool ConcurrentBlockGroup::containsGroup(PositionHandle handle) const {
+    return mGroups.contains(handle);
+}
+

@@ -55,8 +55,8 @@ SequentialGraphicsItem::SequentialGraphicsItem(StoreManager *storeManager, Seque
 }
 
 int SequentialGraphicsItem::getWidth() const {
-    auto totalWidth = GridGraphicsManager::GRID_WIDTH - 3 * GridGraphicsManager::MARGIN; // Include margin to the right
-    return totalWidth / 3;
+    auto totalWidth = GridGraphicsManager::GRID_WIDTH - ConcurrentBlockGroup::MAX_GROUP_COUNT * GridGraphicsManager::MARGIN; // Include margin to the right
+    return totalWidth / ConcurrentBlockGroup::MAX_GROUP_COUNT;
 }
 
 QRectF SequentialGraphicsItem::boundingRect() const {

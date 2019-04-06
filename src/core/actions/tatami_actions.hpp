@@ -30,6 +30,7 @@ private:
     std::optional<BlockLocation> mLocation;
 
     // undo members
+    bool mPositionSet;
     std::optional<BlockLocation> mOldLocation;
 };
 

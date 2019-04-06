@@ -16,6 +16,8 @@ class MatchStore;
 
 class ConcurrentBlockGroup {
 public:
+    static constexpr int MAX_GROUP_COUNT = 3;
+
     enum class Status {
         NOT_STARTED, STARTED, FINISHED
     };
@@ -27,6 +29,7 @@ public:
     const MatchList & getMatches() const;
 
     void eraseGroup(PositionHandle handle);
+    bool containsGroup(PositionHandle handle) const;
     PositionHandle getHandle(size_t index) const;
     size_t getIndex(PositionHandle handle) const;
     size_t groupCount() const;

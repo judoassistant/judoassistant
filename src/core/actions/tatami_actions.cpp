@@ -12,20 +12,31 @@ SetTatamiLocationAction::SetTatamiLocationAction(std::pair<CategoryId, MatchType
 {}
 
 void SetTatamiLocationAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mBlock.first)) return;
+    mPositionSet = false;
 
-    auto & tatamis = tournament.getTatamis();
-    // This action should not be used to create new tatamis
-    if (mLocation && !tatamis.containsTatami(mLocation->getTatamiHandle()))
+    if (!tournament.containsCategory(mBlock.first)) // does the category exist?
         return;
 
-    CategoryStore &category = tournament.getCategory(mBlock.first);
-    if (mBlock.second == MatchType::FINAL && !category.getDrawSystem().hasFinalBlock())
+    auto &tatamis = tournament.getTatamis();
+    if (mLocation && !tatamis.containsTatami(mLocation->getTatamiHandle())) // Does the tatami exist?
         return;
+
+    auto &category = tournament.getCategory(mBlock.first);
+    if (mBlock.second == MatchType::FINAL && !category.getDrawSystem().hasFinalBlock()) // Does the block type exist?
+        return;
+
+    const auto &tatami = tatamis.at(mLocation->getTatamiHandle());
+    if (tatami.containsGroup(mLocation->getConcurrentGroupHandle())) { // Are we below the MAX_GROUP_COUNT for the concurrent group destination
+        const auto &concurrentGroup = tatami.at(mLocation->getConcurrentGroupHandle());
+        if (!concurrentGroup.containsGroup(mLocation->getSequentialGroupHandle()) && concurrentGroup.groupCount() == ConcurrentBlockGroup::MAX_GROUP_COUNT)
+            return;
+    }
 
     mOldLocation = category.getLocation(mBlock.second);
+    mPositionSet = true;
 
     tatamis.moveBlock(tournament, mBlock, mOldLocation, mLocation);
+
     category.setLocation(mBlock.second, mLocation);
 
     {
@@ -40,15 +51,11 @@ void SetTatamiLocationAction::redoImpl(TournamentStore & tournament) {
 }
 
 void SetTatamiLocationAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mBlock.first)) return;
-
-    auto & tatamis = tournament.getTatamis();
-    if (mLocation && !tatamis.containsTatami(mLocation->getTatamiHandle()))
+    if (!mPositionSet)
         return;
 
-    CategoryStore &category = tournament.getCategory(mBlock.first);
-    if (mBlock.second == MatchType::FINAL && !category.getDrawSystem().hasFinalBlock())
-        return;
+    auto &tatamis = tournament.getTatamis();
+    auto &category = tournament.getCategory(mBlock.first);
 
     tatamis.moveBlock(tournament, mBlock, mLocation, mOldLocation);
     category.setLocation(mBlock.second, mOldLocation);
