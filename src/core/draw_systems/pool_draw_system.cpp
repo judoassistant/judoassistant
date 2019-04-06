@@ -94,13 +94,8 @@ struct PoolPlayerRank {
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
 
-    for (auto matchId : mMatches) {
-        // TODO: Have finished flags for the entire category
-        const auto &match = category.getMatch(matchId);
-
-        if (match.getStatus() == MatchStatus::FINISHED)
-            continue;
-
+    auto status = category.getStatus(MatchType::KNOCKOUT);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
         for (auto playerId : mPlayers)
             results.emplace_back(std::nullopt, playerId);
         return results;

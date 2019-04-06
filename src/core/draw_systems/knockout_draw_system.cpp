@@ -109,6 +109,7 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const Tour
     return actions;
 }
 
+// TODO: Matches must be updated in case of winner change
 std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
     const auto &ruleset = category.getRuleset();
     std::vector<std::unique_ptr<Action>> actions;
