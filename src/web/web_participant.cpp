@@ -51,6 +51,8 @@ bool WebParticipant::validateMessage(const std::string &message) {
         // Only allow certain characters
         if ('a' <= c && c <= 'z')
             continue;
+        if ('A' <= c && c <= 'Z')
+            continue;
         if ('0' <= c && c <= '9')
             continue;
         if (c == '-')
