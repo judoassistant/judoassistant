@@ -21,12 +21,12 @@ rapidjson::StringBuffer& JsonBuffer::getStringBuffer() {
     return mStringBuffer;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournament-sync", allocator), allocator);
+    document.AddMember("messageType", encodeString("tournamentSync", allocator), allocator);
 
     // Tournament meta data field
     document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
@@ -79,12 +79,12 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("subscribe-category", allocator), allocator);
+    document.AddMember("messageType", encodeString("categorySubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedCategory", encodeSubscribedCategory(category, allocator), allocator);
@@ -102,12 +102,12 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryMessage(const We
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("subscribe-player", allocator), allocator);
+    document.AddMember("messageType", encodeString("playerSubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedPlayer", encodeSubscribedPlayer(player, allocator), allocator);
@@ -128,12 +128,12 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerMessage(const WebT
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournament-changes", allocator), allocator);
+    document.AddMember("messageType", encodeString("tournamentChanges", allocator), allocator);
 
     // Tournament meta data field
     if (tournament.tournamentChanged())
@@ -335,12 +335,12 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
     return res;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryFailMessage() {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionFailMessage() {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("subscribe-category-fail", allocator), allocator);
+    document.AddMember("messageType", encodeString("tournamentSubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -349,12 +349,26 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryFailMessage() {
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerFailMessage() {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionFailMessage() {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("subscribe-player-fail", allocator), allocator);
+    document.AddMember("messageType", encodeString("categorySubscriptionFail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return std::move(buffer);
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("playerSubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
