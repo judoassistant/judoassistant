@@ -83,7 +83,7 @@ ConcurrentGroupLocation ConcurrentGraphicsItem::getLocation() const {
 }
 
 void ConcurrentGraphicsItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event) {
-    if (event->mimeData()->hasFormat("application/judoassistant-block")) {
+    if (event->mimeData()->hasFormat("application/judoassistant-block") && mSequentialGroups.size() < ConcurrentBlockGroup::MAX_GROUP_COUNT) {
         event->setAccepted(true);
         mDragOver = true;
     }
