@@ -15,7 +15,6 @@
 #include "core/stores/match_store.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/misc/dark_palette.hpp"
-#include "ui/misc/light_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/score_operator_window.hpp"
 
@@ -141,8 +140,11 @@ void ScoreOperatorWindow::createPreferencesMenu() {
         submenu->addAction(englishAction);
     }
     {
-        DarkPalette palette;
-        setPalette(palette);
+        {
+            DarkPalette palette;
+            QApplication::setPalette(palette);
+            setPalette(palette);
+        }
 
         QMenu *submenu = menu->addMenu("Color Scheme");
         auto *actionGroup = new QActionGroup(this);
@@ -162,7 +164,8 @@ void ScoreOperatorWindow::createPreferencesMenu() {
         actionGroup->addAction(lightAction);
 
         connect(lightAction, &QAction::triggered, [this]() {
-            LightPalette palette;
+            auto palette = this->style()->standardPalette();
+            QApplication::setPalette(palette);
             setPalette(palette);
         });
 

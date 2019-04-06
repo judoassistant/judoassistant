@@ -18,7 +18,6 @@
 #include "ui/constants/network.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/misc/dark_palette.hpp"
-#include "ui/misc/light_palette.hpp"
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
@@ -176,6 +175,7 @@ void HubWindow::createPreferencesMenu() {
     {
         {
             DarkPalette palette;
+            QApplication::setPalette(palette);
             setPalette(palette);
         }
 
@@ -188,7 +188,9 @@ void HubWindow::createPreferencesMenu() {
         actionGroup->addAction(darkAction);
 
         connect(darkAction, &QAction::triggered, [this]() {
-            setPalette(DarkPalette());
+            DarkPalette palette;
+            QApplication::setPalette(palette);
+            setPalette(palette);
         });
 
         QAction *lightAction = new QAction(tr("Light"), this);
@@ -196,7 +198,9 @@ void HubWindow::createPreferencesMenu() {
         actionGroup->addAction(lightAction);
 
         connect(lightAction, &QAction::triggered, [this]() {
-            setPalette(LightPalette());
+            auto palette = this->style()->standardPalette();
+            QApplication::setPalette(palette);
+            setPalette(palette);
         });
 
         submenu->addAction(darkAction);
