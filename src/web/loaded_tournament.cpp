@@ -365,6 +365,9 @@ void LoadedTournament::deliverChanges() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
+        if (!encoder.hasTournamentChanges(*mTournament, category, player))
+            continue;
+
         auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player);
         participant->deliver(std::move(buffer));
     }

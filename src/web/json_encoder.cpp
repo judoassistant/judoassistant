@@ -134,6 +134,52 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     return std::move(buffer);
 }
 
+bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+    // check tournament
+    if (tournament.tournamentChanged())
+        return true;
+
+    // check players
+    if (!tournament.getChangedPlayers().empty())
+        return true;
+    if (!tournament.getAddedPlayers().empty())
+        return true;
+    if (!tournament.getErasedPlayers().empty())
+        return true;
+
+    // check categories
+    if (!tournament.getChangedCategories().empty())
+        return true;
+    if (!tournament.getAddedCategories().empty())
+        return true;
+    if (!tournament.getErasedCategories().empty())
+        return true;
+
+    // check matches
+    if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
+        if (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end())
+            return true;
+
+        for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches()) {
+            const auto &combinedId = match->getCombinedId();
+            if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
+                return true;
+        }
+    }
+    else if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer)) {
+        if (tournament.getPlayerMatchResets().find(*subscribedPlayer) != tournament.getPlayerMatchResets().end())
+            return true;
+
+        const auto &player = tournament.getPlayer(*subscribedPlayer);
+        for (const auto &combinedId : player.getMatches()) {
+            if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
+                return true;
+        }
+    }
+
+    return false;
+}
+
 std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
     rapidjson::Document document;
     document.SetObject();
@@ -225,7 +271,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         bool matchesReset = (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end());
         for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches()) {
-            auto combinedId = match->getCombinedId();
+            const auto &combinedId = match->getCombinedId();
             if (!matchesReset && tournament.getChangedMatches().find(combinedId) == tournament.getChangedMatches().end())
                 continue;
             matchIds.insert(combinedId);
