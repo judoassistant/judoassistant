@@ -1,5 +1,6 @@
 #include "ui/misc/dark_palette.hpp"
 
+// TODO: Subclass QPalette with special colors
 DarkPalette::DarkPalette() {
     // Active and inactive
     setColor(QPalette::AlternateBase, QColor("#3d4248").darker()); // Used for alternating rows and similar
