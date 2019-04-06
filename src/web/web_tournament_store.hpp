@@ -12,14 +12,14 @@ public:
     const std::unordered_set<PlayerId>& getChangedPlayers() const;
     const std::unordered_set<PlayerId>& getAddedPlayers() const;
     const std::unordered_set<PlayerId>& getErasedPlayers() const;
+    const std::unordered_set<PlayerId>& getPlayerMatchResets() const;
 
     const std::unordered_set<CategoryId>& getChangedCategories() const;
     const std::unordered_set<CategoryId>& getAddedCategories() const;
     const std::unordered_set<CategoryId>& getErasedCategories() const;
+    const std::unordered_set<CategoryId>& getCategoryMatchResets() const;
 
     const std::unordered_set<std::pair<CategoryId, MatchId>>& getChangedMatches() const;
-    const std::unordered_set<std::pair<CategoryId, MatchId>>& getAddedMatches() const;
-    const std::unordered_set<std::pair<CategoryId, MatchId>>& getErasedMatches() const;
 
     // Parent methods to override
     void changeTournament() override;

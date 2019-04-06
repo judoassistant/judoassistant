@@ -235,3 +235,43 @@ void WebTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &loca
     // noop
 }
 
+bool WebTournamentStore::tournamentChanged() const {
+    return mTournamentChanged;
+}
+
+const std::unordered_set<PlayerId>& WebTournamentStore::getChangedPlayers() const {
+    return mChangedPlayers;
+}
+
+const std::unordered_set<PlayerId>& WebTournamentStore::getAddedPlayers() const {
+    return mAddedPlayers;
+}
+
+const std::unordered_set<PlayerId>& WebTournamentStore::getErasedPlayers() const {
+    return mErasedPlayers;
+}
+
+const std::unordered_set<PlayerId>& WebTournamentStore::getPlayerMatchResets() const {
+    return mPlayerMatchResets;
+}
+
+const std::unordered_set<CategoryId>& WebTournamentStore::getChangedCategories() const {
+    return mChangedCategories;
+}
+
+const std::unordered_set<CategoryId>& WebTournamentStore::getAddedCategories() const {
+    return mAddedCategories;
+}
+
+const std::unordered_set<CategoryId>& WebTournamentStore::getErasedCategories() const {
+    return mErasedCategories;
+}
+
+const std::unordered_set<CategoryId>& WebTournamentStore::getCategoryMatchResets() const {
+    return mCategoryMatchResets;
+}
+
+const std::unordered_set<std::pair<CategoryId, MatchId>>& WebTournamentStore::getChangedMatches() const {
+    return mChangedMatches;
+}
+
