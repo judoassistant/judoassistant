@@ -56,34 +56,34 @@ public:
 signals:
     void tournamentChanged();
 
-    void playersChanged(std::vector<PlayerId> id);
-    void playersAboutToBeAdded(std::vector<PlayerId> id);
-    void playersAdded(std::vector<PlayerId> id);
-    void playersAboutToBeErased(std::vector<PlayerId> id);
-    void playersErased(std::vector<PlayerId> id);
+    void playersChanged(const std::vector<PlayerId> &playerIds);
+    void playersAboutToBeAdded(const std::vector<PlayerId> &playerIds);
+    void playersAdded(const std::vector<PlayerId> &playerIds);
+    void playersAboutToBeErased(const std::vector<PlayerId> &playerIds);
+    void playersErased(const std::vector<PlayerId> &playerIds);
     void playersAboutToBeReset();
     void playersReset();
 
-    void playersAddedToCategory(CategoryId category, std::vector<PlayerId>);
-    void playersErasedFromCategory(CategoryId category, std::vector<PlayerId>);
+    void playersAddedToCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
+    void playersErasedFromCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
 
-    void categoriesChanged(std::vector<CategoryId> id);
-    void categoriesAboutToBeAdded(std::vector<CategoryId> id);
-    void categoriesAdded(std::vector<CategoryId> id);
-    void categoriesAboutToBeErased(std::vector<CategoryId> id);
-    void categoriesErased(std::vector<CategoryId> id);
+    void categoriesChanged(const std::vector<CategoryId> &categoryIds);
+    void categoriesAboutToBeAdded(const std::vector<CategoryId> &categoryIds);
+    void categoriesAdded(const std::vector<CategoryId> &categoryIds);
+    void categoriesAboutToBeErased(const std::vector<CategoryId> &categoryIds);
+    void categoriesErased(const std::vector<CategoryId> &categoryIds);
     void categoriesAboutToBeReset();
     void categoriesReset();
 
-    void matchesChanged(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void matchesChanged(CategoryId categoryId, const std::vector<MatchId> &matchIds);
     void matchesAboutToBeReset(CategoryId categoryId);
     void matchesReset(CategoryId categoryId);
 
-    void tatamisChanged(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void tatamisAboutToBeAdded(std::vector<TatamiLocation> locations);
-    void tatamisAdded(std::vector<TatamiLocation> locations);
-    void tatamisAboutToBeErased(std::vector<TatamiLocation> locations);
-    void tatamisErased(std::vector<TatamiLocation> locations);
+    void tatamisChanged(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks);
+    void tatamisAboutToBeAdded(const std::vector<TatamiLocation> &locations);
+    void tatamisAdded(const std::vector<TatamiLocation> &locations);
+    void tatamisAboutToBeErased(const std::vector<TatamiLocation> &locations);
+    void tatamisErased(const std::vector<TatamiLocation> &locations);
 
 private:
     bool mResettingPlayers;
