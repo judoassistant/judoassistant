@@ -14,219 +14,224 @@ void WebTournamentStore::clearChanges() {
     mChangedPlayers.clear();
     mAddedPlayers.clear();
     mErasedPlayers.clear();
+    mPlayerMatchResets.clear();
 
     mChangedCategories.clear();
     mAddedCategories.clear();
     mErasedCategories.clear();
+    mCategoryMatchResets.clear();
 
     mChangedMatches.clear();
-    mAddedMatches.clear();
-    mErasedMatches.clear();
 }
 
 void WebTournamentStore::changeTournament() {
     mTournamentChanged = true;
 }
 
-void WebTournamentStore::changePlayers(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        assert(mErasedPlayers.find(id) == mErasedPlayers.end());
-        if (mAddedPlayers.find(id) != mAddedPlayers.end())
+void WebTournamentStore::changePlayers(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        assert(mErasedPlayers.find(playerId) == mErasedPlayers.end());
+        if (mAddedPlayers.find(playerId) != mAddedPlayers.end())
             continue;
-        mChangedPlayers.insert(id);
+        mChangedPlayers.insert(playerId);
     }
 }
 
-void WebTournamentStore::beginAddPlayers(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        assert(mChangedPlayers.find(id) == mChangedPlayers.end());
-        mPlayerMatchResets.insert(id);
-        if (mErasedPlayers.find(id) != mErasedPlayers.end()) {
-            mErasedPlayers.erase(id);
-            mChangedPlayers.insert(id);
-        }
-        else {
-            mAddedPlayers.insert(id);
-        }
-    }
-}
-
-void WebTournamentStore::endAddPlayers() {
+void WebTournamentStore::beginAddPlayers(const std::vector<PlayerId> &playerIds) {
     // noop
 }
 
-void WebTournamentStore::beginErasePlayers(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        assert(mErasedPlayers.find(id) == mErasedPlayers.end());
-        mPlayerMatchResets.erase(id);
-        if (mAddedPlayers.find(id) != mAddedPlayers.end()) {
-            mAddedPlayers.erase(id);
+void WebTournamentStore::endAddPlayers(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        assert(mChangedPlayers.find(playerId) == mChangedPlayers.end());
+        mPlayerMatchResets.insert(playerId);
+        if (mErasedPlayers.find(playerId) != mErasedPlayers.end()) {
+            mErasedPlayers.erase(playerId);
+            mChangedPlayers.insert(playerId);
         }
         else {
-            mChangedPlayers.erase(id);
-            mErasedPlayers.insert(id);
+            mAddedPlayers.insert(playerId);
         }
     }
 }
 
-void WebTournamentStore::endErasePlayers() {
+void WebTournamentStore::beginErasePlayers(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        assert(mErasedPlayers.find(playerId) == mErasedPlayers.end());
+        mPlayerMatchResets.erase(playerId);
+        if (mAddedPlayers.find(playerId) != mAddedPlayers.end()) {
+            mAddedPlayers.erase(playerId);
+        }
+        else {
+            mChangedPlayers.erase(playerId);
+            mErasedPlayers.insert(playerId);
+        }
+    }
+}
+
+void WebTournamentStore::endErasePlayers(const std::vector<PlayerId> &playerIds) {
     // noop
 }
 
 void WebTournamentStore::beginResetPlayers() {
     // Erase all players
-    std::vector<PlayerId> ids;
+    std::vector<PlayerId> playerIds;
     for (const auto &p : getPlayers())
-        ids.push_back(p.first);
+        playerIds.push_back(p.first);
 
-    beginErasePlayers(ids);
+    beginErasePlayers(playerIds);
 }
 
 void WebTournamentStore::endResetPlayers() {
     // Add all players
-    std::vector<PlayerId> ids;
+    std::vector<PlayerId> playerIds;
     for (const auto &p : getPlayers())
-        ids.push_back(p.first);
+        playerIds.push_back(p.first);
 
-    beginAddPlayers(ids);
+    beginAddPlayers(playerIds);
 }
 
-void WebTournamentStore::addPlayersToCategory(CategoryId category, std::vector<PlayerId> ids) {
-    for (auto id : ids)
-        mPlayerMatchResets.insert(id);
-    mCategoryMatchResets.insert(category);
+void WebTournamentStore::addPlayersToCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds)
+        mPlayerMatchResets.insert(playerId);
+    mCategoryMatchResets.insert(categoryId);
 }
 
-void WebTournamentStore::erasePlayersFromCategory(CategoryId category, std::vector<PlayerId> ids) {
-    for (auto id : ids)
-        mPlayerMatchResets.insert(id);
-    mCategoryMatchResets.insert(category);
+void WebTournamentStore::erasePlayersFromCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds)
+        mPlayerMatchResets.insert(playerId);
+    mCategoryMatchResets.insert(categoryId);
 }
 
-void WebTournamentStore::changeCategories(std::vector<CategoryId> ids) {
-    for (auto id : ids) {
-        assert(mErasedCategories.find(id) == mErasedCategories.end());
-        if (mAddedCategories.find(id) != mAddedCategories.end())
+void WebTournamentStore::changeCategories(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        assert(mErasedCategories.find(categoryId) == mErasedCategories.end());
+        if (mAddedCategories.find(categoryId) != mAddedCategories.end())
             continue;
-        mChangedCategories.insert(id);
+        mChangedCategories.insert(categoryId);
     }
 }
 
-void WebTournamentStore::beginAddCategories(std::vector<CategoryId> ids) {
-    for (auto id : ids) {
-        assert(mChangedCategories.find(id) == mChangedCategories.end());
-        mCategoryMatchResets.insert(id);
-        if (mErasedCategories.find(id) != mErasedCategories.end()) {
-            mErasedCategories.erase(id);
-            mChangedCategories.insert(id);
-        }
-        else {
-            mAddedCategories.insert(id);
-        }
-    }
-}
-
-void WebTournamentStore::endAddCategories() {
+void WebTournamentStore::beginAddCategories(const std::vector<CategoryId> &categoryIds) {
     // noop
 }
 
-void WebTournamentStore::beginEraseCategories(std::vector<CategoryId> ids) {
-    for (auto id : ids) {
-        assert(mErasedCategories.find(id) == mErasedCategories.end());
-        mCategoryMatchResets.erase(id);
-        if (mAddedCategories.find(id) != mAddedCategories.end()) {
-            mAddedCategories.erase(id);
+void WebTournamentStore::endAddCategories(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        assert(mChangedCategories.find(categoryId) == mChangedCategories.end());
+        mCategoryMatchResets.insert(categoryId);
+        if (mErasedCategories.find(categoryId) != mErasedCategories.end()) {
+            mErasedCategories.erase(categoryId);
+            mChangedCategories.insert(categoryId);
         }
         else {
-            mChangedCategories.erase(id);
-            mErasedCategories.insert(id);
+            mAddedCategories.insert(categoryId);
         }
+
+        for (auto playerId : getCategory(categoryId).getPlayers())
+            mPlayerMatchResets.insert(playerId);
     }
 }
 
-void WebTournamentStore::endEraseCategories() {
+void WebTournamentStore::beginEraseCategories(const std::vector<CategoryId>& categoryIds) {
+    for (auto categoryId : categoryIds) {
+        assert(mErasedCategories.find(categoryId) == mErasedCategories.end());
+        mCategoryMatchResets.erase(categoryId);
+        if (mAddedCategories.find(categoryId) != mAddedCategories.end()) {
+            mAddedCategories.erase(categoryId);
+        }
+        else {
+            mChangedCategories.erase(categoryId);
+            mErasedCategories.insert(categoryId);
+        }
+
+        for (auto playerId : getCategory(categoryId).getPlayers())
+            mPlayerMatchResets.insert(playerId);
+    }
+}
+
+void WebTournamentStore::endEraseCategories(const std::vector<CategoryId>& categoryIds) {
     // noop
 }
 
 void WebTournamentStore::beginResetCategories() {
     // Erase all categories
-    std::vector<CategoryId> ids;
+    std::vector<CategoryId> categoryIds;
     for (const auto &p : getCategories())
-        ids.push_back(p.first);
+        categoryIds.push_back(p.first);
 
-    beginEraseCategories(ids);
+    beginEraseCategories(categoryIds);
 }
 
 void WebTournamentStore::endResetCategories() {
     // Add all categories
-    std::vector<CategoryId> ids;
+    std::vector<CategoryId> categoryIds;
     for (const auto &p : getCategories())
-        ids.push_back(p.first);
+        categoryIds.push_back(p.first);
 
-    beginAddCategories(ids);
+    endAddCategories(categoryIds);
 }
 
-void WebTournamentStore::changeMatches(CategoryId category, std::vector<MatchId> ids) {
-    for (auto id : ids) {
-        auto combinedId = std::make_pair(category, id);
-        assert(mErasedMatches.find(combinedId) == mErasedMatches.end());
-        if (mAddedMatches.find(combinedId) != mAddedMatches.end())
-            continue;
+void WebTournamentStore::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
+    for (auto matchId : matchIds) {
+        auto combinedId = std::make_pair(categoryId, matchId);
         mChangedMatches.insert(combinedId);
     }
 }
 
-void WebTournamentStore::beginResetMatches(CategoryId category) {
-    // Erase all matches
-    mCategoryMatchResets.insert(category);
-    for (auto player : getCategory(category).getPlayers())
-        mPlayerMatchResets.insert(player);
+void WebTournamentStore::beginResetMatches(CategoryId categoryId) {
+    // noop
 
-    for (const auto &match : getCategory(category).getMatches()) {
-        auto combinedId = std::make_pair(category, match->getId());
-        assert(mChangedMatches.find(combinedId) == mChangedMatches.end());
-        if (mErasedMatches.find(combinedId) != mErasedMatches.end()) {
-            mErasedMatches.erase(combinedId);
-            mChangedMatches.insert(combinedId);
-        }
-        else {
-            mAddedMatches.insert(combinedId);
-        }
-    }
+    // for (const auto &match : getCategory(category).getMatches()) {
+    //     auto combinedId = std::make_pair(category, match->getId());
+    //     assert(mChangedMatches.find(combinedId) == mChangedMatches.end());
+    //     if (mErasedMatches.find(combinedId) != mErasedMatches.end()) {
+    //         mErasedMatches.erase(combinedId);
+    //         mChangedMatches.insert(combinedId);
+    //     }
+    //     else {
+    //         mAddedMatches.insert(combinedId);
+    //     }
+    // }
 }
 
-void WebTournamentStore::endResetMatches(CategoryId category) {
+void WebTournamentStore::endResetMatches(CategoryId categoryId) {
+    mCategoryMatchResets.insert(categoryId);
+    for (auto playerId : getCategory(categoryId).getPlayers())
+        mPlayerMatchResets.insert(playerId);
+
     // Add all matches
-    for (const auto &match : getCategory(category).getMatches()) {
-        auto combinedId = std::make_pair(category, match->getId());
-        assert(mErasedMatches.find(combinedId) == mErasedMatches.end());
-        if (mAddedMatches.find(combinedId) != mAddedMatches.end()) {
-            mAddedMatches.erase(combinedId);
-        }
-        else {
-            mChangedMatches.erase(combinedId);
-            mErasedMatches.insert(combinedId);
-        }
-    }
+    // for (const auto &match : getCategory(category).getMatches()) {
+    //     auto combinedId = std::make_pair(category, match->getId());
+    //     assert(mErasedMatches.find(combinedId) == mErasedMatches.end());
+    //     if (mAddedMatches.find(combinedId) != mAddedMatches.end()) {
+    //         mAddedMatches.erase(combinedId);
+    //     }
+    //     else {
+    //         mChangedMatches.erase(combinedId);
+    //         mErasedMatches.insert(combinedId);
+    //     }
+    // }
 }
 
-void WebTournamentStore::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
-    // TODO: Implement
+void WebTournamentStore::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
+    // TODO: Implement web tatami overview
+    // noop
 }
 
-void WebTournamentStore::beginAddTatamis(std::vector<TatamiLocation> locations) {
-    // TODO: Implement
+void WebTournamentStore::beginAddTatamis(const std::vector<TatamiLocation> &locations) {
+    // noop
 }
 
-void WebTournamentStore::endAddTatamis() {
-    // TODO: Implement
+void WebTournamentStore::endAddTatamis(const std::vector<TatamiLocation> &locations) {
+    // noop
 }
 
-void WebTournamentStore::beginEraseTatamis(std::vector<TatamiLocation> locations) {
-    // TODO: Implement
+void WebTournamentStore::beginEraseTatamis(const std::vector<TatamiLocation> &locations) {
+    // noop
 }
 
-void WebTournamentStore::endEraseTatamis() {
-    // TODO: Implement
+void WebTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locations) {
+    // noop
 }
 

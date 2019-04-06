@@ -24,34 +24,34 @@ public:
     // Parent methods to override
     void changeTournament() override;
 
-    void changePlayers(std::vector<PlayerId> ids) override;
-    void beginAddPlayers(std::vector<PlayerId> ids) override;
-    void endAddPlayers() override;
-    void beginErasePlayers(std::vector<PlayerId> ids) override;
-    void endErasePlayers() override;
+    void changePlayers(const std::vector<PlayerId> &playerIds) override;
+    void beginAddPlayers(const std::vector<PlayerId> &playerIds) override;
+    void endAddPlayers(const std::vector<PlayerId> &playerIds) override;
+    void beginErasePlayers(const std::vector<PlayerId> &playerIds) override;
+    void endErasePlayers(const std::vector<PlayerId> &playerIds) override;
     void beginResetPlayers() override;
     void endResetPlayers() override;
 
-    void addPlayersToCategory(CategoryId category, std::vector<PlayerId> ids) override;
-    void erasePlayersFromCategory(CategoryId category, std::vector<PlayerId> ids) override;
+    void addPlayersToCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) override;
+    void erasePlayersFromCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) override;
 
-    void changeCategories(std::vector<CategoryId> id) override;
-    void beginAddCategories(std::vector<CategoryId> id) override;
-    void endAddCategories() override;
-    void beginEraseCategories(std::vector<CategoryId> id) override;
-    void endEraseCategories() override;
+    void changeCategories(const std::vector<CategoryId>& categoryIds) override;
+    void beginAddCategories(const std::vector<CategoryId>& categoryIds) override;
+    void endAddCategories(const std::vector<CategoryId>& categoryIds) override;
+    void beginEraseCategories(const std::vector<CategoryId>& categoryIds) override;
+    void endEraseCategories(const std::vector<CategoryId>& categoryIds) override;
     void beginResetCategories() override;
     void endResetCategories() override;
 
-    void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) override;
+    void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) override;
     void beginResetMatches(CategoryId categoryId) override;
     void endResetMatches(CategoryId categoryId) override;
 
-    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) override;
-    void beginAddTatamis(std::vector<TatamiLocation> locations) override;
-    void endAddTatamis() override;
-    void beginEraseTatamis(std::vector<TatamiLocation> locations) override;
-    void endEraseTatamis() override;
+    void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) override;
+    void beginAddTatamis(const std::vector<TatamiLocation> &locations) override;
+    void endAddTatamis(const std::vector<TatamiLocation> &locations) override;
+    void beginEraseTatamis(const std::vector<TatamiLocation> &locations) override;
+    void endEraseTatamis(const std::vector<TatamiLocation> &locations) override;
 
 private:
     bool mTournamentChanged;
@@ -67,7 +67,5 @@ private:
     std::unordered_set<CategoryId> mCategoryMatchResets;
 
     std::unordered_set<std::pair<CategoryId, MatchId>> mChangedMatches;
-    std::unordered_set<std::pair<CategoryId, MatchId>> mAddedMatches;
-    std::unordered_set<std::pair<CategoryId, MatchId>> mErasedMatches;
 };
 

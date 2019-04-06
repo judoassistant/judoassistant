@@ -30,58 +30,37 @@ void QTournamentStore::changeTournament() {
     emit tournamentChanged();
 }
 
-void QTournamentStore::changePlayers(std::vector<PlayerId> id) {
+void QTournamentStore::changePlayers(const std::vector<PlayerId> &playerIds) {
     // log_debug().field("ids", id).msg("Emitting playersChanged");
-    emit playersChanged(id);
+    emit playersChanged(playerIds);
 }
 
-void QTournamentStore::beginAddPlayers(std::vector<PlayerId> id) {
+void QTournamentStore::beginAddPlayers(const std::vector<PlayerId> &playerIds) {
     if (mResettingPlayers)
         return;
 
-    if (mAddedPlayerIds)
-        throw std::runtime_error("beginAddPlayers called immidiately after another beginAddPlayers call.");
-
-    // log_debug().field("ids", id).msg("Emitting playersAboutToBeAdded");
-    emit playersAboutToBeAdded(id);
-    mAddedPlayerIds = id;
+    emit playersAboutToBeAdded(playerIds);
 }
 
-void QTournamentStore::endAddPlayers() {
+void QTournamentStore::endAddPlayers(const std::vector<PlayerId> &playerIds) {
     if (mResettingPlayers)
         return;
 
-    if (!mAddedPlayerIds)
-        throw std::runtime_error("endAddPlayers called with calling beginAddPlayers first.");
-
-    // log_debug().field("ids", *mAddedPlayerIds).msg("Emitting playersAdded");
-    emit playersAdded(*mAddedPlayerIds);
-    mAddedPlayerIds.reset();
+    emit playersAdded(playerIds);
 }
 
-void QTournamentStore::beginErasePlayers(std::vector<PlayerId> id) {
+void QTournamentStore::beginErasePlayers(const std::vector<PlayerId> &playerIds) {
     if (mResettingPlayers)
         return;
 
-    if (mErasedPlayerIds)
-        throw std::runtime_error("beginErasePlayers called immidiately after another beginErasePlayers call.");
-
-    // log_debug().field("ids", id).msg("Emitting playersAboutToBeErased");
-    emit playersAboutToBeErased(id);
-    mErasedPlayerIds = id;
-
+    emit playersAboutToBeErased(playerIds);
 }
 
-void QTournamentStore::endErasePlayers() {
+void QTournamentStore::endErasePlayers(const std::vector<PlayerId> &playerIds) {
     if (mResettingPlayers)
         return;
 
-    if (!mErasedPlayerIds)
-        throw std::runtime_error("endErasePlayers called with calling beginErasePlayers first.");
-
-    // log_debug().field("ids", *mErasedPlayerIds).msg("Emitting playersErased");
-    emit playersErased(*mErasedPlayerIds);
-    mErasedPlayerIds.reset();
+    emit playersErased(playerIds);
 }
 
 void QTournamentStore::beginResetPlayers() {
@@ -89,7 +68,6 @@ void QTournamentStore::beginResetPlayers() {
         throw std::runtime_error("beginResetPlayers called immidiately after another beginResetPlayers call.");
 
     mResettingPlayers = true;
-    // log_debug().msg("Emitting playersAboutToBeReset");
     emit playersAboutToBeReset();
 }
 
@@ -98,71 +76,47 @@ void QTournamentStore::endResetPlayers() {
         throw std::runtime_error("endResetPlayers called with calling beginResetPlayers first.");
 
     mResettingPlayers = false;
-    // log_debug().msg("Emitting playersReset");
     emit playersReset();
 }
 
-void QTournamentStore::addPlayersToCategory(CategoryId categoryId, std::vector<PlayerId> playerIds) {
-    // log_debug().field("categoryId", categoryId).field("playerIds", playerIds).msg("Emitting playersAddedToCategory");
+void QTournamentStore::addPlayersToCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {
     emit playersAddedToCategory(categoryId, playerIds);
 }
 
-void QTournamentStore::erasePlayersFromCategory(CategoryId categoryId, std::vector<PlayerId> playerIds) {
-    // log_debug().field("categoryId", categoryId).field("playerIds", playerIds).msg("Emitting playersErasedFromCategory");
+void QTournamentStore::erasePlayersFromCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {
     emit playersErasedFromCategory(categoryId, playerIds);
 }
 
-void QTournamentStore::changeCategories(std::vector<CategoryId> id) {
-    // log_debug().field("ids", id).msg("Emitting categoriesChanged");
-    emit categoriesChanged(id);
+void QTournamentStore::changeCategories(const std::vector<CategoryId> &categoryIds) {
+    emit categoriesChanged(categoryIds);
 }
 
-void QTournamentStore::beginAddCategories(std::vector<CategoryId> id) {
+void QTournamentStore::beginAddCategories(const std::vector<CategoryId> &categoryIds) {
     if (mResettingCategories)
         return;
 
-    if (mAddedCategoryIds)
-        throw std::runtime_error("beginAddCategories called immidiately after another beginAddCategories call.");
-
-    // log_debug().field("ids", id).msg("Emitting categoriesAboutToBeAdded");
-    emit categoriesAboutToBeAdded(id);
-    mAddedCategoryIds = id;
+    emit categoriesAboutToBeAdded(categoryIds);
 }
 
-void QTournamentStore::endAddCategories() {
+void QTournamentStore::endAddCategories(const std::vector<CategoryId> &categoryIds) {
     if (mResettingCategories)
         return;
 
-    if (!mAddedCategoryIds)
-        throw std::runtime_error("endAddCategories called with calling beginAddCategories first.");
-
-    // log_debug().field("ids", *mAddedCategoryIds).msg("Emitting categoriesAdded");
-    emit categoriesAdded(*mAddedCategoryIds);
-    mAddedCategoryIds.reset();
+    emit categoriesAdded(categoryIds);
 }
 
-void QTournamentStore::beginEraseCategories(std::vector<CategoryId> id) {
+void QTournamentStore::beginEraseCategories(const std::vector<CategoryId> &categoryIds) {
     if (mResettingCategories)
         return;
 
-    if (mErasedCategoryIds)
-        throw std::runtime_error("beginEraseCategories called immidiately after another beginEraseCategories call.");
-
-    // log_debug().field("ids", id).msg("Emitting categoriesAboutToBeErased");
-    emit categoriesAboutToBeErased(id);
-    mErasedCategoryIds = id;
+    emit categoriesAboutToBeErased(categoryIds);
 }
 
-void QTournamentStore::endEraseCategories() {
+void QTournamentStore::endEraseCategories(const std::vector<CategoryId> &categoryIds) {
     if (mResettingCategories)
         return;
 
-    if (!mErasedCategoryIds)
-        throw std::runtime_error("endEraseCategories called with calling beginEraseCategories first.");
-
-    // log_debug().field("ids", *mErasedCategoryIds).msg("Emitting categoriesErased");
-    emit categoriesErased(*mErasedCategoryIds);
-    mErasedCategoryIds.reset();
+    emit categoriesErased(categoryIds);
 }
 
 void QTournamentStore::beginResetCategories() {
@@ -170,7 +124,6 @@ void QTournamentStore::beginResetCategories() {
         throw std::runtime_error("beginResetCategories called immidiately after another beginResetCategories call.");
 
     mResettingCategories = true;
-    // log_debug().msg("Emitting categoriesAboutToBeReset");
     emit categoriesAboutToBeReset();
 }
 
@@ -179,12 +132,10 @@ void QTournamentStore::endResetCategories() {
         throw std::runtime_error("endResetCategories called with calling beginResetCategories first.");
 
     mResettingCategories = false;
-    // log_debug().msg("Emitting categoriesReset");
     emit categoriesReset();
 }
 
-void QTournamentStore::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
-    // log_debug().field("categoryId", categoryId).field("matchIds", matchIds).msg("Emitting matchesChanged");
+void QTournamentStore::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
     emit matchesChanged(categoryId, matchIds);
 }
 
@@ -193,7 +144,6 @@ void QTournamentStore::beginResetMatches(CategoryId categoryId) {
         throw std::runtime_error("beginResetMatches called immidiately after another beginResetMatches call.");
 
     mResettingMatches = true;
-    // log_debug().field("categoryId", categoryId).msg("Emitting matchesAboutToBeReset");
     emit matchesAboutToBeReset(categoryId);
 }
 
@@ -202,44 +152,26 @@ void QTournamentStore::endResetMatches(CategoryId categoryId) {
         throw std::runtime_error("endResetMatches called with calling beginResetMatches first.");
 
     mResettingMatches = false;
-    // log_debug().field("categoryId", categoryId).msg("Emitting matchesReset");
     emit matchesReset(categoryId);
 }
 
-void QTournamentStore::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
-    // log_debug().field("locations", locations).field("blocks", blocks).msg("Emitting tatamisChanged");
+void QTournamentStore::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
     emit tatamisChanged(locations, blocks);
 }
 
-void QTournamentStore::beginAddTatamis(std::vector<TatamiLocation> locations) {
-    assert(!mAddedTatamiLocations.has_value());
-
-    // log_debug().field("locations", locations).msg("Emitting tatamisAboutToBeAdded");
+void QTournamentStore::beginAddTatamis(const std::vector<TatamiLocation> &locations) {
     emit tatamisAboutToBeAdded(locations);
-    mAddedTatamiLocations = locations;
 }
 
-void QTournamentStore::endAddTatamis() {
-    assert(mAddedTatamiLocations.has_value());
-
-    // log_debug().field("locations", *mAddedTatamiLocations).msg("Emitting tatamisAdded");
-    emit tatamisAdded(*mAddedTatamiLocations);
-    mAddedTatamiLocations.reset();
+void QTournamentStore::endAddTatamis(const std::vector<TatamiLocation> &locations) {
+    emit tatamisAdded(locations);
 }
 
-void QTournamentStore::beginEraseTatamis(std::vector<TatamiLocation> locations) {
-    assert(!mErasedTatamiLocations.has_value());
-
-    // log_debug().field("locations", locations).msg("Emitting tatamisAboutToBeErased");
+void QTournamentStore::beginEraseTatamis(const std::vector<TatamiLocation> &locations) {
     emit tatamisAboutToBeErased(locations);
-    mErasedTatamiLocations = locations;
 }
 
-void QTournamentStore::endEraseTatamis() {
-    assert(mErasedTatamiLocations.has_value());
-
-    // log_debug().field("locations", *mErasedTatamiLocations).msg("Emitting tatamisErased");
-    emit tatamisErased(*mErasedTatamiLocations);
-    mErasedTatamiLocations.reset();
+void QTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locations) {
+    emit tatamisErased(locations);
 }
 

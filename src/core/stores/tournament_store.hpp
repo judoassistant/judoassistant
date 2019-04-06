@@ -56,34 +56,34 @@ public:
     // signals used for frontends. Called by actions
     virtual void changeTournament() {}
 
-    virtual void changePlayers(std::vector<PlayerId> id) {}
-    virtual void beginAddPlayers(std::vector<PlayerId> id) {}
-    virtual void endAddPlayers() {}
-    virtual void beginErasePlayers(std::vector<PlayerId> id) {}
-    virtual void endErasePlayers() {}
+    virtual void changePlayers(const std::vector<PlayerId> &playerIds) {}
+    virtual void beginAddPlayers(const std::vector<PlayerId> &playerIds) {}
+    virtual void endAddPlayers(const std::vector<PlayerId> &playerIds) {}
+    virtual void beginErasePlayers(const std::vector<PlayerId> &playerIds) {}
+    virtual void endErasePlayers(const std::vector<PlayerId> &playerIds) {}
     virtual void beginResetPlayers() {}
     virtual void endResetPlayers() {}
 
-    virtual void addPlayersToCategory(CategoryId category, std::vector<PlayerId>) {}
-    virtual void erasePlayersFromCategory(CategoryId category, std::vector<PlayerId>) {}
+    virtual void addPlayersToCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {}
+    virtual void erasePlayersFromCategory(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {}
 
-    virtual void changeCategories(std::vector<CategoryId> id) {}
-    virtual void beginAddCategories(std::vector<CategoryId> id) {}
-    virtual void endAddCategories() {}
-    virtual void beginEraseCategories(std::vector<CategoryId> id) {}
-    virtual void endEraseCategories() {}
+    virtual void changeCategories(const std::vector<CategoryId>& categoryIds) {}
+    virtual void beginAddCategories(const std::vector<CategoryId>& categoryIds) {}
+    virtual void endAddCategories(const std::vector<CategoryId>& categoryIds) {}
+    virtual void beginEraseCategories(const std::vector<CategoryId>& categoryIds) {}
+    virtual void endEraseCategories(const std::vector<CategoryId>& categoryIds) {}
     virtual void beginResetCategories() {}
     virtual void endResetCategories() {}
 
-    virtual void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {}
+    virtual void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {}
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
 
-    virtual void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {}
-    virtual void beginAddTatamis(std::vector<TatamiLocation> locations) {}
-    virtual void endAddTatamis() {}
-    virtual void beginEraseTatamis(std::vector<TatamiLocation> locations) {}
-    virtual void endEraseTatamis() {}
+    virtual void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {}
+    virtual void beginAddTatamis(const std::vector<TatamiLocation> &locations) {}
+    virtual void endAddTatamis(const std::vector<TatamiLocation> &locations) {}
+    virtual void beginEraseTatamis(const std::vector<TatamiLocation> &locations) {}
+    virtual void endEraseTatamis(const std::vector<TatamiLocation> &locations) {}
 
 private:
     TournamentId mId;

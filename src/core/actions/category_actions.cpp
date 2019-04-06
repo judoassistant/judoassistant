@@ -48,13 +48,13 @@ void AddCategoryAction::redoImpl(TournamentStore & tournament) {
 
     tournament.beginAddCategories({mId});
     tournament.addCategory(std::make_unique<CategoryStore>(mId, mName, std::move(ruleset), std::move(drawSystem)));
-    tournament.endAddCategories();
+    tournament.endAddCategories({mId});
 }
 
 void AddCategoryAction::undoImpl(TournamentStore & tournament) {
     tournament.beginEraseCategories({mId});
     tournament.eraseCategory(mId);
-    tournament.endEraseCategories();
+    tournament.endEraseCategories({mId});
 }
 
 AddPlayersToCategoryAction::AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds)
@@ -254,7 +254,7 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         mCategories.push(tournament.eraseCategory(categoryId));
     }
 
-    tournament.endEraseCategories();
+    tournament.endEraseCategories(mErasedCategoryIds);
 
     for (auto tuple : locations) {
         mBlocks.push_back({std::get<0>(tuple), std::get<1>(tuple)});
@@ -296,7 +296,7 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
     for (size_t i = 0; i < mBlocks.size(); ++i)
         tournament.getTatamis().moveBlock(tournament, mBlocks[i], std::nullopt, mLocations[i]);
 
-    tournament.endAddCategories();
+    tournament.endAddCategories(mErasedCategoryIds);
     if (!mLocations.empty())
         tournament.changeTatamis(mLocations, mBlocks);
 
@@ -587,7 +587,7 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
         auto drawSystem = drawSystems[0]->clone();
         tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], ss.str(), std::move(ruleset), std::move(drawSystem)));
     }
-    tournament.endAddCategories();
+    tournament.endAddCategories(mCategoryIds);
 
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
         AddPlayersToCategoryAction playersAction(mCategoryIds[i], mPlayerIds[i], mSeed);
