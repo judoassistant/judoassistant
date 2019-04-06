@@ -25,20 +25,21 @@ public:
     std::vector<PlayerId> getPlayers(const QItemSelection &selection) const;
     PlayerId getPlayer(int row) const;
 
-    int getRow(PlayerId id) const;
-    std::vector<int> getRows(std::vector<PlayerId> id) const;
-public slots:
-    void playersAdded(std::vector<PlayerId> ids);
-    void playersChanged(std::vector<PlayerId> ids);
-    void playersAboutToBeErased(std::vector<PlayerId> ids);
+    int getRow(PlayerId playerId) const;
+
+protected:
+    void playersAdded(const std::vector<PlayerId> &playerIds);
+    void playersChanged(const std::vector<PlayerId> &playerIds);
+    void playersAboutToBeErased(const std::vector<PlayerId> &playerIds);
     void playersAboutToBeReset();
     void playersReset();
     void tournamentReset();
     void tournamentAboutToBeReset();
-    void playerCategoriesChanged(CategoryId categoryId, std::vector<PlayerId> playerIds);
-    void playerCategoriesChanged(std::vector<PlayerId> playerIds);
-    void categoriesAboutToBeErased(std::vector<CategoryId> playerIds);
-    void categoriesErased(std::vector<CategoryId> playerIds);
+    void playerCategoriesChanged(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
+    void playerCategoriesChanged(const std::vector<PlayerId> &playerIds);
+    void categoriesAboutToBeErased(const std::vector<CategoryId> &playerIds);
+    void categoriesErased(const std::vector<CategoryId> &playerIds);
+
 private:
     std::string listPlayerCategories(const PlayerStore &player) const;
     const int COLUMN_COUNT = 9;

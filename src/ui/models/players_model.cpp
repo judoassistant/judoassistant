@@ -114,31 +114,31 @@ PlayerId PlayersModel::getPlayer(int row) const {
     return *it;
 }
 
-int PlayersModel::getRow(PlayerId id) const {
-    return std::distance(mIds.begin(), mIds.lower_bound(id));
+int PlayersModel::getRow(PlayerId playerId) const {
+    return std::distance(mIds.begin(), mIds.lower_bound(playerId));
 }
 
-void PlayersModel::playersAdded(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        int row = getRow(id);
+void PlayersModel::playersAdded(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        int row = getRow(playerId);
         beginInsertRows(QModelIndex(), row, row);
-        mIds.insert(id);
+        mIds.insert(playerId);
         endInsertRows();
     }
 }
 
-void PlayersModel::playersChanged(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        int row = getRow(id);
+void PlayersModel::playersChanged(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        int row = getRow(playerId);
         emit dataChanged(createIndex(row,0), createIndex(row, COLUMN_COUNT-1));
     }
 }
 
-void PlayersModel::playersAboutToBeErased(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        int row = getRow(id);
+void PlayersModel::playersAboutToBeErased(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        int row = getRow(playerId);
         beginRemoveRows(QModelIndex(), row, row);
-        mIds.erase(id);
+        mIds.erase(playerId);
         endRemoveRows();
     }
 }
@@ -176,8 +176,8 @@ void PlayersModel::tournamentReset() {
     mConnections.push(connect(&tournament, &QTournamentStore::playersAboutToBeReset, this, &PlayersModel::playersAboutToBeReset));
     mConnections.push(connect(&tournament, &QTournamentStore::playersReset, this, &PlayersModel::playersReset));
 
-    mConnections.push(connect(&tournament, &QTournamentStore::playersAddedToCategory, this, qOverload<CategoryId, std::vector<PlayerId>>(&PlayersModel::playerCategoriesChanged)));
-    mConnections.push(connect(&tournament, &QTournamentStore::playersErasedFromCategory, this, qOverload<CategoryId, std::vector<PlayerId>>(&PlayersModel::playerCategoriesChanged)));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersAddedToCategory, this, qOverload<CategoryId, const std::vector<PlayerId>&>(&PlayersModel::playerCategoriesChanged)));
+    mConnections.push(connect(&tournament, &QTournamentStore::playersErasedFromCategory, this, qOverload<CategoryId, const std::vector<PlayerId>&>(&PlayersModel::playerCategoriesChanged)));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesAboutToBeErased, this, &PlayersModel::categoriesAboutToBeErased));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesErased, this, &PlayersModel::categoriesErased));
 
@@ -203,18 +203,18 @@ std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const 
     return res.str();
 }
 
-void PlayersModel::playerCategoriesChanged(std::vector<PlayerId> playerIds) {
+void PlayersModel::playerCategoriesChanged(const std::vector<PlayerId> &playerIds) {
     for (auto playerId : playerIds) {
         int row = getRow(playerId);
         emit dataChanged(createIndex(row, 7), createIndex(row, 7));
     }
 }
 
-void PlayersModel::playerCategoriesChanged(CategoryId categoryId, std::vector<PlayerId> playerIds) {
+void PlayersModel::playerCategoriesChanged(CategoryId categoryId, const std::vector<PlayerId> &playerIds) {
     playerCategoriesChanged(playerIds);
 }
 
-void PlayersModel::categoriesAboutToBeErased(std::vector<CategoryId> categoryIds) {
+void PlayersModel::categoriesAboutToBeErased(const std::vector<CategoryId> &categoryIds) {
     mAffectedPlayers.clear();
     for (auto categoryId : categoryIds) {
         const auto & ids = mStoreManager.getTournament().getCategory(categoryId).getPlayers();
@@ -222,7 +222,7 @@ void PlayersModel::categoriesAboutToBeErased(std::vector<CategoryId> categoryIds
     }
 }
 
-void PlayersModel::categoriesErased(std::vector<CategoryId> categoryIds) {
+void PlayersModel::categoriesErased(const std::vector<CategoryId> &categoryIds) {
     playerCategoriesChanged(std::vector(mAffectedPlayers.begin(), mAffectedPlayers.end()));
 }
 

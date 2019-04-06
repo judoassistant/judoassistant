@@ -217,7 +217,7 @@ int TatamiMatchesModel::getRow(std::pair<CategoryId, MatchId> combinedId) const 
     return getRow(std::get<0>(combinedId), std::get<1>(combinedId));
 }
 
-void TatamiMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
+void TatamiMatchesModel::changePlayers(const std::vector<PlayerId> &playerIds) {
     std::unordered_set<int> changedRows;
 
     for (auto playerId : playerIds) {
@@ -232,7 +232,7 @@ void TatamiMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
         emit dataChanged(createIndex(row, 0), createIndex(row,0));
 }
 
-void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
+void TatamiMatchesModel::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
     bool didRemoveRows = false;
     for (auto matchId : matchIds) {
         auto combinedId = std::make_pair(categoryId, matchId);
@@ -360,7 +360,7 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchI
         loadBlocks();
 }
 
-void TatamiMatchesModel::changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks) {
+void TatamiMatchesModel::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
     const auto &tournament = mStoreManager.getTournament();
     const auto &tatamis = tournament.getTatamis();
     if (!tatamis.containsTatami(mTatami))

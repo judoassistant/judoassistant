@@ -29,8 +29,8 @@ public:
     void setCategory(std::optional<CategoryId> categoryId);
     std::optional<CategoryId> getCategory() const;
 private slots:
-    void changePlayers(std::vector<PlayerId> ids);
-    void beginErasePlayers(std::vector<PlayerId> ids);
+    void changePlayers(const std::vector<PlayerId> &playerIds);
+    void beginErasePlayers(const std::vector<PlayerId> &playerIds);
     void beginResetPlayers();
 
     void beginResetTournament();
@@ -39,7 +39,7 @@ private slots:
     void beginResetMatches(CategoryId categoryId);
     void endResetMatches(CategoryId categoryId);
 
-    void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
+    void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds);
 private:
     void beginResetResults();
     void endResetResults();
