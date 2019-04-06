@@ -190,7 +190,7 @@ struct BlockLocationIndexComp {
         const auto &bLocation = std::get<2>(b);
 
         if (aLocation.sequentialGroup.concurrentGroup.tatami.handle.index != bLocation.sequentialGroup.concurrentGroup.tatami.handle.index)
-            return aLocation.sequentialGroup.concurrentGroup.handle.index < bLocation.sequentialGroup.concurrentGroup.handle.index;
+            return aLocation.sequentialGroup.concurrentGroup.tatami.handle.index < bLocation.sequentialGroup.concurrentGroup.tatami.handle.index;
         if (aLocation.sequentialGroup.concurrentGroup.handle.index != bLocation.sequentialGroup.concurrentGroup.handle.index)
             return aLocation.sequentialGroup.concurrentGroup.handle.index < bLocation.sequentialGroup.concurrentGroup.handle.index;
         if (aLocation.sequentialGroup.handle.index != bLocation.sequentialGroup.handle.index)
@@ -207,7 +207,7 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         mErasedCategoryIds.push_back(categoryId);
     }
 
-    // Find all locations and keep them in non-decreasing order
+    // Find all locations and keep them in increasing order
     std::set<std::tuple<CategoryId, MatchType, BlockLocation>, BlockLocationIndexComp> locations;
 
     tournament.beginEraseCategories(mErasedCategoryIds);
@@ -225,7 +225,7 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         }
     }
 
-    // move categories away from the tatami in non-dreasing order
+    // move categories away from the tatami in increasing order
     for (const auto &tuple : locations) {
         auto block = std::make_pair(std::get<0>(tuple), std::get<1>(tuple));
         auto location = std::get<2>(tuple);
