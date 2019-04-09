@@ -119,7 +119,7 @@ void WebParticipant::quit() {
     // when killing
 
     auto self = shared_from_this();
-    boost::asio::dispatch(mStrand, [this, self]() {
+    boost::asio::post(mStrand, [this, self]() {
         forceQuit();
     });
 }
