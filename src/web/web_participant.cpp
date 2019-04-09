@@ -130,7 +130,7 @@ void WebParticipant::forceQuit() {
         mTournament.reset();
     }
 
-    if (mConnection)
+    if (mConnection) // TODO: Call teardown instead of reset
         mConnection.reset();
     mServer.leave(shared_from_this());
 }
