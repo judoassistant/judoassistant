@@ -67,6 +67,15 @@ std::string PlayerCountry::toString() const {
     }
 }
 
+std::string PlayerCountry::countryCode() const {
+    switch (mValue) {
+        case DENMARK: return "dk";
+        case UNITED_KINGDOM: return "gb";
+        case FRANCE: return "fr";
+        default: return "";
+    }
+}
+
 std::vector<PlayerCountry> PlayerCountry::values() {
     std::vector<PlayerCountry> res;
     for (size_t i = 0; i < SIZE; ++i) {

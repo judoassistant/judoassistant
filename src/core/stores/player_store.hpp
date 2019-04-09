@@ -26,6 +26,7 @@ public:
     PlayerCountry(int value);
 
     std::string toString() const;
+    std::string countryCode() const; // Returns the ISO 3166-1-alpha-2 code
     int toInt() const;
     static std::vector<PlayerCountry> values();
 
