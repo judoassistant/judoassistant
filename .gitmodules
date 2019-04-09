@@ -1,3 +1,6 @@
 [submodule "icons"]
 	path = icons
 	url = https://github.com/Templarian/MaterialDesign.git
+[submodule "flags"]
+	path = flags
+	url = https://github.com/lipis/flag-icon-css.git
