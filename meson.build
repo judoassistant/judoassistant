@@ -60,4 +60,5 @@ web_exe = executable('judoassistant-web', web_sources, include_directories: incl
 
 # Run targets
 run_target('icons', command : 'scripts/compile_icons.sh')
+run_target('flags', command : 'scripts/compile_flags.sh')
 
