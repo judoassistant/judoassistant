@@ -81,16 +81,11 @@ void WebClientWidget::buttonClick() {
     const auto webName = mStoreManager.getTournament().getWebName();
 
     if (state == WebClientState::NOT_CONNECTED) { // Login if not already
-        if (!mToken.has_value()) {
-            LoginDialog dialog(mStoreManager);
-            if (dialog.exec() != QDialog::Accepted)
-                return;
+        LoginDialog dialog(mStoreManager);
+        if (dialog.exec() != QDialog::Accepted)
+            return;
 
-            mToken = dialog.getToken();
-        }
-        else {
-            log_debug().msg("Validate token");
-        }
+        mToken = dialog.getToken();
 
         return;
     }

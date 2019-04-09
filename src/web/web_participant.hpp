@@ -24,7 +24,7 @@ private:
     bool parseMessage(const std::string &message);
     bool validateMessage(const std::string &message);
 
-    bool selectTournament(const std::string &webName);
+    bool subscribeTournament(const std::string &webName);
     bool subscribeCategory(const std::string &id);
     bool subscribePlayer(const std::string &id);
     bool listTournaments();

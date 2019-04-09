@@ -95,7 +95,7 @@ void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
         tournament.beginAddTatamis(locations);
         for (TatamiLocation location : locations)
             tatamis.insert(location.handle);
-        tournament.endAddTatamis();
+        tournament.endAddTatamis(locations);
     }
     else if (tatamis.tatamiCount() > mLocations.size()) {
         std::vector<TatamiLocation> locations;
@@ -126,7 +126,7 @@ void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
 
             mErasedTatamis.push_back(std::make_pair(location, std::move(tatami)));
         }
-        tournament.endEraseTatamis();
+        tournament.endEraseTatamis(locations);
         tournament.changeCategories(std::vector(categories.begin(), categories.end()));
     }
 }
@@ -142,7 +142,7 @@ void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
         tournament.beginEraseTatamis(locations);
         for (TatamiLocation location : locations)
             tatamis.eraseTatami(location.handle);
-        tournament.endEraseTatamis();
+        tournament.endEraseTatamis(locations);
     }
     else if (tatamis.tatamiCount() < mOldCount) {
         std::vector<TatamiLocation> locations;
@@ -179,7 +179,7 @@ void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
         for (auto & pair : mErasedTatamis)
             tatamis[pair.first.handle] = std::move(pair.second);
         mErasedTatamis.clear();
-        tournament.endAddTatamis();
+        tournament.endAddTatamis(locations);
         tournament.changeCategories(std::vector(categories.begin(), categories.end()));
     }
 }

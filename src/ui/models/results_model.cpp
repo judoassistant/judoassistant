@@ -68,9 +68,9 @@ QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int 
 }
 
 
-void ResultsModel::changePlayers(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        auto it = mPlayers.find(id);
+void ResultsModel::changePlayers(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        auto it = mPlayers.find(playerId);
         if (it == mPlayers.end())
             continue;
         int row = it->second;
@@ -78,9 +78,9 @@ void ResultsModel::changePlayers(std::vector<PlayerId> ids) {
     }
 }
 
-void ResultsModel::beginErasePlayers(std::vector<PlayerId> ids) {
-    for (auto id : ids) {
-        if (mPlayers.find(id) == mPlayers.end())
+void ResultsModel::beginErasePlayers(const std::vector<PlayerId> &playerIds) {
+    for (auto playerId : playerIds) {
+        if (mPlayers.find(playerId) == mPlayers.end())
             continue;
 
         beginResetResults();
@@ -156,7 +156,7 @@ void ResultsModel::endResetResults() {
     endResetModel();
 }
 
-void ResultsModel::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
+void ResultsModel::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
     if (mCategory != categoryId)
         return;
 

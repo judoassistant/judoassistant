@@ -153,7 +153,7 @@ int CategoryMatchesModel::getRow(MatchId matchId) const {
     return static_cast<int>(it->second);
 }
 
-void CategoryMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
+void CategoryMatchesModel::changePlayers(const std::vector<PlayerId> &playerIds) {
     std::unordered_set<int> changedRows;
 
     for (auto playerId : playerIds) {
@@ -168,7 +168,7 @@ void CategoryMatchesModel::changePlayers(std::vector<PlayerId> playerIds) {
         emit dataChanged(createIndex(row, 0), createIndex(row,0));
 }
 
-void CategoryMatchesModel::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
+void CategoryMatchesModel::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
     if (mCategoryId != categoryId)
         return;
 

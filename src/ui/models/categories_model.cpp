@@ -91,27 +91,27 @@ int CategoriesModel::getRow(CategoryId id) const {
     return std::distance(mIds.begin(), mIds.lower_bound(id));
 }
 
-void CategoriesModel::categoriesAdded(std::vector<CategoryId> ids) {
-    for (auto id : ids) {
-        int row = getRow(id);
+void CategoriesModel::categoriesAdded(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        int row = getRow(categoryId);
         beginInsertRows(QModelIndex(), row, row);
-        mIds.insert(id);
+        mIds.insert(categoryId);
         endInsertRows();
     }
 }
 
-void CategoriesModel::categoriesChanged(std::vector<CategoryId> ids) {
-    for (auto id : ids) {
-        int row = getRow(id);
+void CategoriesModel::categoriesChanged(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        int row = getRow(categoryId);
         emit dataChanged(createIndex(0,row), createIndex(COLUMN_COUNT-1,row));
     }
 }
 
-void CategoriesModel::categoriesAboutToBeErased(std::vector<CategoryId> ids) {
-    for (auto id : ids) {
-        int row = getRow(id);
+void CategoriesModel::categoriesAboutToBeErased(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        int row = getRow(categoryId);
         beginRemoveRows(QModelIndex(), row, row);
-        mIds.erase(id);
+        mIds.erase(categoryId);
         endRemoveRows();
     }
 }

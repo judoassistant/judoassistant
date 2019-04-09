@@ -21,19 +21,15 @@ rapidjson::StringBuffer& JsonBuffer::getStringBuffer() {
     return mStringBuffer;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("sync", true, allocator);
+    document.AddMember("messageType", encodeString("tournamentSubscription", allocator), allocator);
 
     // Tournament meta data field
     document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
-
-    // deletedCategories field
-    rapidjson::Value deletedCategories(rapidjson::kArrayType);
-    document.AddMember("deletedCategories", deletedCategories, allocator);
 
     // categories field
     rapidjson::Value categories(rapidjson::kArrayType);
@@ -47,10 +43,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
     else
         document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
 
-    // deletedPlayers field
-    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
-    document.AddMember("deletedPlayers", deletedPlayers, allocator);
-
     // players field
     rapidjson::Value players(rapidjson::kArrayType);
     for (const auto &p : tournament.getPlayers())
@@ -63,21 +55,27 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
     else
         document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
 
-    // matches
+    // Encode matches
+    // TODO: Encode tatami matches
+    std::unordered_set<std::pair<CategoryId, MatchId>> matchIds;
 
-    rapidjson::Value matches(rapidjson::kArrayType);
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches())
-            matches.PushBack(encodeMatch(*match, allocator), allocator);
+            matchIds.insert(match->getCombinedId());
     }
     else if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer)) {
         const auto &player = tournament.getPlayer(*subscribedPlayer);
 
-        for (const auto &combinedId : player.getMatches()) {
-            const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
-            matches.PushBack(encodeMatch(match, allocator), allocator);
-        }
+        for (const auto &combinedId : player.getMatches())
+            matchIds.insert(combinedId);
     }
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+    for (const auto &combinedId : matchIds) {
+        const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+        matches.PushBack(encodeMatch(match, allocator), allocator);
+    }
+
     document.AddMember("matches", matches, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
@@ -87,40 +85,17 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSyncMessage(const WebTournamentSt
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("sync", false, allocator);
-
-    // Tournament meta data field
-    document.AddMember("tournament", rapidjson::Value(), allocator);
-
-    // deletedCategories field
-    rapidjson::Value deletedCategories(rapidjson::kArrayType);
-    document.AddMember("deletedCategories", deletedCategories, allocator);
-
-    // categories field
-    rapidjson::Value categories(rapidjson::kArrayType);
-    document.AddMember("categories", categories, allocator);
+    document.AddMember("messageType", encodeString("categorySubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedCategory", encodeSubscribedCategory(category, allocator), allocator);
 
-    // deletedPlayers field
-    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
-    document.AddMember("deletedPlayers", deletedPlayers, allocator);
-
-    // players field
-    rapidjson::Value players(rapidjson::kArrayType);
-    document.AddMember("players", players, allocator);
-
-    // subscribed category field
-    document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
-
     // matches
-
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &match : category.getMatches())
         matches.PushBack(encodeMatch(*match, allocator), allocator);
@@ -133,40 +108,17 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribeCategoryMessage(const We
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("sync", false, allocator);
-
-    // Tournament meta data field
-    document.AddMember("tournament", rapidjson::Value(), allocator);
-
-    // deletedCategories field
-    rapidjson::Value deletedCategories(rapidjson::kArrayType);
-    document.AddMember("deletedCategories", deletedCategories, allocator);
-
-    // categories field
-    rapidjson::Value categories(rapidjson::kArrayType);
-    document.AddMember("categories", categories, allocator);
-
-    // subscribed category field
-    document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
-
-    // deletedPlayers field
-    rapidjson::Value deletedPlayers(rapidjson::kArrayType);
-    document.AddMember("deletedPlayers", deletedPlayers, allocator);
-
-    // players field
-    rapidjson::Value players(rapidjson::kArrayType);
-    document.AddMember("players", players, allocator);
+    document.AddMember("messageType", encodeString("playerSubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedPlayer", encodeSubscribedPlayer(player, allocator), allocator);
 
     // matches
-
     rapidjson::Value matches(rapidjson::kArrayType);
     log_debug().field("size", player.getMatches().size()).msg("Listing matches");
     for (auto combinedId : player.getMatches()) {
@@ -182,13 +134,171 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeSubscribePlayerMessage(const WebT
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
-    // TODO: Implement
+bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+    // check tournament
+    if (tournament.tournamentChanged())
+        return true;
+
+    // check players
+    if (!tournament.getChangedPlayers().empty())
+        return true;
+    if (!tournament.getAddedPlayers().empty())
+        return true;
+    if (!tournament.getErasedPlayers().empty())
+        return true;
+
+    // check categories
+    if (!tournament.getChangedCategories().empty())
+        return true;
+    if (!tournament.getAddedCategories().empty())
+        return true;
+    if (!tournament.getErasedCategories().empty())
+        return true;
+
+    // check matches
+    if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
+        if (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end())
+            return true;
+
+        for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches()) {
+            const auto &combinedId = match->getCombinedId();
+            if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
+                return true;
+        }
+    }
+    else if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer)) {
+        if (tournament.getPlayerMatchResets().find(*subscribedPlayer) != tournament.getPlayerMatchResets().end())
+            return true;
+
+        const auto &player = tournament.getPlayer(*subscribedPlayer);
+        for (const auto &combinedId : player.getMatches()) {
+            if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
+                return true;
+        }
+    }
+
+    return false;
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
     rapidjson::Document document;
     document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("tournamentChanges", allocator), allocator);
+
+    // Tournament meta data field
+    if (tournament.tournamentChanged())
+        document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
+
+    // categories field
+    rapidjson::Value categories(rapidjson::kArrayType);
+    for (auto categoryId : tournament.getChangedCategories()) {
+        const auto &category = tournament.getCategory(categoryId);
+        categories.PushBack(encodeCategory(category, allocator), allocator);
+    }
+
+    for (auto categoryId : tournament.getAddedCategories()) {
+        const auto &category = tournament.getCategory(categoryId);
+        categories.PushBack(encodeCategory(category, allocator), allocator);
+    }
+    document.AddMember("categories", categories, allocator);
+
+    // erased categories field
+    rapidjson::Value erasedCategories(rapidjson::kArrayType);
+    for (auto categoryId : tournament.getErasedCategories()) {
+        rapidjson::Value val(categoryId.getValue());
+
+        erasedCategories.PushBack(val, allocator);
+    }
+    document.AddMember("erasedCategories", erasedCategories, allocator);
+
+    // players field
+    rapidjson::Value players(rapidjson::kArrayType);
+    for (auto playerId : tournament.getChangedPlayers()) {
+        const auto &player = tournament.getPlayer(playerId);
+        players.PushBack(encodePlayer(player, allocator), allocator);
+    }
+
+    for (auto playerId : tournament.getAddedPlayers()) {
+        const auto &player = tournament.getPlayer(playerId);
+        players.PushBack(encodePlayer(player, allocator), allocator);
+    }
+    document.AddMember("players", players, allocator);
+
+    // erased players field
+    rapidjson::Value erasedPlayers(rapidjson::kArrayType);
+    for (auto playerId : tournament.getErasedPlayers()) {
+        rapidjson::Value val(playerId.getValue());
+
+        erasedPlayers.PushBack(val, allocator);
+    }
+    document.AddMember("erasedPlayers", erasedPlayers, allocator);
+
+    if (subscribedCategory.has_value()) { // encode subscribed category
+        if (tournament.getErasedCategories().find(*subscribedCategory) != tournament.getErasedCategories().end()) {
+            document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
+        }
+        else {
+            bool shouldEncode = false;
+
+            shouldEncode |= (tournament.getChangedCategories().find(*subscribedCategory) != tournament.getChangedCategories().end());
+            shouldEncode |= (tournament.getAddedCategories().find(*subscribedCategory) != tournament.getAddedCategories().end());
+            shouldEncode |= (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end());
+            if (shouldEncode)
+                document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament.getCategory(*subscribedCategory), allocator), allocator);
+        }
+    }
+    else if (subscribedPlayer.has_value()) { // encode subscribed player
+        if (tournament.getErasedPlayers().find(*subscribedPlayer) != tournament.getErasedPlayers().end()) {
+            document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
+        }
+        else {
+            bool shouldEncode = false;
+
+            shouldEncode |= (tournament.getChangedPlayers().find(*subscribedPlayer) != tournament.getChangedPlayers().end());
+            shouldEncode |= (tournament.getAddedPlayers().find(*subscribedPlayer) != tournament.getAddedPlayers().end());
+            shouldEncode |= (tournament.getPlayerMatchResets().find(*subscribedPlayer) != tournament.getPlayerMatchResets().end());
+            if (shouldEncode)
+                document.AddMember("subscribedPlayer", encodeSubscribedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
+        }
+    }
+
+    // // encode matches
+    // TODO: Encode tatami matches
+    std::unordered_set<std::pair<CategoryId, MatchId>> matchIds;
+
+    if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
+        bool matchesReset = (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end());
+        for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches()) {
+            const auto &combinedId = match->getCombinedId();
+            if (!matchesReset && tournament.getChangedMatches().find(combinedId) == tournament.getChangedMatches().end())
+                continue;
+            matchIds.insert(combinedId);
+        }
+    }
+    else if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer)) {
+        const auto &player = tournament.getPlayer(*subscribedPlayer);
+        bool matchesReset = (tournament.getPlayerMatchResets().find(*subscribedPlayer) != tournament.getPlayerMatchResets().end());
+
+        for (const auto &combinedId : player.getMatches()) {
+            if (!matchesReset && tournament.getChangedMatches().find(combinedId) == tournament.getChangedMatches().end())
+                continue;
+            matchIds.insert(combinedId);
+        }
+    }
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+    for (const auto &combinedId : matchIds) {
+        const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+        matches.PushBack(encodeMatch(match, allocator), allocator);
+    }
+    document.AddMember("matches", matches, allocator);
+
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
+
     return std::move(buffer);
 }
 
@@ -298,9 +408,52 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
     rapidjson::Value res;
     res.SetObject();
 
+    log_debug().field("name", tournament.getName()).msg("Encoding meta");
     res.AddMember("name", encodeString(tournament.getName(), allocator), allocator);
     res.AddMember("webName", encodeString(tournament.getWebName(), allocator), allocator);
 
     return res;
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("tournamentSubscriptionFail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return std::move(buffer);
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("categorySubscriptionFail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return std::move(buffer);
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("playerSubscriptionFail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return std::move(buffer);
 }
 

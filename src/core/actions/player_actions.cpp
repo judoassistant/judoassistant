@@ -34,14 +34,14 @@ void AddPlayersAction::redoImpl(TournamentStore & tournament) {
     for (; i != mIds.end() && j != mFields.end(); ++i, ++j)
         tournament.addPlayer(std::make_unique<PlayerStore>(*i, *j));
 
-    tournament.endAddPlayers();
+    tournament.endAddPlayers(mIds);
 }
 
 void AddPlayersAction::undoImpl(TournamentStore & tournament) {
     tournament.beginErasePlayers(mIds);
     for (auto id : mIds)
         tournament.erasePlayer(id);
-    tournament.endErasePlayers();
+    tournament.endErasePlayers(mIds);
 }
 
 ErasePlayersAction::ErasePlayersAction(const std::vector<PlayerId> &playerIds)
@@ -78,7 +78,7 @@ void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
 
     for (auto playerId : mErasedPlayerIds)
         mPlayers.push(std::move(tournament.erasePlayer(playerId)));
-    tournament.endErasePlayers();
+    tournament.endErasePlayers(mErasedPlayerIds);
 }
 
 void ErasePlayersAction::undoImpl(TournamentStore & tournament) {
@@ -87,7 +87,7 @@ void ErasePlayersAction::undoImpl(TournamentStore & tournament) {
         tournament.addPlayer(std::move(mPlayers.top()));
         mPlayers.pop();
     }
-    tournament.endAddPlayers();
+    tournament.endAddPlayers(mErasedPlayerIds);
     mErasedPlayerIds.clear();
 
     while (!mActions.empty()) {

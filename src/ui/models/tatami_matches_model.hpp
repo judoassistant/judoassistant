@@ -34,10 +34,10 @@ public:
     int getRow(CategoryId categoryId, MatchId matchId) const;
     int getRow(std::pair<CategoryId, MatchId> combinedId) const;
 
-private:
-    void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
-    void changePlayers(std::vector<PlayerId> playerIds);
+protected:
+    void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds);
+    void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks);
+    void changePlayers(const std::vector<PlayerId> &playerIds);
     void timerHit();
 
     void beginResetTournament();
@@ -50,6 +50,7 @@ private:
 
     void beginResetCategory(CategoryId categoryId);
 
+private:
     StoreManager & mStoreManager;
     TatamiLocation mTatami;
     size_t mRowCap;

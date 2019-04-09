@@ -13,6 +13,8 @@
 
 // TODO: Fix segfault on server SIGINT
 // TODO: Try to see if message size can be limited in async_read
+// TODO: Fix tournaments not saving correctly
+// TODO: Fix web participant not receiving tournament correctly
 
 WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)
@@ -51,6 +53,8 @@ bool WebParticipant::validateMessage(const std::string &message) {
         // Only allow certain characters
         if ('a' <= c && c <= 'z')
             continue;
+        if ('A' <= c && c <= 'Z')
+            continue;
         if ('0' <= c && c <= '9')
             continue;
         if (c == '-')
@@ -71,25 +75,25 @@ bool WebParticipant::parseMessage(const std::string &message) {
     std::vector<std::string> parts;
     boost::split(parts, message, boost::is_any_of(" "));
 
-    if (parts[0] == "select-tournament") {
+    if (parts[0] == "subscribeTournament") {
         if (parts.size() != 2)
             return false;
-        return selectTournament(parts[1]);
+        return subscribeTournament(parts[1]);
     }
 
-    if (parts[0] == "subscribe-category") {
+    if (parts[0] == "subscribeCategory") {
         if (parts.size() != 2)
             return false;
         return subscribeCategory(parts[1]);
     }
 
-    if (parts[0] == "subscribe-player") {
+    if (parts[0] == "subscribePlayer") {
         if (parts.size() != 2)
             return false;
         return subscribePlayer(parts[1]);
     }
 
-    if (parts[0] == "list-tournaments") {
+    if (parts[0] == "listTournaments") {
         if (parts.size() != 1)
             return false;
         return listTournaments();
@@ -98,7 +102,7 @@ bool WebParticipant::parseMessage(const std::string &message) {
     return false;
 }
 
-bool WebParticipant::selectTournament(const std::string &webName) {
+bool WebParticipant::subscribeTournament(const std::string &webName) {
     auto self = shared_from_this();
     mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
         if (tournament == nullptr)
@@ -115,7 +119,7 @@ void WebParticipant::quit() {
     // when killing
 
     auto self = shared_from_this();
-    boost::asio::dispatch(mStrand, [this, self]() {
+    boost::asio::post(mStrand, [this, self]() {
         forceQuit();
     });
 }
@@ -126,7 +130,8 @@ void WebParticipant::forceQuit() {
         mTournament.reset();
     }
 
-    // mConnection.reset();
+    if (mConnection)
+        mConnection.reset();
     mServer.leave(shared_from_this());
 }
 
@@ -158,7 +163,7 @@ void WebParticipant::write() {
 }
 
 bool WebParticipant::subscribeCategory(const std::string &str) {
-    log_debug().msg("Subscribing to category");
+    log_debug().field("id", str).msg("Subscribing to category");
     try {
         if (mTournament == nullptr)
             return false;

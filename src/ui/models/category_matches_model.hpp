@@ -37,8 +37,8 @@ public:
     int getRow(MatchId matchId) const;
 
 private:
-    void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void changePlayers(std::vector<PlayerId> playerIds);
+    void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds);
+    void changePlayers(const std::vector<PlayerId> &playerIds);
 
     void beginResetTournament();
     void endResetTournament();

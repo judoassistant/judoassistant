@@ -25,11 +25,16 @@ private:
 
 class JsonEncoder {
 public:
-    std::unique_ptr<JsonBuffer> encodeSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
-    std::unique_ptr<JsonBuffer> encodeSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category);
-    std::unique_ptr<JsonBuffer> encodeSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player);
+    std::unique_ptr<JsonBuffer> encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
+    std::unique_ptr<JsonBuffer> encodeTournamentSubscriptionFailMessage();
+    std::unique_ptr<JsonBuffer> encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
+    bool hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
 
-    std::unique_ptr<JsonBuffer> encodeChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
+    std::unique_ptr<JsonBuffer> encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category);
+    std::unique_ptr<JsonBuffer> encodeCategorySubscriptionFailMessage();
+
+    std::unique_ptr<JsonBuffer> encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player);
+    std::unique_ptr<JsonBuffer> encodePlayerSubscriptionFailMessage();
 
 private:
     rapidjson::Value encodeMeta(const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);
@@ -42,6 +47,5 @@ private:
 
     rapidjson::Value encodeMatch(const MatchStore &match, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeString(const std::string &str, rapidjson::Document::AllocatorType &allocator);
-
 };
 

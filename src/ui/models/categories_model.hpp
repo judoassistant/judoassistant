@@ -25,16 +25,18 @@ public:
 
     int getRow(CategoryId id) const;
     std::vector<int> getRows(std::vector<CategoryId> id) const;
+
 public slots:
-    void categoriesAdded(std::vector<CategoryId> ids);
-    void categoriesChanged(std::vector<CategoryId> ids);
-    void categoriesAboutToBeErased(std::vector<CategoryId> ids);
+    void categoriesAdded(const std::vector<CategoryId> &categoryIds);
+    void categoriesChanged(const std::vector<CategoryId> &categoryIds);
+    void categoriesAboutToBeErased(const std::vector<CategoryId> &categoryIds);
     void categoriesAboutToBeReset();
     void categoriesReset();
-    void matchesReset(CategoryId id);
+    void matchesReset(CategoryId categoryId);
     void categoryPlayersChanged(CategoryId categoryId);
     void tournamentAboutToBeReset();
     void tournamentReset();
+
 private:
     const int COLUMN_COUNT = 5;
     StoreManager & mStoreManager;
