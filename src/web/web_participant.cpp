@@ -130,7 +130,8 @@ void WebParticipant::forceQuit() {
         mTournament.reset();
     }
 
-    // mConnection.reset();
+    if (mConnection)
+        mConnection.reset();
     mServer.leave(shared_from_this());
 }
 
