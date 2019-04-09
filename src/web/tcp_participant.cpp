@@ -214,6 +214,13 @@ void TCPParticipant::asyncTournamentSync() {
                 return;
             }
 
+            // redo all the actions
+            auto &tournament = *(wrapper->tournament);
+            for (auto &p : wrapper->actionList) {
+                auto &action = *(p.second);
+                action.redo(tournament);
+            }
+
             mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper, self](std::shared_ptr<LoadedTournament> loadedTournament) {
                 mTournament = std::move(loadedTournament);
                 mTournament->setOwner(self);
