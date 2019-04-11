@@ -5,14 +5,21 @@
 #include <QWidget>
 
 #include "core/stores/match_store.hpp"
+#include "core/stores/player_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 
 class CategoryStore;
-class PlayerStore;
 class QPainter;
 
 enum class ScoreDisplayState {
     INTRODUCTION, NORMAL, WINNER
+};
+
+struct FlagImage {
+    void update(std::optional<PlayerCountry> country);
+
+    std::optional<QImage> image;
+    std::optional<PlayerCountry> country;
 };
 
 class ScoreDisplayWidget : public QWidget {
@@ -54,5 +61,6 @@ private:
     QTimer mIntroTimer;
     QTimer mWinnerTimer;
     QTimer mDurationTimer;
+    std::array<FlagImage,2> mFlags;
 };
 
