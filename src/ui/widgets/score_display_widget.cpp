@@ -144,20 +144,34 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     QRect countryRect(PADDING, countryOffset, flagWidth, flagHeight);
 
     // Paint flag
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(COLOR_14);
-    painter.drawRect(flagRect);
+    std::optional<PlayerCountry> country = player.getCountry();
 
-    // Paint country name
+    if (country.has_value()) {
+        FlagImage &flag = mFlags[static_cast<size_t>(playerIndex)];
+        flag.update(country);
+
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::NoBrush);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.drawImage(flagRect, *(flag.image));
+        painter.setRenderHint(QPainter::Antialiasing, false);
+    }
+
     auto font = mFont;
-    font.setPixelSize(flagHeight*3/5);
-    painter.setFont(font);
 
     if (playerIndex == MatchStore::PlayerIndex::WHITE)
         painter.setPen(COLOR_0);
     else
         painter.setPen(Qt::white);
-    painter.drawText(countryRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignHCenter, "DEN");
+
+    // Paint country name
+    if (country.has_value()) {
+        QString countryText = QString::fromStdString(country->countryCode());
+        font.setPixelSize(flagHeight*3/5);
+        painter.setFont(font);
+
+        painter.drawText(countryRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignHCenter, countryText);
+    }
 
     // Paint name
     const int nameHeight = (rect.height() - PADDING * 3) / 3;
@@ -298,20 +312,34 @@ void ScoreDisplayWidget::paintPlayerIntroduction(QRect rect, MatchStore::PlayerI
     QRect countryRect(PADDING, countryOffset, flagWidth, flagHeight);
 
     // Paint flag
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(COLOR_14);
-    painter.drawRect(flagRect);
+    std::optional<PlayerCountry> country = player.getCountry();
 
-    // Paint country name
+    if (country.has_value()) {
+        FlagImage &flag = mFlags[static_cast<size_t>(playerIndex)];
+        flag.update(country);
+
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::NoBrush);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.drawImage(flagRect, *(flag.image));
+        painter.setRenderHint(QPainter::Antialiasing, false);
+    }
+
     auto font = mFont;
-    font.setPixelSize(flagHeight*3/5);
-    painter.setFont(font);
 
     if (playerIndex == MatchStore::PlayerIndex::WHITE)
         painter.setPen(COLOR_0);
     else
         painter.setPen(Qt::white);
-    painter.drawText(countryRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignHCenter, "DEN");
+
+    // Paint country name
+    if (country.has_value()) {
+        QString countryText = QString::fromStdString(country->countryCode());
+        font.setPixelSize(flagHeight*3/5);
+        painter.setFont(font);
+
+        painter.drawText(countryRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignHCenter, countryText);
+    }
 
     // Paint name
     QRect nameRect(columnOne, PADDING, rect.width() - PADDING - columnOne, rect.height() - 2 * PADDING);
@@ -435,5 +463,21 @@ void ScoreDisplayWidget::durationTimerHit() {
         return;
     QRect lowerRect(0,2*(height()/3),width(), height() - 2*(height()/3));
     update(lowerRect);
+}
+
+void FlagImage::update(std::optional<PlayerCountry> country) {
+    if (country == this->country)
+        return;
+
+    this->country = country;
+
+    if (!country.has_value()) {
+        this->image = std::nullopt;
+        return;
+    }
+
+    QString countryCode = QString::fromStdString(country->countryCode());
+    QString filename = QString("flags/%1.svg").arg(countryCode.toLower());
+    this->image = QImage(filename);
 }
 
