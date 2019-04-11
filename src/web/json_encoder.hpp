@@ -47,5 +47,6 @@ private:
 
     rapidjson::Value encodeMatch(const MatchStore &match, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeString(const std::string &str, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeCombinedId(const std::pair<CategoryId, MatchId> &id, rapidjson::Document::AllocatorType &allocator);
 };
 
