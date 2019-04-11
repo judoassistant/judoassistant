@@ -11,12 +11,12 @@
 
 class PlayerCountry {
 public:
-    // TODO: Find list of countries
+    // TODO: Based on the list of IOC countries
     // TODO: Make a more sophisticated from string method
     static const size_t SIZE = 3;
     enum Enum {
         DENMARK,
-        UNITED_KINGDOM,
+        GREAT_BRITAIN,
         FRANCE,
     };
 
@@ -26,7 +26,7 @@ public:
     PlayerCountry(int value);
 
     std::string toString() const;
-    std::string countryCode() const; // Returns the ISO 3166-1-alpha-2 code
+    std::string countryCode() const; // Returns the 3-letter IOC country code
     int toInt() const;
     static std::vector<PlayerCountry> values();
 

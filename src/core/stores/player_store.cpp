@@ -61,7 +61,7 @@ std::string PlayerCountry::toString() const {
     // TODO: handle translation
     switch (mValue) {
         case DENMARK: return "Denmark";
-        case UNITED_KINGDOM: return "United Kingdom";
+        case GREAT_BRITAIN: return "Great Britain";
         case FRANCE: return "France";
         default: return "";
     }
@@ -69,9 +69,9 @@ std::string PlayerCountry::toString() const {
 
 std::string PlayerCountry::countryCode() const {
     switch (mValue) {
-        case DENMARK: return "dk";
-        case UNITED_KINGDOM: return "gb";
-        case FRANCE: return "fr";
+        case DENMARK: return "DEN";
+        case GREAT_BRITAIN: return "GBR";
+        case FRANCE: return "FRA";
         default: return "";
     }
 }
