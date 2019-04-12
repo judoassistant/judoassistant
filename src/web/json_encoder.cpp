@@ -340,9 +340,9 @@ rapidjson::Value JsonEncoder::encodeSubscribedPlayer(const PlayerStore &player, 
 
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &combinedId : player.getMatches())
-        categories.PushBack(encodeCombinedId(combinedId, allocator), allocator);
+        matches.PushBack(encodeCombinedId(combinedId, allocator), allocator);
 
-    res.AddMember("matches", categories, allocator);
+    res.AddMember("matches", matches, allocator);
 
     return res;
 }
@@ -371,10 +371,10 @@ rapidjson::Value JsonEncoder::encodeSubscribedCategory(const CategoryStore &cate
     rapidjson::Value players(rapidjson::kArrayType);
     for (auto &playerId : category.getPlayers()) {
         rapidjson::Value val(playerId.getValue());
-        matches.PushBack(val, allocator);
+        players.PushBack(val, allocator);
     }
 
-    res.AddMember("players", matches, allocator);
+    res.AddMember("players", players, allocator);
 
     return res;
 }
@@ -383,8 +383,10 @@ rapidjson::Value JsonEncoder::encodeMatch(const MatchStore &match, rapidjson::Do
     rapidjson::Value res;
     res.SetObject();
 
-    res.AddMember("id", match.getId().getValue(), allocator);
-    res.AddMember("isBye", match.isBye(), allocator);
+    res.AddMember("combinedId", encodeCombinedId(match.getCombinedId(), allocator), allocator);
+    res.AddMember("bye", match.isBye(), allocator);
+    res.AddMember("title", encodeString(match.getTitle(), allocator), allocator);
+
     if (match.getWhitePlayer().has_value())
         res.AddMember("whitePlayer", match.getWhitePlayer()->getValue(), allocator);
     else
@@ -395,7 +397,43 @@ rapidjson::Value JsonEncoder::encodeMatch(const MatchStore &match, rapidjson::Do
     else
         res.AddMember("bluePlayer", rapidjson::Value(), allocator);
 
+    res.AddMember("status", encodeMatchStatus(match.getStatus(), allocator), allocator);
+
+    res.AddMember("whiteScore", encodeMatchScore(match.getWhiteScore(), allocator), allocator);
+    res.AddMember("blueScore", encodeMatchScore(match.getBlueScore(), allocator), allocator);
+
+    res.AddMember("goldenScore", match.isGoldenScore(), allocator);
+    res.AddMember("resumeTime", encodeTime(match.getResumeTime(), allocator), allocator);
+    res.AddMember("duration", encodeDuration(match.getDuration(), allocator), allocator);
+
+    rapidjson::Value events(rapidjson::kArrayType);
+    for (const MatchEvent &event : match.getEvents())
+        events.PushBack(encodeMatchEvent(event, allocator), allocator);
+
+    res.AddMember("events", events, allocator);
+
     return res;
+}
+
+rapidjson::Value JsonEncoder::encodeMatchScore(const MatchStore::Score &score, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res;
+    res.SetObject();
+
+    res.AddMember("ippon", score.ippon, allocator);
+    res.AddMember("wazari", score.wazari, allocator);
+    res.AddMember("shido", score.shido, allocator);
+    res.AddMember("hansokuMake", score.hansokuMake, allocator);
+    return res;
+}
+
+rapidjson::Value JsonEncoder::encodeMatchStatus(const MatchStatus &status, rapidjson::Document::AllocatorType &allocator) {
+    if (status == MatchStatus::NOT_STARTED)
+        return encodeString("NOT_STARTED", allocator);
+    if (status == MatchStatus::PAUSED)
+        return encodeString("NOT_STARTED", allocator);
+    if (status == MatchStatus::UNPAUSED)
+        return encodeString("NOT_STARTED", allocator);
+    return encodeString("FINISHED", allocator);
 }
 
 rapidjson::Value JsonEncoder::encodeCombinedId(const std::pair<CategoryId, MatchId> &id, rapidjson::Document::AllocatorType &allocator) {
@@ -465,5 +503,38 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionFailMessage() {
     document.Accept(writer);
 
     return std::move(buffer);
+}
+
+rapidjson::Value JsonEncoder::encodeMatchEvent(const MatchEvent &event, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res;
+    res.SetObject();
+
+    // encode type
+    if (event.type == MatchEventType::IPPON)
+        res.AddMember("type", encodeString("IPPON", allocator), allocator);
+    else if (event.type == MatchEventType::WAZARI)
+        res.AddMember("type", encodeString("WAZARI", allocator), allocator);
+    else if (event.type == MatchEventType::SHIDO)
+        res.AddMember("type", encodeString("SHIDO", allocator), allocator);
+    else
+        res.AddMember("type", encodeString("HANSOKU_MAKE", allocator), allocator);
+
+    res.AddMember("playerIndex", encodeString(event.playerIndex == MatchStore::PlayerIndex::WHITE ? "WHITE" : "BLUE", allocator), allocator);
+    res.AddMember("duration", encodeDuration(event.duration, allocator), allocator);
+
+    return res;
+}
+
+rapidjson::Value JsonEncoder::encodeDuration(const std::chrono::milliseconds &duration, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res(duration.count());
+
+    return res;
+}
+
+rapidjson::Value JsonEncoder::encodeTime(const std::chrono::milliseconds &time, rapidjson::Document::AllocatorType &allocator) {
+    // TODO: Encode time stamps properly
+    rapidjson::Value res(time.count());
+
+    return res;
 }
 

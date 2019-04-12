@@ -6,10 +6,10 @@
 #include <rapidjson/stringbuffer.h>
 
 #include "core/id.hpp"
+#include "core/stores/match_store.hpp"
 
 class WebTournamentStore;
 class CategoryStore;
-class MatchStore;
 class PlayerStore;
 
 class JsonBuffer {
@@ -48,5 +48,10 @@ private:
     rapidjson::Value encodeMatch(const MatchStore &match, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeString(const std::string &str, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeCombinedId(const std::pair<CategoryId, MatchId> &id, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeMatchScore(const MatchStore::Score &score, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeMatchStatus(const MatchStatus &status, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeMatchEvent(const MatchEvent &event, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeDuration(const std::chrono::milliseconds &duration, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeTime(const std::chrono::milliseconds &time, rapidjson::Document::AllocatorType &allocator);
 };
 
