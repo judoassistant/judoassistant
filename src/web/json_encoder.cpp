@@ -121,7 +121,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
 
     // matches
     rapidjson::Value matches(rapidjson::kArrayType);
-    log_debug().field("size", player.getMatches().size()).msg("Listing matches");
     for (auto combinedId : player.getMatches()) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
@@ -469,7 +468,6 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
     rapidjson::Value res;
     res.SetObject();
 
-    log_debug().field("name", tournament.getName()).msg("Encoding meta");
     res.AddMember("name", encodeString(tournament.getName(), allocator), allocator);
     res.AddMember("webName", encodeString(tournament.getWebName(), allocator), allocator);
 
