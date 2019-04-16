@@ -1,10 +1,12 @@
 #pragma once
 
-#include <boost/asio/buffer.hpp>
+#include <chrono>
 #include <list>
+#include <optional>
 #include <sstream>
 #include <variant>
-#include <optional>
+
+#include <boost/asio/buffer.hpp>
 
 #include "core/core.hpp"
 #include "core/id.hpp"
@@ -27,6 +29,8 @@ public:
         UNDO, // The message undoes a previously sent action
         UNDO_ACK, // The message acknowledges an undo
         QUIT, // The participant or server has quit
+        CLOCK_SYNC, // Message used for sending current master time
+        CLOCK_SYNC_REQUEST, // Message used for requesting current time of master
 
         // Messages used for communication with the web server
         REQUEST_WEB_TOKEN,
@@ -94,6 +98,11 @@ public:
 
     void encodeCheckWebNameResponse(const WebNameCheckResponse &response);
     bool decodeCheckWebNameResponse(WebNameCheckResponse  &response);
+
+    void encodeClockSyncRequest();
+
+    void encodeClockSync(const std::chrono::milliseconds &time);
+    bool decodeClockSync(std::chrono::milliseconds &time);
 
 private:
     void encodeHeader();

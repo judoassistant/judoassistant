@@ -15,11 +15,14 @@ public:
     const NetworkClient& getNetworkClient() const;
     NetworkClient& getNetworkClient();
 
+    std::chrono::milliseconds masterTime() const override;
+
 protected:
     void loseConnection();
     void shutdownConnection();
     void failConnectionAttempt();
     void succeedConnectionAttempt();
+    void synchronizeClock(std::chrono::milliseconds diff);
 
 signals:
     void connectionAttemptFailed();
@@ -31,5 +34,6 @@ signals:
 private:
     std::shared_ptr<NetworkClient> mNetworkClient;
     NetworkClientState mNetworkClientState;
+    std::chrono::milliseconds mClockDiff;
 };
 

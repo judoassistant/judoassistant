@@ -17,6 +17,7 @@ public:
         NOT_AUTHENTICATED,
         AUTHENTICATED,
         TOURNAMENT_SELECTED,
+        CLOCK_SYNCED,
     };
 
     TCPParticipant() = delete;
@@ -28,6 +29,7 @@ public:
 
 private:
     void asyncTournamentRegister();
+    void asyncClockSync();
     void asyncTournamentSync();
     void asyncTournamentListen();
 
@@ -45,5 +47,6 @@ private:
     std::optional<int> mUserId;
     std::string mWebName;
     std::shared_ptr<LoadedTournament> mTournament;
+    std::chrono::milliseconds mClockDiff;
 };
 

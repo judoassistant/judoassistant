@@ -15,6 +15,7 @@ LoadedTournament::LoadedTournament(const std::string &webName, const boost::file
     , mStrand(context)
     , mDatabase(database)
     , mWebName(webName)
+    , mClockDiff(0)
     , mFileInUse(false)
     , mFileLocation(dataDirectory / webName)
 {
@@ -23,16 +24,19 @@ LoadedTournament::LoadedTournament(const std::string &webName, const boost::file
 struct MoveWrapper {
     std::unique_ptr<WebTournamentStore> tournament;
     SharedActionList actionList;
+    std::chrono::milliseconds diff;
 };
 
-void LoadedTournament::sync(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, SyncCallback callback) {
+void LoadedTournament::sync(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds diff, SyncCallback callback) {
     auto wrapper = std::make_shared<MoveWrapper>();
     wrapper->tournament = std::move(tournament);
     wrapper->actionList = std::move(actionList);
+    wrapper->diff = std::move(diff);
 
     boost::asio::post(mStrand, [this, wrapper, callback](){
         mTournament = std::move(wrapper->tournament);
         mActionList = std::move(wrapper->actionList);
+        mClockDiff = std::move(wrapper->diff);
         mModificationTime = std::chrono::system_clock::now();
 
         deliverSync();
@@ -175,7 +179,7 @@ void LoadedTournament::load(LoadCallback callback) {
         try {
             std::istringstream stream(uncompressed);
             cereal::PortableBinaryInputArchive archive(stream);
-            archive(*tournament);
+            archive(mClockDiff, *tournament);
         }
         catch(const std::exception &e) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
@@ -211,7 +215,7 @@ void LoadedTournament::save(SaveCallback callback) {
         try {
             std::ostringstream stream;
             cereal::PortableBinaryOutputArchive archive(stream);
-            archive(*mTournament);
+            archive(mClockDiff, *mTournament);
             *uncompressed = stream.str();
         }
         catch(const std::exception &e) {
