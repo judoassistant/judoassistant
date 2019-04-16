@@ -39,10 +39,11 @@ public:
     void registerWebName(TournamentId id, const QString &webName);
     void checkWebName(TournamentId id, const QString &webName);
 private:
-    typedef std::function<void(boost::system::error_code)> connectionHandler;
-    void createConnection(connectionHandler handler);
+    typedef std::function<void(boost::system::error_code)> ConnectionHandler;
+    void createConnection(ConnectionHandler handler);
 
     void writeMessage();
+    void enterClockSync();
     void enterConfigured();
 
 signals:
