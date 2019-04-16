@@ -40,6 +40,13 @@ signals:
     void stateChanged(NetworkClientState state);
 
 private:
+    // different stages of connection
+    void connectJoin();
+    void connectSynchronizeClocks();
+    void connectSync();
+    void connectIdle();
+
+    // helper methods
     void deliver(std::unique_ptr<NetworkMessage> message);
     void readMessage();
     void writeMessage();

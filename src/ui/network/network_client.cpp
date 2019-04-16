@@ -375,3 +375,19 @@ void NetworkClient::killConnection() {
     mReadMessage = std::make_unique<NetworkMessage>();
 }
 
+void NetworkClient::connectJoin() {
+
+}
+
+void NetworkClient::connectSynchronizeClocks() {
+
+}
+
+void NetworkClient::connectSync() {
+
+}
+
+void NetworkClient::connectIdle() {
+
+}
+
