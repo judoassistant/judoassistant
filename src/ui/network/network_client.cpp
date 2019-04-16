@@ -293,7 +293,7 @@ void NetworkClient::connectJoin() {
 
 void NetworkClient::connectSynchronizeClocks() {
     // Approximate the different between local and master clock
-    auto t1 = std::chrono::steady_clock::now();
+    auto t1 = std::chrono::system_clock::now();
     auto syncRequestMessage = std::make_shared<NetworkMessage>();
     syncRequestMessage->encodeClockSyncRequest();
 
@@ -308,17 +308,15 @@ void NetworkClient::connectSynchronizeClocks() {
 
         mReadMessage = std::make_unique<NetworkMessage>();
         mConnection->asyncRead(*mReadMessage, [this, t1](boost::system::error_code ec) {
-            auto t2 = std::chrono::steady_clock::now();
-            if (mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
-                log_error().msg("Did not immediately receive clock sync on connection. Killing connection");
+            if (ec || mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
+                log_warning().msg("Encountered error when reading clock sync message. Killing connection");
                 killConnection();
                 emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 emit connectionAttemptFailed();
                 return;
             }
 
-            auto tournament = std::make_unique<QTournamentStore>();
-            SharedActionList sharedActions;
+            auto t2 = std::chrono::system_clock::now();
 
             std::chrono::milliseconds p1;
             if (!mReadMessage->decodeClockSync(p1)) {
@@ -328,6 +326,8 @@ void NetworkClient::connectSynchronizeClocks() {
                 emit connectionAttemptFailed();
                 return;
             }
+
+            log_debug().msg("Got clock sync message back");
 
             connectSync();
         });

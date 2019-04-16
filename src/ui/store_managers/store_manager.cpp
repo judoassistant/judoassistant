@@ -408,14 +408,12 @@ bool ConstActionListIterator::operator==(const ConstActionListIterator  &other) 
 }
 
 std::chrono::milliseconds StoreManager::localTime() const {
-    auto time = std::chrono::steady_clock::now().time_since_epoch();
+    auto time = std::chrono::system_clock::now().time_since_epoch();
     return std::chrono::duration_cast<std::chrono::milliseconds>(time);
 }
 
 std::chrono::milliseconds StoreManager::masterTime() const {
-    // TODO: Compute difference between master and slave clocks
-    // Consider system clock vs steady_clock. What if master restarts?
-    auto time = std::chrono::steady_clock::now().time_since_epoch();
+    auto time = std::chrono::system_clock::now().time_since_epoch();
     return std::chrono::duration_cast<std::chrono::milliseconds>(time);
 }
 

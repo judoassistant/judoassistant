@@ -11,12 +11,27 @@ NetworkParticipant::NetworkParticipant(std::shared_ptr<NetworkConnection> connec
 {}
 
 void NetworkParticipant::start() {
-    mServer.join(shared_from_this());
-    auto syncMessage = std::make_unique<NetworkMessage>();
-    syncMessage->encodeSync(*(mServer.getTournament()), mServer.getActionStack());
-    deliver(std::move(syncMessage));
+    auto self = shared_from_this();
 
-    readMessage();
+    mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
+        if (ec || mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC_REQUEST) {
+            log_warning().field("ec", (bool) ec).field("type", mReadMessage->getType()).msg("Failed reading first client clock sync request message. Kicking client");
+            return;
+        }
+
+        mServer.join(shared_from_this());
+
+        auto clockSyncMessage = std::make_unique<NetworkMessage>();
+        auto p1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+        clockSyncMessage->encodeClockSync(p1);
+        deliver(std::move(clockSyncMessage));
+
+        auto syncMessage = std::make_unique<NetworkMessage>();
+        syncMessage->encodeSync(*(mServer.getTournament()), mServer.getActionStack());
+        deliver(std::move(syncMessage));
+
+        readMessage();
+    });
 }
 
 void NetworkParticipant::deliver(std::shared_ptr<NetworkMessage> message) {
@@ -45,6 +60,7 @@ void NetworkParticipant::writeMessage() {
 
 void NetworkParticipant::readMessage() {
     auto self = shared_from_this();
+    mReadMessage = std::make_unique<NetworkMessage>();
 
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         if (ec) {
@@ -82,8 +98,6 @@ void NetworkParticipant::readMessage() {
         else if (!isSyncing() && mReadMessage->getType() == NetworkMessage::Type::UNDO) {
             mServer.deliverUndo(std::move(mReadMessage), shared_from_this());
         }
-
-        mReadMessage = std::make_unique<NetworkMessage>();
 
         readMessage();
     });

@@ -334,7 +334,7 @@ bool NetworkMessage::decodeClockSync(std::chrono::milliseconds &time) {
 }
 
 void NetworkMessage::encodeClockSyncRequest() {
-    mType = Type::QUIT;
+    mType = Type::CLOCK_SYNC_REQUEST;
     mBody.clear();
     mUncompressedSize = 0;
 
