@@ -412,11 +412,6 @@ std::chrono::milliseconds StoreManager::localTime() const {
     return std::chrono::duration_cast<std::chrono::milliseconds>(time);
 }
 
-std::chrono::milliseconds StoreManager::masterTime() const {
-    auto time = std::chrono::system_clock::now().time_since_epoch();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(time);
-}
-
 void StoreManager::undo(ClientActionId actionId) {
     log_debug().field("actionId", actionId).msg("Undo called");
 

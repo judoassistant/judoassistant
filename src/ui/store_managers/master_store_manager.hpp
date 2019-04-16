@@ -34,6 +34,8 @@ public:
     NetworkServerState getNetworkServerState() const;
     WebClientState getWebClientState() const;
 
+    std::chrono::milliseconds masterTime() const override;
+
 private:
     void changeNetworkServerState(NetworkServerState state);
     void changeWebClientState(WebClientState state);
