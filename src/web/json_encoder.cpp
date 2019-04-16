@@ -21,7 +21,7 @@ rapidjson::StringBuffer& JsonBuffer::getStringBuffer() {
     return mStringBuffer;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
@@ -74,7 +74,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
     }
 
     document.AddMember("matches", matches, allocator);
@@ -86,7 +86,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
@@ -99,7 +99,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     // matches
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &match : category.getMatches())
-        matches.PushBack(encodeMatch(category, *match, allocator), allocator);
+        matches.PushBack(encodeMatch(category, *match, clockDiff, allocator), allocator);
     document.AddMember("matches", matches, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
@@ -109,7 +109,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     return std::move(buffer);
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
@@ -124,7 +124,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     for (auto combinedId : player.getMatches()) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
     }
     document.AddMember("matches", matches, allocator);
 
@@ -181,7 +181,7 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
     return false;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
@@ -293,7 +293,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
     }
     document.AddMember("matches", matches, allocator);
 
@@ -381,7 +381,7 @@ rapidjson::Value JsonEncoder::encodeSubscribedCategory(const CategoryStore &cate
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const MatchStore &match, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
     const auto &ruleset = category.getRuleset();
 
     rapidjson::Value res;
@@ -407,7 +407,7 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
     res.AddMember("blueScore", encodeMatchScore(match.getBlueScore(), allocator), allocator);
 
     res.AddMember("goldenScore", match.isGoldenScore(), allocator);
-    res.AddMember("resumeTime", encodeTime(match.getResumeTime(), allocator), allocator);
+    res.AddMember("resumeTime", encodeTime(match.getResumeTime(), clockDiff, allocator), allocator);
     res.AddMember("duration", encodeDuration(match.getDuration(), allocator), allocator);
 
     std::optional<MatchStore::PlayerIndex> winner;
@@ -442,9 +442,9 @@ rapidjson::Value JsonEncoder::encodeMatchStatus(const MatchStatus &status, rapid
     if (status == MatchStatus::NOT_STARTED)
         return encodeString("NOT_STARTED", allocator);
     if (status == MatchStatus::PAUSED)
-        return encodeString("NOT_STARTED", allocator);
+        return encodeString("PAUSED", allocator);
     if (status == MatchStatus::UNPAUSED)
-        return encodeString("NOT_STARTED", allocator);
+        return encodeString("UNPAUSED", allocator);
     return encodeString("FINISHED", allocator);
 }
 
@@ -542,9 +542,9 @@ rapidjson::Value JsonEncoder::encodeDuration(const std::chrono::milliseconds &du
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeTime(const std::chrono::milliseconds &time, rapidjson::Document::AllocatorType &allocator) {
-    // TODO: Encode time stamps properly
-    rapidjson::Value res(time.count());
+rapidjson::Value JsonEncoder::encodeTime(const std::chrono::milliseconds &time, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
+    auto sinceEpoch = time - clockDiff;
+    rapidjson::Value res(std::chrono::duration_cast<std::chrono::seconds>(sinceEpoch).count());
 
     return res;
 }
