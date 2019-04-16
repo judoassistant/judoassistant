@@ -76,115 +76,17 @@ void NetworkClient::connect(const std::string &host, unsigned int port) {
 
         // TODO: Somehow kill when taking too long
         boost::asio::async_connect(*mSocket, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
-          if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
-            killConnection();
-            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
-            emit connectionAttemptFailed();
-            return;
-          }
-          else {
+            if (ec) {
+                log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
+                killConnection();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+                emit connectionAttemptFailed();
+                return;
+            }
+
             mConnection = NetworkConnection(std::move(*mSocket));
             mSocket.reset();
-            mConnection->asyncJoin([this](boost::system::error_code ec) {
-                if (ec) {
-                    log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
-                    killConnection();
-                    emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
-                    emit connectionAttemptFailed();
-                    return;
-                }
-
-                mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
-                    if (mReadMessage->getType() != NetworkMessage::Type::SYNC) {
-                        log_error().msg("Did not immediately receive sync on connection. Killing connection");
-                        killConnection();
-                        emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
-                        emit connectionAttemptFailed();
-                        return;
-                    }
-
-                    auto tournament = std::make_unique<QTournamentStore>();
-                    SharedActionList sharedActions;
-
-                    if (!mReadMessage->decodeSync(*tournament, sharedActions)) {
-                        log_debug().msg("Failed decoding sync");
-                        killConnection();
-                        emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
-                        emit connectionAttemptFailed();
-                        return;
-                    }
-
-                    // apply the action list but avoid unconfirmed undos
-                    std::unordered_set<ClientActionId> actionIds;
-                    auto unconfirmedUndos = std::make_unique<std::unordered_set<ClientActionId>>();
-                    auto uniqueActions = std::make_unique<UniqueActionList>();
-                    for (auto &p : sharedActions) {
-                        auto actionId = p.first;
-                        actionIds.insert(actionId);
-
-                        auto action = p.second->freshClone();
-
-                        if (mUnconfirmedUndos.find(actionId) != mUnconfirmedUndos.end())
-                            unconfirmedUndos->insert(actionId);
-                        else
-                            action->redo(*tournament);
-
-                        uniqueActions->push_back({actionId, std::move(action)});
-                    }
-
-                    mUnconfirmedUndos = *unconfirmedUndos;
-
-                    // Remove already applied actions from unconfirmed list and map
-                    for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ) {
-                        auto next = std::next(it);
-                        auto actionId = it->first;
-
-                        if (actionIds.find(actionId) == actionIds.end()) {
-                            mUnconfirmedActionMap.erase(actionId);
-                            mUnconfirmedActionList.erase(it);
-                        }
-
-                        it = next;
-                    }
-
-                    // Copy unconfirmed set and unconfirmed action list
-                    auto unconfirmedActionList = std::make_unique<UniqueActionList>();
-                    for (const auto &p : mUnconfirmedActionList) {
-                        auto actionId = p.first;
-                        auto action = p.second->freshClone();
-                        action->redo(*tournament);
-                        unconfirmedActionList->push_back({actionId, std::move(action)});
-                    }
-
-                    // Send sync acknowledgement and unconfirmed actions
-                    {
-                        auto message = std::make_unique<NetworkMessage>();
-                        message->encodeSyncAck();
-                        deliver(std::move(message));
-                    }
-
-                    for (const auto &p : mUnconfirmedActionList) {
-                        auto message = std::make_unique<NetworkMessage>();
-                        message->encodeAction(p.first, p.second);
-                        deliver(std::move(message));
-                    }
-
-                    for (ClientActionId actionId : mUnconfirmedUndos) {
-                        auto message = std::make_unique<NetworkMessage>();
-                        message->encodeUndo(actionId);
-                        deliver(std::move(message));
-                    }
-
-                    emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::move(unconfirmedActionList), std::move(unconfirmedUndos)));
-                    emit stateChanged(mState = NetworkClientState::CONNECTED);
-                    emit connectionAttemptSucceeded();
-
-                    mReadMessage = std::make_unique<NetworkMessage>();
-                    readMessage();
-                });
-            });
-          }
+            connectJoin();
         });
     });
 }
@@ -206,10 +108,10 @@ void NetworkClient::disconnect() {
 
 void NetworkClient::stop() {
     mContext.post([this]() {
-            if (mState == NetworkClientState::NOT_CONNECTED)
-                return;
+        if (mState == NetworkClientState::NOT_CONNECTED)
+            return;
 
-            disconnect();
+        disconnect();
     });
 }
 
@@ -240,7 +142,7 @@ void NetworkClient::writeMessage() {
     });
 }
 
-void NetworkClient::readMessage() {
+void NetworkClient::connectIdle() {
     mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
         if (ec) {
             if (mQuitPosted) // Everything is handled by asyncRead
@@ -363,7 +265,7 @@ void NetworkClient::readMessage() {
         mReadMessage = std::make_unique<NetworkMessage>();
 
         if (!mQuitPosted)
-            readMessage();
+            connectIdle();
     });
 }
 
@@ -376,18 +278,114 @@ void NetworkClient::killConnection() {
 }
 
 void NetworkClient::connectJoin() {
+    mConnection->asyncJoin([this](boost::system::error_code ec) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
+            killConnection();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+            emit connectionAttemptFailed();
+            return;
+        }
 
+        connectSynchronizeClocks();
+    });
 }
 
 void NetworkClient::connectSynchronizeClocks() {
-
+    mReadMessage = std::make_unique<NetworkMessage>();
+    connectSync();
 }
 
 void NetworkClient::connectSync() {
+    mReadMessage = std::make_unique<NetworkMessage>();
+    mConnection->asyncRead(*mReadMessage, [this](boost::system::error_code ec) {
+        if (mReadMessage->getType() != NetworkMessage::Type::SYNC) {
+            log_error().msg("Did not immediately receive sync on connection. Killing connection");
+            killConnection();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+            emit connectionAttemptFailed();
+            return;
+        }
 
-}
+        auto tournament = std::make_unique<QTournamentStore>();
+        SharedActionList sharedActions;
 
-void NetworkClient::connectIdle() {
+        if (!mReadMessage->decodeSync(*tournament, sharedActions)) {
+            log_debug().msg("Failed decoding sync");
+            killConnection();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+            emit connectionAttemptFailed();
+            return;
+        }
+
+        // apply the action list but avoid unconfirmed undos
+        std::unordered_set<ClientActionId> actionIds;
+        auto unconfirmedUndos = std::make_unique<std::unordered_set<ClientActionId>>();
+        auto uniqueActions = std::make_unique<UniqueActionList>();
+        for (auto &p : sharedActions) {
+            auto actionId = p.first;
+            actionIds.insert(actionId);
+
+            auto action = p.second->freshClone();
+
+            if (mUnconfirmedUndos.find(actionId) != mUnconfirmedUndos.end())
+                unconfirmedUndos->insert(actionId);
+            else
+                action->redo(*tournament);
+
+            uniqueActions->push_back({actionId, std::move(action)});
+        }
+
+        mUnconfirmedUndos = *unconfirmedUndos;
+
+        // Remove already applied actions from unconfirmed list and map
+        for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ) {
+            auto next = std::next(it);
+            auto actionId = it->first;
+
+            if (actionIds.find(actionId) == actionIds.end()) {
+                mUnconfirmedActionMap.erase(actionId);
+                mUnconfirmedActionList.erase(it);
+            }
+
+            it = next;
+        }
+
+        // Copy unconfirmed set and unconfirmed action list
+        auto unconfirmedActionList = std::make_unique<UniqueActionList>();
+        for (const auto &p : mUnconfirmedActionList) {
+            auto actionId = p.first;
+            auto action = p.second->freshClone();
+            action->redo(*tournament);
+            unconfirmedActionList->push_back({actionId, std::move(action)});
+        }
+
+        // Send sync acknowledgement and unconfirmed actions
+        {
+            auto message = std::make_unique<NetworkMessage>();
+            message->encodeSyncAck();
+            deliver(std::move(message));
+        }
+
+        for (const auto &p : mUnconfirmedActionList) {
+            auto message = std::make_unique<NetworkMessage>();
+            message->encodeAction(p.first, p.second);
+            deliver(std::move(message));
+        }
+
+        for (ClientActionId actionId : mUnconfirmedUndos) {
+            auto message = std::make_unique<NetworkMessage>();
+            message->encodeUndo(actionId);
+            deliver(std::move(message));
+        }
+
+        emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::move(unconfirmedActionList), std::move(unconfirmedUndos)));
+        emit stateChanged(mState = NetworkClientState::CONNECTED);
+        emit connectionAttemptSucceeded();
+
+        mReadMessage = std::make_unique<NetworkMessage>();
+        connectIdle();
+    });
 
 }
 

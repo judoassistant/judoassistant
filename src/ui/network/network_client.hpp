@@ -48,10 +48,8 @@ private:
 
     // helper methods
     void deliver(std::unique_ptr<NetworkMessage> message);
-    void readMessage();
     void writeMessage();
     void killConnection();
-    void recoverUnconfirmed(TournamentStore *tournament, SharedActionList *actions);
 
     NetworkClientState mState;
     boost::asio::io_context &mContext;
