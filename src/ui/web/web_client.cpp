@@ -216,6 +216,8 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                     return;
                 }
 
+                log_debug().field("type", responseMessage->getType()).msg("Got response");
+
                 if (responseMessage->getType() != NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE) {
                     log_error().msg("Received response message of wrong type. Failing");
                     killConnection();

@@ -17,6 +17,7 @@ public:
         NOT_AUTHENTICATED,
         AUTHENTICATED,
         TOURNAMENT_SELECTED,
+        CLOCK_SYNCED,
     };
 
     TCPParticipant() = delete;
@@ -28,6 +29,7 @@ public:
 
 private:
     void asyncTournamentRegister();
+    void asyncClockSync();
     void asyncTournamentSync();
     void asyncTournamentListen();
 

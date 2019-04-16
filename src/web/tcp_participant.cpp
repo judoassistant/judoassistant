@@ -154,7 +154,7 @@ void TCPParticipant::asyncTournamentRegister() {
                 if (response == WebNameRegistrationResponse::SUCCESSFUL) {
                     mState = State::TOURNAMENT_SELECTED;
                     mWebName = std::move(webName);
-                    asyncTournamentSync();
+                    asyncClockSync();
                 }
                 else {
                     asyncTournamentRegister();
@@ -189,11 +189,48 @@ struct MoveWrapper {
     SharedActionList actionList;
 };
 
+void TCPParticipant::asyncClockSync() {
+    mReadMessage = std::make_unique<NetworkMessage>();
+
+    auto message = std::make_shared<NetworkMessage>();
+    message->encodeClockSyncRequest();
+
+    auto self = shared_from_this();
+    auto t1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+    deliver(std::move(message));
+
+    mConnection->asyncRead(*mReadMessage, [this, self, t1](boost::system::error_code ec) {
+        auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
+            forceQuit();
+            return;
+        }
+
+        if (mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
+            forceQuit();
+            return;
+        }
+
+        std::chrono::milliseconds p1;
+        if (!mReadMessage->decodeClockSync(p1)) {
+            forceQuit();
+            return;
+        }
+
+        auto diff = p1 - (t2 + t1)/2;
+        log_debug().field("diff", diff.count()).msg("Got clock sync");
+
+        mState = State::CLOCK_SYNCED;
+        asyncTournamentSync();
+    });
+}
+
 void TCPParticipant::asyncTournamentSync() {
     mReadMessage = std::make_unique<NetworkMessage>();
     auto self = shared_from_this();
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
-        assert(mState == State::TOURNAMENT_SELECTED);
+        assert(mState == State::CLOCK_SYNCED);
 
         if (ec) {
             forceQuit();
@@ -205,46 +242,44 @@ void TCPParticipant::asyncTournamentSync() {
             return;
         }
 
-        if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
-            auto wrapper = std::make_shared<MoveWrapper>();
-            wrapper->tournament = std::make_unique<WebTournamentStore>();
-
-            if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
-                forceQuit();
-                return;
-            }
-
-            // redo all the actions
-            auto &tournament = *(wrapper->tournament);
-            for (auto &p : wrapper->actionList) {
-                auto &action = *(p.second);
-                action.redo(tournament);
-            }
-
-            mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper, self](std::shared_ptr<LoadedTournament> loadedTournament) {
-                mTournament = std::move(loadedTournament);
-                mTournament->setOwner(self);
-                mTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList), [this, self](bool success) {
-                    if (!success) {
-                        forceQuit();
-                        return;
-                    }
-
-                    mDatabase.asyncSetSynced(mWebName, [this, self](bool success) {
-                        if (!success)
-                            log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
-                    });
-
-                    asyncTournamentListen();
-                });
-
-            }));
-
+        if (mReadMessage->getType() != NetworkMessage::Type::SYNC) {
+            forceQuit();
             return;
         }
 
-        log_warning().field("type", mReadMessage->getType()).msg("Received unexpected message type when registering web name");
-        asyncTournamentSync();
+        auto wrapper = std::make_shared<MoveWrapper>();
+        wrapper->tournament = std::make_unique<WebTournamentStore>();
+
+        if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
+            forceQuit();
+            return;
+        }
+
+        // redo all the actions
+        auto &tournament = *(wrapper->tournament);
+        for (auto &p : wrapper->actionList) {
+            auto &action = *(p.second);
+            action.redo(tournament);
+        }
+
+        mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper, self](std::shared_ptr<LoadedTournament> loadedTournament) {
+            mTournament = std::move(loadedTournament);
+            mTournament->setOwner(self);
+            mTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList), [this, self](bool success) {
+                if (!success) {
+                    forceQuit();
+                    return;
+                }
+
+                mDatabase.asyncSetSynced(mWebName, [this, self](bool success) {
+                    if (!success)
+                        log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
+                });
+
+                asyncTournamentListen();
+            });
+
+        }));
     });
 }
 
@@ -252,7 +287,7 @@ void TCPParticipant::asyncTournamentListen() {
     mReadMessage = std::make_unique<NetworkMessage>();
     auto self = shared_from_this();
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
-        assert(mState == State::TOURNAMENT_SELECTED);
+        assert(mState == State::CLOCK_SYNCED);
 
         if (ec) {
             forceQuit();
