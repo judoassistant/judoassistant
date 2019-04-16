@@ -288,9 +288,9 @@ void NetworkClient::connectJoin() {
 
 void NetworkClient::connectSynchronizeClocks() {
     // Approximate the different between local and master clock
-    auto t1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     auto syncRequestMessage = std::make_shared<NetworkMessage>();
     syncRequestMessage->encodeClockSyncRequest();
+    auto t1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
     mConnection->asyncWrite(*syncRequestMessage, [this, syncRequestMessage, t1](boost::system::error_code ec) {
         if (ec) {
@@ -303,6 +303,8 @@ void NetworkClient::connectSynchronizeClocks() {
 
         mReadMessage = std::make_unique<NetworkMessage>();
         mConnection->asyncRead(*mReadMessage, [this, t1](boost::system::error_code ec) {
+            auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
             if (ec || mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
                 log_error().msg("Encountered error when reading clock sync message. Killing connection");
                 killConnection();
@@ -310,8 +312,6 @@ void NetworkClient::connectSynchronizeClocks() {
                 emit connectionAttemptFailed();
                 return;
             }
-
-            auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
             std::chrono::milliseconds p1;
             if (!mReadMessage->decodeClockSync(p1)) {

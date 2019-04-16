@@ -19,8 +19,6 @@ void NetworkParticipant::start() {
             return;
         }
 
-        mServer.join(shared_from_this());
-
         auto clockSyncMessage = std::make_unique<NetworkMessage>();
         auto p1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         clockSyncMessage->encodeClockSync(p1);
@@ -29,6 +27,8 @@ void NetworkParticipant::start() {
         auto syncMessage = std::make_unique<NetworkMessage>();
         syncMessage->encodeSync(*(mServer.getTournament()), mServer.getActionStack());
         deliver(std::move(syncMessage));
+
+        mServer.join(shared_from_this());
 
         readMessage();
     });
