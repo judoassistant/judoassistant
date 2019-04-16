@@ -292,8 +292,46 @@ void NetworkClient::connectJoin() {
 }
 
 void NetworkClient::connectSynchronizeClocks() {
-    mReadMessage = std::make_unique<NetworkMessage>();
-    connectSync();
+    // Approximate the different between local and master clock
+    auto t1 = std::chrono::steady_clock::now();
+    auto syncRequestMessage = std::make_shared<NetworkMessage>();
+    syncRequestMessage->encodeClockSyncRequest();
+
+    mConnection->asyncWrite(*syncRequestMessage, [this, syncRequestMessage, t1](boost::system::error_code ec) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error when sending clock sync request. Killing connection");
+            killConnection();
+            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+            emit connectionAttemptFailed();
+            return;
+        }
+
+        mReadMessage = std::make_unique<NetworkMessage>();
+        mConnection->asyncRead(*mReadMessage, [this, t1](boost::system::error_code ec) {
+            auto t2 = std::chrono::steady_clock::now();
+            if (mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
+                log_error().msg("Did not immediately receive clock sync on connection. Killing connection");
+                killConnection();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+                emit connectionAttemptFailed();
+                return;
+            }
+
+            auto tournament = std::make_unique<QTournamentStore>();
+            SharedActionList sharedActions;
+
+            std::chrono::milliseconds p1;
+            if (!mReadMessage->decodeClockSync(p1)) {
+                log_debug().msg("Failed decoding clock sync");
+                killConnection();
+                emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
+                emit connectionAttemptFailed();
+                return;
+            }
+
+            connectSync();
+        });
+    });
 }
 
 void NetworkClient::connectSync() {
