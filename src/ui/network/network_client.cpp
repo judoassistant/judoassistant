@@ -12,6 +12,7 @@ NetworkClient::NetworkClient(boost::asio::io_context &context)
     , mReadMessage(std::make_unique<NetworkMessage>())
 {
     qRegisterMetaType<NetworkClientState>();
+    qRegisterMetaType<std::chrono::milliseconds>();
 }
 
 void NetworkClient::postSync(std::unique_ptr<TournamentStore> tournament) {
@@ -162,13 +163,7 @@ void NetworkClient::connectIdle() {
             return;
         }
 
-        if (mReadMessage->getType() == NetworkMessage::Type::HANDSHAKE) {
-            log_warning().msg("Received HANDSHAKE message after initial handshake");
-        }
-        else if (mReadMessage->getType() == NetworkMessage::Type::SYNC_ACK) {
-            log_warning().msg("Received SYNC_ACK from server");
-        }
-        else if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
+        if (mReadMessage->getType() == NetworkMessage::Type::SYNC) {
             auto tournament = std::make_unique<QTournamentStore>();
             SharedActionList sharedActions;
 
@@ -293,7 +288,7 @@ void NetworkClient::connectJoin() {
 
 void NetworkClient::connectSynchronizeClocks() {
     // Approximate the different between local and master clock
-    auto t1 = std::chrono::system_clock::now();
+    auto t1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     auto syncRequestMessage = std::make_shared<NetworkMessage>();
     syncRequestMessage->encodeClockSyncRequest();
 
@@ -309,14 +304,14 @@ void NetworkClient::connectSynchronizeClocks() {
         mReadMessage = std::make_unique<NetworkMessage>();
         mConnection->asyncRead(*mReadMessage, [this, t1](boost::system::error_code ec) {
             if (ec || mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
-                log_warning().msg("Encountered error when reading clock sync message. Killing connection");
+                log_error().msg("Encountered error when reading clock sync message. Killing connection");
                 killConnection();
                 emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 emit connectionAttemptFailed();
                 return;
             }
 
-            auto t2 = std::chrono::system_clock::now();
+            auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
             std::chrono::milliseconds p1;
             if (!mReadMessage->decodeClockSync(p1)) {
@@ -327,7 +322,8 @@ void NetworkClient::connectSynchronizeClocks() {
                 return;
             }
 
-            log_debug().msg("Got clock sync message back");
+            auto diff = p1 - (t1 + t2)/2;
+            emit clockSynchronized(diff);
 
             connectSync();
         });
@@ -349,7 +345,7 @@ void NetworkClient::connectSync() {
         SharedActionList sharedActions;
 
         if (!mReadMessage->decodeSync(*tournament, sharedActions)) {
-            log_debug().msg("Failed decoding sync");
+            log_error().msg("Failed decoding sync");
             killConnection();
             emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             emit connectionAttemptFailed();

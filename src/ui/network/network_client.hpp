@@ -1,11 +1,13 @@
 #pragma once
 
-#include <QObject>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
+#include <chrono>
 #include <map>
 #include <queue>
 #include <set>
+
+#include <QObject>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
@@ -38,6 +40,7 @@ signals:
     void connectionShutdown();
     void connectionAttemptSucceeded();
     void stateChanged(NetworkClientState state);
+    void clockSynchronized(std::chrono::milliseconds diff);
 
 private:
     // different stages of connection
@@ -67,3 +70,5 @@ private:
 };
 
 Q_DECLARE_METATYPE(NetworkClientState)
+Q_DECLARE_METATYPE(std::chrono::milliseconds)
+
