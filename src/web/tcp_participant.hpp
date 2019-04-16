@@ -47,5 +47,6 @@ private:
     std::optional<int> mUserId;
     std::string mWebName;
     std::shared_ptr<LoadedTournament> mTournament;
+    std::chrono::milliseconds mClockDiff;
 };
 

@@ -218,8 +218,7 @@ void TCPParticipant::asyncClockSync() {
             return;
         }
 
-        auto diff = p1 - (t2 + t1)/2;
-        log_debug().field("diff", diff.count()).msg("Got clock sync");
+        mClockDiff = p1 - (t2 + t1)/2;
 
         mState = State::CLOCK_SYNCED;
         asyncTournamentSync();
@@ -265,7 +264,7 @@ void TCPParticipant::asyncTournamentSync() {
         mServer.acquireTournament(mWebName, mStrand.wrap([this, wrapper, self](std::shared_ptr<LoadedTournament> loadedTournament) {
             mTournament = std::move(loadedTournament);
             mTournament->setOwner(self);
-            mTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList), [this, self](bool success) {
+            mTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList), mClockDiff, [this, self](bool success) {
                 if (!success) {
                     forceQuit();
                     return;
@@ -278,7 +277,6 @@ void TCPParticipant::asyncTournamentSync() {
 
                 asyncTournamentListen();
             });
-
         }));
     });
 }
@@ -314,6 +312,7 @@ void TCPParticipant::asyncTournamentListen() {
                 else
                     forceQuit();
             });
+
             return;
         }
 
@@ -346,16 +345,16 @@ void TCPParticipant::asyncTournamentListen() {
                 return;
             }
 
-            mTournament->sync(std::move(tournament), std::move(actionList), [this, self](bool success) {
+            mTournament->sync(std::move(tournament), std::move(actionList), mClockDiff, [this, self](bool success) {
                 if (success)
                     asyncTournamentListen();
                 else
                     forceQuit();
             });
-           return;
+
+            return;
         }
 
-        log_warning().field("type", type).msg("Received message of unexpected type when listening");
         asyncTournamentListen();
     });
 }
