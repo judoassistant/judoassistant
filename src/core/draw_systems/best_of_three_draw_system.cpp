@@ -49,17 +49,6 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const
     return {};
 }
 
-bool BestOfThreeDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category) const {
-    for (auto matchId : mMatches) {
-        const MatchStore & match = category.getMatch(matchId);
-        if (match.getStatus() != MatchStatus::FINISHED)
-            return false;
-    }
-
-    return true;
-}
-
-
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> BestOfThreeDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     return {};
     // std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;

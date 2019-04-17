@@ -173,17 +173,6 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
     return actions;
 }
 
-bool KnockoutDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category) const {
-    const auto &knockoutStatus = category.getStatus(MatchType::KNOCKOUT);
-    if (knockoutStatus.notStartedMatches > 0 || knockoutStatus.startedMatches > 0)
-        return false;
-
-    const auto &finalStatus = category.getStatus(MatchType::FINAL);
-    if (finalStatus.notStartedMatches > 0 || finalStatus.startedMatches > 0)
-        return false;
-    return true;
-}
-
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
     const auto &ruleset = category.getRuleset();
@@ -194,7 +183,8 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem
     size_t layer_size = 1;
     size_t next_layer = 1;
 
-    if (!isFinished(tournament, category) || category.getMatches().size() == 0) {
+    const auto &status = category.getStatus(MatchType::KNOCKOUT);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) {
         for (auto playerId : mPlayers)
             results.emplace_back(std::nullopt, playerId);
         return results;
