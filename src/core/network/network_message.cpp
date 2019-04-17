@@ -315,6 +315,29 @@ std::ostream &operator<<(std::ostream &o, NetworkMessage::Type type) {
         return o << "CHECK_WEB_NAME";
     if (type == NetworkMessage::Type::CHECK_WEB_NAME_RESPONSE)
         return o << "CHECK_WEB_NAME_RESPONSE";
+    if (type == NetworkMessage::Type::CLOCK_SYNC)
+        return o << "CLOCK_SYNC";
+    if (type == NetworkMessage::Type::CLOCK_SYNC_REQUEST)
+        return o << "CLOCK_SYNC_REQUEST";
     return o << "INVALID";
+}
+
+void NetworkMessage::encodeClockSync(const std::chrono::milliseconds &time) {
+    mType = Type::CLOCK_SYNC;
+    std::tie(mBody, mUncompressedSize) = serializeAndCompress(time);
+
+    encodeHeader();
+}
+
+bool NetworkMessage::decodeClockSync(std::chrono::milliseconds &time) {
+    return deserializeAndCompress(mUncompressedSize, mBody, time);
+}
+
+void NetworkMessage::encodeClockSyncRequest() {
+    mType = Type::CLOCK_SYNC_REQUEST;
+    mBody.clear();
+    mUncompressedSize = 0;
+
+    encodeHeader();
 }
 

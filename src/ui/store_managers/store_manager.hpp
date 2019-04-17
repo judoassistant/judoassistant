@@ -61,7 +61,7 @@ public:
     ConstActionListIterator actionsBegin() const;
     ConstActionListIterator actionsEnd() const;
 
-    std::chrono::milliseconds masterTime() const;
+    virtual std::chrono::milliseconds masterTime() const = 0;
     std::chrono::milliseconds localTime() const;
 
 signals:

@@ -234,3 +234,7 @@ WebClientState MasterStoreManager::getWebClientState() const {
     return mWebClientState;
 }
 
+std::chrono::milliseconds MasterStoreManager::masterTime() const {
+    return localTime();
+}
+

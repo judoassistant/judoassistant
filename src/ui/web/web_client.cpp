@@ -26,7 +26,7 @@ void WebClient::validateToken(const QString &token) {
 
 }
 
-void WebClient::createConnection(connectionHandler handler) {
+void WebClient::createConnection(ConnectionHandler handler) {
     mContext.dispatch([this, handler]() {
         assert(mState == WebClientState::NOT_CONNECTED);
 
@@ -165,13 +165,12 @@ void WebClient::disconnect() {
         if (mState == WebClientState::NOT_CONNECTED)
             return;
 
+        mDisconnecting = true;
+
         // Let the client send in progress messages first
         if (mState == WebClientState::CONFIGURED && mWriteQueue.empty()) {
             killConnection();
             return;
-        }
-        else {
-            mDisconnecting = true;
         }
     });
 }
@@ -217,6 +216,8 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                     return;
                 }
 
+                log_debug().field("type", responseMessage->getType()).msg("Got response");
+
                 if (responseMessage->getType() != NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE) {
                     log_error().msg("Received response message of wrong type. Failing");
                     killConnection();
@@ -236,9 +237,38 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                 emit registrationSucceeded(webName);
                 emit stateChanged(mState = WebClientState::CONFIGURED);
 
-                enterConfigured();
+                enterClockSync();
             });
         });
+    });
+}
+
+void WebClient::enterClockSync() {
+    auto responseMessage = std::make_shared<NetworkMessage>();
+    mConnection->asyncRead(*responseMessage, [this, responseMessage](boost::system::error_code ec) {
+        if (mDisconnecting) {
+            killConnection();
+            return;
+        }
+
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error reading web server clock sync request message. Failing");
+            killConnection();
+            return;
+        }
+
+        if (responseMessage->getType() != NetworkMessage::Type::CLOCK_SYNC_REQUEST) {
+            log_error().msg("Did not receive clock sync request from web server. Failing");
+            killConnection();
+            return;
+        }
+
+        auto message = std::make_shared<NetworkMessage>();
+        auto p1 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+        message->encodeClockSync(p1);
+        deliver(std::move(message));
+
+        enterConfigured();
     });
 }
 
@@ -249,13 +279,13 @@ void WebClient::enterConfigured() {
 
     auto responseMessage = std::make_shared<NetworkMessage>();
     mConnection->asyncRead(*responseMessage, [this, responseMessage](boost::system::error_code ec) {
-        if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error reading web server message. Failing");
+        if (mDisconnecting) {
             killConnection();
             return;
         }
 
-        if (mDisconnecting) {
+        if (ec) {
+            log_error().field("message", ec.message()).msg("Encountered error reading web server message. Failing");
             killConnection();
             return;
         }

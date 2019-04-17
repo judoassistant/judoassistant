@@ -11,10 +11,7 @@
 #include "web/web_server.hpp"
 #include "web/json_encoder.hpp"
 
-// TODO: Fix segfault on server SIGINT
 // TODO: Try to see if message size can be limited in async_read
-// TODO: Fix tournaments not saving correctly
-// TODO: Fix web participant not receiving tournament correctly
 
 WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)

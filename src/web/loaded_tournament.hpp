@@ -17,7 +17,7 @@ public:
     LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database);
 
     typedef std::function<void (bool)> SyncCallback;
-    void sync(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, SyncCallback callback);
+    void sync(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds diff, SyncCallback callback);
 
     typedef std::function<void (bool)> DispatchCallback;
     void dispatch(ClientActionId actionId, std::shared_ptr<Action> action, DispatchCallback callback);
@@ -57,6 +57,7 @@ private:
     std::string mWebName;
     std::unique_ptr<WebTournamentStore> mTournament;
     SharedActionList mActionList;
+    std::chrono::milliseconds mClockDiff;
     std::unordered_set<ClientActionId> mActionIds;
     std::unordered_set<std::shared_ptr<WebParticipant>> mWebParticipants;
     std::unordered_map<std::shared_ptr<WebParticipant>, PlayerId> mPlayerSubscriptions;

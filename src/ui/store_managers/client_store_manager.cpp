@@ -5,6 +5,7 @@
 ClientStoreManager::ClientStoreManager()
     : StoreManager()
     , mNetworkClientState(NetworkClientState::NOT_CONNECTED)
+    , mClockDiff(std::chrono::milliseconds(0))
 {
     mNetworkClient = std::make_shared<NetworkClient>(getWorkerThread().getContext());
 
@@ -12,6 +13,7 @@ ClientStoreManager::ClientStoreManager()
     QObject::connect(mNetworkClient.get(), &NetworkClient::connectionAttemptFailed, this, &ClientStoreManager::failConnectionAttempt);
     QObject::connect(mNetworkClient.get(), &NetworkClient::connectionShutdown, this, &ClientStoreManager::shutdownConnection);
     QObject::connect(mNetworkClient.get(), &NetworkClient::connectionAttemptSucceeded, this, &ClientStoreManager::succeedConnectionAttempt);
+    QObject::connect(mNetworkClient.get(), &NetworkClient::clockSynchronized, this, &ClientStoreManager::synchronizeClock);
 
     setInterface(mNetworkClient);
 }
@@ -70,5 +72,14 @@ const NetworkClient& ClientStoreManager::getNetworkClient() const {
 
 NetworkClient& ClientStoreManager::getNetworkClient() {
     return *mNetworkClient;
+}
+
+std::chrono::milliseconds ClientStoreManager::masterTime() const {
+    return localTime() + mClockDiff;
+}
+
+void ClientStoreManager::synchronizeClock(std::chrono::milliseconds diff) {
+    log_debug().field("diff", diff.count()).msg("Synchronize clock");
+    mClockDiff = diff;
 }
 
