@@ -86,17 +86,19 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const Ma
     const auto & blueScore = match.getBlueScore();
     auto currentDuration = match.currentDuration(masterTime);
 
+    // TODO: Implement matches ending in a draw
+    if (blueScore.hansokuMake == 1)
+        return MatchStore::PlayerIndex::WHITE;
+    if (whiteScore.hansokuMake == 1)
+        return MatchStore::PlayerIndex::BLUE;
+
     if (whiteScore.ippon == 1)
         return MatchStore::PlayerIndex::WHITE;
-    if (whiteScore.hansokuMake == 0 && blueScore.hansokuMake == 1) // also handle the case when both players are disqualified
-        return MatchStore::PlayerIndex::WHITE;
-    if (currentDuration >= getNormalTime() && whiteScore.wazari > blueScore.wazari)
-        return MatchStore::PlayerIndex::WHITE;
-
     if (blueScore.ippon == 1)
         return MatchStore::PlayerIndex::BLUE;
-    if (blueScore.hansokuMake == 0 && whiteScore.hansokuMake == 1) // also handle the case when both players are disqualified
-        return MatchStore::PlayerIndex::BLUE;
+
+    if (currentDuration >= getNormalTime() && whiteScore.wazari > blueScore.wazari)
+        return MatchStore::PlayerIndex::WHITE;
     if (currentDuration >= getNormalTime() && blueScore.wazari > whiteScore.wazari)
         return MatchStore::PlayerIndex::BLUE;
     return std::nullopt;
@@ -114,17 +116,17 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const Ma
     const auto & whiteScore = match.getWhiteScore();
     const auto & blueScore = match.getBlueScore();
 
+    if (blueScore.hansokuMake == 1)
+        return MatchStore::PlayerIndex::WHITE;
+    if (whiteScore.hansokuMake == 1)
+        return MatchStore::PlayerIndex::BLUE;
     if (whiteScore.ippon == 1)
         return MatchStore::PlayerIndex::WHITE;
-    if (whiteScore.hansokuMake == 0 && blueScore.hansokuMake == 1) // also handle the case when both players are disqualified
-        return MatchStore::PlayerIndex::WHITE;
-    if (whiteScore.wazari > blueScore.wazari)
-        return MatchStore::PlayerIndex::WHITE;
-
     if (blueScore.ippon == 1)
         return MatchStore::PlayerIndex::BLUE;
-    if (blueScore.hansokuMake == 0 && whiteScore.hansokuMake == 1) // also handle the case when both players are disqualified
-        return MatchStore::PlayerIndex::BLUE;
+
+    if (whiteScore.wazari > blueScore.wazari)
+        return MatchStore::PlayerIndex::WHITE;
     if (blueScore.wazari > whiteScore.wazari)
         return MatchStore::PlayerIndex::BLUE;
     return std::nullopt;
@@ -150,7 +152,8 @@ std::chrono::milliseconds TwentyEighteenRuleset::getExpectedTime() const {
 // TODO: Implement banning of players on direct hansoku make
 bool TwentyEighteenRuleset::canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
-    return (score.hansokuMake == 0);
+    const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+    return (score.hansokuMake == 0 && otherScore.hansokuMake == 0);
 }
 
 void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
