@@ -34,7 +34,7 @@ void ScoreDisplayWidget::paintNullMatch(QPainter &painter) {
 
     // Draw Background
     painter.setPen(Qt::NoPen);
-    painter.setBrush(COLOR_0);
+    painter.setBrush(COLOR_SCOREBOARD_BLACK);
 
     painter.drawRect(rect);
 }
@@ -130,9 +130,9 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     QRect boundingRect(0, 0, rect.width(), rect.height());
     painter.setPen(Qt::NoPen);
     if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.setBrush(Qt::white);
+        painter.setBrush(COLOR_SCOREBOARD_WHITE);
     else
-        painter.setBrush(COLOR_10);
+        painter.setBrush(COLOR_SCOREBOARD_BLUE);
     painter.drawRect(boundingRect);
 
     // Paint flag and country
@@ -160,9 +160,9 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     auto font = mFont;
 
     if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.setPen(COLOR_0);
+        painter.setPen(COLOR_SCOREBOARD_BLACK);
     else
-        painter.setPen(Qt::white);
+        painter.setPen(COLOR_SCOREBOARD_WHITE);
 
     // Paint country name
     if (country.has_value()) {
@@ -191,7 +191,6 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
 
     font.setPixelSize(scoreHeight*4/5);
     painter.setFont(font);
-    painter.setBrush(COLOR_11);
 
     const auto &score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
@@ -207,14 +206,14 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     QRect secondPenaltyRect(columnThree + PADDING + penaltyWidth, scoreOffset+(scoreHeight-penaltyHeight)/2, penaltyWidth, penaltyHeight);
 
     if (score.hansokuMake > 0) {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(COLOR_11);
+        painter.setPen(COLOR_SCOREBOARD_BLACK);
+        painter.setBrush(COLOR_SCOREBOARD_HANSOKU);
         painter.drawRect(firstPenaltyRect);
 
     }
     else {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(COLOR_13);
+        painter.setPen(COLOR_SCOREBOARD_BLACK);
+        painter.setBrush(COLOR_SCOREBOARD_SHIDO);
         if (score.shido > 0)
             painter.drawRect(firstPenaltyRect);
         if (score.shido > 1)
@@ -241,7 +240,7 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     // Paint background
     QRect boundingRect(0, 0, rect.width(), rect.height());
     painter.setPen(Qt::NoPen);
-    painter.setBrush(COLOR_0);
+    painter.setBrush(COLOR_SCOREBOARD_BLACK);
     painter.drawRect(boundingRect);
 
     // Paint title and category
@@ -251,7 +250,7 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     auto font = mFont;
     font.setPixelSize(flagHeight*1/2);
     painter.setFont(font);
-    painter.setPen(COLOR_6);
+    painter.setPen(COLOR_SCOREBOARD_WHITE);
 
     painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
@@ -266,7 +265,10 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         font.setPixelSize(rect.height()*6/8);
         painter.setFont(font);
 
-        painter.setPen(COLOR_14);
+        if (match.getStatus() == MatchStatus::UNPAUSED)
+            painter.setPen(COLOR_SCOREBOARD_TIME_UNPAUSED);
+        else
+            painter.setPen(COLOR_SCOREBOARD_TIME_PAUSED);
         painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, QString("%1:%2").arg(minutes, seconds));
     }
 
@@ -277,7 +279,7 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         font.setPixelSize(rect.height()*1/4);
         painter.setFont(font);
 
-        painter.setPen(COLOR_13);
+        painter.setPen(COLOR_SCOREBOARD_GOLDEN_SCORE);
         painter.drawText(goldenScoreRect, Qt::AlignVCenter | Qt::AlignLeft, "GS");
     }
 
@@ -298,9 +300,9 @@ void ScoreDisplayWidget::paintPlayerIntroduction(QRect rect, MatchStore::PlayerI
     QRect boundingRect(0, 0, rect.width(), rect.height());
     painter.setPen(Qt::NoPen);
     if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.setBrush(Qt::white);
+        painter.setBrush(COLOR_SCOREBOARD_WHITE);
     else
-        painter.setBrush(COLOR_10);
+        painter.setBrush(COLOR_SCOREBOARD_BLUE);
     painter.drawRect(boundingRect);
 
     // Paint flag and country
@@ -328,9 +330,9 @@ void ScoreDisplayWidget::paintPlayerIntroduction(QRect rect, MatchStore::PlayerI
     auto font = mFont;
 
     if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.setPen(COLOR_0);
+        painter.setPen(COLOR_SCOREBOARD_BLACK);
     else
-        painter.setPen(Qt::white);
+        painter.setPen(COLOR_SCOREBOARD_WHITE);
 
     // Paint country name
     if (country.has_value()) {
@@ -365,7 +367,7 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
     // Paint background
     QRect boundingRect(0, 0, rect.width(), rect.height());
     painter.setPen(Qt::NoPen);
-    painter.setBrush(COLOR_0);
+    painter.setBrush(COLOR_SCOREBOARD_BLACK);
     painter.drawRect(boundingRect);
 
     // Paint title and category
@@ -375,7 +377,7 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
     auto font = mFont;
     font.setPixelSize(flagHeight*2/3);
     painter.setFont(font);
-    painter.setPen(COLOR_6);
+    painter.setPen(COLOR_SCOREBOARD_WHITE);
 
     painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));

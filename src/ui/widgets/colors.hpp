@@ -4,31 +4,22 @@
 // TODO: Figure out how to move this into the QColorPalette
 #include <QColor>
 
-
 static const QColor COLOR_UI_HANSOKU("#BF616A");
 static const QColor COLOR_UI_SHIDO("#EBCB8B");
 static const QColor COLOR_UI_PAUSED("#EBCB8B");
 static const QColor COLOR_UI_UNPAUSED("#A3BE8C");
 
-static const QColor COLOR_UI_HIGHLIGHT("#A3BE8C");
+static const QColor COLOR_UI_BLOCK_STARTED("#050244"); // Dark Blue
+static const QColor COLOR_UI_BLOCK_FINISHED("#440209"); // Dark Red
 
-static const QColor COLOR_UI_BLOCK_STARTED("#050244");
-static const QColor COLOR_UI_BLOCK_FINISHED("#440209");
+static const QColor COLOR_SCOREBOARD_BLACK("#000000"); // Black
+static const QColor COLOR_SCOREBOARD_WHITE("#ffffff"); // White
+static const QColor COLOR_SCOREBOARD_BLUE("#0b47a1"); // Blue
 
-static const QColor COLOR_0("#2E3440");
-static const QColor COLOR_1("#3B4252");
-static const QColor COLOR_2("#434C5E");
-static const QColor COLOR_3("#4C566A");
-static const QColor COLOR_4("#D8DEE9");
-static const QColor COLOR_5("#E5E9F0");
-static const QColor COLOR_6("#ECEFF4");
-static const QColor COLOR_7("#8FBCBB");
-static const QColor COLOR_8("#88C0D0");
-static const QColor COLOR_9("#81A1C1");
-static const QColor COLOR_10("#5E81AC");
-static const QColor COLOR_11("#BF616A");
-static const QColor COLOR_12("#D08770");
-static const QColor COLOR_13("#EBCB8B");
-static const QColor COLOR_14("#A3BE8C");
-static const QColor COLOR_15("#B48EAD");
+static const QColor COLOR_SCOREBOARD_HANSOKU("#ff3639"); // Red
+static const QColor COLOR_SCOREBOARD_SHIDO("#e6f700"); // Yellow
+
+static const QColor COLOR_SCOREBOARD_GOLDEN_SCORE("#ceb829"); // Gold
+static const QColor COLOR_SCOREBOARD_TIME_UNPAUSED("#00de00"); // Green
+static const QColor COLOR_SCOREBOARD_TIME_PAUSED("#ff3639"); // Red
 
