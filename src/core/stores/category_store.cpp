@@ -119,7 +119,7 @@ const MatchStore & CategoryStore::getMatch(MatchId id) const {
 void CategoryStore::pushMatch(std::unique_ptr<MatchStore> match) {
     MatchId id = match->getId();
 
-    if (!match->isBye())
+    if (!match->isPermanentBye())
         ++(mMatchCount[static_cast<int>(match->getType())]);
 
     mMatches.push_back(std::move(match));

@@ -1,12 +1,13 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/match_store.hpp"
 
-MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
+MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool permanentBye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
     : mId(id)
     , mCategory(categoryId)
     , mType(type)
     , mTitle(title)
-    , mBye(bye)
+    , mPermanentBye(permanentBye)
+    , mBye(permanentBye)
     , mStatus(MatchStatus::NOT_STARTED)
     , mGoldenScore(false)
     , mDuration(0)
@@ -96,6 +97,15 @@ std::ostream &operator<<(std::ostream &out, const MatchType &matchType) {
 
 bool MatchStore::isBye() const {
     return mBye;
+}
+
+void MatchStore::setBye(bool bye) {
+    assert(!mPermanentBye);
+    mBye = bye;
+}
+
+bool MatchStore::isPermanentBye() const {
+    return mPermanentBye;
 }
 
 MatchStore::MatchStore(const MatchStore &other)

@@ -44,7 +44,7 @@ public:
 
     ConstMatchIterator matchesBegin(const TournamentStore &tournament) const;
     ConstMatchIterator matchesEnd(const TournamentStore &tournament) const;
-    size_t getMatchCount() const;
+    size_t getMatchCount() const; // Number of matches there are not permanent byes
 
     void recompute(const TournamentStore &tournament);
 

@@ -60,7 +60,7 @@ public:
     bool containsMatch(MatchId id) const;
     MatchList clearMatches();
 
-    // Get the number of non-bye matches of the given type
+    // Get the number matches that are not permanent byes
     size_t getMatchCount(MatchType type) const;
 
     const std::unordered_set<PlayerId> & getPlayers() const;
