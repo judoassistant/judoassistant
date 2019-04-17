@@ -12,6 +12,9 @@ static const QColor COLOR_UI_UNPAUSED("#A3BE8C");
 
 static const QColor COLOR_UI_HIGHLIGHT("#A3BE8C");
 
+static const QColor COLOR_UI_BLOCK_STARTED("#050244");
+static const QColor COLOR_UI_BLOCK_FINISHED("#440209");
+
 static const QColor COLOR_0("#2E3440");
 static const QColor COLOR_1("#3B4252");
 static const QColor COLOR_2("#434C5E");

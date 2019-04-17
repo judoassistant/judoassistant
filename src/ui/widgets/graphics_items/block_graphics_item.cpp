@@ -45,12 +45,12 @@ void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     painter->setPen(pen);
 
     if (mStatus.startedMatches == 0 && mStatus.finishedMatches == 0) {
-        painter->setBrush(palette.color(QPalette::Button).lighter(120)); // TODO: Setup colors for different states
+        painter->setBrush(palette.color(QPalette::Button).lighter(120));
     }
     else if (mStatus.startedMatches > 0 || mStatus.notStartedMatches > 0)
-        painter->setBrush(palette.color(QPalette::Button).lighter(120));
+        painter->setBrush(COLOR_UI_BLOCK_STARTED);
     else
-        painter->setBrush(palette.color(QPalette::Button).lighter(120));
+        painter->setBrush(COLOR_UI_BLOCK_FINISHED);
 
     QRectF rect = boundingRect();
     painter->drawRect(rect);
