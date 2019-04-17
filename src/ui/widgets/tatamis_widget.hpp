@@ -22,7 +22,7 @@ enum class MatchType;
 
 class GridGraphicsManager {
 public:
-    GridGraphicsManager(QGraphicsScene *mScene);
+    GridGraphicsManager(QGraphicsScene *scene, QWidget *parent = nullptr);
 
     static constexpr int GRID_RESOLUTION = 20; // The number of minutes per grid unit
     static constexpr int GRID_HEIGHT = 120; // The pixel size of a grid unit
@@ -38,6 +38,8 @@ public:
     void updateGrid(int tatamiCount, int minutes, int minWidth, int minHeight);
 
 private:
+    QWidget *mParent;
+
     std::vector<QGraphicsItem*> mItems;
 
     QGraphicsScene *mScene;

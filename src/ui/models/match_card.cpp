@@ -26,7 +26,6 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
 
         painter->save();
         painter->setPen(palette.color(QPalette::Text));
-        // painter->setBrush(COLOR_0);
         font.setPixelSize((insideHeight/3)/3);
         painter->setFont(font);
 
@@ -58,11 +57,11 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
 
         painter->setPen(Qt::NoPen);
         if (playerFields.score.hansokuMake) {
-            painter->setBrush(COLOR_11);
+            painter->setBrush(COLOR_UI_HANSOKU);
             painter->drawRect(firstPenaltyRect);
         }
         else {
-            painter->setBrush(COLOR_13);
+            painter->setBrush(COLOR_UI_SHIDO);
             if (playerFields.score.shido > 0)
                 painter->drawRect(firstPenaltyRect);
             if (playerFields.score.shido > 1)
@@ -142,9 +141,9 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         else if (mStatus != MatchStatus::NOT_STARTED && mStatus != MatchStatus::FINISHED) { // Draw Time
             painter->setPen(Qt::NoPen);
             if (mStatus != MatchStatus::UNPAUSED)
-                painter->setBrush(COLOR_13);
+                painter->setBrush(COLOR_UI_UNPAUSED);
             else
-                painter->setBrush(COLOR_14);
+                painter->setBrush(COLOR_UI_PAUSED);
             painter->drawRect(pauseRect);
 
             painter->setPen(palette.color(QPalette::WindowText));

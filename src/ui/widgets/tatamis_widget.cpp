@@ -1,5 +1,6 @@
-#include <QVBoxLayout>
+#include <QApplication>
 #include <QToolBar>
+#include <QVBoxLayout>
 
 #include "core/log.hpp"
 #include "ui/store_managers/store_manager.hpp"
@@ -51,7 +52,7 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
         mScene = new QGraphicsScene(this);
         mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
-        mGrid = new GridGraphicsManager(mScene);
+        mGrid = new GridGraphicsManager(mScene, this);
         mGrid->setMinSize(1300, 1080);
 
         QGraphicsView *view = new QGraphicsView(this);
@@ -129,8 +130,9 @@ void TatamisWidget::endTatamiCountChange() {
     mGrid->updateGrid(tatamis.tatamiCount(), minutes, 1900, 1000);
 }
 
-GridGraphicsManager::GridGraphicsManager(QGraphicsScene *scene)
-    : mScene(scene)
+GridGraphicsManager::GridGraphicsManager(QGraphicsScene *scene, QWidget *parent)
+    : mParent(parent)
+    , mScene(scene)
     , mTatamiCount(0)
     , mMinutes(0)
     , mMinWidth(0)
@@ -166,10 +168,13 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     int minuteBound = (mMinutes + GRID_RESOLUTION - 1) / GRID_RESOLUTION;
     int height = std::max(minHeight, VERTICAL_OFFSET + GRID_HEIGHT * minuteBound);
     int width = std::max(mTatamiCount * GRID_WIDTH + HORIZONTAL_OFFSET, mMinWidth);
+
+    QPalette palette = (mParent != nullptr ? mParent->palette() : QApplication::palette());
+
     QPen pen;
     pen.setWidth(1);
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(COLOR_4);
+    pen.setColor(palette.color(QPalette::ButtonText));
 
     for (int i = 0; i < mTatamiCount; ++i) {
         auto item = new TatamiTextGraphicsItem(i);
