@@ -73,6 +73,7 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
         MatchStatus status;
         std::optional<PlayerId> whitePlayer;
         std::optional<PlayerId> bluePlayer;
+        bool bye;
     };
 
     std::vector<MatchInfo> newMatches;
@@ -96,10 +97,10 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
             matchInfo.status = match.getStatus();
             matchInfo.whitePlayer = match.getWhitePlayer();
             matchInfo.bluePlayer = match.getBluePlayer();
+            matchInfo.bye = match.isBye();
 
-            if (matchInfo.status != MatchStatus::FINISHED)
+            if (!matchInfo.bye && matchInfo.status != MatchStatus::FINISHED)
                 ++newUnfinishedMatches;
-
 
             newMatches.push_back(std::move(matchInfo));
         }
@@ -113,7 +114,7 @@ void TatamiMatchesModel::loadBlocks(bool shouldSignal) {
             auto combinedId = std::make_pair(matchInfo.categoryId, matchInfo.matchId);
             mLoadedMatches[combinedId] = loadingTime;
 
-            if (matchInfo.status != MatchStatus::FINISHED) {
+            if (!matchInfo.bye && matchInfo.status != MatchStatus::FINISHED) {
                 mUnfinishedMatches.push_back(std::make_tuple(matchInfo.categoryId, matchInfo.matchId, loadingTime));
                 mUnfinishedMatchesSet.insert(combinedId);
 
@@ -244,7 +245,7 @@ void TatamiMatchesModel::changeMatches(CategoryId categoryId, const std::vector<
         const auto &match = category.getMatch(matchId);
 
         bool wasFinished = (mUnfinishedMatchesSet.find(combinedId) == mUnfinishedMatchesSet.end());
-        bool isFinished = match.getStatus() == MatchStatus::FINISHED;
+        bool isFinished = (match.isBye() || match.getStatus() == MatchStatus::FINISHED);
 
         if (match.getStatus() == MatchStatus::UNPAUSED)
             mUnpausedMatches.insert(combinedId);
