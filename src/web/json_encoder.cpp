@@ -407,7 +407,12 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
     res.AddMember("blueScore", encodeMatchScore(match.getBlueScore(), allocator), allocator);
 
     res.AddMember("goldenScore", match.isGoldenScore(), allocator);
-    res.AddMember("resumeTime", encodeTime(match.getResumeTime(), clockDiff, allocator), allocator);
+
+    if (match.getStatus() == MatchStatus::UNPAUSED)
+        res.AddMember("resumeTime", encodeTime(match.getResumeTime(), clockDiff, allocator), allocator);
+    else
+        res.AddMember("resumeTime", rapidjson::Value(), allocator);
+
     res.AddMember("duration", encodeDuration(match.getDuration(), allocator), allocator);
 
     std::optional<MatchStore::PlayerIndex> winner;
@@ -544,7 +549,7 @@ rapidjson::Value JsonEncoder::encodeDuration(const std::chrono::milliseconds &du
 
 rapidjson::Value JsonEncoder::encodeTime(const std::chrono::milliseconds &time, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
     auto sinceEpoch = time - clockDiff;
-    rapidjson::Value res(std::chrono::duration_cast<std::chrono::seconds>(sinceEpoch).count());
+    rapidjson::Value res(sinceEpoch.count()); // unix timestamp
 
     return res;
 }
