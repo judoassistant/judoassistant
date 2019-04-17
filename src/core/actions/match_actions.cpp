@@ -4,6 +4,7 @@
 #include "core/stores/tournament_store.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
+#include "core/log.hpp"
 
 // AddMatchAction::AddMatchAction(const TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
 //     : AddMatchAction(MatchId::generate(tournament.getCategory(categoryId)), categoryId, type, title, bye, whitePlayerId, bluePlayerId)
@@ -394,31 +395,31 @@ bool MatchEventAction::shouldRecover() {
 void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &match) {
     auto &category = tournament.getCategory(match.getCategory());
 
+    // update category status
+    auto & categoryStatus = category.getStatus(match.getType());
+    if (mPrevStatus == MatchStatus::NOT_STARTED) {
+        assert(categoryStatus.notStartedMatches > 0);
+        --(categoryStatus.notStartedMatches);
+    }
+    else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
+        assert(categoryStatus.startedMatches > 0);
+        --(categoryStatus.startedMatches);
+    }
+    else if (mPrevStatus == MatchStatus::FINISHED) {
+        assert(categoryStatus.finishedMatches > 0);
+        --(categoryStatus.finishedMatches);
+    }
+
+    if (match.getStatus() == MatchStatus::NOT_STARTED)
+        ++(categoryStatus.notStartedMatches);
+    else if (match.getStatus() == MatchStatus::PAUSED || match.getStatus() == MatchStatus::UNPAUSED)
+        ++(categoryStatus.startedMatches);
+    else if (match.getStatus() == MatchStatus::FINISHED)
+        ++(categoryStatus.finishedMatches);
+
     // Updates tatami groups
     auto blockLocation = category.getLocation(match.getType());
     if (blockLocation && match.getStatus() != mPrevStatus) {
-        auto & categoryStatus = category.getStatus(match.getType());
-
-        if (mPrevStatus == MatchStatus::NOT_STARTED) {
-            assert(categoryStatus.notStartedMatches > 0);
-            --(categoryStatus.notStartedMatches);
-        }
-        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
-            assert(categoryStatus.startedMatches > 0);
-            --(categoryStatus.startedMatches);
-        }
-        else if (mPrevStatus == MatchStatus::FINISHED) {
-            assert(categoryStatus.finishedMatches > 0);
-            --(categoryStatus.finishedMatches);
-        }
-
-        if (match.getStatus() == MatchStatus::NOT_STARTED)
-            ++(categoryStatus.notStartedMatches);
-        else if (match.getStatus() == MatchStatus::PAUSED || match.getStatus() == MatchStatus::UNPAUSED)
-            ++(categoryStatus.startedMatches);
-        else if (match.getStatus() == MatchStatus::FINISHED)
-            ++(categoryStatus.finishedMatches);
-
         auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
         concurrentGroup.updateStatus(match);
 
@@ -481,5 +482,57 @@ std::string SetMatchPlayerAction::getDescription() const {
     if (mPlayerIndex == MatchStore::PlayerIndex::WHITE)
         return "Set white match player";
     return "Set blue match player";
+}
+
+SetMatchByeAction::SetMatchByeAction(CategoryId categoryId, MatchId matchId, bool bye)
+    : mCategoryId(categoryId)
+    , mMatchId(matchId)
+    , mBye(bye)
+{}
+
+void SetMatchByeAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+
+    auto & match = category.getMatch(mMatchId);
+    if (match.getStatus() != MatchStatus::NOT_STARTED) {
+        log_warning().msg("Attempted to bye already started match");
+        return;
+    }
+
+    mOldValue = match.isBye();
+    match.setBye(mBye);
+    tournament.changeMatches(mCategoryId, {mMatchId});
+    // no need to update tatamis since match status is still NOT_STARTED
+}
+
+void SetMatchByeAction::undoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+
+    auto & match = category.getMatch(mMatchId);
+    if (match.getStatus() != MatchStatus::NOT_STARTED) {
+        log_warning().msg("Attempted to bye already started match");
+        return;
+    }
+
+    match.setBye(mOldValue);
+    tournament.changeMatches(mCategoryId, {mMatchId});
+}
+
+std::unique_ptr<Action> SetMatchByeAction::freshClone() const {
+    return std::make_unique<SetMatchByeAction>(mCategoryId, mMatchId, mBye);
+}
+
+std::string SetMatchByeAction::getDescription() const {
+    return "Set match bye status";
 }
 
