@@ -1,7 +1,5 @@
 #include "core/log.hpp"
 
-// TODO: Implement some sort of scoped RAII logging
-
 Log::Log(const std::string &prefix)
     : mPrefix(prefix)
 {}

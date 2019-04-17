@@ -191,7 +191,6 @@ void LoadedTournament::load(LoadCallback callback) {
         mActionIds.clear();
         mActionList.clear();
 
-        // TODO: Notify participants
         mSynchronizationTime = std::chrono::system_clock::now();
         mFileInUse = false;
         boost::asio::dispatch(mContext, std::bind(callback, true));

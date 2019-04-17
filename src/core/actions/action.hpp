@@ -3,7 +3,6 @@
 #include "core/core.hpp"
 #include "core/serialize.hpp"
 
-// TODO: Implement serialization for all actions
 class TournamentStore;
 class CategoryId;
 class MatchId;
