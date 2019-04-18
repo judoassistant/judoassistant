@@ -106,7 +106,7 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
 
     if (eliminationFinished(tournament, category)) {
         auto firstPoolResults = mFirstPool->getResults(tournament, category);
-        auto secondPoolResults = mFirstPool->getResults(tournament, category);
+        auto secondPoolResults = mSecondPool->getResults(tournament, category);
 
         // Check first semi final players
         if (firstSemiFinal.getWhitePlayer() != firstPoolResults[0].second)
@@ -159,7 +159,52 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
 }
 
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    return {};
+    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
+
+    const auto &status = category.getStatus(MatchType::ELIMINATION);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
+        for (auto playerId : mPlayers)
+            results.emplace_back(std::nullopt, playerId);
+        return results;
+    }
+
+    const auto &ruleset = category.getRuleset();
+
+    auto &finaly = category.getMatch(mMatches.back());
+    auto &firstSemiFinal = category.getMatch(mMatches[mMatches.size() - 3]);
+    auto &secondSemiFinal = category.getMatch(mMatches[mMatches.size() - 2]);
+
+    auto finalWinnerIndex = ruleset.getWinner(finaly).value();
+    auto finalLoserIndex = (finalWinnerIndex == MatchStore::PlayerIndex::WHITE) ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE;
+
+    auto finalWinnerId = finaly.getPlayer(finalWinnerIndex).value();
+    auto finalLoserId = finaly.getPlayer(finalLoserIndex).value();
+
+    results.emplace_back(1, finalWinnerId);
+    results.emplace_back(2, finalLoserId);
+
+    auto firstSemiFinalLoserIndex = (ruleset.getWinner(firstSemiFinal).value() == MatchStore::PlayerIndex::WHITE) ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE;
+    auto secondSemiFinalLoserIndex = (ruleset.getWinner(secondSemiFinal).value() == MatchStore::PlayerIndex::WHITE) ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE;
+
+    auto firstSemiFinalLoserId = firstSemiFinal.getPlayer(firstSemiFinalLoserIndex).value();
+    auto secondSemiFinalLoserId = secondSemiFinal.getPlayer(secondSemiFinalLoserIndex).value();
+
+    results.emplace_back(3, firstSemiFinalLoserId);
+    results.emplace_back(3, secondSemiFinalLoserId);
+
+    std::unordered_set<PlayerId> finalists;
+    finalists.insert(finalWinnerId);
+    finalists.insert(finalLoserId);
+    finalists.insert(firstSemiFinalLoserId);
+    finalists.insert(secondSemiFinalLoserId);
+
+    for (auto playerId : mPlayers) {
+        if (finalists.find(playerId) != finalists.end())
+            continue;
+        results.emplace_back(std::nullopt, playerId);
+    }
+
+    return results;
 }
 
 bool DoublePoolDrawSystem::hasFinalBlock() const {
