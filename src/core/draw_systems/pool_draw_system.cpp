@@ -37,7 +37,7 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const Tourname
         for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
             size_t j = shiftedIds.size() - i - 1;
             if (!shiftedIds[i] || !shiftedIds[j]) continue;
-            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::KNOCKOUT, "Pool", false, shiftedIds[i], shiftedIds[j]);
+            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, "Pool", false, shiftedIds[i], shiftedIds[j]);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }
@@ -83,7 +83,7 @@ struct PoolPlayerRank {
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
 
-    auto status = category.getStatus(MatchType::KNOCKOUT);
+    auto status = category.getStatus(MatchType::ELIMINATION);
     if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
         for (auto playerId : mPlayers)
             results.emplace_back(std::nullopt, playerId);

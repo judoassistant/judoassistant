@@ -52,7 +52,7 @@ std::string CategoryStore::getName(MatchType type) const {
     std::stringstream res;
     res << mName;
     if (getDrawSystem().hasFinalBlock())
-        res << " (" << (type == MatchType::KNOCKOUT ? "Knockout" : "Final") << ")"; // TODO: Translate
+        res << " (" << (type == MatchType::ELIMINATION ? "Elimination" : "Final") << ")"; // TODO: Translate
     return res.str();
 }
 
