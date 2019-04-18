@@ -83,8 +83,7 @@ struct PoolPlayerRank {
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
 
-    auto status = category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
+    if (!isFinished(tournament, category)) {
         for (auto playerId : mPlayers)
             results.emplace_back(std::nullopt, playerId);
         return results;
@@ -146,7 +145,12 @@ bool PoolDrawSystem::hasFinalBlock() const {
     return false;
 }
 
-bool PoolDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) const {
+bool PoolDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category) const {
+    if (mPlayers.size() == category.getPlayers().size()) { // in case the pool draw system is used on its own
+        auto status = category.getStatus(MatchType::ELIMINATION);
+        return status.finishedMatches == mMatches.size();
+    }
+
     for (auto matchId : mMatches) {
         const auto &match = category.getMatch(matchId);
         if (match.getStatus() != MatchStatus::FINISHED)

@@ -14,6 +14,7 @@ std::string BestOfThreeDrawSystem::getName() const {
 }
 
 std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+    assert(playerIds.size() == category.getPlayers().size()); // This draw system is not made to be composed
     mMatches.clear();
     mPlayers = playerIds;
 
