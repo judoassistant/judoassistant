@@ -13,11 +13,12 @@ std::string BestOfThreeDrawSystem::getName() const {
     return "Best-of-Three";
 }
 
-std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+std::vector<std::unique_ptr<AddMatchAction>> BestOfThreeDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+    assert(playerIds.size() == category.getPlayers().size()); // This draw system is not made to be composed
     mMatches.clear();
     mPlayers = playerIds;
 
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
     MatchId::Generator generator(seed);
 
     if (mPlayers.size() != 2)
@@ -37,7 +38,7 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::initCategory(const T
         shiftedIds.emplace_back(mPlayers[i]);
 
     for (size_t i = 0; i < 3; ++i) {
-        auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::KNOCKOUT, "Best-of-Three", false, playerIds[whitePlayer], playerIds[bluePlayer]);
+        auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, "Best-of-Three", false, playerIds[whitePlayer], playerIds[bluePlayer]);
         mMatches.push_back(action->getMatchId());
         actions.push_back(std::move(action));
     }
@@ -68,66 +69,48 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const
 }
 
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> BestOfThreeDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    return {};
-    // std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
+    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
 
-    // auto status = category.getStatus(MatchType::KNOCKOUT);
-    // if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
-    //     for (auto playerId : mPlayers)
-    //         results.emplace_back(std::nullopt, playerId);
-    //     return results;
-    // }
+    auto status = category.getStatus(MatchType::ELIMINATION);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
+        for (auto playerId : mPlayers)
+            results.emplace_back(std::nullopt, playerId);
+        return results;
+    }
 
-    // const Ruleset &ruleset = category.getRuleset();
+    const auto &ruleset = category.getRuleset();
 
-    // std::unordered_map<PlayerId, PoolPlayerRank> ranks;
-    // for (auto playerId : mPlayers) {
-    //     PoolPlayerRank rank;
-    //     rank.playerId = playerId;
-    //     rank.wonMatches = 0;
-    //     rank.ippons = 0;
-    //     rank.wazaris = 0;
-    //     rank.hansokuMakes = 0;
-    //     rank.shidos = 0;
-    //     rank.weight = tournament.getPlayer(playerId).getWeight().value_or(PlayerWeight(0.0));
-    //     ranks[playerId] = std::move(rank);
-    // }
+    unsigned int whiteWinCount = 0;
 
-    // for (auto matchId : mMatches) {
-    //     const auto &match = category.getMatch(matchId);
+    // get winner of first match
+    const auto &firstMatch = category.getMatch(mMatches[0]);
+    assert(firstMatch.getStatus() == MatchStatus::FINISHED);
+    if (ruleset.getWinner(firstMatch) == MatchStore::PlayerIndex::WHITE)
+        ++whiteWinCount;
 
-    //     auto &whiteRank = ranks.at(match.getWhitePlayer().value());
-    //     auto &blueRank = ranks.at(match.getBluePlayer().value());
+    // get winner of second match
+    const auto &secondMatch = category.getMatch(mMatches[1]);
+    if (ruleset.getWinner(secondMatch) == MatchStore::PlayerIndex::WHITE)
+        ++whiteWinCount;
 
-    //     auto winner = ruleset.getWinner(match);
-    //     if (winner == MatchStore::PlayerIndex::WHITE)
-    //         whiteRank.wonMatches += 1;
-    //     else if (winner == MatchStore::PlayerIndex::BLUE)
-    //         blueRank.wonMatches += 1;
+    // get winner of third match (if neccesary)
+    if (whiteWinCount == 1) {
+        const auto &thirdMatch = category.getMatch(mMatches[2]);
+        if (ruleset.getWinner(thirdMatch) == MatchStore::PlayerIndex::WHITE)
+            ++whiteWinCount;
+    }
 
-    //    const MatchStore::Score & whiteScore = match.getWhiteScore();
-    //    whiteRank.ippons += whiteScore.ippon;
-    //    whiteRank.wazaris += whiteScore.wazari;
-    //    whiteRank.shidos += whiteScore.shido;
-    //    whiteRank.hansokuMakes += static_cast<size_t>(whiteScore.hansokuMake);
+    // construct results list
+    if (whiteWinCount > 1) {
+        results.emplace_back(1, firstMatch.getWhitePlayer().value());
+        results.emplace_back(2, firstMatch.getBluePlayer().value());
+    }
+    else {
+        results.emplace_back(1, firstMatch.getBluePlayer().value());
+        results.emplace_back(2, firstMatch.getWhitePlayer().value());
+    }
 
-    //    const MatchStore::Score & blueScore = match.getBlueScore();
-    //    blueRank.ippons += blueScore.ippon;
-    //    blueRank.wazaris += blueScore.wazari;
-    //    blueRank.shidos += blueScore.shido;
-    //    blueRank.hansokuMakes += static_cast<size_t>(blueScore.hansokuMake);
-    // }
-
-    // std::vector<PoolPlayerRank> sortedRanks;
-    // for (const auto &pair : ranks)
-    //     sortedRanks.push_back(pair.second);
-    // std::sort(sortedRanks.begin(), sortedRanks.end());
-
-    // for (size_t i = 0; i < sortedRanks.size(); ++i)
-    //     results.emplace_back(i+1, sortedRanks[i].playerId);
-    // return results;
-
-    // return {};
+    return results;
 }
 
 bool BestOfThreeDrawSystem::hasFinalBlock() const {

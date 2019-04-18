@@ -29,12 +29,13 @@ std::string matchTitle(size_t round, size_t depth) {
     return std::to_string(round+1) + "th Round";
 }
 
-std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+std::vector<std::unique_ptr<AddMatchAction>> KnockoutDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+    assert(playerIds.size() == category.getPlayers().size()); // This draw system is not made to be composed
     mMatches.clear();
     mPlayers = playerIds;
 
     MatchId::Generator generator(seed);
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
 
     if (mPlayers.size() <= 1)
         return actions;
@@ -77,7 +78,7 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const Tour
             auto whiteId = nodePlayers[2*i];
             auto blueId = nodePlayers[2*i+1];
             bool isBye = (round == 0 && !(whiteId && blueId));
-            auto matchType = (round + 2 < rounds ? MatchType::KNOCKOUT : MatchType::FINAL);
+            auto matchType = (round + 2 < rounds ? MatchType::ELIMINATION : MatchType::FINAL);
 
             auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), matchType, matchTitle(round, rounds), isBye, whiteId, blueId);
             mMatches.push_back(action->getMatchId());
@@ -182,7 +183,7 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem
     size_t layer_size = 1;
     size_t next_layer = 1;
 
-    const auto &status = category.getStatus(MatchType::KNOCKOUT);
+    const auto &status = category.getStatus(MatchType::ELIMINATION);
     if (status.startedMatches > 0 || status.notStartedMatches > 0) {
         for (auto playerId : mPlayers)
             results.emplace_back(std::nullopt, playerId);

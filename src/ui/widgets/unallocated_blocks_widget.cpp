@@ -41,8 +41,8 @@ void UnallocatedBlocksWidget::endAddCategories(std::vector<CategoryId> categoryI
     bool shouldShift = false;
     for (auto categoryId : categoryIds) {
         const CategoryStore &category = tournament.getCategory(categoryId);
-        if (!category.getLocation(MatchType::KNOCKOUT))
-            shouldShift |= insertBlock(category, MatchType::KNOCKOUT);
+        if (!category.getLocation(MatchType::ELIMINATION))
+            shouldShift |= insertBlock(category, MatchType::ELIMINATION);
         if (category.getDrawSystem().hasFinalBlock() && !category.getLocation(MatchType::FINAL))
             shouldShift |= insertBlock(category, MatchType::FINAL);
     }
@@ -57,10 +57,10 @@ void UnallocatedBlocksWidget::changeCategories(std::vector<CategoryId> categoryI
     bool shouldShift = false;
     for (auto categoryId : categoryIds) {
         const CategoryStore &category = tournament.getCategory(categoryId);
-        if (!category.getLocation(MatchType::KNOCKOUT))
-            shouldShift |= insertBlock(category, MatchType::KNOCKOUT);
+        if (!category.getLocation(MatchType::ELIMINATION))
+            shouldShift |= insertBlock(category, MatchType::ELIMINATION);
         else
-            shouldShift |= eraseBlock(category, MatchType::KNOCKOUT);
+            shouldShift |= eraseBlock(category, MatchType::ELIMINATION);
 
         if (category.getDrawSystem().hasFinalBlock()) {
             if (!category.getLocation(MatchType::FINAL))
@@ -77,7 +77,7 @@ void UnallocatedBlocksWidget::changeCategories(std::vector<CategoryId> categoryI
 void UnallocatedBlocksWidget::beginEraseCategories(std::vector<CategoryId> categoryIds) {
     bool shouldShift = false;
     for (auto categoryId : categoryIds) {
-        shouldShift |= eraseBlock(categoryId, MatchType::KNOCKOUT);
+        shouldShift |= eraseBlock(categoryId, MatchType::ELIMINATION);
         shouldShift |= eraseBlock(categoryId, MatchType::FINAL);
     }
 
@@ -116,8 +116,8 @@ void UnallocatedBlocksWidget::reloadBlocks() {
 
     for (auto & it : tournament.getCategories()) {
         const CategoryStore & category = *(it.second);
-        if (!category.getLocation(MatchType::KNOCKOUT))
-            mBlocks.insert(std::make_pair(category.getId(), MatchType::KNOCKOUT));
+        if (!category.getLocation(MatchType::ELIMINATION))
+            mBlocks.insert(std::make_pair(category.getId(), MatchType::ELIMINATION));
         if (category.getDrawSystem().hasFinalBlock() && !category.getLocation(MatchType::FINAL))
             mBlocks.insert(std::make_pair(category.getId(), MatchType::FINAL));
     }

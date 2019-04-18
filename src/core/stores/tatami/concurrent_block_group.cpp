@@ -1,10 +1,11 @@
 #include <queue>
 
-#include "core/stores/tatami/concurrent_block_group.hpp"
-#include "core/stores/category_store.hpp"
 #include "core/draw_systems/draw_system.hpp"
+#include "core/misc/merge_queue_element.hpp"
 #include "core/rulesets/ruleset.hpp"
+#include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
+#include "core/stores/tatami/concurrent_block_group.hpp"
 #include "core/stores/tournament_store.hpp"
 
 ConcurrentBlockGroup::ConcurrentBlockGroup()
@@ -77,29 +78,6 @@ SequentialBlockGroup & ConcurrentBlockGroup::at(size_t index) {
     return mGroups.at(index);
 }
 
-struct QueueElement { // Using custom class for queue entries to avoid floating point division potentially being inconsistent
-    QueueElement(size_t index, size_t matchCount, size_t totalMatchCount)
-        : index(index)
-        , matchCount(matchCount)
-        , totalMatchCount(totalMatchCount)
-    {}
-
-    bool operator<(const QueueElement &other) const {
-        // First order by fraction (desc), then total match count(asc) then index(asc)
-
-        // mMatchCount/mTotalMatchCount > other.mMatchCount/other.mTotalMatchCount
-        if (matchCount * other.totalMatchCount != other.matchCount * totalMatchCount)
-            return (matchCount * other.totalMatchCount) > (other.matchCount * totalMatchCount);
-        if (totalMatchCount < other.totalMatchCount)
-            return totalMatchCount < other.totalMatchCount;
-        return index < other.index;
-    }
-
-    size_t index;
-    size_t matchCount;
-    size_t totalMatchCount;
-};
-
 void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mMatches.clear();
     mMatchMap.clear();
@@ -108,7 +86,7 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mExpectedDuration = std::chrono::seconds(0);
 
     // Merging algorithm: Keep fetching matches from the group with smallest progress(#(matches fetched) / #(matches total))
-    std::priority_queue<QueueElement> progressQueue;
+    std::priority_queue<MergeQueueElement> progressQueue;
     std::vector<SequentialBlockGroup::ConstMatchIterator> iterators;
 
     for (size_t i = 0; i < groupCount(); ++i) {
@@ -117,7 +95,7 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
         mExpectedDuration += group.getExpectedDuration();
 
         if (group.getMatchCount() > 0)
-            progressQueue.push(QueueElement(i, 0, group.getMatchCount()));
+            progressQueue.push(MergeQueueElement(i, 0, group.getMatchCount()));
     }
 
     while (!progressQueue.empty()) {

@@ -12,7 +12,7 @@ class MatchStore;
 class Ruleset;
 
 enum class MatchType {
-    KNOCKOUT, FINAL
+    ELIMINATION, FINAL
 };
 
 enum class MatchStatus {

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "core/draw_systems/draw_system.hpp"
+#include "core/draw_systems/pool_draw_system.hpp"
 #include "core/serialize.hpp"
 
-class BestOfThreeDrawSystem : public DrawSystem {
+class DoublePoolDrawSystem : public DrawSystem {
 public:
-    BestOfThreeDrawSystem() {}
-    BestOfThreeDrawSystem(const BestOfThreeDrawSystem &) = default;
-    virtual ~BestOfThreeDrawSystem() {};
+    DoublePoolDrawSystem() {}
+    DoublePoolDrawSystem(const DoublePoolDrawSystem&);
+    virtual ~DoublePoolDrawSystem() {};
 
     std::unique_ptr<DrawSystem> clone() const override;
     std::string getName() const override;
@@ -22,10 +23,17 @@ public:
         ar(mMatches, mPlayers);
     }
 
+protected:
+    bool eliminationFinished(const TournamentStore &tournament, const CategoryStore &category) const;
+
 private:
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;
+
+    std::unique_ptr<PoolDrawSystem> mFirstPool;
+    std::unique_ptr<PoolDrawSystem> mSecondPool;
 };
 
-CEREAL_REGISTER_TYPE(BestOfThreeDrawSystem)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(DrawSystem, BestOfThreeDrawSystem)
+CEREAL_REGISTER_TYPE(DoublePoolDrawSystem)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(DrawSystem, DoublePoolDrawSystem)
+

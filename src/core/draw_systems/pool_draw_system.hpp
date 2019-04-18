@@ -13,7 +13,7 @@ public:
     std::string getName() const override;
     bool hasFinalBlock() const override;
 
-    std::vector<std::unique_ptr<Action>> initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) override;
+    std::vector<std::unique_ptr<AddMatchAction>> initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) override;
     std::vector<std::unique_ptr<Action>> updateCategory(const TournamentStore &tournament, const CategoryStore &category) const override;
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> getResults(const TournamentStore &tournament, const CategoryStore &category) const override;
 
@@ -21,6 +21,9 @@ public:
     void serialize(Archive& ar, uint32_t const version) {
         ar(mMatches, mPlayers);
     }
+
+protected:
+    bool isFinished(const TournamentStore &tournament, const CategoryStore &category) const;
 
 private:
     std::vector<MatchId> mMatches;

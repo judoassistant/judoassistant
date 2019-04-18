@@ -13,11 +13,11 @@ std::string PoolDrawSystem::getName() const {
     return "Pool";
 }
 
-std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
     mMatches.clear();
     mPlayers = playerIds;
 
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
     MatchId::Generator generator(seed);
 
     if (mPlayers.size() <= 1)
@@ -37,7 +37,7 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const Tourname
         for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
             size_t j = shiftedIds.size() - i - 1;
             if (!shiftedIds[i] || !shiftedIds[j]) continue;
-            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::KNOCKOUT, "Pool", false, shiftedIds[i], shiftedIds[j]);
+            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, "Pool", false, shiftedIds[i], shiftedIds[j]);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }
@@ -83,8 +83,7 @@ struct PoolPlayerRank {
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
 
-    auto status = category.getStatus(MatchType::KNOCKOUT);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
+    if (!isFinished(tournament, category)) {
         for (auto playerId : mPlayers)
             results.emplace_back(std::nullopt, playerId);
         return results;
@@ -145,3 +144,19 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::ge
 bool PoolDrawSystem::hasFinalBlock() const {
     return false;
 }
+
+bool PoolDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category) const {
+    if (mPlayers.size() == category.getPlayers().size()) { // in case the pool draw system is used on its own
+        auto status = category.getStatus(MatchType::ELIMINATION);
+        return status.finishedMatches == mMatches.size();
+    }
+
+    for (auto matchId : mMatches) {
+        const auto &match = category.getMatch(matchId);
+        if (match.getStatus() != MatchStatus::FINISHED)
+            return false;
+    }
+
+    return true;
+}
+
