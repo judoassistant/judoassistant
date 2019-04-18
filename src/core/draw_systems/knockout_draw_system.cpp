@@ -109,7 +109,6 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const Tour
     return actions;
 }
 
-// TODO: Matches must be updated in case of winner change
 std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
     const auto &ruleset = category.getRuleset();
     std::vector<std::unique_ptr<Action>> actions;
@@ -135,30 +134,30 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
                 continue;
             }
 
-            if (!match.getWhitePlayer()) {
+            {
+                // check white player
                 MatchId whiteChildId = mMatches[(i-currentLayer)*2+prevLayer];
                 const auto &whiteChild = category.getMatch(whiteChildId);
+                std::optional<PlayerId> whitePlayer = std::nullopt;
 
-                if (whiteChild.getStatus() == MatchStatus::FINISHED) {
-                    auto winner = ruleset.getWinner(whiteChild);
-                    if (winner)
-                        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::WHITE, whiteChild.getPlayer(*winner).value()));
-                    else
-                        log_warning().field("matchId", whiteChildId).msg("Match is finished but has no winner");
-                }
+                if (whiteChild.getStatus() == MatchStatus::FINISHED)
+                    whitePlayer = whiteChild.getPlayer(ruleset.getWinner(whiteChild).value());
+
+                if (whitePlayer != match.getWhitePlayer())
+                    actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::WHITE, whitePlayer));
             }
 
-            if (!match.getBluePlayer()) {
+            {
+                // check blue player
                 MatchId blueChildId = mMatches[(i-currentLayer)*2+prevLayer + 1];
                 const auto &blueChild = category.getMatch(blueChildId);
+                std::optional<PlayerId> bluePlayer = std::nullopt;
 
-                if (blueChild.getStatus() == MatchStatus::FINISHED) {
-                    auto winner = ruleset.getWinner(blueChild);
-                    if (winner)
-                        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::BLUE, blueChild.getPlayer(*winner).value()));
-                    else
-                        log_warning().field("matchId", blueChildId).msg("Match is finished but has no winner");
-                }
+                if (blueChild.getStatus() == MatchStatus::FINISHED)
+                    bluePlayer = blueChild.getPlayer(ruleset.getWinner(blueChild).value());
+
+                if (bluePlayer != match.getBluePlayer())
+                    actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::BLUE, bluePlayer));
             }
         }
 
