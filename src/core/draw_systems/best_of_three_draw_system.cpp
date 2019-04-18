@@ -46,7 +46,25 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::initCategory(const T
 }
 
 std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
-    return {};
+    const auto &firstMatch = category.getMatch(mMatches[0]);
+    const auto &secondMatch = category.getMatch(mMatches[1]);
+
+    bool bye = false;
+    if (firstMatch.getStatus() == MatchStatus::FINISHED && secondMatch.getStatus() == MatchStatus::FINISHED) {
+        const auto &ruleset = category.getRuleset();
+        auto firstWinner = ruleset.getWinner(firstMatch);
+        auto secondWinner = ruleset.getWinner(secondMatch);
+
+        if (firstWinner.has_value() && secondWinner.has_value() && firstWinner == secondWinner)
+            bye = true;
+    }
+
+    std::vector<std::unique_ptr<Action>> actions;
+    const auto &thirdMatch = category.getMatch(mMatches[2]);
+
+    if (thirdMatch.isBye() != bye)
+        actions.push_back(std::make_unique<SetMatchByeAction>(category.getId(), mMatches[2], bye));
+    return actions;
 }
 
 std::vector<std::pair<std::optional<unsigned int>, PlayerId>> BestOfThreeDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
