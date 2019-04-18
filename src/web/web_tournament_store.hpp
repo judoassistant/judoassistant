@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/stores/tournament_store.hpp"
+#include "web/web_tatami_model.hpp"
 
 class WebTournamentStore : public TournamentStore {
 public:
@@ -53,6 +54,9 @@ public:
     void beginEraseTatamis(const std::vector<TatamiLocation> &locations) override;
     void endEraseTatamis(const std::vector<TatamiLocation> &locations) override;
 
+    void flushWebTatamiModels();
+    const WebTatamiModel& getWebTatamiModel(size_t index) const;
+
 private:
     bool mTournamentChanged;
 
@@ -67,5 +71,8 @@ private:
     std::unordered_set<CategoryId> mCategoryMatchResets;
 
     std::unordered_set<std::pair<CategoryId, MatchId>> mChangedMatches;
+
+    std::vector<WebTatamiModel> mTatamiModels;
+    bool mResettingTatamis;
 };
 

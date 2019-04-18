@@ -6,6 +6,7 @@
 
 WebTournamentStore::WebTournamentStore()
     : mTournamentChanged(false)
+    , mResettingTatamis(true)
 {}
 
 void WebTournamentStore::clearChanges() {
@@ -21,6 +22,8 @@ void WebTournamentStore::clearChanges() {
     mCategoryMatchResets.clear();
 
     mChangedMatches.clear();
+
+    mResettingTatamis = false;
 }
 
 void WebTournamentStore::changeTournament() {
@@ -176,6 +179,11 @@ void WebTournamentStore::changeMatches(CategoryId categoryId, const std::vector<
         auto combinedId = std::make_pair(categoryId, matchId);
         mChangedMatches.insert(combinedId);
     }
+
+    if (!mResettingTatamis) {
+        for (WebTatamiModel &model : mTatamiModels)
+            model.changeMatches(*this, categoryId, matchIds);
+    }
 }
 
 void WebTournamentStore::beginResetMatches(CategoryId categoryId) {
@@ -214,24 +222,26 @@ void WebTournamentStore::endResetMatches(CategoryId categoryId) {
 }
 
 void WebTournamentStore::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
-    // TODO: Implement web tatami overview
-    // noop
+    if (!mResettingTatamis) {
+        for (WebTatamiModel &model : mTatamiModels)
+            model.changeTatamis(*this, locations, blocks);
+    }
 }
 
 void WebTournamentStore::beginAddTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
 }
 
 void WebTournamentStore::endAddTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
 }
 
 void WebTournamentStore::beginEraseTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
 }
 
 void WebTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
 }
 
 bool WebTournamentStore::tournamentChanged() const {
@@ -272,5 +282,20 @@ const std::unordered_set<CategoryId>& WebTournamentStore::getCategoryMatchResets
 
 const std::unordered_set<std::pair<CategoryId, MatchId>>& WebTournamentStore::getChangedMatches() const {
     return mChangedMatches;
+}
+
+void WebTournamentStore::flushWebTatamiModels() {
+    if (!mResettingTatamis)
+        return;
+
+    mTatamiModels.clear();
+    for (size_t i = 0; i < getTatamis().tatamiCount(); ++i)
+        mTatamiModels.emplace_back(*this, i);
+    mResettingTatamis = false;
+}
+
+const WebTatamiModel& WebTournamentStore::getWebTatamiModel(size_t index) const {
+    assert(!mResettingTatamis);
+    return mTatamiModels.at(index);
 }
 
