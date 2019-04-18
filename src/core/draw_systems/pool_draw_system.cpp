@@ -13,11 +13,11 @@ std::string PoolDrawSystem::getName() const {
     return "Pool";
 }
 
-std::vector<std::unique_ptr<Action>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
     mMatches.clear();
     mPlayers = playerIds;
 
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
     MatchId::Generator generator(seed);
 
     if (mPlayers.size() <= 1)

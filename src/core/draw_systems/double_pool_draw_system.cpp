@@ -26,13 +26,13 @@ std::string DoublePoolDrawSystem::getName() const {
     return "Double Pool";
 }
 
-std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
     assert(playerIds.size() == category.getPlayers().size()); // This draw system is not made to be composed
 
     mMatches.clear();
     mPlayers = playerIds;
 
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
     MatchId::Generator generator(seed);
 
     if (mPlayers.size() < 4)

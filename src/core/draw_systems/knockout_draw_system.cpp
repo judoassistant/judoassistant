@@ -29,13 +29,13 @@ std::string matchTitle(size_t round, size_t depth) {
     return std::to_string(round+1) + "th Round";
 }
 
-std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
+std::vector<std::unique_ptr<AddMatchAction>> KnockoutDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
     assert(playerIds.size() == category.getPlayers().size()); // This draw system is not made to be composed
     mMatches.clear();
     mPlayers = playerIds;
 
     MatchId::Generator generator(seed);
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
 
     if (mPlayers.size() <= 1)
         return actions;
