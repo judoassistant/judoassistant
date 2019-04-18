@@ -341,6 +341,7 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
     mOldStatus[static_cast<size_t>(MatchType::ELIMINATION)] = category.getStatus(MatchType::ELIMINATION);
     mOldStatus[static_cast<size_t>(MatchType::FINAL)] = category.getStatus(MatchType::FINAL);
 
+    // Init the category using the draw system
     std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
     std::vector<std::unique_ptr<Action>> actions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
 
@@ -349,16 +350,26 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
         mActions.push(std::move(actions[i]));
     }
 
+    // Compute category status
     CategoryStatus knockoutStatus;
-    knockoutStatus.notStartedMatches = category.getMatchCount(MatchType::ELIMINATION);
-    category.setStatus(MatchType::ELIMINATION, knockoutStatus);
+    category.setStatus(MatchType::ELIMINATION, CategoryStatus());
+    category.setStatus(MatchType::FINAL, CategoryStatus());
 
-    CategoryStatus finalStatus;
-    finalStatus.notStartedMatches = category.getMatchCount(MatchType::FINAL);
-    category.setStatus(MatchType::FINAL, finalStatus);
+    for (const auto &matchPtr : category.getMatches()) {
+        const auto &match = *matchPtr;
+        auto &status = category.getStatus(match.getType());
+
+        if (match.getStatus() == MatchStatus::FINISHED)
+            ++(status.finishedMatches);
+        else if (match.getStatus() == MatchStatus::NOT_STARTED)
+            ++(status.notStartedMatches);
+        else
+            ++(status.startedMatches);
+    }
 
     tournament.endResetMatches(mCategoryId);
 
+    // Update tatami locations
     std::vector<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
