@@ -9,12 +9,12 @@ WebTatamiModel::WebTatamiModel(const TournamentStore &tournament, size_t index) 
 
 }
 
-std::vector<std::pair<CategoryId, MatchId>> WebTatamiModel::getMatches() const {
-    return {};
+const std::vector<std::pair<CategoryId, MatchId>>& WebTatamiModel::getMatches() const {
+    return mMatches;
 }
 
-std::vector<std::pair<CategoryId, MatchId>> WebTatamiModel::getInsertedMatches() const {
-    return {};
+const std::vector<std::pair<CategoryId, MatchId>>& WebTatamiModel::getInsertedMatches() const {
+    return mInsertedMatches;
 }
 
 void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId categoryId, const std::vector<MatchId> &matchIds) {
@@ -22,6 +22,10 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
 }
 
 void WebTatamiModel::changeTatamis(const TournamentStore &tournament, const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
+
+}
+
+void WebTatamiModel::clearChanges() {
 
 }
 

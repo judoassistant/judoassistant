@@ -7,6 +7,7 @@
 #include "core/stores/player_store.hpp"
 #include "web/json_encoder.hpp"
 #include "web/web_tournament_store.hpp"
+#include "web/web_tatami_model.hpp"
 
 // TODO: Don't trust state of tournament to be correct
 JsonBuffer::JsonBuffer() {
@@ -55,10 +56,10 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     else
         document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
 
-    // Encode matches
-    // TODO: Encode tatami matches
+    // Identify matches
     std::unordered_set<std::pair<CategoryId, MatchId>> matchIds;
 
+    // Identity subscribed matches
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches())
             matchIds.insert(match->getCombinedId());
@@ -70,6 +71,16 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
             matchIds.insert(combinedId);
     }
 
+    // Identify tatami matches
+    auto tatamiCount = tournament.getTatamis().tatamiCount();
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+        for (const auto &combinedId: model.getMatches()) {
+            matchIds.insert(combinedId);
+        }
+    }
+
+    // Encode matches
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
@@ -78,6 +89,15 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     }
 
     document.AddMember("matches", matches, allocator);
+
+    // Encode tatamis
+    rapidjson::Value tatamis(rapidjson::kArrayType);
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+        tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
+    }
+
+    document.AddMember("tatamis", tatamis, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -156,7 +176,7 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
     if (!tournament.getErasedCategories().empty())
         return true;
 
-    // check matches
+    // check subscribed matches
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         if (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end())
             return true;
@@ -173,6 +193,18 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
 
         const auto &player = tournament.getPlayer(*subscribedPlayer);
         for (const auto &combinedId : player.getMatches()) {
+            if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
+                return true;
+        }
+    }
+
+    // check tatami matches
+    auto tatamiCount = tournament.getTatamis().tatamiCount();
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+        if (!model.getInsertedMatches().empty())
+            return true;
+        for (auto combinedId : model.getMatches()) {
             if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
                 return true;
         }
@@ -265,10 +297,10 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         }
     }
 
-    // // encode matches
-    // TODO: Encode tatami matches
+    // Identify changed matches
     std::unordered_set<std::pair<CategoryId, MatchId>> matchIds;
 
+    // Identify changed subscribed matches
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         bool matchesReset = (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end());
         for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches()) {
@@ -289,6 +321,23 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         }
     }
 
+    // Identify changed tatami matches
+    auto tatamiCount = tournament.getTatamis().tatamiCount();
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+
+        // Add all inserted matches
+        for (const auto &combinedId : model.getInsertedMatches())
+            matchIds.insert(combinedId);
+
+        // Add changed matches that were already present
+        for (const auto &combinedId: model.getMatches()) {
+            if (tournament.getChangedMatches().find(combinedId) != tournament.getChangedMatches().end())
+                matchIds.insert(combinedId);
+        }
+    }
+
+    // Encode matches
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
@@ -296,6 +345,17 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
     }
     document.AddMember("matches", matches, allocator);
+
+    // Encode tatamis
+    rapidjson::Value tatamis(rapidjson::kArrayType);
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+
+        if (!model.getInsertedMatches().empty())
+            tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
+    }
+
+    document.AddMember("tatamis", tatamis, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -475,6 +535,7 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
 
     res.AddMember("name", encodeString(tournament.getName(), allocator), allocator);
     res.AddMember("webName", encodeString(tournament.getWebName(), allocator), allocator);
+    res.AddMember("tatamiCount", tournament.getTatamis().tatamiCount(), allocator);
 
     return res;
 }
@@ -550,6 +611,22 @@ rapidjson::Value JsonEncoder::encodeDuration(const std::chrono::milliseconds &du
 rapidjson::Value JsonEncoder::encodeTime(const std::chrono::milliseconds &time, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
     auto sinceEpoch = time - clockDiff;
     rapidjson::Value res(sinceEpoch.count()); // unix timestamp
+
+    return res;
+}
+
+rapidjson::Value JsonEncoder::encodeTatami(size_t index, const WebTatamiModel &model, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res;
+    res.SetObject();
+
+    res.AddMember("index", index, allocator);
+
+    // encode matches
+    rapidjson::Value matches(rapidjson::kArrayType);
+    for (auto &combinedId : model.getMatches())
+        matches.PushBack(encodeCombinedId(combinedId, allocator), allocator);
+
+    res.AddMember("matches", matches, allocator);
 
     return res;
 }

@@ -23,7 +23,8 @@ void WebTournamentStore::clearChanges() {
 
     mChangedMatches.clear();
 
-    mResettingTatamis = false;
+    for (auto &model : mTatamiModels)
+        model.clearChanges();
 }
 
 void WebTournamentStore::changeTournament() {
@@ -230,18 +231,22 @@ void WebTournamentStore::changeTatamis(const std::vector<BlockLocation> &locatio
 
 void WebTournamentStore::beginAddTatamis(const std::vector<TatamiLocation> &locations) {
     mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 void WebTournamentStore::endAddTatamis(const std::vector<TatamiLocation> &locations) {
     mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 void WebTournamentStore::beginEraseTatamis(const std::vector<TatamiLocation> &locations) {
     mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 void WebTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locations) {
     mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 bool WebTournamentStore::tournamentChanged() const {
