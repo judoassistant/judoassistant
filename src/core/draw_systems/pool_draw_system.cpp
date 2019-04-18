@@ -145,3 +145,14 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::ge
 bool PoolDrawSystem::hasFinalBlock() const {
     return false;
 }
+
+bool PoolDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) const {
+    for (auto matchId : mMatches) {
+        const auto &match = category.getMatch(matchId);
+        if (match.getStatus() != MatchStatus::FINISHED)
+            return false;
+    }
+
+    return true;
+}
+
