@@ -8,7 +8,7 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mTitle(title)
     , mPermanentBye(permanentBye)
     , mBye(permanentBye)
-    , mStatus(MatchStatus::NOT_STARTED)
+    , mStatus(permanentBye ? MatchStatus::FINISHED : MatchStatus::NOT_STARTED)
     , mGoldenScore(false)
     , mDuration(0)
 {
