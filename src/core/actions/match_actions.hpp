@@ -76,6 +76,7 @@ protected:
     bool mPrevGoldenScore;
     std::chrono::milliseconds mPrevResumeTime; // the time when the clock was last resumed
     std::chrono::milliseconds mPrevDuration; // the match duration when the clock was last paused
+    bool mPrevBye;
 
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
@@ -261,3 +262,27 @@ private:
 
 CEREAL_REGISTER_TYPE(SetMatchPlayerAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, SetMatchPlayerAction)
+
+// technically not a match event, but same code
+class SetMatchByeAction : public MatchEventAction {
+public:
+    SetMatchByeAction() = default;
+    SetMatchByeAction(CategoryId categoryId, MatchId matchId, bool bye);
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mBye);
+    }
+
+private:
+    bool mBye;
+};
+
+CEREAL_REGISTER_TYPE(SetMatchByeAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, SetMatchByeAction)

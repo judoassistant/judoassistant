@@ -97,7 +97,7 @@ void SequentialBlockGroup::ConstMatchIterator::loadMatch() {
         }
 
         const auto &match = *(mCurrentCategory->getMatches()[mCurrentMatch]);
-        if (match.isBye()) {
+        if (match.isPermanentBye()) {
             ++mCurrentMatch;
             continue;
         }

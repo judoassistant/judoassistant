@@ -55,18 +55,7 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(const Tourna
     return {};
 }
 
-bool PoolDrawSystem::isFinished(const TournamentStore &tournament, const CategoryStore &category) const {
-    for (auto matchId : mMatches) {
-        const MatchStore & match = category.getMatch(matchId);
-        if (match.getStatus() != MatchStatus::FINISHED)
-            return false;
-    }
-
-    return true;
-}
-
-
-// TODO: Check that this is the correct way to rank players
+// TODO: Change to to correctly rank players according to IJF rules
 struct PoolPlayerRank {
     PlayerId playerId;
     size_t wonMatches;

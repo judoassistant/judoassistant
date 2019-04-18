@@ -10,6 +10,7 @@ const std::vector<std::unique_ptr<DrawSystem>> & DrawSystems::getDrawSystems() {
     if (systems.empty()) {
         systems.push_back(std::make_unique<PoolDrawSystem>());
         systems.push_back(std::make_unique<KnockoutDrawSystem>());
+        systems.push_back(std::make_unique<BestOfThreeDrawSystem>());
     }
 
     return systems;

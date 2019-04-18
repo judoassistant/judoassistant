@@ -3,11 +3,11 @@
 #include "core/draw_systems/draw_system.hpp"
 #include "core/serialize.hpp"
 
-class PoolDrawSystem : public DrawSystem {
+class BestOfThreeDrawSystem : public DrawSystem {
 public:
-    PoolDrawSystem() {}
-    PoolDrawSystem(const PoolDrawSystem &) = default;
-    virtual ~PoolDrawSystem() {};
+    BestOfThreeDrawSystem() {}
+    BestOfThreeDrawSystem(const BestOfThreeDrawSystem &) = default;
+    virtual ~BestOfThreeDrawSystem() {};
 
     std::unique_ptr<DrawSystem> clone() const override;
     std::string getName() const override;
@@ -27,5 +27,5 @@ private:
     std::vector<PlayerId> mPlayers;
 };
 
-CEREAL_REGISTER_TYPE(PoolDrawSystem)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(DrawSystem, PoolDrawSystem)
+CEREAL_REGISTER_TYPE(BestOfThreeDrawSystem)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(DrawSystem, BestOfThreeDrawSystem)
