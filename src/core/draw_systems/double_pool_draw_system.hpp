@@ -23,6 +23,9 @@ public:
         ar(mMatches, mPlayers);
     }
 
+protected:
+    bool eliminationFinished(const TournamentStore &tournament, const CategoryStore &category) const;
+
 private:
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;
