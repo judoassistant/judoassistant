@@ -4,7 +4,6 @@
 #include "core/stores/match_store.hpp"
 #include "web/web_tournament_store.hpp"
 
-// TODO: Handle changes to match players
 WebTournamentStore::WebTournamentStore()
     : mTournamentChanged(false)
 {}

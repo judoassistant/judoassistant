@@ -69,7 +69,6 @@ void BlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
 
     painter->drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, mName);
 
-    // TODO: Rename knockout to elimination in code base
     QString type = (mBlock.second == MatchType::FINAL ? QObject::tr("Finals") : QObject::tr("Elimination"));
     painter->drawText(typeRect, Qt::AlignTop | Qt::AlignLeft, type);
 
