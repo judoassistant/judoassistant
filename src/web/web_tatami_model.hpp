@@ -15,9 +15,9 @@ public:
     static constexpr unsigned int DISPLAY_COUNT = 5; // The minimum number of matches to keep loaded
 
     WebTatamiModel(const TournamentStore &tournament, TatamiLocation tatami);
-    const std::vector<std::pair<CategoryId, MatchId>>& getMatches() const;
-    const std::vector<std::pair<CategoryId, MatchId>>& getInsertedMatches() const;
-    bool didRemoveMatches() const;
+    const std::list<std::pair<CategoryId, MatchId>>& getMatches() const;
+    const std::list<std::pair<CategoryId, MatchId>>& getInsertedMatches() const;
+    bool changed() const;
 
     void changeMatches(const TournamentStore &tournament, CategoryId categoryId, const std::vector<MatchId> &matchIds);
     void changeTatamis(const TournamentStore &tournament, const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks);
@@ -39,5 +39,9 @@ private:
 
     std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedLoadedMatches; // Unfinished (and loaded) matches and loading time
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedLoadedMatchesSet;
+
+    bool mDidRemoveMatches;
+    std::list<std::pair<CategoryId, MatchId>> mMatches;
+    std::list<std::pair<CategoryId, MatchId>> mInsertedMatches;
 };
 

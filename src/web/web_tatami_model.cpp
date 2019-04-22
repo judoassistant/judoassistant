@@ -1,7 +1,8 @@
+#include "core/draw_systems/draw_system.hpp"
+#include "core/log.hpp"
+#include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
-#include "core/rulesets/ruleset.hpp"
-#include "core/draw_systems/draw_system.hpp"
 #include "web/web_tatami_model.hpp"
 #include "web/web_tournament_store.hpp"
 
@@ -9,18 +10,19 @@ WebTatamiModel::WebTatamiModel(const TournamentStore &tournament, TatamiLocation
     : mTournament(tournament)
     , mTatami(tatami)
     , mResetting(true)
+    , mDidRemoveMatches(false)
 {
     flush();
 }
 
-const std::vector<std::pair<CategoryId, MatchId>>& WebTatamiModel::getMatches() const {
+const std::list<std::pair<CategoryId, MatchId>>& WebTatamiModel::getMatches() const {
     assert(!mResetting);
-    return {};
+    return mMatches;
 }
 
-const std::vector<std::pair<CategoryId, MatchId>>& WebTatamiModel::getInsertedMatches() const {
+const std::list<std::pair<CategoryId, MatchId>>& WebTatamiModel::getInsertedMatches() const {
     assert(!mResetting);
-    return {};
+    return mInsertedMatches;
 }
 
 void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId categoryId, const std::vector<MatchId> &matchIds) {
@@ -94,6 +96,9 @@ void WebTatamiModel::changeTatamis(const TournamentStore &tournament, const std:
 
 void WebTatamiModel::clearChanges() {
     assert(!mResetting);
+
+    mInsertedMatches.clear();
+    mDidRemoveMatches = false;
 }
 
 void WebTatamiModel::reset() {
@@ -106,6 +111,10 @@ void WebTatamiModel::reset() {
     mUnfinishedLoadedMatchesSet.clear();
 
     mResetting = false;
+
+    mInsertedMatches.clear();
+    mDidRemoveMatches = false;
+    mMatches.clear();
 }
 
 void WebTatamiModel::loadBlocks() {
@@ -142,10 +151,58 @@ void WebTatamiModel::flush() {
     if (mResetting)
         reset();
     loadBlocks();
+
+    // Update matches and inserted matches to be the front of mUnfinishedMatches
+    size_t i = 0;
+
+    auto it = mMatches.begin();
+    auto jt = mUnfinishedLoadedMatches.begin();
+    while (true) {
+        if (it == mMatches.end() && jt == mUnfinishedLoadedMatches.end())
+            break;
+
+        if (it == mMatches.end() && i == DISPLAY_COUNT)
+            break;
+
+        // Copy matches from mUnfinishedMatches
+        if (it == mMatches.end() && jt != mUnfinishedLoadedMatches.end()) {
+            auto combinedId = std::make_pair(std::get<0>(*jt), std::get<1>(*jt));
+            mMatches.insert(it, combinedId);
+            ++i;
+            ++jt;
+            continue;
+        }
+
+        if (jt == mUnfinishedLoadedMatches.end() || i >= DISPLAY_COUNT) { // This match should not be loaded
+            auto next = std::next(it);
+            mMatches.erase(it);
+            it = next;
+            mDidRemoveMatches = true;
+            continue;
+        }
+
+        // Both iterators != end
+        auto combinedId = std::make_pair(std::get<0>(*jt), std::get<1>(*jt));
+        if (*it == combinedId) {
+            // Matches are the same. Continue
+            ++it;
+            ++i;
+            ++jt;
+        }
+        else {
+            // Matches are different. Load from unfinished matches
+            mMatches.insert(it, combinedId);
+            ++i;
+            ++jt;
+            continue;
+        }
+    }
+
+    log_debug().field("matches", mMatches.size()).msg("Finished flushing");
 }
 
-bool WebTatamiModel::didRemoveMatches() const {
+bool WebTatamiModel::changed() const {
     assert(!mResetting);
-    return true;
+    return mDidRemoveMatches || !mInsertedMatches.empty();
 }
 
