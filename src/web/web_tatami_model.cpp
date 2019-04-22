@@ -9,7 +9,6 @@ WebTatamiModel::WebTatamiModel(const TournamentStore &tournament, TatamiLocation
     : mTournament(tournament)
     , mTatami(tatami)
     , mResetting(true)
-    , mDidRemoveMatches(false)
 {
     flush();
 }
@@ -39,36 +38,33 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
         const auto loadingTime = it->second;
         const auto &match = category.getMatch(matchId);
 
-        bool wasFinished = (mUnfinishedMatchesSet.find(combinedId) == mUnfinishedMatchesSet.end());
+        bool wasFinished = (mUnfinishedLoadedMatchesSet.find(combinedId) == mUnfinishedLoadedMatchesSet.end());
         bool isFinished = (match.getStatus() == MatchStatus::FINISHED);
 
         if (isFinished && !wasFinished) {
             // Remove from unfinished matches
             // Probably at the front of the list
-            for (auto i = mUnfinishedMatches.begin(); i != mUnfinishedMatches.end(); ++i) {
+            for (auto i = mUnfinishedLoadedMatches.begin(); i != mUnfinishedLoadedMatches.end(); ++i) {
                 auto curId = std::make_pair(std::get<0>(*i), std::get<1>(*i));
                 if (curId == combinedId) {
-                    mUnfinishedMatches.erase(i);
+                    mUnfinishedLoadedMatches.erase(i);
                     break;
                 }
             }
-            mDidRemoveMatches = true;
 
-            mUnfinishedMatchesSet.erase(combinedId);
-            mInsertedMatches.erase(combinedId);
+            mUnfinishedLoadedMatchesSet.erase(combinedId);
         }
         else if(!isFinished && wasFinished) {
             // Add to unfinished matches
-            auto i = mUnfinishedMatches.begin();
-            for (;i != mUnfinishedMatches.end(); ++i) {
+            auto i = mUnfinishedLoadedMatches.begin();
+            for (;i != mUnfinishedLoadedMatches.end(); ++i) {
                 auto curLoadingTime = std::get<2>(*i);
                 if (curLoadingTime > loadingTime)
                     break;
             }
 
-            mUnfinishedMatches.insert(i, std::make_tuple(categoryId, matchId, loadingTime));
-            mUnfinishedMatchesSet.insert(combinedId);
-            mInsertedMatches.insert(combinedId);
+            mUnfinishedLoadedMatches.insert(i, std::make_tuple(categoryId, matchId, loadingTime));
+            mUnfinishedLoadedMatchesSet.insert(combinedId);
         }
     }
 
@@ -98,8 +94,6 @@ void WebTatamiModel::changeTatamis(const TournamentStore &tournament, const std:
 
 void WebTatamiModel::clearChanges() {
     assert(!mResetting);
-    mInsertedMatches.clear();
-    mDidRemoveMatches = false;
 }
 
 void WebTatamiModel::reset() {
@@ -108,10 +102,8 @@ void WebTatamiModel::reset() {
     mLoadedMatches.clear();
     mLoadedGroups.clear();
 
-    mUnfinishedMatches.clear();
-    mUnfinishedMatchesSet.clear();
-
-    mInsertedMatches.clear();
+    mUnfinishedLoadedMatches.clear();
+    mUnfinishedLoadedMatchesSet.clear();
 
     mResetting = false;
 }
@@ -121,7 +113,7 @@ void WebTatamiModel::loadBlocks() {
 
     const auto &tatami = mTournament.getTatamis().at(mTatami);
 
-    while (mUnfinishedMatches.size() < DISPLAY_COUNT) {
+    while (mUnfinishedLoadedMatches.size() < DISPLAY_COUNT) {
         if (mLoadedGroups.size() == tatami.groupCount())
             break;
 
@@ -140,9 +132,8 @@ void WebTatamiModel::loadBlocks() {
             if (match.getStatus() == MatchStatus::FINISHED)
                 continue;
 
-            mUnfinishedMatches.emplace_back(match.getCategory(), match.getId(), loadingTime);
-            mUnfinishedMatchesSet.insert(combinedId);
-            mInsertedMatches.insert(combinedId);
+            mUnfinishedLoadedMatches.emplace_back(match.getCategory(), match.getId(), loadingTime);
+            mUnfinishedLoadedMatchesSet.insert(combinedId);
         }
     }
 }
@@ -155,6 +146,6 @@ void WebTatamiModel::flush() {
 
 bool WebTatamiModel::didRemoveMatches() const {
     assert(!mResetting);
-    return mDidRemoveMatches;
+    return true;
 }
 

@@ -33,14 +33,11 @@ private:
     TatamiLocation mTatami;
 
     bool mResetting;
-    bool mDidRemoveMatches;
 
     std::unordered_map<std::pair<CategoryId, MatchId>, size_t> mLoadedMatches; // Matches loaded and their loading time
     std::unordered_set<PositionId> mLoadedGroups; // Blocks loaded
 
-    std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
-    std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedMatchesSet;
-
-    std::unordered_set<std::pair<CategoryId, MatchId>> mInsertedMatches; // Inserted, unfinished (and loaded) matches and loading time
+    std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedLoadedMatches; // Unfinished (and loaded) matches and loading time
+    std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedLoadedMatchesSet;
 };
 
