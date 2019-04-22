@@ -40,7 +40,7 @@ private:
     std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedLoadedMatches; // Unfinished (and loaded) matches and loading time
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedLoadedMatchesSet;
 
-    bool mDidRemoveMatches;
+    bool mChanged;
     std::list<std::pair<CategoryId, MatchId>> mMatches;
     std::list<std::pair<CategoryId, MatchId>> mInsertedMatches;
 };

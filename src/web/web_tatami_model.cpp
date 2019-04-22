@@ -10,7 +10,7 @@ WebTatamiModel::WebTatamiModel(const TournamentStore &tournament, TatamiLocation
     : mTournament(tournament)
     , mTatami(tatami)
     , mResetting(true)
-    , mDidRemoveMatches(false)
+    , mChanged(true)
 {
     flush();
 }
@@ -98,7 +98,7 @@ void WebTatamiModel::clearChanges() {
     assert(!mResetting);
 
     mInsertedMatches.clear();
-    mDidRemoveMatches = false;
+    mChanged = false;
 }
 
 void WebTatamiModel::reset() {
@@ -113,7 +113,7 @@ void WebTatamiModel::reset() {
     mResetting = false;
 
     mInsertedMatches.clear();
-    mDidRemoveMatches = false;
+    mChanged = true;
     mMatches.clear();
 }
 
@@ -168,6 +168,8 @@ void WebTatamiModel::flush() {
         if (it == mMatches.end() && jt != mUnfinishedLoadedMatches.end()) {
             auto combinedId = std::make_pair(std::get<0>(*jt), std::get<1>(*jt));
             mMatches.insert(it, combinedId);
+            mInsertedMatches.push_back(combinedId);
+            mChanged = true;
             ++i;
             ++jt;
             continue;
@@ -177,7 +179,7 @@ void WebTatamiModel::flush() {
             auto next = std::next(it);
             mMatches.erase(it);
             it = next;
-            mDidRemoveMatches = true;
+            mChanged = true;
             continue;
         }
 
@@ -192,17 +194,17 @@ void WebTatamiModel::flush() {
         else {
             // Matches are different. Load from unfinished matches
             mMatches.insert(it, combinedId);
+            mInsertedMatches.push_back(combinedId);
+            mChanged = true;
             ++i;
             ++jt;
             continue;
         }
     }
-
-    log_debug().field("matches", mMatches.size()).msg("Finished flushing");
 }
 
 bool WebTatamiModel::changed() const {
     assert(!mResetting);
-    return mDidRemoveMatches || !mInsertedMatches.empty();
+    return mChanged;
 }
 

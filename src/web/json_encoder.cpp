@@ -356,7 +356,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     for (size_t i = 0; i < tatamiCount; ++i) {
         const auto &model = tournament.getWebTatamiModel(i);
 
-        if (!model.getInsertedMatches().empty())
+        if (model.changed())
             tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
     }
 
