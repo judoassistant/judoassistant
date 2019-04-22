@@ -292,8 +292,12 @@ const std::unordered_set<std::pair<CategoryId, MatchId>>& WebTournamentStore::ge
 void WebTournamentStore::flushWebTatamiModels() {
     if (mResettingTatamis) {
         mTatamiModels.clear();
-        for (size_t i = 0; i < getTatamis().tatamiCount(); ++i)
-            mTatamiModels.emplace_back(*this, i);
+
+        const auto &tatamis = getTatamis();
+        for (size_t i = 0; i < getTatamis().tatamiCount(); ++i) {
+            TatamiLocation location{tatamis.getHandle(i)};
+            mTatamiModels.emplace_back(*this, location);
+        }
         mResettingTatamis = false;
     }
     else {

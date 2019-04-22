@@ -12,11 +12,12 @@ enum class MatchType;
 // TODO: Try to share code base with ui tatami matches model
 class WebTatamiModel {
 public:
-    static constexpr unsigned int MATCH_COUNT = 5;
+    static constexpr unsigned int DISPLAY_COUNT = 5; // The minimum number of matches to keep loaded
 
-    WebTatamiModel(const TournamentStore &tournament, size_t index);
+    WebTatamiModel(const TournamentStore &tournament, TatamiLocation tatami);
     const std::vector<std::pair<CategoryId, MatchId>>& getMatches() const;
     const std::vector<std::pair<CategoryId, MatchId>>& getInsertedMatches() const;
+    bool didRemoveMatches() const;
 
     void changeMatches(const TournamentStore &tournament, CategoryId categoryId, const std::vector<MatchId> &matchIds);
     void changeTatamis(const TournamentStore &tournament, const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks);
@@ -29,16 +30,17 @@ protected:
     void loadBlocks();
 private:
     const TournamentStore &mTournament;
-    size_t mIndex;
+    TatamiLocation mTatami;
 
     bool mResetting;
-    std::vector<std::pair<CategoryId, MatchId>> mMatches;
-    std::vector<std::pair<CategoryId, MatchId>> mInsertedMatches;
+    bool mDidRemoveMatches;
 
     std::unordered_map<std::pair<CategoryId, MatchId>, size_t> mLoadedMatches; // Matches loaded and their loading time
     std::unordered_set<PositionId> mLoadedGroups; // Blocks loaded
 
-    std::deque<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
+    std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedMatchesSet;
+
+    std::unordered_set<std::pair<CategoryId, MatchId>> mInsertedMatches; // Inserted, unfinished (and loaded) matches and loading time
 };
 
