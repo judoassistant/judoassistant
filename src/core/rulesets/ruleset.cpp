@@ -122,3 +122,15 @@ bool Ruleset::shouldAwardOsaekomiIppon(const MatchStore &match, std::chrono::mil
     return (match.currentOsaekomiTime(masterTime) > getOsaekomiIpponTime());
 }
 
+bool Ruleset::shouldStopOsaekomi(const MatchStore &match, std::chrono::milliseconds masterTime) const {
+    auto osaekomi = match.getOsaekomi();
+    if (!osaekomi.has_value())
+        return false;
+    if (match.getWhiteScore().ippon == 1)
+        return true;
+    if (match.getBlueScore().ippon == 1)
+        return true;
+
+    return false;
+}
+

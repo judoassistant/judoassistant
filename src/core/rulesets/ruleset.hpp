@@ -52,6 +52,7 @@ public:
 
     virtual bool canStopOsaekomi(const MatchStore &match) const;
     virtual void stopOsaekomi(MatchStore &match) const;
+    virtual bool shouldStopOsaekomi(const MatchStore &match, std::chrono::milliseconds masterTime) const;
 
     virtual bool shouldAwardOsaekomiWazari(const MatchStore &match, std::chrono::milliseconds masterTime) const;
     virtual bool shouldAwardOsaekomiIppon(const MatchStore &match, std::chrono::milliseconds masterTime) const;
@@ -66,6 +67,7 @@ public:
 
     virtual std::unique_ptr<Ruleset> clone() const = 0;
 
+    // TODO: Move some 2018 specific implementations into subclasses
 protected:
     void updateStatus(MatchStore &match, std::chrono::milliseconds masterTime) const;
 };

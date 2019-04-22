@@ -67,6 +67,8 @@ bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::mil
         return false;
     if (match.getStatus() == MatchStatus::UNPAUSED)
         return false;
+    if (match.getOsaekomi().has_value())
+        return false;
 
     const auto & whiteScore = match.getWhiteScore();
     const auto & blueScore = match.getBlueScore();
