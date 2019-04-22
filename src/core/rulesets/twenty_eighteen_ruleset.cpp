@@ -177,3 +177,11 @@ void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::Player
 //     score.hansokuMake = 0;
 // }
 
+std::chrono::milliseconds TwentyEighteenRuleset::getOsaekomiIpponTime() const {
+    return std::chrono::seconds(20);
+}
+
+std::chrono::milliseconds TwentyEighteenRuleset::getOsaekomiWazariTime() const {
+    return std::chrono::seconds(10);
+}
+

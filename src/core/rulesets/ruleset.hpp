@@ -13,6 +13,9 @@ public:
     virtual std::chrono::milliseconds getNormalTime() const = 0;
     virtual std::chrono::milliseconds getExpectedTime() const = 0;
 
+    virtual std::chrono::milliseconds getOsaekomiIpponTime() const = 0;
+    virtual std::chrono::milliseconds getOsaekomiWazariTime() const = 0;
+
     virtual bool canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
     virtual void addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
 
@@ -43,6 +46,15 @@ public:
 
     // virtual bool canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
     // virtual void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+
+    virtual bool canStartOsaekomi(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
+    virtual void startOsaekomi(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
+
+    virtual bool canStopOsaekomi(const MatchStore &match) const;
+    virtual void stopOsaekomi(MatchStore &match) const;
+
+    virtual bool shouldAwardOsaekomiWazari(const MatchStore &match, std::chrono::milliseconds masterTime) const;
+    virtual bool shouldAwardOsaekomiIppon(const MatchStore &match, std::chrono::milliseconds masterTime) const;
 
     virtual bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
 
