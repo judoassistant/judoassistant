@@ -56,6 +56,7 @@ public:
 
     void flushWebTatamiModels();
     const WebTatamiModel& getWebTatamiModel(size_t index) const;
+    const std::vector<WebTatamiModel>& getWebTatamiModels() const;
 
 private:
     bool mTournamentChanged;

@@ -160,6 +160,11 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
     if (tournament.tournamentChanged())
         return true;
 
+    for (const auto &tatamiModel : tournament.getWebTatamiModels()) {
+        if (tatamiModel.changed())
+            return true;
+    }
+
     // check players
     if (!tournament.getChangedPlayers().empty())
         return true;

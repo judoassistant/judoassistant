@@ -311,3 +311,6 @@ const WebTatamiModel& WebTournamentStore::getWebTatamiModel(size_t index) const 
     return mTatamiModels.at(index);
 }
 
+const std::vector<WebTatamiModel>& WebTournamentStore::getWebTatamiModels() const {
+    return mTatamiModels;
+}
