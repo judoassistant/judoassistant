@@ -541,3 +541,75 @@ std::string SetMatchByeAction::getDescription() const {
     return "Set match bye status";
 }
 
+StartOsaekomiAction::StartOsaekomiAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
+    : MatchEventAction(categoryId, matchId)
+    , mMasterTime(masterTime)
+    , mPlayerIndex(playerIndex)
+{}
+
+std::unique_ptr<Action> StartOsaekomiAction::freshClone() const {
+    return std::make_unique<StartOsaekomiAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+}
+
+std::string StartOsaekomiAction::getDescription() const {
+    return "Start Osaekomi";
+}
+
+void StartOsaekomiAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+
+    auto &match = category.getMatch(mMatchId);
+    const auto &ruleset = category.getRuleset();
+
+    if (!ruleset.canStartOsaekomi(match, mPlayerIndex))
+        return;
+
+    save(match);
+    ruleset.startOsaekomi(match, mPlayerIndex, mMasterTime);
+    notify(tournament, match);
+}
+
+void StartOsaekomiAction::undoImpl(TournamentStore & tournament) {
+    if (shouldRecover())
+        recover(tournament);
+}
+
+StopOsaekomiAction::StopOsaekomiAction(CategoryId categoryId, MatchId matchId)
+    : MatchEventAction(categoryId, matchId)
+{}
+
+std::unique_ptr<Action> StopOsaekomiAction::freshClone() const {
+    return std::make_unique<StopOsaekomiAction>(mCategoryId, mMatchId);
+}
+
+std::string StopOsaekomiAction::getDescription() const {
+    return "Stop Osaekomi";
+}
+
+void StopOsaekomiAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+
+    auto &match = category.getMatch(mMatchId);
+    const auto &ruleset = category.getRuleset();
+
+    if (!ruleset.canStopOsaekomi(match))
+        return;
+
+    save(match);
+    ruleset.stopOsaekomi(match);
+    notify(tournament, match);
+}
+
+void StopOsaekomiAction::undoImpl(TournamentStore & tournament) {
+    if (shouldRecover())
+        recover(tournament);
+}
+
