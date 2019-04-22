@@ -39,6 +39,8 @@ void LoadedTournament::sync(std::unique_ptr<WebTournamentStore> tournament, Shar
         mClockDiff = std::move(wrapper->diff);
         mModificationTime = std::chrono::system_clock::now();
 
+        mTournament->flushWebTatamiModels();
+
         deliverSync();
 
         boost::asio::dispatch(mContext, std::bind(callback, true));
@@ -59,6 +61,7 @@ void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action>
         mActionIds.insert(actionId);
         mModificationTime = std::chrono::system_clock::now();
 
+        mTournament->flushWebTatamiModels();
         deliverChanges();
 
         boost::asio::dispatch(mContext, std::bind(callback, true));
@@ -109,6 +112,7 @@ void LoadedTournament::undo(ClientActionId actionId, UndoCallback callback) {
             return;
         }
 
+        mTournament->flushWebTatamiModels();
         deliverChanges();
 
         mModificationTime = std::chrono::system_clock::now();
@@ -188,6 +192,7 @@ void LoadedTournament::load(LoadCallback callback) {
         }
 
         mTournament = std::move(tournament);
+        mTournament->flushWebTatamiModels();
         mActionIds.clear();
         mActionList.clear();
 

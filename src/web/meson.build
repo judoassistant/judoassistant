@@ -7,4 +7,5 @@ web_sources += ['src/web/tcp_participant.cpp']
 web_sources += ['src/web/web_participant.cpp']
 web_sources += ['src/web/web_server.cpp']
 web_sources += ['src/web/web_tournament_store.cpp']
+web_sources += ['src/web/web_tatami_model.cpp']
 

@@ -6,6 +6,7 @@
 
 WebTournamentStore::WebTournamentStore()
     : mTournamentChanged(false)
+    , mResettingTatamis(true)
 {}
 
 void WebTournamentStore::clearChanges() {
@@ -21,6 +22,9 @@ void WebTournamentStore::clearChanges() {
     mCategoryMatchResets.clear();
 
     mChangedMatches.clear();
+
+    for (auto &model : mTatamiModels)
+        model.clearChanges();
 }
 
 void WebTournamentStore::changeTournament() {
@@ -176,6 +180,11 @@ void WebTournamentStore::changeMatches(CategoryId categoryId, const std::vector<
         auto combinedId = std::make_pair(categoryId, matchId);
         mChangedMatches.insert(combinedId);
     }
+
+    if (!mResettingTatamis) {
+        for (WebTatamiModel &model : mTatamiModels)
+            model.changeMatches(*this, categoryId, matchIds);
+    }
 }
 
 void WebTournamentStore::beginResetMatches(CategoryId categoryId) {
@@ -214,24 +223,30 @@ void WebTournamentStore::endResetMatches(CategoryId categoryId) {
 }
 
 void WebTournamentStore::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
-    // TODO: Implement web tatami overview
-    // noop
+    if (!mResettingTatamis) {
+        for (WebTatamiModel &model : mTatamiModels)
+            model.changeTatamis(*this, locations, blocks);
+    }
 }
 
 void WebTournamentStore::beginAddTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 void WebTournamentStore::endAddTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 void WebTournamentStore::beginEraseTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 void WebTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locations) {
-    // noop
+    mResettingTatamis = true;
+    mTournamentChanged = true;
 }
 
 bool WebTournamentStore::tournamentChanged() const {
@@ -274,3 +289,28 @@ const std::unordered_set<std::pair<CategoryId, MatchId>>& WebTournamentStore::ge
     return mChangedMatches;
 }
 
+void WebTournamentStore::flushWebTatamiModels() {
+    if (mResettingTatamis) {
+        mTatamiModels.clear();
+
+        const auto &tatamis = getTatamis();
+        for (size_t i = 0; i < getTatamis().tatamiCount(); ++i) {
+            TatamiLocation location{tatamis.getHandle(i)};
+            mTatamiModels.emplace_back(*this, location);
+        }
+        mResettingTatamis = false;
+    }
+    else {
+        for (auto &model: mTatamiModels)
+            model.flush();
+    }
+}
+
+const WebTatamiModel& WebTournamentStore::getWebTatamiModel(size_t index) const {
+    assert(!mResettingTatamis);
+    return mTatamiModels.at(index);
+}
+
+const std::vector<WebTatamiModel>& WebTournamentStore::getWebTatamiModels() const {
+    return mTatamiModels;
+}
