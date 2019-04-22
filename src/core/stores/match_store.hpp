@@ -122,7 +122,7 @@ private:
 };
 
 enum class MatchEventType {
-    IPPON, WAZARI, SHIDO, HANSOKU_MAKE
+    IPPON, WAZARI, SHIDO, HANSOKU_MAKE, IPPON_OSAEKOMI, WAZARI_OSAEKOMI,
 };
 
 struct MatchEvent {

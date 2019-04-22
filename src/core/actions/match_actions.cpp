@@ -139,20 +139,27 @@ void PauseMatchAction::undoImpl(TournamentStore & tournament) {
         recover(tournament);
 }
 
-AwardIpponAction::AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
+AwardIpponAction::AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi)
     : MatchEventAction(categoryId, matchId)
     , mPlayerIndex(playerIndex)
+    , mOsaekomi(osaekomi)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardIpponAction::freshClone() const {
-    return std::make_unique<AwardIpponAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+    return std::make_unique<AwardIpponAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime, mOsaekomi);
 }
 
 std::string AwardIpponAction::getDescription() const {
+    std::string res;
     if (mPlayerIndex == MatchStore::PlayerIndex::WHITE)
-        return "Award Ippon to White";
-    return "Award Ippon to Blue";
+        res += "Award Ippon to White";
+    else
+        res += "Award Ippon to Blue";
+
+    if (mOsaekomi)
+        res += " (Osaekomi)";
+    return res;
 }
 
 void AwardIpponAction::redoImpl(TournamentStore & tournament) {
@@ -169,7 +176,8 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
 
     save(match);
     ruleset.addIppon(match, mPlayerIndex, mMasterTime);
-    match.pushEvent({MatchEventType::IPPON, mPlayerIndex, match.currentDuration(mMasterTime)});
+    auto type = (mOsaekomi ? MatchEventType::IPPON_OSAEKOMI : MatchEventType::IPPON);
+    match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
     notify(tournament, match);
 }
 
@@ -178,20 +186,27 @@ void AwardIpponAction::undoImpl(TournamentStore & tournament) {
         recover(tournament);
 }
 
-AwardWazariAction::AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
+AwardWazariAction::AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi)
     : MatchEventAction(categoryId, matchId)
     , mPlayerIndex(playerIndex)
+    , mOsaekomi(osaekomi)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardWazariAction::freshClone() const {
-    return std::make_unique<AwardWazariAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+    return std::make_unique<AwardWazariAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime, mOsaekomi);
 }
 
 std::string AwardWazariAction::getDescription() const {
+    std::string res;
     if (mPlayerIndex == MatchStore::PlayerIndex::WHITE)
-        return "Award Wazari to White";
-    return "Award Wazari to Blue";
+        res += "Award Wazari to White";
+    else
+        res += "Award Wazari to Blue";
+
+    if (mOsaekomi)
+        res += " (Osaekomi)";
+    return res;
 }
 
 void AwardWazariAction::redoImpl(TournamentStore & tournament) {
@@ -208,7 +223,9 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
 
     save(match);
     ruleset.addWazari(match, mPlayerIndex, mMasterTime);
-    match.pushEvent({MatchEventType::WAZARI, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    auto type = (mOsaekomi ? MatchEventType::WAZARI_OSAEKOMI : MatchEventType::WAZARI);
+    match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
     notify(tournament, match);
 }
 
