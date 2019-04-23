@@ -255,10 +255,12 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
 
+    auto masterTime = mStoreManager.masterTime();
+
     // Paint time left
     {
         QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
-        auto time = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(mStoreManager.masterTime())));
+        auto time = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(masterTime)));
         QString seconds = QString::number((time % std::chrono::minutes(1)).count()).rightJustified(2, '0');
         QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(time).count());
 
@@ -272,11 +274,26 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, QString("%1:%2").arg(minutes, seconds));
     }
 
-    // Paint golden score indicator
-    if (match.isGoldenScore()) {
-        QRect goldenScoreRect(columnThree, PADDING, columnThree-columnTwo, rect.height()-PADDING*2);
+    auto osaekomi = match.getOsaekomi();
+    if (osaekomi.has_value()) {
+        // Paint osaekomi indicator
+        QRect osaekomiRect(columnThree, PADDING, rect.width() - columnThree - PADDING, rect.height()-PADDING*2);
 
-        font.setPixelSize(rect.height()*1/4);
+        auto time = std::chrono::ceil<std::chrono::seconds>(match.currentOsaekomiTime(masterTime));
+        QString seconds = QString::number(time.count()).rightJustified(2, '0');
+        log_debug().field("seconds", seconds.toStdString()).msg("Drawing osaekomi");
+
+        font.setPixelSize(rect.height()*4/8);
+        painter.setFont(font);
+
+        painter.setPen(COLOR_SCOREBOARD_OSAEKOMI);
+        painter.drawText(osaekomiRect, Qt::AlignBottom | Qt::AlignRight, seconds);
+    }
+    else if (match.isGoldenScore()) {
+        // Paint golden score indicator
+        QRect goldenScoreRect(columnThree, PADDING, rect.width() - columnThree - PADDING, rect.height()-PADDING*2);
+
+        font.setPixelSize(rect.height()*1/3);
         painter.setFont(font);
 
         painter.setPen(COLOR_SCOREBOARD_GOLDEN_SCORE);
