@@ -60,6 +60,7 @@ private:
     void awardWazari(MatchStore::PlayerIndex playerIndex);
     void awardShido(MatchStore::PlayerIndex playerIndex);
     void awardHansokuMake(MatchStore::PlayerIndex playerIndex);
+    void osaekomiButtonClick(MatchStore::PlayerIndex playerIndex);
 
     void createStatusBar();
     void createTournamentMenu();
@@ -97,11 +98,13 @@ private:
     QPushButton *mWhiteWazariButton;
     QPushButton *mWhiteShidoButton;
     QPushButton *mWhiteHansokuMakeButton;
+    QPushButton *mWhiteOsaekomiButton;
 
     QPushButton *mBlueIpponButton;
     QPushButton *mBlueWazariButton;
     QPushButton *mBlueShidoButton;
     QPushButton *mBlueHansokuMakeButton;
+    QPushButton *mBlueOsaekomiButton;
 
     QTimer mPausingTimer;
 };

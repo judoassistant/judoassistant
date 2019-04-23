@@ -262,10 +262,14 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         mWhiteHansokuMakeButton = new QPushButton("Award Hansoku Make to White");
         connect(mWhiteHansokuMakeButton, &QPushButton::clicked, [this](){awardHansokuMake(MatchStore::PlayerIndex::WHITE);});
 
+        mWhiteOsaekomiButton = new QPushButton("Start Osaekomi for White");
+        connect(mWhiteOsaekomiButton, &QPushButton::clicked, [this](){osaekomiButtonClick(MatchStore::PlayerIndex::WHITE);});
+
         subLayout->addWidget(mWhiteIpponButton);
         subLayout->addWidget(mWhiteWazariButton);
         subLayout->addWidget(mWhiteShidoButton);
         subLayout->addWidget(mWhiteHansokuMakeButton);
+        subLayout->addWidget(mWhiteOsaekomiButton);
 
         whiteBox->setLayout(subLayout);
         layout->addWidget(whiteBox);
@@ -287,10 +291,14 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         mBlueHansokuMakeButton = new QPushButton("Award Hansoku Make to Blue");
         connect(mBlueHansokuMakeButton, &QPushButton::clicked, [this](){awardHansokuMake(MatchStore::PlayerIndex::BLUE);});
 
+        mBlueOsaekomiButton = new QPushButton("Start Osaekomi for Blue");
+        connect(mBlueOsaekomiButton, &QPushButton::clicked, [this](){osaekomiButtonClick(MatchStore::PlayerIndex::BLUE);});
+
         subLayout->addWidget(mBlueIpponButton);
         subLayout->addWidget(mBlueWazariButton);
         subLayout->addWidget(mBlueShidoButton);
         subLayout->addWidget(mBlueHansokuMakeButton);
+        subLayout->addWidget(mBlueOsaekomiButton);
 
         blueBox->setLayout(subLayout);
         layout->addWidget(blueBox);
@@ -507,6 +515,7 @@ void ScoreOperatorWindow::goNextMatch() {
 }
 
 void ScoreOperatorWindow::disableControlButtons() {
+    log_debug().msg("Disabling control buttons");
     mResumeButton->setEnabled(false);
     mResumeButton->setText("Resume Match");
 
@@ -519,6 +528,12 @@ void ScoreOperatorWindow::disableControlButtons() {
     mBlueWazariButton->setEnabled(false);
     mBlueShidoButton->setEnabled(false);
     mBlueHansokuMakeButton->setEnabled(false);
+
+    mWhiteOsaekomiButton->setEnabled(false);
+    mWhiteOsaekomiButton->setText("Start Osaekomi for White");
+
+    mBlueOsaekomiButton->setEnabled(false);
+    mBlueOsaekomiButton->setText("Start Osaekomi for Blue");
 }
 
 void ScoreOperatorWindow::updateControlButtons() {
@@ -563,6 +578,32 @@ void ScoreOperatorWindow::updateControlButtons() {
     mBlueWazariButton->setEnabled(ruleset.canAddWazari(match, MatchStore::PlayerIndex::BLUE));
     mBlueShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::BLUE));
     mBlueHansokuMakeButton->setEnabled(ruleset.canAddHansokuMake(match, MatchStore::PlayerIndex::BLUE));
+
+    log_debug().msg("Updating osaekomi buttons");
+    auto osaekomi = match.getOsaekomi();
+    if (osaekomi.has_value()) {
+        if (osaekomi->first == MatchStore::PlayerIndex::WHITE) {
+            mWhiteOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match));
+            mWhiteOsaekomiButton->setText("Stop Osaekomi for White");
+
+            mBlueOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::BLUE));
+            mBlueOsaekomiButton->setText("Start Osaekomi for Blue");
+        }
+        else {
+            mWhiteOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::WHITE));
+            mWhiteOsaekomiButton->setText("Start Osaekomi for White");
+
+            mBlueOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match));
+            mBlueOsaekomiButton->setText("Stop Osaekomi for Blue");
+        }
+    }
+    else {
+        mWhiteOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::WHITE));
+        mWhiteOsaekomiButton->setText("Start Osaekomi for White");
+
+        mBlueOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::BLUE));
+        mBlueOsaekomiButton->setText("Start Osaekomi for Blue");
+    }
 }
 
 void ScoreOperatorWindow::resumeButtonClick() {
@@ -733,5 +774,41 @@ void ScoreOperatorWindow::undoSelectedAction() {
 void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
     mConnectAction->setEnabled(state == NetworkClientState::NOT_CONNECTED);
     mDisconnectAction->setEnabled(state == NetworkClientState::CONNECTED);
+}
+
+void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerIndex) {
+    log_debug().field("playerIndex", (unsigned int)playerIndex).msg("Clicked osaekomi");
+    if (!mCurrentMatch)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    if (!tournament.containsCategory(mCurrentMatch->first))
+        return;
+    const auto &category = tournament.getCategory(mCurrentMatch->first);
+    if (!category.containsMatch(mCurrentMatch->second))
+        return;
+    const auto &match = category.getMatch(mCurrentMatch->second);
+    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+        return;
+
+    const auto &ruleset = category.getRuleset();
+
+    auto masterTime = mStoreManager.masterTime();
+    auto osaekomi = match.getOsaekomi();
+    if (!osaekomi.has_value()) {
+        // Start osaekomi
+        mStoreManager.dispatch(std::make_unique<StartOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
+
+        if (match.getStatus() != MatchStatus::UNPAUSED && (match.getDuration() < ruleset.getNormalTime() || match.isGoldenScore()))
+            mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
+
+    }
+    else {
+        // Stop osaekomi
+        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second));
+
+        if (ruleset.shouldPause(match, masterTime))
+            mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
+    }
 }
 
