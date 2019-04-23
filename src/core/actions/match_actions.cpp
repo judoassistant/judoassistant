@@ -217,12 +217,18 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
         return;
     auto &match = category.getMatch(mMatchId);
 
+    if (mOsaekomi && match.hasAwardedOsaekomiWazari())
+        return;
+
     const auto &ruleset = category.getRuleset();
     if (!ruleset.canAddWazari(match, mPlayerIndex))
         return;
 
     save(match);
     ruleset.addWazari(match, mPlayerIndex, mMasterTime);
+
+    if (mOsaekomi)
+        match.setHasAwardedOsaekomiWazari(true);
 
     auto type = (mOsaekomi ? MatchEventType::WAZARI_OSAEKOMI : MatchEventType::WAZARI);
     match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
