@@ -795,7 +795,7 @@ void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerInde
 
     auto masterTime = mStoreManager.masterTime();
     auto osaekomi = match.getOsaekomi();
-    if (!osaekomi.has_value()) {
+    if (!osaekomi.has_value() || osaekomi->first != playerIndex) {
         // Start osaekomi
         mStoreManager.dispatch(std::make_unique<StartOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
 
