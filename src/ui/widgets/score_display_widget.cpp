@@ -279,15 +279,14 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         // Paint osaekomi indicator
         QRect osaekomiRect(columnThree, PADDING, rect.width() - columnThree - PADDING, rect.height()-PADDING*2);
 
-        auto time = std::chrono::ceil<std::chrono::seconds>(match.currentOsaekomiTime(masterTime));
-        QString seconds = QString::number(time.count()).rightJustified(2, '0');
-        log_debug().field("seconds", seconds.toStdString()).msg("Drawing osaekomi");
+        unsigned int seconds = std::chrono::floor<std::chrono::seconds>(match.currentOsaekomiTime(masterTime)).count();
+        QString secondsString = QString::number(seconds).rightJustified(2, '0');
 
         font.setPixelSize(rect.height()*4/8);
         painter.setFont(font);
 
         painter.setPen(COLOR_SCOREBOARD_OSAEKOMI);
-        painter.drawText(osaekomiRect, Qt::AlignBottom | Qt::AlignRight, seconds);
+        painter.drawText(osaekomiRect, Qt::AlignBottom | Qt::AlignRight, secondsString);
     }
     else if (match.isGoldenScore()) {
         // Paint golden score indicator
