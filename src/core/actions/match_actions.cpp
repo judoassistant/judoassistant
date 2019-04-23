@@ -343,6 +343,8 @@ void MatchEventAction::save(const MatchStore &match) {
     mPrevDuration = match.getDuration();
     mPrevEventSize = match.getEvents().size();
     mPrevBye = match.isBye();
+    mPrevOsaekomi = match.getOsaekomi();
+    mPrevHasAwardedOsaekomiWazari = match.hasAwardedOsaekomiWazari();
 }
 
 void MatchEventAction::recover(TournamentStore &tournament) {
@@ -365,6 +367,9 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     match.setResumeTime(mPrevResumeTime);
     match.setDuration(mPrevDuration);
     match.setBye(mPrevBye);
+
+    match.setHasAwardedOsaekomiWazari(mPrevHasAwardedOsaekomiWazari);
+    match.setOsaekomi(mPrevOsaekomi);
 
     assert(match.getEvents().size() >= mPrevEventSize);
     while (match.getEvents().size() > mPrevEventSize)

@@ -50,6 +50,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddMatchAction)
 // Abstract class with common methods for match events
 class MatchEventAction : public Action {
 public:
+    // TODO: Try to split this into multiple classes to reduce overhead
     MatchEventAction() = default;
     MatchEventAction(CategoryId categoryId, MatchId matchId);
 
@@ -77,6 +78,8 @@ protected:
     std::chrono::milliseconds mPrevResumeTime; // the time when the clock was last resumed
     std::chrono::milliseconds mPrevDuration; // the match duration when the clock was last paused
     bool mPrevBye;
+    std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>> mPrevOsaekomi;
+    bool mPrevHasAwardedOsaekomiWazari;
 
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
