@@ -746,8 +746,19 @@ void ScoreOperatorWindow::pausingTimerHit() {
 
     const auto &ruleset = category.getRuleset();
 
-    if (ruleset.shouldPause(match, mStoreManager.masterTime()))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, mStoreManager.masterTime()));
+    auto masterTime = mStoreManager.masterTime();
+    if (ruleset.shouldAwardOsaekomiWazari(match, masterTime)) {
+        mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, match.getOsaekomi()->first, masterTime, true));
+    }
+
+    if (ruleset.shouldAwardOsaekomiIppon(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, match.getOsaekomi()->first, masterTime, true));
+
+    if (ruleset.shouldStopOsaekomi(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second));
+
+    if (ruleset.shouldPause(match, masterTime))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
 }
 
 void ScoreOperatorWindow::updateUndoButton() {
