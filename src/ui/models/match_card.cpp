@@ -141,9 +141,9 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         else if (mStatus != MatchStatus::NOT_STARTED && mStatus != MatchStatus::FINISHED) { // Draw Time
             painter->setPen(Qt::NoPen);
             if (mStatus != MatchStatus::UNPAUSED)
-                painter->setBrush(COLOR_UI_UNPAUSED);
-            else
                 painter->setBrush(COLOR_UI_PAUSED);
+            else
+                painter->setBrush(COLOR_UI_UNPAUSED);
             painter->drawRect(pauseRect);
 
             painter->setPen(palette.color(QPalette::WindowText));
