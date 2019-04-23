@@ -148,13 +148,20 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
             painter->setPen(palette.color(QPalette::WindowText));
 
-            QString seconds = QString::number((mTime % std::chrono::minutes(1)).count()).rightJustified(2, '0');
-            QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(mTime).count());
+            if (mOsaekomi) {
+                QString osaekomi = QString::number(mOsaekomi->count()).rightJustified(2, '0');
 
-            if (mGoldenScore)
-                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("GS %1:%2").arg(minutes).arg(seconds));
-            else
-                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("%1:%2").arg(minutes).arg(seconds));
+                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("OSKO %1").arg(osaekomi));
+            }
+            else {
+                QString seconds = QString::number((mTime % std::chrono::minutes(1)).count()).rightJustified(2, '0');
+                QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(mTime).count());
+
+                if (mGoldenScore)
+                    painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("GS %1:%2").arg(minutes).arg(seconds));
+                else
+                    painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("%1:%2").arg(minutes).arg(seconds));
+            }
         }
         else { // Draw ETA
             // TODO: Calculate ETA for matches
@@ -254,5 +261,11 @@ void MatchCard::setMatch(const CategoryStore &category, const MatchStore &match,
     mBye = match.isBye();
     mGoldenScore = match.isGoldenScore();
     mTime = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(category.getRuleset().getNormalTime() - match.currentDuration(masterTime)));
+
+    auto osaekomi = match.getOsaekomi();
+    if (osaekomi.has_value())
+        mOsaekomi = std::chrono::floor<std::chrono::seconds>(match.currentOsaekomiTime(masterTime));
+    else
+        mOsaekomi = std::nullopt;
 }
 

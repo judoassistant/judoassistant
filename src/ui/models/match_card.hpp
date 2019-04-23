@@ -46,6 +46,7 @@ private:
     bool mBye;
     bool mGoldenScore;
     std::chrono::seconds mTime;
+    std::optional<std::chrono::seconds> mOsaekomi;
 };
 
 Q_DECLARE_METATYPE(MatchCard)
