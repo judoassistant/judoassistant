@@ -56,5 +56,6 @@ private:
     rapidjson::Value encodeMatchEvent(const MatchEvent &event, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeDuration(const std::chrono::milliseconds &duration, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeTime(const std::chrono::milliseconds &time, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeOsaekomi(const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& osaekomi, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator);
 };
 
