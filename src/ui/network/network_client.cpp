@@ -5,7 +5,6 @@
 
 using boost::asio::ip::tcp;
 
-// TODO: Cleanup code
 NetworkClient::NetworkClient(boost::asio::io_context &context)
     : mState(NetworkClientState::NOT_CONNECTED)
     , mContext(context)

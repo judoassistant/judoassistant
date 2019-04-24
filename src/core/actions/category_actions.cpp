@@ -591,7 +591,6 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     const auto &drawSystems = DrawSystems::getDrawSystems();
     tournament.beginAddCategories(mCategoryIds);
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
-        // TODO: Use different drawsystems for different size groups
         std::stringstream ss;
         ss << mBaseName << " " << i+1;
         auto ruleset = rulesets[0]->clone();

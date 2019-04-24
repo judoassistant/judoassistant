@@ -76,10 +76,10 @@ void ConfigureDialog::failRegistration(WebNameRegistrationResponse response) {
 }
 
 void ConfigureDialog::checkWebName() {
-    // TODO: Implement
+
 }
 
 void ConfigureDialog::showCheckResult(const QString &webName, WebNameCheckResponse status) {
-    // TODO: Implement
+
 }
 

@@ -7,7 +7,6 @@
 
 using boost::asio::ip::tcp;
 
-// TODO: Setup read for server crash
 WebClient::WebClient(boost::asio::io_context &context)
     : mContext(context)
     , mState(WebClientState::NOT_CONNECTED)
@@ -153,7 +152,6 @@ void WebClient::loginUser(const QString &email, const QString &password) {
 }
 
 void WebClient::registerUser(const QString &email, const QString &password) {
-    // TODO: Implement registration
 }
 
 void WebClient::stop() {
@@ -301,7 +299,6 @@ void WebClient::enterConfigured() {
 }
 
 void WebClient::checkWebName(TournamentId id, const QString &webName) {
-    // TODO: Implement checking of web names
 }
 
 void WebClient::killConnection() {

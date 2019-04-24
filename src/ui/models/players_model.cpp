@@ -55,7 +55,7 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 7:
                 return (player.getCountry() ? QVariant(QString::fromStdString(player.getCountry()->toString())) : QVariant(""));
             case 8:
-                return QString::fromStdString(listPlayerCategories(player)); // TODO: Create custom widget to show color-coded Bootstrap-style badges
+                return QString::fromStdString(listPlayerCategories(player));
         }
     }
 

@@ -189,7 +189,6 @@ void EditCategoryWidget::editDrawSystem() {
 }
 
 void EditCategoryWidget::updateName() {
-    // TODO: Add bulk editing for text fields
     if (mCategoryIds.size() != 1) {
         mNameContent->clear();
         mNameContent->setEnabled(false);

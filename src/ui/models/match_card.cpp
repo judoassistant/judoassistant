@@ -18,7 +18,6 @@ MatchCard::MatchCard(const TournamentStore & tournament, const CategoryStore &ca
 
 void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, const QPalette &palette, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const {
     { // Draw country name and flag
-        // TODO: Draw country name and flag
     }
 
     { // Draw Name Text
@@ -164,7 +163,6 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             }
         }
         else { // Draw ETA
-            // TODO: Calculate ETA for matches
             // painter->setPen(COLOR_0);
             // painter->setBrush(COLOR_0);
 

@@ -7,7 +7,6 @@
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/score_display_widget.hpp"
 
-// TODO: Make time blink and change color depending on state
 ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
     , mStoreManager(storeManager)
@@ -91,7 +90,6 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     }
     else {
         assert(mState == ScoreDisplayState::WINNER);
-        // TODO: Paint finished screen
         paintPlayerNormal(upperRect, MatchStore::PlayerIndex::WHITE, painter, match, whitePlayer);
         paintPlayerNormal(middleRect, MatchStore::PlayerIndex::BLUE, painter, match, bluePlayer);
         paintLowerNormal(lowerRect, painter, category, match);
@@ -299,7 +297,6 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         painter.drawText(goldenScoreRect, Qt::AlignVCenter | Qt::AlignLeft, "GS");
     }
 
-    // TODO: Make font sizing more robust
     painter.restore();
 }
 
@@ -370,7 +367,6 @@ void ScoreDisplayWidget::paintPlayerIntroduction(QRect rect, MatchStore::PlayerI
 }
 
 void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, const CategoryStore &category, const MatchStore &match) {
-    // TODO: Refactor code to reduce redundancy
     const int flagHeight = (rect.height() - PADDING * 3) / 2;
     const int flagWidth = flagHeight * 4 / 3;
 
@@ -398,8 +394,6 @@ void ScoreDisplayWidget::paintLowerIntroduction(QRect rect, QPainter &painter, c
     painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
 
-    // TODO: Show intro countdown on operator screen
-    // TODO: Make font sizing more robust
     painter.restore();
 }
 

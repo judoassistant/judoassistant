@@ -5,7 +5,6 @@ std::unique_ptr<Ruleset> TwentyEighteenChildrenRuleset::clone() const {
 }
 
 std::string TwentyEighteenChildrenRuleset::getName() const {
-    // TODO: Handle delayed translation of this
     return "2018 Children";
 }
 

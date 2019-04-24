@@ -9,7 +9,6 @@
 #include "web/web_tournament_store.hpp"
 #include "web/web_tatami_model.hpp"
 
-// TODO: Don't trust state of tournament to be correct
 JsonBuffer::JsonBuffer() {
 
 }

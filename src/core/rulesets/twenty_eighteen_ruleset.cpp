@@ -88,7 +88,6 @@ std::optional<MatchStore::PlayerIndex> TwentyEighteenRuleset::getWinner(const Ma
     const auto & blueScore = match.getBlueScore();
     auto currentDuration = match.currentDuration(masterTime);
 
-    // TODO: Implement matches ending in a draw
     if (blueScore.hansokuMake == 1)
         return MatchStore::PlayerIndex::WHITE;
     if (whiteScore.hansokuMake == 1)
@@ -139,7 +138,6 @@ std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
 }
 
 std::string TwentyEighteenRuleset::getName() const {
-    // TODO: Handle delayed translation of this
     return "2018";
 }
 
@@ -151,7 +149,6 @@ std::chrono::milliseconds TwentyEighteenRuleset::getExpectedTime() const {
     return std::chrono::minutes(6);
 }
 
-// TODO: Implement banning of players on direct hansoku make
 bool TwentyEighteenRuleset::canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);

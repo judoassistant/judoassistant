@@ -10,9 +10,7 @@
 #include "core/stores/tatami/location.hpp"
 #include "ui/widgets/fixed_scroll_area.hpp"
 
-// TODO: Display whenever two matches conflict with player
 // TODO: Consider updating more efficiently when tatami count is changed
-// TODO: Handle resizing when changing tatami count
 class StoreManager;
 class TatamiWidget;
 class GridGraphicsItem;

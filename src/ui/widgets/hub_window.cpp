@@ -28,7 +28,6 @@
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
-    // TODO: Add todostack sidebar
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
@@ -53,7 +52,6 @@ HubWindow::HubWindow() {
 }
 
 void HubWindow::startServer() {
-    // TODO: Add start / stop button
     mStoreManager.startServer(Constants::DEFAULT_PORT);
 }
 
@@ -87,7 +85,6 @@ void HubWindow::createTournamentMenu() {
     }
 
     {
-        // TODO: Implement open recent
         // QMenu * submenu = menu->addMenu("Open Recent");
     }
 

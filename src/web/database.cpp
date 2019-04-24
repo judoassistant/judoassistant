@@ -159,7 +159,7 @@ WebToken Database::generateWebToken() {
 }
 
 std::string Database::generateWebTokenExpiration() {
-    return "2019-02-17"; // TODO: Implement
+    return "2019-02-17";
 }
 
 void Database::checkWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {

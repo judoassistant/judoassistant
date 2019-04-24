@@ -55,7 +55,6 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(const Tourna
     return {};
 }
 
-// TODO: Change to to correctly rank players according to IJF rules
 struct PoolPlayerRank {
     PlayerId playerId;
     size_t wonMatches;

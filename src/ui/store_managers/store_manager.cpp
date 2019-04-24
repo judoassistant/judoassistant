@@ -138,7 +138,6 @@ void StoreManager::receiveAction(ClientActionId actionId, ActionPtr sharedAction
     size_t pos = mConfirmedActionList.size() - (mUnconfirmedUndos.size() - mUndoneUnconfirmedActions);
     emit actionAboutToBeAdded(actionId, pos);
 
-    // TODO: Trim stack size
     for (auto it = mUnconfirmedActionList.rbegin(); it != mUnconfirmedActionList.rend(); ++it) {
         auto &a = *(it->second);
         if (a.isDone())

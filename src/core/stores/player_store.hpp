@@ -11,7 +11,6 @@
 
 class PlayerCountry {
 public:
-    // TODO: Based on the list of IOC countries
     // TODO: Make a more sophisticated from string method
     static const size_t SIZE = 3;
     enum Enum {

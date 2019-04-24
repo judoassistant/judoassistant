@@ -26,7 +26,6 @@ int PlayerRank::toInt() const {
 }
 
 std::string PlayerRank::toString() const {
-    // TODO: handle translation
     switch (mValue) {
         case KYU_6: return "6th kyu";
         case KYU_5: return "5th kyu";
@@ -58,7 +57,6 @@ std::vector<PlayerRank> PlayerRank::values() {
 }
 
 std::string PlayerCountry::toString() const {
-    // TODO: handle translation
     switch (mValue) {
         case DENMARK: return "Denmark";
         case GREAT_BRITAIN: return "Great Britain";
@@ -179,7 +177,6 @@ std::ostream & operator<<(std::ostream &out, const PlayerRank &rank) {
 }
 
 std::string PlayerSex::toString() const {
-    // TODO: handle translation
     switch (mValue) {
         case MALE: return "Male";
         case FEMALE: return "Female";

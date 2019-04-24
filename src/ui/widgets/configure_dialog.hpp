@@ -8,7 +8,6 @@
 
 class MasterStoreManager;
 
-// TODO: Implement live name checks
 class ConfigureDialog : public QDialog {
     Q_OBJECT
 public:
