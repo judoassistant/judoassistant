@@ -11,6 +11,7 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mStatus(permanentBye ? MatchStatus::FINISHED : MatchStatus::NOT_STARTED)
     , mGoldenScore(false)
     , mDuration(0)
+    , mHasAwardedOsaekomiWazari(false)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
@@ -171,5 +172,27 @@ std::chrono::milliseconds MatchStore::currentDuration(std::chrono::milliseconds 
 
 void MatchStore::setPlayer(PlayerIndex index, std::optional<PlayerId> playerId) {
     mPlayers[static_cast<size_t>(index)] = playerId;
+}
+
+const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& MatchStore::getOsaekomi() const {
+    return mOsaekomi;
+}
+
+void MatchStore::setOsaekomi(const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& value) {
+    mOsaekomi = value;
+}
+
+bool MatchStore::hasAwardedOsaekomiWazari() const {
+    return mHasAwardedOsaekomiWazari;
+}
+
+void MatchStore::setHasAwardedOsaekomiWazari(bool val) {
+    mHasAwardedOsaekomiWazari = val;
+}
+
+std::chrono::milliseconds MatchStore::currentOsaekomiTime(std::chrono::milliseconds masterTime) const {
+    assert(mOsaekomi.has_value());
+
+    return (masterTime - mOsaekomi->second);
 }
 

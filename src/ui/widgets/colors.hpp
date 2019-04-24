@@ -23,3 +23,5 @@ static const QColor COLOR_SCOREBOARD_GOLDEN_SCORE("#ceb829"); // Gold
 static const QColor COLOR_SCOREBOARD_TIME_UNPAUSED("#00de00"); // Green
 static const QColor COLOR_SCOREBOARD_TIME_PAUSED("#ff3639"); // Red
 
+static const QColor COLOR_SCOREBOARD_OSAEKOMI("#ffffff"); // White
+

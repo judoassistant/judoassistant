@@ -34,7 +34,7 @@ private:
     static const int PADDING = 5;
     static constexpr auto INTRO_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto WINNER_INTERVAL = std::chrono::milliseconds(4000);
-    static constexpr auto DURATION_INTERVAL = std::chrono::milliseconds(1000);
+    static constexpr auto DURATION_INTERVAL = std::chrono::milliseconds(200);
 
     void durationTimerHit();
 

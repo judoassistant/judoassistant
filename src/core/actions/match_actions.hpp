@@ -50,6 +50,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddMatchAction)
 // Abstract class with common methods for match events
 class MatchEventAction : public Action {
 public:
+    // TODO: Try to split this into multiple classes to reduce overhead
     MatchEventAction() = default;
     MatchEventAction(CategoryId categoryId, MatchId matchId);
 
@@ -77,6 +78,8 @@ protected:
     std::chrono::milliseconds mPrevResumeTime; // the time when the clock was last resumed
     std::chrono::milliseconds mPrevDuration; // the match duration when the clock was last paused
     bool mPrevBye;
+    std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>> mPrevOsaekomi;
+    bool mPrevHasAwardedOsaekomiWazari;
 
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
@@ -135,7 +138,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, PauseMatchAction)
 class AwardIpponAction : public MatchEventAction {
 public:
     AwardIpponAction() = default;
-    AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
+    AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi = false);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -147,11 +150,12 @@ public:
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::base_class<MatchEventAction>(this));
-        ar(mPlayerIndex, mMasterTime);
+        ar(mPlayerIndex, mOsaekomi, mMasterTime);
     }
 
 private:
     MatchStore::PlayerIndex mPlayerIndex;
+    bool mOsaekomi;
     std::chrono::milliseconds mMasterTime;
 };
 
@@ -161,7 +165,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, AwardIpponAction)
 class AwardWazariAction : public MatchEventAction {
 public:
     AwardWazariAction() = default;
-    AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
+    AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi = false);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -173,11 +177,12 @@ public:
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::base_class<MatchEventAction>(this));
-        ar(mPlayerIndex, mMasterTime);
+        ar(mPlayerIndex, mOsaekomi, mMasterTime);
     }
 
 private:
     MatchStore::PlayerIndex mPlayerIndex;
+    bool mOsaekomi;
     std::chrono::milliseconds mMasterTime;
 };
 
@@ -286,3 +291,52 @@ private:
 
 CEREAL_REGISTER_TYPE(SetMatchByeAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, SetMatchByeAction)
+
+class StartOsaekomiAction : public MatchEventAction {
+public:
+    StartOsaekomiAction() = default;
+    StartOsaekomiAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mMasterTime, mPlayerIndex);
+    }
+
+private:
+    std::chrono::milliseconds mMasterTime;
+    MatchStore::PlayerIndex mPlayerIndex;
+};
+
+CEREAL_REGISTER_TYPE(StartOsaekomiAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, StartOsaekomiAction)
+
+class StopOsaekomiAction : public MatchEventAction {
+public:
+    StopOsaekomiAction() = default;
+    StopOsaekomiAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
+
+    void redoImpl(TournamentStore & tournament) override;
+    void undoImpl(TournamentStore & tournament) override;
+
+    std::unique_ptr<Action> freshClone() const override;
+    std::string getDescription() const override;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(cereal::base_class<MatchEventAction>(this), mMasterTime);
+    }
+
+private:
+    std::chrono::milliseconds mMasterTime;
+};
+
+CEREAL_REGISTER_TYPE(StopOsaekomiAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, StopOsaekomiAction)
+

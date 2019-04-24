@@ -67,6 +67,8 @@ bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::mil
         return false;
     if (match.getStatus() == MatchStatus::UNPAUSED)
         return false;
+    if (match.getOsaekomi().has_value())
+        return false;
 
     const auto & whiteScore = match.getWhiteScore();
     const auto & blueScore = match.getBlueScore();
@@ -176,4 +178,12 @@ void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::Player
 //     auto & score = match.getScore(playerIndex);
 //     score.hansokuMake = 0;
 // }
+
+std::chrono::milliseconds TwentyEighteenRuleset::getOsaekomiIpponTime() const {
+    return std::chrono::seconds(20);
+}
+
+std::chrono::milliseconds TwentyEighteenRuleset::getOsaekomiWazariTime() const {
+    return std::chrono::seconds(10);
+}
 

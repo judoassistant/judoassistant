@@ -12,6 +12,7 @@
 #include "web/json_encoder.hpp"
 
 // TODO: Try to see if message size can be limited in async_read
+// TODO: Send error messages on load failure, tournament not exists etc.
 
 WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)

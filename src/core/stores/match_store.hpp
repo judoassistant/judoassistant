@@ -92,8 +92,16 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mScores, mPlayers, mStatus, mGoldenScore, mResumeTime, mDuration, mEvents);
+        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mScores, mPlayers, mStatus, mGoldenScore, mResumeTime, mDuration, mEvents, mOsaekomi, mHasAwardedOsaekomiWazari);
     }
+
+    const std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>>& getOsaekomi() const;
+    void setOsaekomi(const std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>>& value);
+
+    std::chrono::milliseconds currentOsaekomiTime(std::chrono::milliseconds masterTime) const;
+
+    bool hasAwardedOsaekomiWazari() const;
+    void setHasAwardedOsaekomiWazari(bool val);
 private:
     MatchId mId;
     CategoryId mCategory;
@@ -108,11 +116,13 @@ private:
     std::chrono::milliseconds mResumeTime; // the time when the clock was last resumed
     std::chrono::milliseconds mDuration; // the match duration when the clock was last paused
     std::vector<MatchEvent> mEvents;
-    // TODO: Add osae komi timers
+
+    std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>> mOsaekomi;
+    bool mHasAwardedOsaekomiWazari;
 };
 
 enum class MatchEventType {
-    IPPON, WAZARI, SHIDO, HANSOKU_MAKE
+    IPPON, WAZARI, SHIDO, HANSOKU_MAKE, IPPON_OSAEKOMI, WAZARI_OSAEKOMI,
 };
 
 struct MatchEvent {

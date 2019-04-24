@@ -480,6 +480,8 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
 
     res.AddMember("duration", encodeDuration(match.getDuration(), allocator), allocator);
 
+    res.AddMember("osaekomi", encodeOsaekomi(match.getOsaekomi(), clockDiff, allocator), allocator);
+
     std::optional<MatchStore::PlayerIndex> winner;
     if (match.getStatus() == MatchStatus::FINISHED)
         winner = ruleset.getWinner(match);
@@ -594,8 +596,12 @@ rapidjson::Value JsonEncoder::encodeMatchEvent(const MatchEvent &event, rapidjso
     // encode type
     if (event.type == MatchEventType::IPPON)
         res.AddMember("type", encodeString("IPPON", allocator), allocator);
+    else if (event.type == MatchEventType::IPPON_OSAEKOMI)
+        res.AddMember("type", encodeString("IPPON_OSAEKOMI", allocator), allocator);
     else if (event.type == MatchEventType::WAZARI)
         res.AddMember("type", encodeString("WAZARI", allocator), allocator);
+    else if (event.type == MatchEventType::WAZARI_OSAEKOMI)
+        res.AddMember("type", encodeString("WAZARI_OSAEKOMI", allocator), allocator);
     else if (event.type == MatchEventType::SHIDO)
         res.AddMember("type", encodeString("SHIDO", allocator), allocator);
     else
@@ -632,6 +638,18 @@ rapidjson::Value JsonEncoder::encodeTatami(size_t index, const WebTatamiModel &m
         matches.PushBack(encodeCombinedId(combinedId, allocator), allocator);
 
     res.AddMember("matches", matches, allocator);
+
+    return res;
+}
+
+rapidjson::Value JsonEncoder::encodeOsaekomi(const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& osaekomi, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res;
+    if (!osaekomi.has_value())
+        return res;
+
+    res.SetObject();
+    res.AddMember("player", encodeString(osaekomi->first == MatchStore::PlayerIndex::WHITE ? "WHITE" : "BLUE", allocator), allocator);
+    res.AddMember("start", encodeTime(osaekomi->second, clockDiff, allocator), allocator);
 
     return res;
 }

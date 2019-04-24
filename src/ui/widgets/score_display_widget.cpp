@@ -195,7 +195,7 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     const auto &score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
     if (score.hansokuMake == 0 && (score.ippon > 0 || otherScore.hansokuMake == 1))
-        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignHCenter, "IPPON");
+        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, "IPPON");
     else
         painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, QString::number(score.wazari));
 
@@ -255,10 +255,12 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
     painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(match.getTitle()));
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(category.getName()));
 
+    auto masterTime = mStoreManager.masterTime();
+
     // Paint time left
     {
         QRect timeRect(columnTwo, PADDING, columnThree-columnTwo-PADDING, rect.height()-PADDING*2);
-        auto time = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(mStoreManager.masterTime())));
+        auto time = std::chrono::ceil<std::chrono::seconds>(std::chrono::abs(ruleset.getNormalTime() - match.currentDuration(masterTime)));
         QString seconds = QString::number((time % std::chrono::minutes(1)).count()).rightJustified(2, '0');
         QString minutes = QString::number(std::chrono::duration_cast<std::chrono::minutes>(time).count());
 
@@ -272,11 +274,25 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         painter.drawText(timeRect, Qt::AlignVCenter | Qt::AlignRight, QString("%1:%2").arg(minutes, seconds));
     }
 
-    // Paint golden score indicator
-    if (match.isGoldenScore()) {
-        QRect goldenScoreRect(columnThree, PADDING, columnThree-columnTwo, rect.height()-PADDING*2);
+    auto osaekomi = match.getOsaekomi();
+    if (osaekomi.has_value()) {
+        // Paint osaekomi indicator
+        QRect osaekomiRect(columnThree, PADDING, rect.width() - columnThree - PADDING, rect.height()-PADDING*2);
 
-        font.setPixelSize(rect.height()*1/4);
+        unsigned int seconds = std::chrono::floor<std::chrono::seconds>(match.currentOsaekomiTime(masterTime)).count();
+        QString secondsString = QString::number(seconds).rightJustified(2, '0');
+
+        font.setPixelSize(rect.height()*5/8);
+        painter.setFont(font);
+
+        painter.setPen(COLOR_SCOREBOARD_OSAEKOMI);
+        painter.drawText(osaekomiRect, Qt::AlignBottom | Qt::AlignRight, secondsString);
+    }
+    else if (match.isGoldenScore()) {
+        // Paint golden score indicator
+        QRect goldenScoreRect(columnThree, PADDING, rect.width() - columnThree - PADDING, rect.height()-PADDING*2);
+
+        font.setPixelSize(rect.height()*1/3);
         painter.setFont(font);
 
         painter.setPen(COLOR_SCOREBOARD_GOLDEN_SCORE);

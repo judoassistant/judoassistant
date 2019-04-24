@@ -14,6 +14,9 @@ public:
     std::chrono::milliseconds getNormalTime() const override;
     std::chrono::milliseconds getExpectedTime() const override;
 
+    std::chrono::milliseconds getOsaekomiIpponTime() const override;
+    std::chrono::milliseconds getOsaekomiWazariTime() const override;
+
     bool canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
     void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
