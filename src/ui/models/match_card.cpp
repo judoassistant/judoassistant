@@ -151,7 +151,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
             if (mOsaekomi) {
                 QString osaekomi = QString::number(mOsaekomi->count()).rightJustified(2, '0');
 
-                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("OSKO %1").arg(osaekomi));
+                painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, QString("OSK %1").arg(osaekomi));
             }
             else {
                 QString seconds = QString::number((mTime % std::chrono::minutes(1)).count()).rightJustified(2, '0');
