@@ -58,24 +58,28 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(const Tourna
 struct PoolPlayerRank {
     PlayerId playerId;
     size_t wonMatches;
-    size_t ippons;
-    size_t wazaris;
-    size_t hansokuMakes;
-    size_t shidos;
-    PlayerWeight weight;
+    std::chrono::milliseconds durationSum;
+    // size_t ippons;
+    // size_t wazaris;
+    // size_t hansokuMakes;
+    // size_t shidos;
+    // PlayerWeight weight;
 
     bool operator<(const PoolPlayerRank &other) const {
         if (wonMatches != other.wonMatches)
             return wonMatches > other.wonMatches;
-        if (ippons != other.ippons)
-            return ippons > other.ippons;
-        if (wazaris != other.wazaris)
-            return wazaris > other.wazaris;
-        if (hansokuMakes != other.hansokuMakes)
-            return hansokuMakes < other.hansokuMakes;
-        if (shidos != other.shidos)
-            return shidos < other.shidos;
-        return weight < other.weight;
+        if (durationSum != other.durationSum)
+            return durationSum < other.durationSum;
+        return playerId < other.playerId; // to ensure total ordering
+        // if (ippons != other.ippons)
+        //     return ippons > other.ippons;
+        // if (wazaris != other.wazaris)
+        //     return wazaris > other.wazaris;
+        // if (hansokuMakes != other.hansokuMakes)
+        //     return hansokuMakes < other.hansokuMakes;
+        // if (shidos != other.shidos)
+        //     return shidos < other.shidos;
+        // return weight < other.weight;
     }
 };
 
@@ -95,11 +99,12 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::ge
         PoolPlayerRank rank;
         rank.playerId = playerId;
         rank.wonMatches = 0;
-        rank.ippons = 0;
-        rank.wazaris = 0;
-        rank.hansokuMakes = 0;
-        rank.shidos = 0;
-        rank.weight = tournament.getPlayer(playerId).getWeight().value_or(PlayerWeight(0.0));
+        rank.durationSum = std::chrono::milliseconds(0);
+        // rank.ippons = 0;
+        // rank.wazaris = 0;
+        // rank.hansokuMakes = 0;
+        // rank.shidos = 0;
+        // rank.weight = tournament.getPlayer(playerId).getWeight().value_or(PlayerWeight(0.0));
         ranks[playerId] = std::move(rank);
     }
 
@@ -115,17 +120,19 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::ge
         else if (winner == MatchStore::PlayerIndex::BLUE)
             blueRank.wonMatches += 1;
 
-       const MatchStore::Score & whiteScore = match.getWhiteScore();
-       whiteRank.ippons += whiteScore.ippon;
-       whiteRank.wazaris += whiteScore.wazari;
-       whiteRank.shidos += whiteScore.shido;
-       whiteRank.hansokuMakes += static_cast<size_t>(whiteScore.hansokuMake);
+        whiteRank.durationSum += match.getDuration();
+        blueRank.durationSum += match.getDuration();
+        // const MatchStore::Score & whiteScore = match.getWhiteScore();
+        // whiteRank.ippons += whiteScore.ippon;
+        // whiteRank.wazaris += whiteScore.wazari;
+        // whiteRank.shidos += whiteScore.shido;
+        // whiteRank.hansokuMakes += static_cast<size_t>(whiteScore.hansokuMake);
 
-       const MatchStore::Score & blueScore = match.getBlueScore();
-       blueRank.ippons += blueScore.ippon;
-       blueRank.wazaris += blueScore.wazari;
-       blueRank.shidos += blueScore.shido;
-       blueRank.hansokuMakes += static_cast<size_t>(blueScore.hansokuMake);
+        // const MatchStore::Score & blueScore = match.getBlueScore();
+        // blueRank.ippons += blueScore.ippon;
+        // blueRank.wazaris += blueScore.wazari;
+        // blueRank.shidos += blueScore.shido;
+        // blueRank.hansokuMakes += static_cast<size_t>(blueScore.hansokuMake);
     }
 
     std::vector<PoolPlayerRank> sortedRanks;
