@@ -22,7 +22,6 @@ void NetworkClient::postSync(std::unique_ptr<TournamentStore> tournament) {
 void NetworkClient::postAction(ClientActionId actionId, std::unique_ptr<Action> action) {
     std::shared_ptr<Action> sharedAction = std::move(action);
     mContext.post([this, actionId, sharedAction]() {
-        log_debug().field("actionId", actionId).msg("Posting action to network");
         mUnconfirmedActionList.push_back(std::make_pair(actionId, sharedAction));
         mUnconfirmedActionMap[actionId] = std::prev(mUnconfirmedActionList.end());
 
@@ -37,7 +36,6 @@ void NetworkClient::postAction(ClientActionId actionId, std::unique_ptr<Action> 
 
 void NetworkClient::postUndo(ClientActionId actionId) {
     mContext.post([this, actionId]() {
-        log_debug().field("actionId", actionId).msg("Posting undo to network");
         mUnconfirmedUndos.insert(actionId);
 
         if (!mConnection)
@@ -58,7 +56,6 @@ void NetworkClient::deliver(std::unique_ptr<NetworkMessage> message) {
 
 void NetworkClient::connect(const std::string &host, unsigned int port) {
     mContext.post([this, host, port]() {
-        log_debug().msg("Connecting..");
         emit stateChanged(mState = NetworkClientState::CONNECTING);
         mQuitPosted = false;
         tcp::resolver resolver(mContext);
@@ -315,7 +312,6 @@ void NetworkClient::connectSynchronizeClocks() {
 
             std::chrono::milliseconds p1;
             if (!mReadMessage->decodeClockSync(p1)) {
-                log_debug().msg("Failed decoding clock sync");
                 killConnection();
                 emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 emit connectionAttemptFailed();
@@ -352,7 +348,7 @@ void NetworkClient::connectSync() {
             return;
         }
 
-        // apply the action list but avoid unconfirmed undos
+        // Calculate the new action list and unconfirmed undos.
         std::unordered_set<ClientActionId> actionIds;
         auto unconfirmedUndos = std::make_unique<std::unordered_set<ClientActionId>>();
         auto uniqueActions = std::make_unique<UniqueActionList>();
@@ -370,40 +366,40 @@ void NetworkClient::connectSync() {
             uniqueActions->push_back({actionId, std::move(action)});
         }
 
-        mUnconfirmedUndos = *unconfirmedUndos;
+        // Calculate the unconfirmed action list
+        SharedActionList sharedUnconfirmedActionList;
+        auto uniqueUnconfirmedActionList = std::make_unique<UniqueActionList>();
+        std::unordered_map<ClientActionId, SharedActionList::iterator> unconfirmedActionMap;
 
-        // Remove already applied actions from unconfirmed list and map
-        for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ) {
-            auto next = std::next(it);
-            auto actionId = it->first;
+        for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
+            const auto actionId = it->first;
 
-            if (actionIds.find(actionId) == actionIds.end()) {
-                mUnconfirmedActionMap.erase(actionId);
-                mUnconfirmedActionList.erase(it);
+            if (actionIds.find(actionId) != actionIds.end()) // already applied
+                continue;
+
+            const auto &action = it->second;
+
+            { // Update the locally stored actions
+                sharedUnconfirmedActionList.emplace_back(actionId, action->freshClone());
+                unconfirmedActionMap.emplace(actionId, std::prev(sharedUnconfirmedActionList.end()));
             }
 
-            it = next;
+            { // Update the actions to be emitted
+                auto actionClone = action->freshClone();
+                actionClone->redo(*tournament);
+                uniqueUnconfirmedActionList->emplace_back(actionId, std::move(actionClone));
+            }
         }
 
-        // Copy unconfirmed set and unconfirmed action list
-        auto unconfirmedActionList = std::make_unique<UniqueActionList>();
-        for (const auto &p : mUnconfirmedActionList) {
-            auto actionId = p.first;
-            auto action = p.second->freshClone();
-            action->redo(*tournament);
-            unconfirmedActionList->push_back({actionId, std::move(action)});
-        }
+        // Update the field variables
+        mUnconfirmedActionList = std::move(sharedUnconfirmedActionList);
+        mUnconfirmedActionMap = std::move(unconfirmedActionMap);
+        mUnconfirmedUndos = *unconfirmedUndos; // This is copied, since it needs to be emitted
 
         // Send sync acknowledgement and unconfirmed actions
         {
             auto message = std::make_unique<NetworkMessage>();
             message->encodeSyncAck();
-            deliver(std::move(message));
-        }
-
-        for (const auto &p : mUnconfirmedActionList) {
-            auto message = std::make_unique<NetworkMessage>();
-            message->encodeAction(p.first, p.second);
             deliver(std::move(message));
         }
 
@@ -413,13 +409,19 @@ void NetworkClient::connectSync() {
             deliver(std::move(message));
         }
 
-        emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::move(unconfirmedActionList), std::move(unconfirmedUndos)));
+        for (const auto &p : mUnconfirmedActionList) {
+            auto message = std::make_unique<NetworkMessage>();
+            message->encodeAction(p.first, p.second);
+            deliver(std::move(message));
+        }
+
+        // Emit signals
+        emit syncReceived(std::make_shared<SyncPayload>(std::move(tournament), std::move(uniqueActions), std::move(uniqueUnconfirmedActionList), std::move(unconfirmedUndos)));
         emit stateChanged(mState = NetworkClientState::CONNECTED);
         emit connectionAttemptSucceeded();
 
         mReadMessage = std::make_unique<NetworkMessage>();
         connectIdle();
     });
-
 }
 

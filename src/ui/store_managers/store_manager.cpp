@@ -1,4 +1,3 @@
-#include "core/log.hpp"
 #include "ui/network/network_interface.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -84,8 +83,6 @@ bool StoreManager::canRedo() {
 void StoreManager::redo() {
     assert(canRedo());
 
-    log_debug().msg("Redoing action");
-
     auto action = std::move(mRedoList.back());
     mRedoList.pop_back();
 
@@ -97,7 +94,6 @@ void StoreManager::redo() {
 
 void StoreManager::confirmSync() {
     mSyncing -= 1;
-    log_debug().field("mSyncing", mSyncing).msg("Sync confirmed");
 }
 
 void StoreManager::dispatch(std::unique_ptr<Action> action) {
@@ -113,8 +109,6 @@ void StoreManager::dispatch(std::unique_ptr<Action> action) {
 
         break;
     }
-
-    log_debug().field("actionId", actionId).msg("Dispatching action");
 
     auto clone = action->freshClone();
     action->redo(*mTournament);
@@ -140,11 +134,9 @@ void StoreManager::receiveAction(ClientActionId actionId, ActionPtr sharedAction
         return;
 
     auto action = sharedAction->freshClone(); // Unique ptrs can't be passed to signals, so instead a shared_ptr is used
-    log_debug().field("actionId", actionId).msg("Received action");
 
     size_t pos = mConfirmedActionList.size() - (mUnconfirmedUndos.size() - mUndoneUnconfirmedActions);
     emit actionAboutToBeAdded(actionId, pos);
-    log_debug().field("actionId", actionId).msg("StoreManager::receiveAction");
 
     // TODO: Trim stack size
     for (auto it = mUnconfirmedActionList.rbegin(); it != mUnconfirmedActionList.rend(); ++it) {
@@ -177,8 +169,6 @@ void StoreManager::receiveActionConfirm(ClientActionId actionId) {
     if (mSyncing > 0)
         return;
 
-    log_debug().field("actionId", actionId).msg("Received action confirm");
-
     auto front = std::move(mUnconfirmedActionList.front());
     mUnconfirmedActionList.pop_front();
     mUnconfirmedActionMap.erase(actionId);
@@ -200,7 +190,6 @@ void StoreManager::receiveUndo(ClientActionId actionId) {
     if (mSyncing > 0)
         return;
 
-    log_debug().field("actionId", actionId).msg("Received undo");
     emit actionAboutToBeErased(actionId);
 
     // An action can never be unconfirmed if the server sends an undo for it
@@ -282,8 +271,6 @@ void StoreManager::receiveUndoConfirm(ClientActionId actionId) {
     if (mSyncing > 0)
         return;
 
-    log_debug().field("actionId", actionId).msg("Received undo confirm");
-
     mUnconfirmedUndos.erase(actionId);
     auto it = mConfirmedActionMap.find(actionId);
 
@@ -303,7 +290,6 @@ bool StoreManager::containsUnconfirmedAction(ClientActionId action) const {
 
 void StoreManager::receiveSync(SyncPayloadPtr payload) {
     emit tournamentAboutToBeReset();
-    log_debug().msg("Received sync");
 
     if (mTournament->getId() != payload->tournament->getId())
         mRedoList.clear();
@@ -329,6 +315,7 @@ void StoreManager::receiveSync(SyncPayloadPtr payload) {
         assert(it->first.getClientId() == mId);
         if (payload->unconfirmedUndos->find(it->first) != payload->unconfirmedUndos->end())
             ++mUndoneUnconfirmedActions;
+        mUnconfirmedActionMap[it->first] = it;
         mUndoActionId = it->first;
     }
 
@@ -356,7 +343,7 @@ ConstActionListIterator StoreManager::actionsBegin() const {
 }
 
 ConstActionListIterator StoreManager::actionsEnd() const {
-    return ConstActionListIterator(*this, mUnconfirmedActionList.begin(), false);
+    return ConstActionListIterator(*this, mUnconfirmedActionList.end(), false);
 }
 
 ConstActionListIterator::ConstActionListIterator(const StoreManager &storeManager, UniqueActionList::const_iterator it, bool iteratingConfirmedActions)
@@ -413,13 +400,9 @@ std::chrono::milliseconds StoreManager::localTime() const {
 }
 
 void StoreManager::undo(ClientActionId actionId) {
-    log_debug().field("actionId", actionId).msg("Undo called");
-
     // check that the action exists
-    if (mConfirmedActionMap.find(actionId) == mConfirmedActionMap.end() && mUnconfirmedActionMap.find(actionId) == mUnconfirmedActionMap.end()) {
-        log_debug().msg("Tried to undo non-existing action");
+    if (mConfirmedActionMap.find(actionId) == mConfirmedActionMap.end() && mUnconfirmedActionMap.find(actionId) == mUnconfirmedActionMap.end())
         return;
-    }
 
     mUnconfirmedUndos.insert(actionId);
 
