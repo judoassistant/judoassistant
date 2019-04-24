@@ -559,6 +559,7 @@ void ScoreOperatorWindow::updateControlButtons() {
     }
 
     const auto &ruleset = category.getRuleset();
+    auto masterTime = mStoreManager.masterTime();
 
     if (match.getStatus() == MatchStatus::UNPAUSED) {
         mResumeButton->setText("Pause match");
@@ -566,7 +567,7 @@ void ScoreOperatorWindow::updateControlButtons() {
     }
     else {
         mResumeButton->setText("Resume Match");
-        mResumeButton->setEnabled(ruleset.canResume(match, mStoreManager.masterTime()));
+        mResumeButton->setEnabled(ruleset.canResume(match, masterTime));
     }
 
     mWhiteIpponButton->setEnabled(ruleset.canAddIppon(match, MatchStore::PlayerIndex::WHITE));
@@ -583,7 +584,7 @@ void ScoreOperatorWindow::updateControlButtons() {
     auto osaekomi = match.getOsaekomi();
     if (osaekomi.has_value()) {
         if (osaekomi->first == MatchStore::PlayerIndex::WHITE) {
-            mWhiteOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match));
+            mWhiteOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match, masterTime));
             mWhiteOsaekomiButton->setText("Stop Osaekomi for White");
 
             mBlueOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::BLUE));
@@ -593,7 +594,7 @@ void ScoreOperatorWindow::updateControlButtons() {
             mWhiteOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::WHITE));
             mWhiteOsaekomiButton->setText("Start Osaekomi for White");
 
-            mBlueOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match));
+            mBlueOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match, masterTime));
             mBlueOsaekomiButton->setText("Stop Osaekomi for Blue");
         }
     }
@@ -741,21 +742,17 @@ void ScoreOperatorWindow::pausingTimerHit() {
     if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
         return;
 
-    if (match.getStatus() != MatchStatus::UNPAUSED)
-        return;
-
     const auto &ruleset = category.getRuleset();
 
     auto masterTime = mStoreManager.masterTime();
-    if (ruleset.shouldAwardOsaekomiWazari(match, masterTime)) {
+    if (ruleset.shouldAwardOsaekomiWazari(match, masterTime))
         mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, match.getOsaekomi()->first, masterTime, true));
-    }
 
     if (ruleset.shouldAwardOsaekomiIppon(match, masterTime))
         mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, match.getOsaekomi()->first, masterTime, true));
 
     if (ruleset.shouldStopOsaekomi(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second));
+        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
 
     if (ruleset.shouldPause(match, masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
@@ -816,7 +813,7 @@ void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerInde
     }
     else {
         // Stop osaekomi
-        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second));
+        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
 
         if (ruleset.shouldPause(match, masterTime))
             mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));

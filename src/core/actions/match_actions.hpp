@@ -320,7 +320,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, StartOsaekomiAction)
 class StopOsaekomiAction : public MatchEventAction {
 public:
     StopOsaekomiAction() = default;
-    StopOsaekomiAction(CategoryId categoryId, MatchId matchId);
+    StopOsaekomiAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -330,10 +330,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::base_class<MatchEventAction>(this));
+        ar(cereal::base_class<MatchEventAction>(this), mMasterTime);
     }
 
 private:
+    std::chrono::milliseconds mMasterTime;
 };
 
 CEREAL_REGISTER_TYPE(StopOsaekomiAction)

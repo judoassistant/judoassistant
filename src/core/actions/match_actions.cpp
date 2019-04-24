@@ -589,12 +589,13 @@ void StartOsaekomiAction::undoImpl(TournamentStore & tournament) {
         recover(tournament);
 }
 
-StopOsaekomiAction::StopOsaekomiAction(CategoryId categoryId, MatchId matchId)
+StopOsaekomiAction::StopOsaekomiAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
     : MatchEventAction(categoryId, matchId)
+    , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> StopOsaekomiAction::freshClone() const {
-    return std::make_unique<StopOsaekomiAction>(mCategoryId, mMatchId);
+    return std::make_unique<StopOsaekomiAction>(mCategoryId, mMatchId, mMasterTime);
 }
 
 std::string StopOsaekomiAction::getDescription() const {
@@ -611,11 +612,11 @@ void StopOsaekomiAction::redoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
     const auto &ruleset = category.getRuleset();
 
-    if (!ruleset.canStopOsaekomi(match))
+    if (!ruleset.canStopOsaekomi(match, mMasterTime))
         return;
 
     save(match);
-    ruleset.stopOsaekomi(match);
+    ruleset.stopOsaekomi(match, mMasterTime);
     notify(tournament, match);
 }
 

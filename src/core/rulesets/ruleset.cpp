@@ -102,12 +102,15 @@ void Ruleset::startOsaekomi(MatchStore &match, MatchStore::PlayerIndex playerInd
     match.setHasAwardedOsaekomiWazari(false);
 }
 
-bool Ruleset::canStopOsaekomi(const MatchStore &match) const {
+bool Ruleset::canStopOsaekomi(const MatchStore &match, std::chrono::milliseconds /*masterTime*/) const {
     return match.getOsaekomi().has_value();
 }
 
-void Ruleset::stopOsaekomi(MatchStore &match) const {
+void Ruleset::stopOsaekomi(MatchStore &match, std::chrono::milliseconds masterTime) const {
     match.setOsaekomi(std::nullopt);
+
+    if (match.getStatus() == MatchStatus::PAUSED && isFinished(match, masterTime))
+        match.setStatus(MatchStatus::FINISHED);
 }
 
 bool Ruleset::shouldAwardOsaekomiWazari(const MatchStore &match, std::chrono::milliseconds masterTime) const {
