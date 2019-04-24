@@ -195,7 +195,7 @@ void ScoreDisplayWidget::paintPlayerNormal(QRect rect, MatchStore::PlayerIndex p
     const auto &score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
     if (score.hansokuMake == 0 && (score.ippon > 0 || otherScore.hansokuMake == 1))
-        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignHCenter, "IPPON");
+        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, "IPPON");
     else
         painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, QString::number(score.wazari));
 
@@ -282,7 +282,7 @@ void ScoreDisplayWidget::paintLowerNormal(QRect rect, QPainter &painter, const C
         unsigned int seconds = std::chrono::floor<std::chrono::seconds>(match.currentOsaekomiTime(masterTime)).count();
         QString secondsString = QString::number(seconds).rightJustified(2, '0');
 
-        font.setPixelSize(rect.height()*4/8);
+        font.setPixelSize(rect.height()*5/8);
         painter.setFont(font);
 
         painter.setPen(COLOR_SCOREBOARD_OSAEKOMI);
