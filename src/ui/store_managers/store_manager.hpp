@@ -88,6 +88,8 @@ protected:
     void receiveSync(SyncPayloadPtr syncPayload);
     void confirmSync();
 
+    void popActionListFront();
+
     WorkerThread& getWorkerThread();
 
 private:

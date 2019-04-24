@@ -1,3 +1,5 @@
+#include "core/constants/actions.hpp"
+#include "core/log.hpp"
 #include "ui/network/network_interface.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -148,6 +150,9 @@ void StoreManager::receiveAction(ClientActionId actionId, ActionPtr sharedAction
     mConfirmedActionList.push_back({actionId, std::move(action)});
     mConfirmedActionMap[actionId] = std::prev(mConfirmedActionList.end());
 
+    if (mConfirmedActionList.size() > MAX_ACTION_STACK_SIZE)
+        popActionListFront();
+
     for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
         // if the action is an unconfirmed undo then leave it undone
         if (mUnconfirmedUndos.find(it->first) != mUnconfirmedUndos.end())
@@ -182,6 +187,9 @@ void StoreManager::receiveActionConfirm(ClientActionId actionId) {
 
     mConfirmedActionList.push_back(std::move(front));
     mConfirmedActionMap[actionId] = std::prev(mConfirmedActionList.end());
+
+    if (mConfirmedActionList.size() > MAX_ACTION_STACK_SIZE)
+        popActionListFront();
 }
 
 void StoreManager::receiveUndo(ClientActionId actionId) {
@@ -519,5 +527,16 @@ void StoreManager::stop() {
 
 void StoreManager::wait() {
     getWorkerThread().wait();
+}
+
+void StoreManager::popActionListFront() {
+    const auto &front = mConfirmedActionList.front();
+    if (!front.second->isDone()) {
+        log_warning().msg("Tried to trim undone action");
+        return;
+    }
+
+    mConfirmedActionMap.erase(front.first);
+    mConfirmedActionList.pop_front();
 }
 

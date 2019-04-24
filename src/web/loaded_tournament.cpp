@@ -3,6 +3,7 @@
 #include <lz4.h>
 #include <sstream>
 
+#include "core/constants/actions.hpp"
 #include "core/log.hpp"
 #include "core/serializables.hpp"
 #include "web/loaded_tournament.hpp"
@@ -60,6 +61,11 @@ void LoadedTournament::dispatch(ClientActionId actionId, std::shared_ptr<Action>
         mActionList.push_back({actionId, std::move(action)});
         mActionIds.insert(actionId);
         mModificationTime = std::chrono::system_clock::now();
+
+        if (mActionList.size() > MAX_ACTION_STACK_SIZE) {
+            mActionIds.erase(mActionList.front().first);
+            mActionList.pop_front();
+        }
 
         mTournament->flushWebTatamiModels();
         deliverChanges();
