@@ -374,7 +374,10 @@ void NetworkClient::connectSync() {
         for (auto it = mUnconfirmedActionList.begin(); it != mUnconfirmedActionList.end(); ++it) {
             const auto actionId = it->first;
 
-            if (actionIds.find(actionId) != actionIds.end()) // already applied
+            if (actionIds.find(actionId) != actionIds.end()) // Already applied
+                continue;
+
+            if (mUnconfirmedUndos.find(actionId) != mUnconfirmedUndos.end()) // Undone locally but never send. Delete action
                 continue;
 
             const auto &action = it->second;
