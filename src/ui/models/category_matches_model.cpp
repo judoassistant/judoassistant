@@ -50,7 +50,7 @@ void CategoryMatchesModel::endResetMatches() {
             mMatchesMap[matchId] = mMatches.size();
             mMatches.push_back(matchId);
 
-            if (match.getStatus() == MatchStatus::UNPAUSED)
+            if (match.getStatus() == MatchStatus::UNPAUSED || match.getOsaekomi().has_value())
                 mUnpausedMatches.insert(matchId);
 
             auto whitePlayer = match.getWhitePlayer();
@@ -179,7 +179,7 @@ void CategoryMatchesModel::changeMatches(CategoryId categoryId, const std::vecto
         const auto &match = category.getMatch(matchId);
 
         // update unpaused matches set
-        if (match.getStatus() == MatchStatus::UNPAUSED)
+        if (match.getStatus() == MatchStatus::UNPAUSED || match.getOsaekomi().has_value())
             mUnpausedMatches.insert(matchId);
         else
             mUnpausedMatches.erase(matchId);
