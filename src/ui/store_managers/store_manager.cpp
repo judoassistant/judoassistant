@@ -536,7 +536,16 @@ void StoreManager::popActionListFront() {
         return;
     }
 
-    mConfirmedActionMap.erase(front.first);
+    auto actionId = front.first;
+
+    if (mUndoActionId == actionId) {
+        mUndoActionId = std::nullopt;
+        emit undoStatusChanged(false);
+    }
+
+    mConfirmedActionMap.erase(actionId);
     mConfirmedActionList.pop_front();
+
+    emit actionErased(actionId);
 }
 
