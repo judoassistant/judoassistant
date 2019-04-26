@@ -123,6 +123,9 @@ void MatchCardWidget::changeCategories(std::vector<CategoryId> categoryIds) {
 }
 
 void MatchCardWidget::changePlayers(std::vector<PlayerId> playerIds) {
+    if (!mCombinedId)
+        return;
+
     const auto &tournament = mStoreManager.getTournament();
     const auto &category = tournament.getCategory(mCombinedId->first);
     const auto &match = category.getMatch(mCombinedId->second);
