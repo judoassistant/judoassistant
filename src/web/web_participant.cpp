@@ -33,9 +33,8 @@ void WebParticipant::listen() {
         }
 
         if (!parseMessage(boost::beast::buffers_to_string(mBuffer.data()))) {
-            log_debug().msg("Failed parsing web message");
+            log_warning().msg("Failed parsing web message");
             // forceQuit();
-            return;
         }
 
         mBuffer.consume(bytes_transferred);
@@ -103,8 +102,12 @@ bool WebParticipant::parseMessage(const std::string &message) {
 bool WebParticipant::subscribeTournament(const std::string &webName) {
     auto self = shared_from_this();
     mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
-        if (tournament == nullptr)
+        if (tournament == nullptr) {
+            JsonEncoder encoder;
+            deliver(encoder.encodeTournamentSubscriptionFailMessage());
             return;
+        }
+
         tournament->addParticipant(shared_from_this());
         mTournament = std::move(tournament);
     }));
