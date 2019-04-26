@@ -3,9 +3,10 @@
 #include <string>
 #include "core/serialize.hpp"
 
-const int VERSION_MAJOR = @version_major@;
-const int VERSION_MINOR = @version_minor@;
-const int VERSION_PATCH = @version_patch@;
+#mesondefine VERSION_MAJOR
+#mesondefine VERSION_MINOR
+#mesondefine VERSION_PATCH
+#mesondefine DEBUG
 
 class ApplicationVersion {
 public:

@@ -25,9 +25,10 @@ endif
 
 # Setup configuration files
 conf_data = configuration_data()
-conf_data.set('version_major', '0')
-conf_data.set('version_minor', '1')
-conf_data.set('version_patch', '0')
+conf_data.set('VERSION_MAJOR', '0')
+conf_data.set('VERSION_MINOR', '1')
+conf_data.set('VERSION_PATCH', '0')
+conf_data.set('DEBUG', get_option('buildtype') == 'debug')
 
 # Copy license
 configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
