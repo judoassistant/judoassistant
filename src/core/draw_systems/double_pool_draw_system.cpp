@@ -162,7 +162,7 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
 std::vector<std::pair<PlayerId, std::optional<unsigned int>>> DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
-    const auto &status = category.getStatus(MatchType::FINAL) + category.getStatus(MatchType::ELIMINATION);
+    const auto &status = category.getStatus(MatchType::ELIMINATION) + category.getStatus(MatchType::FINAL);
     if (!status.isFinished()) // not finished
         return results;
 

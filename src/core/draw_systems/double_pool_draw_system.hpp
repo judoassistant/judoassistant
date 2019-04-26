@@ -20,7 +20,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mMatches, mPlayers);
+        ar(mMatches, mPlayers, mFirstPool, mSecondPool);
     }
 
 private:
