@@ -104,21 +104,22 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
     auto &secondSemiFinal = category.getMatch(mMatches[mMatches.size() - 2]);
     auto &finaly = category.getMatch(mMatches.back());
 
-    if (eliminationFinished(tournament, category)) {
+    const auto &status = category.getStatus(MatchType::ELIMINATION);
+    if (status.startedMatches == 0 && status.notStartedMatches == 0) { // elimination finished
         auto firstPoolResults = mFirstPool->getResults(tournament, category);
         auto secondPoolResults = mSecondPool->getResults(tournament, category);
 
         // Check first semi final players
-        if (firstSemiFinal.getWhitePlayer() != firstPoolResults[0].second)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, firstPoolResults[0].second));
-        if (firstSemiFinal.getBluePlayer() != secondPoolResults[1].second)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, secondPoolResults[1].second));
+        if (firstSemiFinal.getWhitePlayer() != firstPoolResults[0].first)
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, firstPoolResults[0].first));
+        if (firstSemiFinal.getBluePlayer() != secondPoolResults[1].first)
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, secondPoolResults[1].first));
 
         // Check second semi final players
-        if (secondSemiFinal.getWhitePlayer() != secondPoolResults[0].second)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, secondPoolResults[0].second));
-        if (secondSemiFinal.getBluePlayer() != firstPoolResults[1].second)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, firstPoolResults[1].second));
+        if (secondSemiFinal.getWhitePlayer() != secondPoolResults[0].first)
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, secondPoolResults[0].first));
+        if (secondSemiFinal.getBluePlayer() != firstPoolResults[1].first)
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, firstPoolResults[1].first));
 
         // Check final players
         const auto &ruleset = category.getRuleset();
@@ -158,15 +159,12 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
     return actions;
 }
 
-std::vector<std::pair<std::optional<unsigned int>, PlayerId>> DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
+std::vector<std::pair<PlayerId, std::optional<unsigned int>>> DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
+    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
-    const auto &status = category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
-        for (auto playerId : mPlayers)
-            results.emplace_back(std::nullopt, playerId);
+    const auto &status = category.getStatus(MatchType::FINAL) + category.getStatus(MatchType::ELIMINATION);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) // not finished
         return results;
-    }
 
     const auto &ruleset = category.getRuleset();
 
@@ -180,8 +178,8 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> DoublePoolDrawSyst
     auto finalWinnerId = finaly.getPlayer(finalWinnerIndex).value();
     auto finalLoserId = finaly.getPlayer(finalLoserIndex).value();
 
-    results.emplace_back(1, finalWinnerId);
-    results.emplace_back(2, finalLoserId);
+    results.emplace_back(finalWinnerId, 1);
+    results.emplace_back(finalLoserId, 2);
 
     auto firstSemiFinalLoserIndex = (ruleset.getWinner(firstSemiFinal).value() == MatchStore::PlayerIndex::WHITE) ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE;
     auto secondSemiFinalLoserIndex = (ruleset.getWinner(secondSemiFinal).value() == MatchStore::PlayerIndex::WHITE) ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE;
@@ -189,8 +187,8 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> DoublePoolDrawSyst
     auto firstSemiFinalLoserId = firstSemiFinal.getPlayer(firstSemiFinalLoserIndex).value();
     auto secondSemiFinalLoserId = secondSemiFinal.getPlayer(secondSemiFinalLoserIndex).value();
 
-    results.emplace_back(3, firstSemiFinalLoserId);
-    results.emplace_back(3, secondSemiFinalLoserId);
+    results.emplace_back(firstSemiFinalLoserId, 3);
+    results.emplace_back(secondSemiFinalLoserId, 3);
 
     std::unordered_set<PlayerId> finalists;
     finalists.insert(finalWinnerId);
@@ -201,24 +199,13 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> DoublePoolDrawSyst
     for (auto playerId : mPlayers) {
         if (finalists.find(playerId) != finalists.end())
             continue;
-        results.emplace_back(std::nullopt, playerId);
+        results.emplace_back(playerId, std::nullopt);
     }
 
     return results;
 }
 
 bool DoublePoolDrawSystem::hasFinalBlock() const {
-    return true;
-}
-
-bool DoublePoolDrawSystem::eliminationFinished(const TournamentStore &tournament, const CategoryStore &category) const {
-    auto end = std::next(mMatches.begin(), mMatches.size() - 3);
-    for (auto it = mMatches.begin(); it != end; ++it) {
-        const auto &match = category.getMatch(*it);
-        if (match.getStatus() != MatchStatus::FINISHED)
-            return false;
-    }
-
     return true;
 }
 

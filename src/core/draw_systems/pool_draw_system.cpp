@@ -83,14 +83,11 @@ struct PoolPlayerRank {
     }
 };
 
-std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
+std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
+    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
-    if (!isFinished(tournament, category)) {
-        for (auto playerId : mPlayers)
-            results.emplace_back(std::nullopt, playerId);
+    if (!isFinished(tournament, category))
         return results;
-    }
 
     const Ruleset &ruleset = category.getRuleset();
 
@@ -141,10 +138,8 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> PoolDrawSystem::ge
     std::sort(sortedRanks.begin(), sortedRanks.end());
 
     for (size_t i = 0; i < sortedRanks.size(); ++i)
-        results.emplace_back(i+1, sortedRanks[i].playerId);
+        results.emplace_back(sortedRanks[i].playerId, i+1);
     return results;
-
-    return {};
 }
 
 bool PoolDrawSystem::hasFinalBlock() const {

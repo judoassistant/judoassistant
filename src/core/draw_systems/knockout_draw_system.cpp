@@ -173,8 +173,13 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
     return actions;
 }
 
-std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
+std::vector<std::pair<PlayerId, std::optional<unsigned int>>> KnockoutDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
+    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
+
+    const auto &status = category.getStatus(MatchType::ELIMINATION) + category.getStatus(MatchType::FINAL);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) // Not finished
+        return results;
+
     const auto &ruleset = category.getRuleset();
 
     // Iterate over each layer(starting from the final) and add the losers.
@@ -182,13 +187,6 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem
     unsigned int pos = 1;
     size_t layer_size = 1;
     size_t next_layer = 1;
-
-    const auto &status = category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) {
-        for (auto playerId : mPlayers)
-            results.emplace_back(std::nullopt, playerId);
-        return results;
-    }
 
     for (size_t i = 0; i < mMatches.size(); ++i) {
         if (i == next_layer) {
@@ -210,11 +208,11 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> KnockoutDrawSystem
         MatchStore::PlayerIndex winner = ruleset.getWinner(match).value();
         MatchStore::PlayerIndex loser = (winner == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
         if (i != 0) {  // Special case root(add winner if we're at the root)
-            results.push_back({std::make_optional(pos), match.getPlayer(loser).value()});
+            results.emplace_back(match.getPlayer(loser).value(), pos);
         }
         else {
-            results.push_back({std::make_optional(pos), match.getPlayer(winner).value()});
-            results.push_back({std::make_optional(pos+1), match.getPlayer(loser).value()});
+            results.emplace_back(match.getPlayer(winner).value(), pos);
+            results.emplace_back(match.getPlayer(loser).value(), pos+1);
         }
     }
 

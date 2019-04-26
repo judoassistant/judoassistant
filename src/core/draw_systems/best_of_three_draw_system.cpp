@@ -68,15 +68,12 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const
     return actions;
 }
 
-std::vector<std::pair<std::optional<unsigned int>, PlayerId>> BestOfThreeDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> results;
+std::vector<std::pair<PlayerId, std::optional<unsigned int>>> BestOfThreeDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
+    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
     auto status = category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) { // not finished
-        for (auto playerId : mPlayers)
-            results.emplace_back(std::nullopt, playerId);
+    if (status.startedMatches > 0 || status.notStartedMatches > 0) // not finished
         return results;
-    }
 
     const auto &ruleset = category.getRuleset();
 
@@ -102,12 +99,12 @@ std::vector<std::pair<std::optional<unsigned int>, PlayerId>> BestOfThreeDrawSys
 
     // construct results list
     if (whiteWinCount > 1) {
-        results.emplace_back(1, firstMatch.getWhitePlayer().value());
-        results.emplace_back(2, firstMatch.getBluePlayer().value());
+        results.emplace_back(firstMatch.getWhitePlayer().value(), 1);
+        results.emplace_back(firstMatch.getBluePlayer().value(), 2);
     }
     else {
-        results.emplace_back(1, firstMatch.getBluePlayer().value());
-        results.emplace_back(2, firstMatch.getWhitePlayer().value());
+        results.emplace_back(firstMatch.getBluePlayer().value(), 1);
+        results.emplace_back(firstMatch.getWhitePlayer().value(), 2);
     }
 
     return results;
