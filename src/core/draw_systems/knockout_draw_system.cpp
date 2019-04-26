@@ -177,7 +177,7 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> KnockoutDrawSystem
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
     const auto &status = category.getStatus(MatchType::ELIMINATION) + category.getStatus(MatchType::FINAL);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) // Not finished
+    if (!status.isFinished()) // Not finished
         return results;
 
     const auto &ruleset = category.getRuleset();

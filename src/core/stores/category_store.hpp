@@ -30,11 +30,15 @@ struct CategoryStatus {
         ar(notStartedMatches, startedMatches, finishedMatches);
     }
 
+    bool isFinished() const;
+
     unsigned int notStartedMatches;
     unsigned int startedMatches;
     unsigned int finishedMatches;
+
 };
 
+CategoryStatus operator+(const CategoryStatus &a, const CategoryStatus &b);
 
 class CategoryStore {
 public:

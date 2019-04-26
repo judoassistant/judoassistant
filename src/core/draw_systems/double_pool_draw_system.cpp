@@ -105,7 +105,7 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
     auto &finaly = category.getMatch(mMatches.back());
 
     const auto &status = category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches == 0 && status.notStartedMatches == 0) { // elimination finished
+    if (status.isFinished()) { // elimination finished
         auto firstPoolResults = mFirstPool->getResults(tournament, category);
         auto secondPoolResults = mSecondPool->getResults(tournament, category);
 
@@ -163,7 +163,7 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> DoublePoolDrawSyst
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
     const auto &status = category.getStatus(MatchType::FINAL) + category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) // not finished
+    if (!status.isFinished()) // not finished
         return results;
 
     const auto &ruleset = category.getRuleset();

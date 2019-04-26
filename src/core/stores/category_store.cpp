@@ -183,3 +183,15 @@ std::chrono::milliseconds CategoryStore::expectedDuration(MatchType type) const 
     return expectedDuration;
 }
 
+CategoryStatus operator+(const CategoryStatus &a, const CategoryStatus &b) {
+    CategoryStatus result;
+    result.notStartedMatches = a.notStartedMatches + b.notStartedMatches;
+    result.startedMatches = a.startedMatches + b.startedMatches;
+    result.finishedMatches = a.finishedMatches + b.finishedMatches;
+    return result;
+}
+
+bool CategoryStatus::isFinished() const {
+    return notStartedMatches == 0 && startedMatches == 0;
+}
+

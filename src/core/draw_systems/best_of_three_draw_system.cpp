@@ -72,7 +72,7 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> BestOfThreeDrawSys
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
     auto status = category.getStatus(MatchType::ELIMINATION);
-    if (status.startedMatches > 0 || status.notStartedMatches > 0) // not finished
+    if (!status.isFinished()) // not finished
         return results;
 
     const auto &ruleset = category.getRuleset();
