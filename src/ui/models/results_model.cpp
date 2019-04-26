@@ -33,8 +33,8 @@ int ResultsModel::columnCount(const QModelIndex &parent) const {
 
 QVariant ResultsModel::data(const QModelIndex &index, int role) const {
     auto pair = mResults[index.row()];
-    auto position = pair.first;
-    auto playerId = pair.second;
+    auto playerId = pair.first;
+    auto position = pair.second;
 
     const PlayerStore &player = mStoreManager.getTournament().getPlayer(playerId);
 
@@ -135,7 +135,7 @@ void ResultsModel::endResetResults() {
 
     mResults = category.getDrawSystem().getResults(tournament, category);
     for (size_t i = 0; i < mResults.size(); ++i) {
-        auto playerId = mResults[i].second;
+        auto playerId = mResults[i].first;
         mPlayers[playerId] = i;
     }
 

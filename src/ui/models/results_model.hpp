@@ -49,6 +49,6 @@ private:
 
     bool mResetting;
     std::unordered_map<PlayerId, size_t> mPlayers;
-    std::vector<std::pair<std::optional<unsigned int>, PlayerId>> mResults;
+    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> mResults;
 };
 

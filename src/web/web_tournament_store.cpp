@@ -126,9 +126,11 @@ void WebTournamentStore::endAddCategories(const std::vector<CategoryId> &categor
         if (mErasedCategories.find(categoryId) != mErasedCategories.end()) {
             mErasedCategories.erase(categoryId);
             mChangedCategories.insert(categoryId);
+            mCategoryResultsResets.insert(categoryId);
         }
         else {
             mAddedCategories.insert(categoryId);
+            mCategoryResultsResets.insert(categoryId);
         }
 
         for (auto playerId : getCategory(categoryId).getPlayers())
@@ -189,37 +191,12 @@ void WebTournamentStore::changeMatches(CategoryId categoryId, const std::vector<
 
 void WebTournamentStore::beginResetMatches(CategoryId categoryId) {
     // noop
-
-    // for (const auto &match : getCategory(category).getMatches()) {
-    //     auto combinedId = std::make_pair(category, match->getId());
-    //     assert(mChangedMatches.find(combinedId) == mChangedMatches.end());
-    //     if (mErasedMatches.find(combinedId) != mErasedMatches.end()) {
-    //         mErasedMatches.erase(combinedId);
-    //         mChangedMatches.insert(combinedId);
-    //     }
-    //     else {
-    //         mAddedMatches.insert(combinedId);
-    //     }
-    // }
 }
 
 void WebTournamentStore::endResetMatches(CategoryId categoryId) {
     mCategoryMatchResets.insert(categoryId);
     for (auto playerId : getCategory(categoryId).getPlayers())
         mPlayerMatchResets.insert(playerId);
-
-    // Add all matches
-    // for (const auto &match : getCategory(category).getMatches()) {
-    //     auto combinedId = std::make_pair(category, match->getId());
-    //     assert(mErasedMatches.find(combinedId) == mErasedMatches.end());
-    //     if (mAddedMatches.find(combinedId) != mAddedMatches.end()) {
-    //         mAddedMatches.erase(combinedId);
-    //     }
-    //     else {
-    //         mChangedMatches.erase(combinedId);
-    //         mErasedMatches.insert(combinedId);
-    //     }
-    // }
 }
 
 void WebTournamentStore::addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {
@@ -322,3 +299,8 @@ const WebTatamiModel& WebTournamentStore::getWebTatamiModel(size_t index) const 
 const std::vector<WebTatamiModel>& WebTournamentStore::getWebTatamiModels() const {
     return mTatamiModels;
 }
+
+void WebTournamentStore::resetCategoryResults(CategoryId categoryId) {
+    mCategoryResultsResets.insert(categoryId);
+}
+

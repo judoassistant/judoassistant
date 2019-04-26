@@ -39,7 +39,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
 
     // subscribed category field
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory))
-        document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament.getCategory(*subscribedCategory), allocator), allocator);
+        document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, tournament.getCategory(*subscribedCategory), allocator), allocator);
     else
         document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
 
@@ -113,7 +113,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     document.AddMember("messageType", encodeString("categorySubscription", allocator), allocator);
 
     // subscribed category field
-    document.AddMember("subscribedCategory", encodeSubscribedCategory(category, allocator), allocator);
+    document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, category, allocator), allocator);
 
     // matches
     rapidjson::Value matches(rapidjson::kArrayType);
@@ -283,7 +283,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
             shouldEncode |= (tournament.getAddedCategories().find(*subscribedCategory) != tournament.getAddedCategories().end());
             shouldEncode |= (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end());
             if (shouldEncode)
-                document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament.getCategory(*subscribedCategory), allocator), allocator);
+                document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, tournament.getCategory(*subscribedCategory), allocator), allocator);
         }
     }
     else if (subscribedPlayer.has_value()) { // encode subscribed player
@@ -423,7 +423,7 @@ rapidjson::Value JsonEncoder::encodeCategory(const CategoryStore &category, rapi
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeSubscribedCategory(const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeSubscribedCategory(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
     rapidjson::Value res = encodeCategory(category, allocator);
 
     // Encode matches
@@ -441,6 +441,8 @@ rapidjson::Value JsonEncoder::encodeSubscribedCategory(const CategoryStore &cate
     }
 
     res.AddMember("players", players, allocator);
+
+    res.AddMember("results", encodeCategoryResults(tournament, category, allocator), allocator);
 
     return res;
 }
@@ -653,3 +655,25 @@ rapidjson::Value JsonEncoder::encodeOsaekomi(const std::optional<std::pair<Match
     return res;
 }
 
+rapidjson::Value JsonEncoder::encodeCategoryResults(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res(rapidjson::kArrayType);
+
+    const auto &drawSystem = category.getDrawSystem();
+    auto results = drawSystem.getResults(tournament, category);
+
+    for (const auto &row : results) {
+        rapidjson::Value val;
+        val.SetObject();
+
+        val.AddMember("player", row.first.getValue(), allocator);
+
+        rapidjson::Value pos;
+        if (row.second.has_value())
+            pos.Set(*(row.second), allocator);
+        val.AddMember("pos", pos, allocator);
+
+        res.PushBack(val, allocator);
+    }
+
+    return res;
+}

@@ -57,6 +57,8 @@ public:
     void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
     void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
 
+    void resetCategoryResults(CategoryId categoryId);
+
 
     void flushWebTatamiModels();
     const WebTatamiModel& getWebTatamiModel(size_t index) const;
@@ -74,6 +76,7 @@ private:
     std::unordered_set<CategoryId> mAddedCategories;
     std::unordered_set<CategoryId> mErasedCategories;
     std::unordered_set<CategoryId> mCategoryMatchResets;
+    std::unordered_set<CategoryId> mCategoryResultsResets;
 
     std::unordered_set<std::pair<CategoryId, MatchId>> mChangedMatches;
 
