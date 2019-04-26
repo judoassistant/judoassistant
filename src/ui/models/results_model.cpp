@@ -4,6 +4,7 @@
 
 #include "core/draw_systems/draw_system.hpp"
 #include "core/id.hpp"
+#include "core/log.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
@@ -92,14 +93,6 @@ void ResultsModel::beginResetPlayers() {
     beginResetResults();
 }
 
-void ResultsModel::beginResetMatches(CategoryId categoryId) {
-    beginResetResults();
-}
-
-void ResultsModel::endResetMatches(CategoryId categoryId) {
-    endResetResults();
-}
-
 void ResultsModel::beginResetTournament() {
     beginResetResults();
 
@@ -118,10 +111,7 @@ void ResultsModel::endResetTournament() {
     mConnections.push(connect(&tournament, &QTournamentStore::playersAboutToBeErased, this, &ResultsModel::beginErasePlayers));
     mConnections.push(connect(&tournament, &QTournamentStore::playersAboutToBeReset, this, &ResultsModel::beginResetPlayers));
 
-    mConnections.push(connect(&tournament, &QTournamentStore::matchesChanged, this, &ResultsModel::changeMatches));
-
-    mConnections.push(connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &ResultsModel::beginResetMatches));
-    mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &ResultsModel::endResetMatches));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoryResultsReset, this, &ResultsModel::resetCategoryResults));
 }
 
 void ResultsModel::beginResetResults() {
@@ -130,7 +120,6 @@ void ResultsModel::beginResetResults() {
     mResetting = true;
     beginResetModel();
     mPlayers.clear();
-    mMatches.clear();
     mResults.clear();
 }
 
@@ -150,30 +139,12 @@ void ResultsModel::endResetResults() {
         mPlayers[playerId] = i;
     }
 
-    for (const auto &matchPtr : category.getMatches())
-        mMatches[matchPtr->getId()] = matchPtr->getStatus();
-
     endResetModel();
 }
 
-void ResultsModel::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
-    if (mCategory != categoryId)
-        return;
-
-    bool shouldReset = false;
-    const auto &category = mStoreManager.getTournament().getCategory(*mCategory);
-    for (auto matchId : matchIds) {
-        const auto &match = category.getMatch(matchId);
-        auto it = mMatches.find(matchId);
-        assert(it != mMatches.end());
-
-        // The results only change when matches are finished or were finished
-        if (match.getStatus() == MatchStatus::FINISHED || it->second == MatchStatus::FINISHED)
-            shouldReset = true;
-        it->second = match.getStatus();
-    }
-
-    if (shouldReset) {
+void ResultsModel::resetCategoryResults(CategoryId categoryId) {
+    log_debug().msg("Resetting results");
+    if (mCategory == categoryId) {
         beginResetResults();
         endResetResults();
     }

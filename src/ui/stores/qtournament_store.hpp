@@ -53,6 +53,8 @@ public:
     void beginEraseTatamis(const std::vector<TatamiLocation> &locations) override;
     void endEraseTatamis(const std::vector<TatamiLocation> &locations) override;
 
+    void resetCategoryResults(CategoryId categoryId) override;
+
 signals:
     void tournamentChanged();
 
@@ -84,6 +86,8 @@ signals:
     void tatamisAdded(const std::vector<TatamiLocation> &locations);
     void tatamisAboutToBeErased(const std::vector<TatamiLocation> &locations);
     void tatamisErased(const std::vector<TatamiLocation> &locations);
+
+    void categoryResultsReset(CategoryId categoryId);
 
 private:
     bool mResettingPlayers;

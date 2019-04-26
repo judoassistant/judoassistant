@@ -416,6 +416,10 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
     // Notify of match changed
     tournament.changeMatches(match.getCategory(), {match.getId()});
+
+    // Notify results
+    if (updatedStatus == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED)
+        tournament.resetCategoryResults(match.getCategory());
 }
 
 bool MatchEventAction::shouldRecover() {
@@ -460,12 +464,14 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
     // Notify draw system
     // Changes to draws can only occur if the match was finished or is finished
     if (mPrevStatus == MatchStatus::FINISHED || match.getStatus() == MatchStatus::FINISHED) {
-         const auto &drawSystem = category.getDrawSystem();
-         auto drawActions = drawSystem.updateCategory(tournament, category);
-         for (std::unique_ptr<Action> &action : drawActions) {
-             action->redo(tournament);
-             mDrawActions.push(std::move(action));
-         }
+        const auto &drawSystem = category.getDrawSystem();
+        auto drawActions = drawSystem.updateCategory(tournament, category);
+        for (std::unique_ptr<Action> &action : drawActions) {
+            action->redo(tournament);
+            mDrawActions.push(std::move(action));
+        }
+
+        tournament.resetCategoryResults(match.getCategory());
     }
 
     // Notify of match changed

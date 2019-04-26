@@ -384,6 +384,8 @@ void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
 
     if (!changedLocations.empty())
         tournament.changeTatamis(changedLocations, changedBlocks);
+
+    tournament.resetCategoryResults(mCategoryId);
 }
 
 void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
@@ -432,6 +434,8 @@ void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
 
     if (!changedLocations.empty())
         tournament.changeTatamis(changedLocations, changedBlocks);
+
+    tournament.resetCategoryResults(mCategoryId);
 }
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds)

@@ -78,6 +78,7 @@ public:
     virtual void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {}
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
+    virtual void resetCategoryResults(CategoryId categoryId) {} // Notify of category results change
 
     virtual void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {}
     virtual void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {}

@@ -28,7 +28,8 @@ public:
 
     void setCategory(std::optional<CategoryId> categoryId);
     std::optional<CategoryId> getCategory() const;
-private slots:
+
+private:
     void changePlayers(const std::vector<PlayerId> &playerIds);
     void beginErasePlayers(const std::vector<PlayerId> &playerIds);
     void beginResetPlayers();
@@ -36,11 +37,8 @@ private slots:
     void beginResetTournament();
     void endResetTournament();
 
-    void beginResetMatches(CategoryId categoryId);
-    void endResetMatches(CategoryId categoryId);
+    void resetCategoryResults(CategoryId categoryId);
 
-    void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds);
-private:
     void beginResetResults();
     void endResetResults();
     const int COLUMN_COUNT = 3;
@@ -51,7 +49,6 @@ private:
 
     bool mResetting;
     std::unordered_map<PlayerId, size_t> mPlayers;
-    std::unordered_map<MatchId, MatchStatus> mMatches;
     std::vector<std::pair<std::optional<unsigned int>, PlayerId>> mResults;
 };
 

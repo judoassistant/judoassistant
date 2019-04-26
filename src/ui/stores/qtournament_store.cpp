@@ -175,3 +175,7 @@ void QTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locati
     emit tatamisErased(locations);
 }
 
+void QTournamentStore::resetCategoryResults(CategoryId categoryId) {
+    emit categoryResultsReset(categoryId);
+}
+
