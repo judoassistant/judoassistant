@@ -26,7 +26,6 @@ ScoreApplication::ScoreApplication(int &argc, char *argv[]) : QApplication(argc,
 
 int ScoreApplication::exec() {
     ScoreOperatorWindow operatorWindow;
-    // ScoreDisplayWindow displayWindow;
 
     if (mArgs.size() > 2) {
         bool ok = true;
@@ -44,7 +43,6 @@ int ScoreApplication::exec() {
     }
 
     operatorWindow.show();
-    // displayWindow.show();
 
     return QApplication::exec();
 }

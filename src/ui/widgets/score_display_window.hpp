@@ -13,6 +13,8 @@ class ScoreDisplayWindow : public QMainWindow {
 public:
     ScoreDisplayWindow(const StoreManager &storeManager);
 
+    ScoreDisplayWidget& getDisplayWidget();
+
 private slots:
 private:
     const StoreManager &mStoreManager;

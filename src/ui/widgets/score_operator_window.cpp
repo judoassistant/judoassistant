@@ -19,6 +19,7 @@
 #include "ui/widgets/score_operator_window.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
+    : mDisplayWindow(mStoreManager)
 {
     createStatusBar();
     createTournamentMenu();
@@ -509,6 +510,7 @@ void ScoreOperatorWindow::goNextMatch() {
 
     mCurrentMatch = mNextMatch;
     mScoreDisplayWidget->setMatch(mCurrentMatch);
+    mDisplayWindow.getDisplayWidget().setMatch(mCurrentMatch);
     mActionsModel->setMatch(mCurrentMatch);
     findNextMatch();
     updateControlButtons();
@@ -818,5 +820,10 @@ void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerInde
         if (ruleset.shouldPause(match, masterTime))
             mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
     }
+}
+
+void ScoreOperatorWindow::show() {
+    ClientWindow::show();
+    mDisplayWindow.show();
 }
 

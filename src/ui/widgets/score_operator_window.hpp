@@ -14,6 +14,7 @@
 #include "ui/widgets/client_window.hpp"
 #include "ui/widgets/match_card_widget.hpp"
 #include "ui/widgets/score_display_widget.hpp"
+#include "ui/widgets/score_display_window.hpp"
 
 class ScoreOperatorWindow : public ClientWindow {
     Q_OBJECT
@@ -21,6 +22,8 @@ class ScoreOperatorWindow : public ClientWindow {
 public:
     ScoreOperatorWindow();
     void silentConnect(QString host, int port=Constants::DEFAULT_PORT);
+
+    virtual void show();
 
 private:
     static constexpr auto PAUSING_TIMER_INTERVAL = std::chrono::milliseconds(100);
@@ -107,5 +110,7 @@ private:
     QPushButton *mBlueOsaekomiButton;
 
     QTimer mPausingTimer;
+
+    ScoreDisplayWindow mDisplayWindow;
 };
 

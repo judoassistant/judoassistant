@@ -10,3 +10,8 @@ ScoreDisplayWindow::ScoreDisplayWindow(const StoreManager &storeManager)
 
     setWindowTitle(tr("JudoAssistant Score (Display)"));
 }
+
+ScoreDisplayWidget& ScoreDisplayWindow::getDisplayWidget() {
+    return *mScoreWidget;
+}
+
