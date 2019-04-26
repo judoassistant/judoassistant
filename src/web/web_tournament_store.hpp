@@ -54,6 +54,10 @@ public:
     void beginEraseTatamis(const std::vector<TatamiLocation> &locations) override;
     void endEraseTatamis(const std::vector<TatamiLocation> &locations) override;
 
+    void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
+    void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
+
+
     void flushWebTatamiModels();
     const WebTatamiModel& getWebTatamiModel(size_t index) const;
     const std::vector<WebTatamiModel>& getWebTatamiModels() const;

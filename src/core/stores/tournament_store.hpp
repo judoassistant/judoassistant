@@ -79,6 +79,9 @@ public:
     virtual void beginResetMatches(CategoryId categoryId) {}
     virtual void endResetMatches(CategoryId categoryId) {}
 
+    virtual void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {}
+    virtual void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {}
+
     virtual void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {}
     virtual void beginAddTatamis(const std::vector<TatamiLocation> &locations) {}
     virtual void endAddTatamis(const std::vector<TatamiLocation> &locations) {}

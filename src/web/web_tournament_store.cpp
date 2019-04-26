@@ -222,6 +222,14 @@ void WebTournamentStore::endResetMatches(CategoryId categoryId) {
     // }
 }
 
+void WebTournamentStore::addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {
+    mPlayerMatchResets.insert(playerId);
+}
+
+void WebTournamentStore::eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {
+    mPlayerMatchResets.insert(playerId);
+}
+
 void WebTournamentStore::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
     if (!mResettingTatamis) {
         for (WebTatamiModel &model : mTatamiModels)

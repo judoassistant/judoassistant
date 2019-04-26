@@ -487,9 +487,27 @@ void SetMatchPlayerAction::redoImpl(TournamentStore & tournament) {
         return;
     auto &match = category.getMatch(mMatchId);
 
+    if (mPlayerId.has_value() && !tournament.containsPlayer(*mPlayerId))
+        return;
+
     mOldPlayerId = match.getPlayer(mPlayerIndex);
     match.setPlayer(mPlayerIndex, mPlayerId);
+
+    if (mPlayerId.has_value()) {
+        auto &player = tournament.getPlayer(*mPlayerId);
+        player.addMatch(mCategoryId, mMatchId);
+    }
+
+    if (mOldPlayerId.has_value()) {
+        auto &player = tournament.getPlayer(*mOldPlayerId);
+        player.eraseMatch(mCategoryId, mMatchId);
+    }
+
     tournament.changeMatches(mCategoryId, {mMatchId});
+    if (mPlayerId.has_value())
+        tournament.addMatchesToPlayer(*mPlayerId, {std::make_pair(mCategoryId, mMatchId)});
+    if (mOldPlayerId.has_value())
+        tournament.eraseMatchesFromPlayer(*mPlayerId, {std::make_pair(mCategoryId, mMatchId)});
 }
 
 void SetMatchPlayerAction::undoImpl(TournamentStore & tournament) {
@@ -500,8 +518,26 @@ void SetMatchPlayerAction::undoImpl(TournamentStore & tournament) {
         return;
     auto &match = category.getMatch(mMatchId);
 
+    if (mPlayerId.has_value() && !tournament.containsPlayer(*mPlayerId))
+        return;
+
     match.setPlayer(mPlayerIndex, mOldPlayerId);
+
+    if (mOldPlayerId.has_value()) {
+        auto &player = tournament.getPlayer(*mOldPlayerId);
+        player.addMatch(mCategoryId, mMatchId);
+    }
+
+    if (mPlayerId.has_value()) {
+        auto &player = tournament.getPlayer(*mPlayerId);
+        player.eraseMatch(mCategoryId, mMatchId);
+    }
+
     tournament.changeMatches(mCategoryId, {mMatchId});
+    if (mPlayerId.has_value())
+        tournament.eraseMatchesFromPlayer(*mPlayerId, {std::make_pair(mCategoryId, mMatchId)});
+    if (mOldPlayerId.has_value())
+        tournament.addMatchesToPlayer(*mPlayerId, {std::make_pair(mCategoryId, mMatchId)});
 }
 
 std::unique_ptr<Action> SetMatchPlayerAction::freshClone() const {
