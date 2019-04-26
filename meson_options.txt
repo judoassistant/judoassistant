@@ -1,0 +1,3 @@
+option('ui', type : 'boolean', value : true)
+option('web', type : 'boolean', value : true)
+
