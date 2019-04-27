@@ -37,7 +37,7 @@ void UnallocatedBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGr
 
     const auto &categoryStatus = mCategory->getStatus(mType);
     if (categoryStatus.startedMatches == 0 && categoryStatus.finishedMatches == 0) {
-        painter->setBrush(palette.color(QPalette::Button).lighter(120)); // TODO: Setup colors for different states
+        painter->setBrush(palette.color(QPalette::Button).lighter(120));
     }
     else if (categoryStatus.startedMatches > 0 || categoryStatus.notStartedMatches > 0)
         painter->setBrush(palette.color(QPalette::Button).lighter(120));
