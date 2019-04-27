@@ -313,9 +313,12 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         connect(mNextButton, &QPushButton::clicked, this, &ScoreOperatorWindow::goNextMatch);
         mResumeButton = new QPushButton("Resume Match", matchBox);
         connect(mResumeButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resumeButtonClick);
+        mResetButton = new QPushButton("Reset Match", matchBox);
+        connect(mResetButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resetButtonClick);
 
         subLayout->addWidget(mNextButton);
         subLayout->addWidget(mResumeButton);
+        subLayout->addWidget(mResetButton);
 
         matchBox->setLayout(subLayout);
         layout->addWidget(matchBox);
@@ -517,9 +520,10 @@ void ScoreOperatorWindow::goNextMatch() {
 }
 
 void ScoreOperatorWindow::disableControlButtons() {
-    log_debug().msg("Disabling control buttons");
     mResumeButton->setEnabled(false);
     mResumeButton->setText("Resume Match");
+
+    mResetButton->setEnabled(false);
 
     mWhiteIpponButton->setEnabled(false);
     mWhiteWazariButton->setEnabled(false);
@@ -572,6 +576,8 @@ void ScoreOperatorWindow::updateControlButtons() {
         mResumeButton->setEnabled(ruleset.canResume(match, masterTime));
     }
 
+    mResetButton->setEnabled(true);
+
     mWhiteIpponButton->setEnabled(ruleset.canAddIppon(match, MatchStore::PlayerIndex::WHITE));
     mWhiteWazariButton->setEnabled(ruleset.canAddWazari(match, MatchStore::PlayerIndex::WHITE));
     mWhiteShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::WHITE));
@@ -582,7 +588,6 @@ void ScoreOperatorWindow::updateControlButtons() {
     mBlueShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::BLUE));
     mBlueHansokuMakeButton->setEnabled(ruleset.canAddHansokuMake(match, MatchStore::PlayerIndex::BLUE));
 
-    log_debug().msg("Updating osaekomi buttons");
     auto osaekomi = match.getOsaekomi();
     if (osaekomi.has_value()) {
         if (osaekomi->first == MatchStore::PlayerIndex::WHITE) {
@@ -787,7 +792,6 @@ void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
 }
 
 void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerIndex) {
-    log_debug().field("playerIndex", (unsigned int)playerIndex).msg("Clicked osaekomi");
     if (!mCurrentMatch)
         return;
 
@@ -825,5 +829,16 @@ void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerInde
 void ScoreOperatorWindow::show() {
     ClientWindow::show();
     mDisplayWindow.show();
+}
+
+void ScoreOperatorWindow::resetButtonClick() {
+    auto reply = QMessageBox::question(this, tr("Would you like to reset the match?"), tr("Are you sure you would like to reset the match?"), QMessageBox::Yes | QMessageBox::Cancel);
+    if (reply == QMessageBox::Cancel)
+        return;
+
+    if (!mCurrentMatch)
+        return;
+
+    mStoreManager.dispatch(std::make_unique<ResetMatchAction>(mCurrentMatch->first, mCurrentMatch->second));
 }
 

@@ -59,6 +59,7 @@ private:
     void undoSelectedAction();
 
     void resumeButtonClick();
+    void resetButtonClick();
     void awardIppon(MatchStore::PlayerIndex playerIndex);
     void awardWazari(MatchStore::PlayerIndex playerIndex);
     void awardShido(MatchStore::PlayerIndex playerIndex);
@@ -96,6 +97,7 @@ private:
 
     QPushButton *mNextButton;
     QPushButton *mResumeButton;
+    QPushButton *mResetButton;
 
     QPushButton *mWhiteIpponButton;
     QPushButton *mWhiteWazariButton;
