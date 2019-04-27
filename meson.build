@@ -43,6 +43,9 @@ ui_moc_headers = []
 score_sources = []
 score_moc_headers = []
 
+kiosk_sources = []
+kiosk_moc_headers = []
+
 hub_sources = []
 hub_moc_headers = []
 
@@ -57,10 +60,12 @@ core_lib = library('core', core_sources, include_directories: include_dirs, depe
 if get_option('ui')
     ui_moc_files = qt5.preprocess(moc_headers: ui_moc_headers, include_directories: include_dirs)
     score_moc_files = qt5.preprocess(moc_headers: score_moc_headers, include_directories: include_dirs)
+    kiosk_moc_files = qt5.preprocess(moc_headers: kiosk_moc_headers, include_directories: include_dirs)
     hub_moc_files = qt5.preprocess(moc_headers: hub_moc_headers, include_directories: include_dirs)
 else
     ui_moc_files = disabler()
     score_moc_files = disabler()
+    kiosk_moc_files = disabler()
     hub_moc_files = disabler()
 endif
 
@@ -75,6 +80,7 @@ endif
 # Executables
 hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, lz4_dep])
 score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
+kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
 web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep])
 
 # Run targets

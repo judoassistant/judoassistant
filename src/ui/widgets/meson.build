@@ -48,6 +48,10 @@ score_moc_headers += ['src/ui/widgets/score_display_widget.hpp']
 score_moc_headers += ['src/ui/widgets/score_display_window.hpp']
 score_moc_headers += ['src/ui/widgets/score_operator_window.hpp']
 
+kiosk_sources += ['src/ui/widgets/kiosk_window.cpp']
+
+kiosk_moc_headers += ['src/ui/widgets/kiosk_window.hpp']
+
 ui_sources += ['src/ui/widgets/client_window.cpp']
 ui_sources += ['src/ui/widgets/connect_dialog.cpp']
 ui_sources += ['src/ui/widgets/fixed_scroll_area.cpp']
