@@ -12,7 +12,7 @@ class MatchesWidget : public QWidget {
     Q_OBJECT
 
 public:
-    MatchesWidget(StoreManager &storeManager);
+    MatchesWidget(StoreManager &storeManager, QWidget *parent = nullptr);
 
 private:
     void beginTournamentReset();

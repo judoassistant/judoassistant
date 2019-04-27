@@ -10,8 +10,9 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/matches_widget.hpp"
 
-MatchesWidget::MatchesWidget(StoreManager & storeManager)
-    : mStoreManager(storeManager)
+MatchesWidget::MatchesWidget(StoreManager &storeManager, QWidget *parent)
+    : QWidget(parent)
+    , mStoreManager(storeManager)
 {
     connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &MatchesWidget::beginTournamentReset);
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &MatchesWidget::endTournamentReset);
