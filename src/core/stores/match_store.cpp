@@ -131,6 +131,13 @@ MatchStore::Score::Score()
     , hansokuMake(0)
 {}
 
+void MatchStore::Score::clear() {
+    ippon = 0;
+    wazari = 0;
+    shido = 0;
+    hansokuMake = 0;
+}
+
 void MatchStore::finish() {
     mStatus = MatchStatus::FINISHED;
 }
@@ -194,5 +201,16 @@ std::chrono::milliseconds MatchStore::currentOsaekomiTime(std::chrono::milliseco
     assert(mOsaekomi.has_value());
 
     return (masterTime - mOsaekomi->second);
+}
+
+void MatchStore::clear() {
+    mScores[0].clear();
+    mScores[1].clear();
+    mStatus = MatchStatus::NOT_STARTED;
+    mGoldenScore = false;
+    mDuration = std::chrono::seconds(0);
+    mEvents.clear();
+    mOsaekomi.reset();
+    mHasAwardedOsaekomiWazari = false;
 }
 

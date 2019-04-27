@@ -39,6 +39,8 @@ public:
         void serialize(Archive& ar, uint32_t const version) {
             ar(ippon, wazari, shido, hansokuMake);
         }
+
+        void clear();
     };
 
     MatchStore() {}
@@ -102,6 +104,8 @@ public:
 
     bool hasAwardedOsaekomiWazari() const;
     void setHasAwardedOsaekomiWazari(bool val);
+
+    void clear(); // Clears the scores, events, etc.
 private:
     MatchId mId;
     CategoryId mCategory;

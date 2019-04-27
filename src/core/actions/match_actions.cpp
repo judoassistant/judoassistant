@@ -339,7 +339,7 @@ MatchEventAction::MatchEventAction(CategoryId categoryId, MatchId matchId)
     , mMatchId(matchId)
 {}
 
-void MatchEventAction::save(const MatchStore &match) {
+void MatchEventAction::save(const MatchStore &match, unsigned int eventsToSave ) {
     mDidSave = true;
     mPrevStatus = match.getStatus();
     mPrevWhiteScore = match.getScore(MatchStore::PlayerIndex::WHITE);
@@ -351,6 +351,11 @@ void MatchEventAction::save(const MatchStore &match) {
     mPrevBye = match.isBye();
     mPrevOsaekomi = match.getOsaekomi();
     mPrevHasAwardedOsaekomiWazari = match.hasAwardedOsaekomiWazari();
+
+    const auto &events = match.getEvents();
+    eventsToSave = std::min(eventsToSave, static_cast<unsigned int>(events.size()));
+    for (auto i = events.rbegin(); i != events.rbegin() + eventsToSave; ++i)
+        mSavedEvents.push_back(*i);
 }
 
 void MatchEventAction::recover(TournamentStore &tournament) {
@@ -377,9 +382,20 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     match.setHasAwardedOsaekomiWazari(mPrevHasAwardedOsaekomiWazari);
     match.setOsaekomi(mPrevOsaekomi);
 
-    assert(match.getEvents().size() >= mPrevEventSize);
-    while (match.getEvents().size() > mPrevEventSize)
-        match.popEvent();
+    if (match.getEvents().size() < mPrevEventSize) {
+        assert(mPrevEventSize - match.getEvents().size() <= mSavedEvents.size());
+        while (mPrevEventSize - match.getEvents().size() > mSavedEvents.size())
+            match.popEvent(); // pop added events
+
+        for (auto &event : mSavedEvents)
+            match.pushEvent(event);
+        mSavedEvents.clear();
+    }
+    else {
+        // pop events if neccesary
+        while (match.getEvents().size() > mPrevEventSize)
+            match.popEvent();
+    }
 
     // Updates tatami groups
     auto blockLocation = category.getLocation(match.getType());
@@ -665,5 +681,40 @@ void StopOsaekomiAction::redoImpl(TournamentStore & tournament) {
 void StopOsaekomiAction::undoImpl(TournamentStore & tournament) {
     if (shouldRecover())
         recover(tournament);
+}
+
+ResetMatchAction::ResetMatchAction(CategoryId categoryId, MatchId matchId)
+    : MatchEventAction(categoryId, matchId)
+{}
+
+std::unique_ptr<Action> ResetMatchAction::freshClone() const {
+    return std::make_unique<ResetMatchAction>(mCategoryId, mMatchId);
+}
+
+std::string ResetMatchAction::getDescription() const {
+    return "Reset match";
+}
+
+void ResetMatchAction::redoImpl(TournamentStore & tournament) {
+    if (!tournament.containsCategory(mCategoryId))
+        return;
+    auto &category = tournament.getCategory(mCategoryId);
+    if (!category.containsMatch(mMatchId))
+        return;
+    auto &match = category.getMatch(mMatchId);
+
+    save(match, match.getEvents().size()); // save all events as well
+    match.clear();
+
+    notify(tournament, match);
+}
+
+void ResetMatchAction::undoImpl(TournamentStore & tournament) {
+    if (shouldRecover())
+        recover(tournament);
+}
+
+bool ResetMatchAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
+    return (mCategoryId == categoryId && mMatchId == matchId);
 }
 
