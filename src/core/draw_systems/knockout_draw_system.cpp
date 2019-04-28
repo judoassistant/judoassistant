@@ -114,6 +114,9 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
     const auto &ruleset = category.getRuleset();
     std::vector<std::unique_ptr<Action>> actions;
 
+    if (mPlayers.size() <= 1)
+        return actions;
+
     // Iterate over all matches from 2nd round and onwards
     size_t prevLayer = 0; // Index to first node of previous layer
     size_t currentLayer = mInitialRoundSize; // Index to first node of current layer
@@ -175,6 +178,9 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
 
 std::vector<std::pair<PlayerId, std::optional<unsigned int>>> KnockoutDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
+
+    if (mPlayers.size() <= 1)
+        return results;
 
     const auto &status = category.getStatus(MatchType::ELIMINATION) + category.getStatus(MatchType::FINAL);
     if (!status.isFinished()) // Not finished

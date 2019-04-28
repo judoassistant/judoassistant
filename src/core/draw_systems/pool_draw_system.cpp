@@ -86,6 +86,9 @@ struct PoolPlayerRank {
 std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
+    if (mPlayers.size() <= 1)
+        return results;
+
     const auto &status = category.getStatus(MatchType::ELIMINATION);
     if (!status.isFinished()) // elimination finished
         return results;

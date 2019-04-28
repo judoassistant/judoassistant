@@ -100,6 +100,9 @@ std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(
 std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::unique_ptr<Action>> actions;
 
+    if (mPlayers.size() < 4)
+        return actions;
+
     auto &firstSemiFinal = category.getMatch(mMatches[mMatches.size() - 3]);
     auto &secondSemiFinal = category.getMatch(mMatches[mMatches.size() - 2]);
     auto &finaly = category.getMatch(mMatches.back());
@@ -161,6 +164,9 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
 
 std::vector<std::pair<PlayerId, std::optional<unsigned int>>> DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
+
+    if (mPlayers.size() < 4)
+        return results;
 
     const auto &status = category.getStatus(MatchType::ELIMINATION) + category.getStatus(MatchType::FINAL);
     if (!status.isFinished()) // not finished

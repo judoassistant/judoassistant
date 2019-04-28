@@ -47,6 +47,11 @@ std::vector<std::unique_ptr<AddMatchAction>> BestOfThreeDrawSystem::initCategory
 }
 
 std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
+    std::vector<std::unique_ptr<Action>> actions;
+
+    if (mPlayers.size() != 2)
+        return actions;
+
     const auto &firstMatch = category.getMatch(mMatches[0]);
     const auto &secondMatch = category.getMatch(mMatches[1]);
 
@@ -60,7 +65,6 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const
             bye = true;
     }
 
-    std::vector<std::unique_ptr<Action>> actions;
     const auto &thirdMatch = category.getMatch(mMatches[2]);
 
     if (thirdMatch.isBye() != bye)
@@ -70,6 +74,9 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const
 
 std::vector<std::pair<PlayerId, std::optional<unsigned int>>> BestOfThreeDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
+
+    if (mPlayers.size() != 2)
+        return results;
 
     auto status = category.getStatus(MatchType::ELIMINATION);
     if (!status.isFinished()) // not finished
