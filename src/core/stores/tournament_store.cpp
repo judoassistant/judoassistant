@@ -106,6 +106,7 @@ TatamiList & TournamentStore::getTatamis() {
 TournamentStore::TournamentStore(const TournamentStore &other)
     : mId(other.mId)
     , mName(other.mName)
+    , mWebName(other.mWebName)
     , mTatamis(other.mTatamis)
 {
     for (const auto &p : other.mPlayers)
