@@ -90,7 +90,7 @@ void AddPlayersToCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.addPlayersToCategory(mCategoryId, mAddedPlayerIds);
 
     if (!mAddedPlayerIds.empty()) {
-        mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId, mSeed);
+        mDrawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{mCategoryId}, mSeed);
         mDrawAction->redo(tournament);
     }
 }
@@ -149,7 +149,7 @@ void ErasePlayersFromCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.erasePlayersFromCategory(mCategoryId, mErasedPlayerIds);
 
     if (!mErasedPlayerIds.empty()) {
-        mDrawAction = std::make_unique<DrawCategoryAction>(mCategoryId, mSeed);
+        mDrawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{mCategoryId}, mSeed);
         mDrawAction->redo(tournament);
     }
 }
@@ -305,137 +305,159 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
     mLocations.clear();
 }
 
-DrawCategoryAction::DrawCategoryAction(CategoryId categoryId)
-    : DrawCategoryAction(categoryId, getSeed())
+DrawCategoriesAction::DrawCategoriesAction(const std::vector<CategoryId> &categoryIds)
+    : DrawCategoriesAction(categoryIds, getSeed())
 {}
 
-DrawCategoryAction::DrawCategoryAction(CategoryId categoryId, unsigned int seed)
-    : mCategoryId(categoryId)
+std::string DrawCategoriesAction::getDescription() const {
+    return "Draw categories";
+}
+
+DrawCategoriesAction::DrawCategoriesAction(const std::vector<CategoryId> &categoryIds, unsigned int seed)
+    : mCategoryIds(categoryIds)
     , mSeed(seed)
 {}
 
-std::unique_ptr<Action> DrawCategoryAction::freshClone() const {
-    return std::make_unique<DrawCategoryAction>(mCategoryId, mSeed);
+std::unique_ptr<Action> DrawCategoriesAction::freshClone() const {
+    return std::make_unique<DrawCategoriesAction>(mCategoryIds, mSeed);
 }
 
-void DrawCategoryAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
+void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            return;
 
-    // Delete all existing matches
-    tournament.beginResetMatches(mCategoryId);
-    CategoryStore & category = tournament.getCategory(mCategoryId);
+        // Delete all existing matches
+        // TODO: Change signals
+        tournament.beginResetMatches(categoryId);
+        CategoryStore & category = tournament.getCategory(categoryId);
 
-    for (const std::unique_ptr<MatchStore> &match : category.getMatches()) {
-        std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
-        if (whitePlayer && tournament.containsPlayer(*whitePlayer))
-            tournament.getPlayer(*whitePlayer).eraseMatch(mCategoryId, match->getId());
+        for (const std::unique_ptr<MatchStore> &match : category.getMatches()) {
+            std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
+            if (whitePlayer && tournament.containsPlayer(*whitePlayer))
+                tournament.getPlayer(*whitePlayer).eraseMatch(categoryId, match->getId());
 
-        std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
-        if (bluePlayer && tournament.containsPlayer(*bluePlayer))
-            tournament.getPlayer(*bluePlayer).eraseMatch(mCategoryId, match->getId());
-    }
-
-    mOldMatches = std::move(category.clearMatches());
-    mOldDrawSystem = category.getDrawSystem().clone();
-    mOldStatus[static_cast<size_t>(MatchType::ELIMINATION)] = category.getStatus(MatchType::ELIMINATION);
-    mOldStatus[static_cast<size_t>(MatchType::FINAL)] = category.getStatus(MatchType::FINAL);
-
-    // Init the category using the draw system
-    std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
-    std::vector<std::unique_ptr<AddMatchAction>> actions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
-
-    for (size_t i = 0; i < actions.size(); ++i) {
-        actions[i]->redo(tournament);
-        mActions.push(std::move(actions[i]));
-    }
-
-    // Compute category status
-    CategoryStatus knockoutStatus;
-    category.setStatus(MatchType::ELIMINATION, CategoryStatus());
-    category.setStatus(MatchType::FINAL, CategoryStatus());
-
-    for (const auto &matchPtr : category.getMatches()) {
-        const auto &match = *matchPtr;
-        auto &status = category.getStatus(match.getType());
-
-        if (match.getStatus() == MatchStatus::FINISHED)
-            ++(status.finishedMatches);
-        else if (match.getStatus() == MatchStatus::NOT_STARTED)
-            ++(status.notStartedMatches);
-        else
-            ++(status.startedMatches);
-    }
-
-    tournament.endResetMatches(mCategoryId);
-
-    // Update tatami locations
-    std::vector<BlockLocation> changedLocations;
-    std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
-
-    for (MatchType type : {MatchType::FINAL, MatchType::ELIMINATION}) {
-        std::optional<BlockLocation> location = category.getLocation(type);
-        if (location) {
-            tournament.getTatamis().recomputeBlock(tournament, *location);
-            changedLocations.push_back(*location);
-            changedBlocks.push_back({mCategoryId, type});
+            std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
+            if (bluePlayer && tournament.containsPlayer(*bluePlayer))
+                tournament.getPlayer(*bluePlayer).eraseMatch(categoryId, match->getId());
         }
+
+        mOldMatches.push_back(std::move(category.clearMatches()));
+        mOldDrawSystems.push_back(category.getDrawSystem().clone());
+
+        std::array<CategoryStatus, 2> status;
+        status[static_cast<size_t>(MatchType::ELIMINATION)] = category.getStatus(MatchType::ELIMINATION);
+        status[static_cast<size_t>(MatchType::FINAL)] = category.getStatus(MatchType::FINAL);
+        mOldStati.push_back(std::move(status));
+
+        // Init the category using the draw system
+        std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
+        // TODO: Change mAction to have AddMatchActions instead
+        std::vector<std::unique_ptr<AddMatchAction>> addMatchActions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
+        std::vector<std::unique_ptr<Action>> actions;
+
+        for (auto &actionPtr : addMatchActions) {
+            actionPtr->redo(tournament);
+            actions.push_back(std::move(actionPtr));
+        }
+        mActions.push_back(std::move(actions));
+
+        // Compute category status
+        CategoryStatus knockoutStatus;
+        category.setStatus(MatchType::ELIMINATION, CategoryStatus());
+        category.setStatus(MatchType::FINAL, CategoryStatus());
+
+        for (const auto &matchPtr : category.getMatches()) {
+            const auto &match = *matchPtr;
+            auto &status = category.getStatus(match.getType());
+
+            if (match.getStatus() == MatchStatus::FINISHED)
+                ++(status.finishedMatches);
+            else if (match.getStatus() == MatchStatus::NOT_STARTED)
+                ++(status.notStartedMatches);
+            else
+                ++(status.startedMatches);
+        }
+
+        tournament.endResetMatches(categoryId);
+
+        // Update tatami locations
+        std::vector<BlockLocation> changedLocations;
+        std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
+
+        for (MatchType type : {MatchType::FINAL, MatchType::ELIMINATION}) {
+            std::optional<BlockLocation> location = category.getLocation(type);
+            if (location) {
+                tournament.getTatamis().recomputeBlock(tournament, *location);
+                changedLocations.push_back(*location);
+                changedBlocks.push_back({categoryId, type});
+            }
+        }
+
+        if (!changedLocations.empty())
+            tournament.changeTatamis(changedLocations, changedBlocks);
+
+        tournament.resetCategoryResults(categoryId);
     }
-
-    if (!changedLocations.empty())
-        tournament.changeTatamis(changedLocations, changedBlocks);
-
-    tournament.resetCategoryResults(mCategoryId);
 }
 
-void DrawCategoryAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
+void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
+    // Last in, first out
+    for (auto i = mCategoryIds.rbegin(); i != mCategoryIds.rend(); ++i) {
+        CategoryId categoryId = *i;
+        if (!tournament.containsCategory(categoryId))
+            return;
 
-    tournament.beginResetMatches(mCategoryId);
-    CategoryStore & category = tournament.getCategory(mCategoryId);
+        tournament.beginResetMatches(categoryId);
+        CategoryStore & category = tournament.getCategory(categoryId);
 
-    while (!mActions.empty()) {
-        mActions.top()->undo(tournament);
-        mActions.pop();
-    }
-
-    category.setDrawSystem(std::move(mOldDrawSystem));
-    category.setStatus(MatchType::ELIMINATION, mOldStatus[static_cast<size_t>(MatchType::ELIMINATION)]);
-    category.setStatus(MatchType::FINAL, mOldStatus[static_cast<size_t>(MatchType::FINAL)]);
-
-    for (std::unique_ptr<MatchStore> & match : mOldMatches) {
-        std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
-        if (whitePlayer && tournament.containsPlayer(*whitePlayer))
-            tournament.getPlayer(*whitePlayer).eraseMatch(mCategoryId, match->getId());
-
-        std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
-        if (bluePlayer && tournament.containsPlayer(*bluePlayer))
-            tournament.getPlayer(*bluePlayer).eraseMatch(mCategoryId, match->getId());
-
-        category.pushMatch(std::move(match));
-    }
-
-    mOldMatches.clear();
-
-    tournament.endResetMatches(mCategoryId);
-
-    std::vector<BlockLocation> changedLocations;
-    std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
-
-    for (MatchType type : {MatchType::FINAL, MatchType::ELIMINATION}) {
-        std::optional<BlockLocation> location = category.getLocation(type);
-        if (location) {
-            tournament.getTatamis().recomputeBlock(tournament, *location);
-            changedLocations.push_back(*location);
-            changedBlocks.push_back({mCategoryId, type});
+        while (!mActions.back().empty()) {
+            mActions.back().back()->undo(tournament);
+            mActions.back().pop_back();
         }
+        mActions.pop_back();
+
+        category.setDrawSystem(std::move(mOldDrawSystems.back()));
+        mOldDrawSystems.pop_back();
+
+        auto oldStatus = std::move(mOldStati.back());
+        mOldStati.pop_back();
+        category.setStatus(MatchType::ELIMINATION, oldStatus[static_cast<size_t>(MatchType::ELIMINATION)]);
+        category.setStatus(MatchType::FINAL, oldStatus[static_cast<size_t>(MatchType::FINAL)]);
+
+        for (std::unique_ptr<MatchStore> & match : mOldMatches.back()) {
+            std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
+            if (whitePlayer && tournament.containsPlayer(*whitePlayer))
+                tournament.getPlayer(*whitePlayer).eraseMatch(categoryId, match->getId());
+
+            std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
+            if (bluePlayer && tournament.containsPlayer(*bluePlayer))
+                tournament.getPlayer(*bluePlayer).eraseMatch(categoryId, match->getId());
+
+            category.pushMatch(std::move(match));
+        }
+
+        mOldMatches.pop_back();
+
+        tournament.endResetMatches(categoryId);
+
+        std::vector<BlockLocation> changedLocations;
+        std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
+
+        for (MatchType type : {MatchType::FINAL, MatchType::ELIMINATION}) {
+            std::optional<BlockLocation> location = category.getLocation(type);
+            if (location) {
+                tournament.getTatamis().recomputeBlock(tournament, *location);
+                changedLocations.push_back(*location);
+                changedBlocks.push_back({categoryId, type});
+            }
+        }
+
+        if (!changedLocations.empty())
+            tournament.changeTatamis(changedLocations, changedBlocks);
+
+        tournament.resetCategoryResults(categoryId);
     }
-
-    if (!changedLocations.empty())
-        tournament.changeTatamis(changedLocations, changedBlocks);
-
-    tournament.resetCategoryResults(mCategoryId);
 }
 
 ErasePlayersFromAllCategoriesAction::ErasePlayersFromAllCategoriesAction(const std::vector<PlayerId> &playerIds)
@@ -681,7 +703,7 @@ void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
 
         mOldRulesets.push_back(category.setRuleset(ruleset->clone()));
 
-        auto drawAction = std::make_unique<DrawCategoryAction>(categoryId, mSeed);
+        auto drawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{categoryId}, mSeed);
         drawAction->redo(tournament);
         mDrawActions.push_back(std::move(drawAction));
     }
@@ -743,7 +765,7 @@ void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
 
         mOldDrawSystems.push_back(category.setDrawSystem(drawSystem->clone()));
 
-        auto drawAction = std::make_unique<DrawCategoryAction>(categoryId, mSeed);
+        auto drawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{categoryId}, mSeed);
         drawAction->redo(tournament);
         mDrawActions.push_back(std::move(drawAction));
     }
@@ -779,10 +801,6 @@ void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
 
 std::string AddCategoryAction::getDescription() const {
     return "Add category";
-}
-
-std::string DrawCategoryAction::getDescription() const {
-    return "Draw category";
 }
 
 std::string AddPlayersToCategoryAction::getDescription() const {

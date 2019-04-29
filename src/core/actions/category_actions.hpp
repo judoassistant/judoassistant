@@ -44,12 +44,12 @@ private:
 CEREAL_REGISTER_TYPE(AddCategoryAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, AddCategoryAction)
 
-class DrawCategoryAction : public Action {
+class DrawCategoriesAction : public Action {
 public:
-    DrawCategoryAction() = default;
-    DrawCategoryAction(CategoryId categoryId);
-    DrawCategoryAction(CategoryId categoryId, unsigned int seed);
-    // DrawCategoryAction(CategoryId categoryId);
+    DrawCategoriesAction() = default;
+    DrawCategoriesAction(const std::vector<CategoryId> &categoryIds);
+    DrawCategoriesAction(const std::vector<CategoryId> &categoryIds, unsigned int seed);
+    // DrawCategoriesAction(CategoryId categoryId);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -58,22 +58,22 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mSeed);
+        ar(mCategoryIds, mSeed);
     }
 
 private:
-    CategoryId mCategoryId;
+    std::vector<CategoryId> mCategoryIds;
     unsigned int mSeed;
 
     // undo members
-    std::vector<std::unique_ptr<MatchStore>> mOldMatches;
-    std::stack<std::unique_ptr<Action>> mActions;
-    std::unique_ptr<DrawSystem> mOldDrawSystem;
-    std::array<CategoryStatus, 2> mOldStatus;
+    std::vector<std::vector<std::unique_ptr<MatchStore>>> mOldMatches;
+    std::vector<std::vector<std::unique_ptr<Action>>> mActions;
+    std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
+    std::vector<std::array<CategoryStatus, 2>> mOldStati;
 };
 
-CEREAL_REGISTER_TYPE(DrawCategoryAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, DrawCategoryAction)
+CEREAL_REGISTER_TYPE(DrawCategoriesAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, DrawCategoriesAction)
 
 class AddPlayersToCategoryAction : public Action {
 public:
@@ -98,7 +98,7 @@ private:
 
     // undo members
     std::vector<PlayerId> mAddedPlayerIds;
-    std::unique_ptr<DrawCategoryAction> mDrawAction;
+    std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(AddPlayersToCategoryAction)
@@ -127,7 +127,7 @@ private:
 
     // undo members
     std::vector<PlayerId> mErasedPlayerIds;
-    std::unique_ptr<DrawCategoryAction> mDrawAction;
+    std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(ErasePlayersFromCategoryAction)
@@ -265,7 +265,7 @@ private:
 
     // undo members
     std::vector<std::unique_ptr<Ruleset>> mOldRulesets;
-    std::vector<std::unique_ptr<DrawCategoryAction>> mDrawActions;
+    std::vector<std::unique_ptr<DrawCategoriesAction>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesRulesetAction)
@@ -294,7 +294,7 @@ private:
 
     // undo members
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
-    std::vector<std::unique_ptr<DrawCategoryAction>> mDrawActions;
+    std::vector<std::unique_ptr<DrawCategoriesAction>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesDrawSystemAction)
