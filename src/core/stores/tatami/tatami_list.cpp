@@ -133,8 +133,8 @@ void TatamiList::moveBlock(const TournamentStore &tournament, std::pair<Category
     }
 
     if (to) {
-        // Recompute if `from` sequentialGroup is not equiv to `to` sequentialGroup
-        if (!(from && from->sequentialGroup.equiv(to->sequentialGroup)))
+        // Recompute if `from` sequentialGroup is not equal to `to` sequentialGroup
+        if (!(from && from->sequentialGroup == to->sequentialGroup))
             toSequentialGroup->recompute(tournament);
     }
 

@@ -374,7 +374,7 @@ void TatamiMatchesModel::changeTatamis(const std::vector<BlockLocation> &locatio
     bool shouldLoad = false;
 
     for (BlockLocation location : locations) {
-        if (!mTatami.equiv(location.sequentialGroup.concurrentGroup.tatami)) continue;
+        if (mTatami != location.sequentialGroup.concurrentGroup.tatami) continue;
 
         if (mResettingMatches) {
             shouldReset = true;

@@ -118,7 +118,7 @@ void ScoreOperatorWindow::populateTatamiMenu() {
         QAction *action = new QAction(tr("Tatami %1").arg(QString::number(i+1)), mTatamiMenu);
         action->setCheckable(true);
         mTatamiActionGroup->addAction(action);
-        if (mTatami && location.equiv(*mTatami)) {
+        if (mTatami && location == *mTatami) {
             action->setChecked(true);
         }
 
@@ -415,7 +415,7 @@ void ScoreOperatorWindow::changeTatamis(std::vector<BlockLocation> locations, st
         return;
 
     for (const auto &location: locations) {
-        if (location.getTatamiHandle().equiv(mTatami->handle)) {
+        if (location.getTatamiHandle() == mTatami->handle) {
             findNextMatch();
             return;
         }

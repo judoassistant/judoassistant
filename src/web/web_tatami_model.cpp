@@ -79,7 +79,7 @@ void WebTatamiModel::changeTatamis(const TournamentStore &tournament, const std:
     const auto &tatami = mTournament.getTatamis().at(mTatami);
 
     for (const auto &location : locations) {
-        if (!mTatami.equiv(location.sequentialGroup.concurrentGroup.tatami)) continue;
+        if (mTatami != location.sequentialGroup.concurrentGroup.tatami) continue;
 
         auto handle = location.sequentialGroup.concurrentGroup.handle;
         if (mLoadedGroups.find(handle.id) != mLoadedGroups.end()) {

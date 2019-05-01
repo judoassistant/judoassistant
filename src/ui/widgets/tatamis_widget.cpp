@@ -230,7 +230,7 @@ void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, 
 
     std::unordered_set<PositionId> affectedConcurrentGroups;
     for (auto location : locations) {
-        if (!location.sequentialGroup.concurrentGroup.tatami.equiv(mLocation)) continue;
+        if (location.sequentialGroup.concurrentGroup.tatami != mLocation) continue;
 
         affectedConcurrentGroups.insert(location.sequentialGroup.concurrentGroup.handle.id);
     }
@@ -264,7 +264,7 @@ void TatamiGraphicsManager::changeTatamis(std::vector<BlockLocation> locations, 
 
         expectedDuration += group.getExpectedDuration();
 
-        if (it == mGroups.end() || !(handle.equiv((*it)->getLocation().handle))) {
+        if (it == mGroups.end() || handle != ((*it)->getLocation().handle)) {
             // insert group
             ConcurrentGroupLocation location{mLocation, handle};
             item = new ConcurrentGraphicsItem(&mStoreManager, location);
