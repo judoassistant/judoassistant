@@ -435,7 +435,7 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
     // Notify results
     if (updatedStatus == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED)
-        tournament.resetCategoryResults(match.getCategory());
+        tournament.resetCategoryResults({match.getCategory()});
 }
 
 bool MatchEventAction::shouldRecover() {
@@ -487,7 +487,7 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
             mDrawActions.push(std::move(action));
         }
 
-        tournament.resetCategoryResults(match.getCategory());
+        tournament.resetCategoryResults({match.getCategory()});
     }
 
     // Notify of match changed
