@@ -265,7 +265,7 @@ private:
 
     // undo members
     std::vector<std::unique_ptr<Ruleset>> mOldRulesets;
-    std::vector<std::unique_ptr<DrawCategoriesAction>> mDrawActions;
+    std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesRulesetAction)
@@ -294,7 +294,7 @@ private:
 
     // undo members
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
-    std::vector<std::unique_ptr<DrawCategoriesAction>> mDrawActions;
+    std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesDrawSystemAction)
