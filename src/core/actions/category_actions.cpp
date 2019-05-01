@@ -401,8 +401,9 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
     tournament.resetCategoryResults(categoryIds);
 
     if (!changedLocations.empty()) {
-        // tournament.getTatamis().recomputeBlock(tournament, *location);
-        tournament.changeTatamis(std::vector<BlockLocation>(changedLocations.begin(), changedLocations.end()), changedBlocks);
+        std::vector<BlockLocation> locations(changedLocations.begin(), changedLocations.end());
+        tournament.getTatamis().recomputeBlocks(tournament, locations);
+        tournament.changeTatamis(locations, changedBlocks);
     }
 }
 
@@ -466,8 +467,9 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
     tournament.resetCategoryResults(categoryIds);
 
     if (!changedLocations.empty()) {
-        // tournament.getTatamis().recomputeBlock(tournament, *location);
-        tournament.changeTatamis(std::vector<BlockLocation>(changedLocations.begin(), changedLocations.end()), changedBlocks);
+        std::vector<BlockLocation> locations(changedLocations.begin(), changedLocations.end());
+        tournament.getTatamis().recomputeBlocks(tournament, locations);
+        tournament.changeTatamis(locations, changedBlocks);
     }
 
 }

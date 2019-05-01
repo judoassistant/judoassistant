@@ -147,17 +147,31 @@ void TatamiList::moveBlock(const TournamentStore &tournament, std::pair<Category
     }
 
     if (to) {
-        // Recompute if `from` concurrentGroup is not equiv to `to` concurrentGroup
-        if (!(from && from->sequentialGroup.concurrentGroup.equiv(to->sequentialGroup.concurrentGroup)))
+        // Recompute if `from` concurrentGroup is not equal to `to` concurrentGroup
+        if (!(from && from->sequentialGroup.concurrentGroup == to->sequentialGroup.concurrentGroup))
             toConcurrentGroup->recompute(tournament);
     }
 }
 
-void TatamiList::recomputeBlock(const TournamentStore &tournament, BlockLocation location) {
-    TatamiStore &tatami = at(location.sequentialGroup.concurrentGroup.tatami.handle);
-    ConcurrentBlockGroup &concurrentGroup = tatami.at(location.sequentialGroup.concurrentGroup.handle);
-    SequentialBlockGroup &sequentialGroup = concurrentGroup.at(location.sequentialGroup.handle);
+void TatamiList::recomputeBlocks(const TournamentStore &tournament, const std::vector<BlockLocation> &locations) {
+    // find list of unique sequential groups and concurrent groups
+    std::unordered_set<SequentialGroupLocation> seqGroups;
+    std::unordered_set<ConcurrentGroupLocation> conGroups;
 
-    sequentialGroup.recompute(tournament);
-    concurrentGroup.recompute(tournament);
+    for (auto location : locations) {
+        seqGroups.insert(location.sequentialGroup);
+        conGroups.insert(location.sequentialGroup.concurrentGroup);
+    }
+
+    // recompute sequential groups
+    for (auto location : seqGroups) {
+        SequentialBlockGroup &sequentialGroup = at(location);
+        sequentialGroup.recompute(tournament);
+    }
+
+    // recompute concurrent groups
+    for (auto location : conGroups) {
+        ConcurrentBlockGroup &concurrentGroup = at(location);
+        concurrentGroup.recompute(tournament);
+    }
 }
