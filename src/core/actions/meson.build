@@ -1,5 +1,15 @@
 core_sources += ['src/core/actions/action.cpp']
-core_sources += ['src/core/actions/player_actions.cpp']
+
+core_sources += ['src/core/actions/add_players_action.cpp']
+core_sources += ['src/core/actions/change_players_age_action.cpp']
+core_sources += ['src/core/actions/change_players_club_action.cpp']
+core_sources += ['src/core/actions/change_players_first_name_action.cpp']
+core_sources += ['src/core/actions/change_players_last_name_action.cpp']
+core_sources += ['src/core/actions/change_players_rank_action.cpp']
+core_sources += ['src/core/actions/change_players_sex_action.cpp']
+core_sources += ['src/core/actions/change_players_weight_action.cpp']
+core_sources += ['src/core/actions/erase_players_action.cpp']
+
 core_sources += ['src/core/actions/match_actions.cpp']
 core_sources += ['src/core/actions/set_tatami_count_action.cpp']
 core_sources += ['src/core/actions/set_tatami_location_action.cpp']
