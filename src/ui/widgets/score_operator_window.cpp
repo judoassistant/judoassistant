@@ -476,14 +476,20 @@ void ScoreOperatorWindow::changeMatches(CategoryId categoryId, std::vector<Match
         updateNextButton();
 }
 
-void ScoreOperatorWindow::beginResetMatches(CategoryId categoryId) {
+void ScoreOperatorWindow::beginResetMatches(const std::vector<CategoryId> &categoryIds) {
     // next match category resetting is handled by tatami hooks
-    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId) {
-        disableControlButtons(); // disable controls
+    if (!mCurrentMatch)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (mCurrentMatch->first == categoryId) {
+            disableControlButtons(); // disable controls
+            return;
+        }
     }
 }
 
-void ScoreOperatorWindow::endResetMatches(CategoryId categoryId) {
+void ScoreOperatorWindow::endResetMatches(const std::vector<CategoryId> &categoryIds) {
     // next match category resetting is handled by tatami hooks
     updateControlButtons();
 }

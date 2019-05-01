@@ -30,7 +30,7 @@ private:
     void updateRuleset();
     void updateDrawSystem();
 
-    void resetMatches(CategoryId categoryId);
+    void resetMatches(const std::vector<CategoryId> &categoryIds);
     void updateMatchCount();
 
     void changePlayerCount(CategoryId categoryId, std::vector<PlayerId> playerIds);

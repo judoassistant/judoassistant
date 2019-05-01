@@ -48,8 +48,8 @@ public:
 private:
     void beginResetTournament();
     void endResetTournament();
-    void beginResetMatches(CategoryId categoryId);
-    void endResetMatches(CategoryId categoryId);
+    void beginResetMatches(const std::vector<CategoryId> &categoryIds);
+    void endResetMatches(const std::vector<CategoryId> &categoryIds);
 
     StoreManager & mStoreManager;
     ActionsModel *mModel;

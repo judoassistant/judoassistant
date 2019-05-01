@@ -50,7 +50,7 @@ private:
     void endResetTournament();
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
     void changePlayers(std::vector<PlayerId> playerIds);
-    void resetMatches(CategoryId categoryId);
+    void resetMatches(const std::vector<CategoryId> &categoryIds);
     void changeCategories(std::vector<CategoryId> categoryIds);
 
     const StoreManager &mStoreManager;

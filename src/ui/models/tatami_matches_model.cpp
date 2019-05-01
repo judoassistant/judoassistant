@@ -410,13 +410,16 @@ void TatamiMatchesModel::changeTatamis(const std::vector<BlockLocation> &locatio
     }
 }
 
-void TatamiMatchesModel::beginResetCategory(CategoryId categoryId) {
+void TatamiMatchesModel::beginResetCategory(const std::vector<CategoryId> &categoryIds) {
     const auto &tournament = mStoreManager.getTournament();
-    const auto &category = tournament.getCategory(categoryId);
-    for (const auto &match : category.getMatches()) {
-        if (mLoadedMatches.find({categoryId, match->getId()}) != mLoadedMatches.end()) {
-            beginResetMatches(); // Let the tatamiChanged call endResetMatches()
-            return;
+
+    for (auto categoryId : categoryIds) {
+        const auto &category = tournament.getCategory(categoryId);
+        for (const auto &match : category.getMatches()) {
+            if (mLoadedMatches.find({categoryId, match->getId()}) != mLoadedMatches.end()) {
+                beginResetMatches(); // Let the tatamiChanged call endResetMatches()
+                return;
+            }
         }
     }
 }

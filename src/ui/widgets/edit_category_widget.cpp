@@ -110,11 +110,13 @@ void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryId
     updateMatchCount();
 }
 
-void EditCategoryWidget::resetMatches(CategoryId categoryId) {
-    if (mCategoryIds.find(categoryId) == mCategoryIds.end())
-        return;
-
-    updateMatchCount();
+void EditCategoryWidget::resetMatches(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        if (mCategoryIds.find(categoryId) != mCategoryIds.end()) {
+            updateMatchCount();
+            return;
+        }
+    }
 }
 
 void EditCategoryWidget::changePlayerCount(CategoryId categoryId, std::vector<PlayerId> playerIds) {

@@ -45,8 +45,8 @@ public:
     void endResetCategories() override;
 
     void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) override;
-    void beginResetMatches(CategoryId categoryId) override;
-    void endResetMatches(CategoryId categoryId) override;
+    void beginResetMatches(const std::vector<CategoryId> &categoryIds) override;
+    void endResetMatches(const std::vector<CategoryId> &categoryIds) override;
 
     void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) override;
     void beginAddTatamis(const std::vector<TatamiLocation> &locations) override;
