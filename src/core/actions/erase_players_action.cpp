@@ -1,5 +1,6 @@
-#include "core/actions/category_actions.hpp"
+#include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_players_action.hpp"
+#include "core/actions/erase_players_from_category_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
