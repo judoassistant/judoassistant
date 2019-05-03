@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/actions/match_actions.hpp"
-
 #include "core/actions/add_players_action.hpp"
 #include "core/actions/change_players_age_action.hpp"
 #include "core/actions/change_players_club_action.hpp"
@@ -29,4 +27,17 @@
 #include "core/actions/erase_categories_action.hpp"
 #include "core/actions/erase_players_from_all_categories_action.hpp"
 #include "core/actions/erase_players_from_category_action.hpp"
+
+#include "core/actions/add_match_action.hpp"
+#include "core/actions/award_hansoku_make_action.hpp"
+#include "core/actions/award_shido_action.hpp"
+#include "core/actions/award_ippon_action.hpp"
+#include "core/actions/award_wazari_action.hpp"
+#include "core/actions/pause_match_action.hpp"
+#include "core/actions/reset_match_action.hpp"
+#include "core/actions/resume_match_action.hpp"
+#include "core/actions/set_match_bye_action.hpp"
+#include "core/actions/set_match_player_action.hpp"
+#include "core/actions/start_osaekomi_action.hpp"
+#include "core/actions/stop_osaekomi_action.hpp"
 

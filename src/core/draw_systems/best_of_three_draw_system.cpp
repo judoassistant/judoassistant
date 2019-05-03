@@ -1,4 +1,5 @@
-#include "core/actions/match_actions.hpp"
+#include "core/actions/add_match_action.hpp"
+#include "core/actions/set_match_bye_action.hpp"
 #include "core/draw_systems/best_of_three_draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
