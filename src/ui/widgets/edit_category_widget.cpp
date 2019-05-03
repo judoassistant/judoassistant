@@ -6,7 +6,7 @@
 
 #include "core/log.hpp"
 #include "core/actions/category_actions.hpp"
-#include "core/draw_systems/draw_systems.hpp"
+#include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
@@ -60,7 +60,7 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
 
     mDrawSystemContent = new QComboBox;
     connect(mDrawSystemContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editDrawSystem();});
-    for (const auto & system : DrawSystems::getDrawSystems())
+    for (const auto & system : DrawSystem::getDrawSystems())
         mDrawSystemContent->addItem(QString::fromStdString(system->getName()));
 
     mPlayerCountContent = new QLabel("");
@@ -236,13 +236,13 @@ void EditCategoryWidget::updateDrawSystem() {
 
     auto drawSystemText = getDrawSystemText();
     if (drawSystemText == MULTIPLE_TEXT) {
-        if (static_cast<size_t>(mDrawSystemContent->count()) == DrawSystems::getDrawSystems().size()) {
+        if (static_cast<size_t>(mDrawSystemContent->count()) == DrawSystem::getDrawSystems().size()) {
             mDrawSystemContent->addItem(MULTIPLE_TEXT);
             mDrawSystemContent->setItemData(mDrawSystemContent->count() - 1, QBrush(Qt::gray), Qt::ForegroundRole);
         }
     }
     else {
-        if (static_cast<size_t>(mDrawSystemContent->count()) != DrawSystems::getDrawSystems().size())
+        if (static_cast<size_t>(mDrawSystemContent->count()) != DrawSystem::getDrawSystems().size())
             mDrawSystemContent->removeItem(mDrawSystemContent->count() - 1);
     }
 

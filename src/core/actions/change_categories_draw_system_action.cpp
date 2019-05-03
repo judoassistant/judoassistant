@@ -1,7 +1,6 @@
 #include "core/actions/change_categories_draw_system_action.hpp"
 #include "core/actions/draw_categories_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
-#include "core/draw_systems/draw_systems.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
@@ -21,7 +20,7 @@ std::unique_ptr<Action> ChangeCategoriesDrawSystemAction::freshClone() const {
 }
 
 void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
-    const auto &drawSystems = DrawSystems::getDrawSystems();
+    const auto &drawSystems = DrawSystem::getDrawSystems();
     if (mDrawSystem > drawSystems.size())
         throw ActionExecutionException("Failed to redo ChangeCategoriesDrawSystemAction. Invalid drawSystem specified.");
     const auto &drawSystem = drawSystems[mDrawSystem];

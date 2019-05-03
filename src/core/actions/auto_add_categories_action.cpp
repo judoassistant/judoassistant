@@ -2,7 +2,7 @@
 #include "core/actions/auto_add_categories_action.hpp"
 #include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_categories_action.hpp"
-#include "core/draw_systems/draw_systems.hpp"
+#include "core/draw_systems/draw_system.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
@@ -127,7 +127,7 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     }
 
     const auto &rulesets = Ruleset::getRulesets();
-    const auto &drawSystems = DrawSystems::getDrawSystems();
+    const auto &drawSystems = DrawSystem::getDrawSystems();
     tournament.beginAddCategories(mCategoryIds);
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
         std::stringstream ss;

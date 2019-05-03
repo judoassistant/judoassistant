@@ -1,5 +1,5 @@
 #include "core/actions/add_category_action.hpp"
-#include "core/draw_systems/draw_systems.hpp"
+#include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
@@ -32,7 +32,7 @@ void AddCategoryAction::redoImpl(TournamentStore & tournament) {
         throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid ruleset specified.");
     auto ruleset = rulesets[mRuleset]->clone();
 
-    const auto &drawSystems = DrawSystems::getDrawSystems();
+    const auto &drawSystems = DrawSystem::getDrawSystems();
     if (mDrawSystem > drawSystems.size())
         throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid drawSystem specified.");
     auto drawSystem = drawSystems[mDrawSystem]->clone();

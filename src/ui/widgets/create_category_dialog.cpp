@@ -5,7 +5,7 @@
 #include <QFormLayout>
 
 #include "core/actions/category_actions.hpp"
-#include "core/draw_systems/draw_systems.hpp"
+#include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
@@ -24,7 +24,7 @@ CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, const st
         mRulesetContent->addItem(QString::fromStdString(ruleset->getName()));
 
     mDrawSystemContent = new QComboBox;
-    for (const auto & system : DrawSystems::getDrawSystems())
+    for (const auto & system : DrawSystem::getDrawSystems())
         mDrawSystemContent->addItem(QString::fromStdString(system->getName()));
 
     QFormLayout *formLayout = new QFormLayout;
