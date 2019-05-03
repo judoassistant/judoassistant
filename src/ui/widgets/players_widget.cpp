@@ -5,8 +5,11 @@
 #include <QMessageBox>
 #include <QMenu>
 
-#include "core/actions/category_actions.hpp"
-#include "core/actions/player_actions.hpp"
+#include "core/actions/erase_players_action.hpp"
+#include "core/actions/erase_players_from_all_categories_action.hpp"
+#include "core/actions/erase_players_from_category_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
+#include "core/actions/add_players_to_category_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/models/players_model.hpp"
 #include "ui/store_managers/store_manager.hpp"

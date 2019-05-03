@@ -10,7 +10,15 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 
-#include "core/actions/match_actions.hpp"
+#include "core/actions/award_hansoku_make_action.hpp"
+#include "core/actions/award_ippon_action.hpp"
+#include "core/actions/award_shido_action.hpp"
+#include "core/actions/award_wazari_action.hpp"
+#include "core/actions/pause_match_action.hpp"
+#include "core/actions/reset_match_action.hpp"
+#include "core/actions/resume_match_action.hpp"
+#include "core/actions/start_osaekomi_action.hpp"
+#include "core/actions/stop_osaekomi_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
 #include "ui/constants/homepage.hpp"

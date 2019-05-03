@@ -6,8 +6,7 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
-#include "core/log.hpp"
-#include "core/actions/category_actions.hpp"
+#include "core/actions/erase_categories_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/models/categories_model.hpp"
 #include "ui/store_managers/store_manager.hpp"

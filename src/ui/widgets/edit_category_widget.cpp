@@ -4,8 +4,10 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "core/log.hpp"
-#include "core/actions/category_actions.hpp"
+#include "core/actions/change_categories_draw_system_action.hpp"
+#include "core/actions/change_categories_name_action.hpp"
+#include "core/actions/change_categories_ruleset_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
@@ -99,7 +101,6 @@ void EditCategoryWidget::endResetTournament() {
 }
 
 void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryIds) {
-    log_debug().field("ids", categoryIds).msg("Setting category ids");
     mCategoryIds.clear();
     mCategoryIds.insert(categoryIds.begin(), categoryIds.end());
 

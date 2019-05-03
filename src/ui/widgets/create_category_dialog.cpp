@@ -4,7 +4,10 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "core/actions/category_actions.hpp"
+#include "core/actions/add_category_with_players_action.hpp"
+#include "core/actions/add_players_to_category_action.hpp"
+#include "core/actions/add_category_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
