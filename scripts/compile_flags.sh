@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SRC_DIR="$MESON_SOURCE_ROOT/flags/flags/4x3/"
+SRC_DIR="$MESON_SOURCE_ROOT/flags/flags/4x3"
 OUTPUT_DIR="$MESON_BUILD_ROOT/flags"
 
 # INPUT_COLOR="#000000"
