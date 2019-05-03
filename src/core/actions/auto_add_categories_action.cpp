@@ -3,10 +3,10 @@
 #include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_categories_action.hpp"
 #include "core/draw_systems/draw_systems.hpp"
-#include "core/rulesets/rulesets.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/rulesets/ruleset.hpp"
 
 // TODO: Make use of add categories with players action
 std::string AutoAddCategoriesAction::getDescription() const {
@@ -126,7 +126,7 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
             throw ActionExecutionException("Failed to redo AutoAddCategoriesAction. Category already exists.");
     }
 
-    const auto &rulesets = Rulesets::getRulesets();
+    const auto &rulesets = Ruleset::getRulesets();
     const auto &drawSystems = DrawSystems::getDrawSystems();
     tournament.beginAddCategories(mCategoryIds);
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {

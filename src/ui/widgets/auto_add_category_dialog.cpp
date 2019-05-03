@@ -6,7 +6,6 @@
 
 #include "core/actions/category_actions.hpp"
 #include "core/draw_systems/draw_systems.hpp"
-#include "core/rulesets/rulesets.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/stores/qtournament_store.hpp"

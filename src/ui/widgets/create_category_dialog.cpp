@@ -6,7 +6,7 @@
 
 #include "core/actions/category_actions.hpp"
 #include "core/draw_systems/draw_systems.hpp"
-#include "core/rulesets/rulesets.hpp"
+#include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -20,7 +20,7 @@ CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, const st
     mNameContent = new QLineEdit;
 
     mRulesetContent = new QComboBox;
-    for (const auto & ruleset : Rulesets::getRulesets())
+    for (const auto & ruleset : Ruleset::getRulesets())
         mRulesetContent->addItem(QString::fromStdString(ruleset->getName()));
 
     mDrawSystemContent = new QComboBox;

@@ -5,7 +5,6 @@
 #include "core/stores/category_store.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
-#include "core/rulesets/rulesets.hpp"
 
 ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset)
     : ChangeCategoriesRulesetAction(categoryIds, ruleset, getSeed())
@@ -22,7 +21,7 @@ std::unique_ptr<Action> ChangeCategoriesRulesetAction::freshClone() const {
 }
 
 void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
-    const auto &rulesets = Rulesets::getRulesets();
+    const auto &rulesets = Ruleset::getRulesets();
     if (mRuleset > rulesets.size())
         throw ActionExecutionException("Failed to redo ChangeCategoriesRulesetAction. Invalid ruleset specified.");
     const auto &ruleset = rulesets[mRuleset];

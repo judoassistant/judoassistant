@@ -7,7 +7,7 @@
 #include "core/log.hpp"
 #include "core/actions/category_actions.hpp"
 #include "core/draw_systems/draw_systems.hpp"
-#include "core/rulesets/rulesets.hpp"
+#include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -55,7 +55,7 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
 
     mRulesetContent = new QComboBox;
     connect(mRulesetContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editRuleset();});
-    for (const auto & ruleset : Rulesets::getRulesets())
+    for (const auto & ruleset : Ruleset::getRulesets())
         mRulesetContent->addItem(QString::fromStdString(ruleset->getName()));
 
     mDrawSystemContent = new QComboBox;
@@ -213,13 +213,13 @@ void EditCategoryWidget::updateRuleset() {
 
     auto rulesetText = getRulesetText();
     if (rulesetText == MULTIPLE_TEXT) {
-        if (static_cast<size_t>(mRulesetContent->count()) == Rulesets::getRulesets().size()) {
+        if (static_cast<size_t>(mRulesetContent->count()) == Ruleset::getRulesets().size()) {
             mRulesetContent->addItem(MULTIPLE_TEXT);
             mRulesetContent->setItemData(mRulesetContent->count() - 1, QBrush(Qt::gray), Qt::ForegroundRole);
         }
     }
     else {
-        if (static_cast<size_t>(mRulesetContent->count()) != Rulesets::getRulesets().size())
+        if (static_cast<size_t>(mRulesetContent->count()) != Ruleset::getRulesets().size())
             mRulesetContent->removeItem(mRulesetContent->count() - 1);
     }
 

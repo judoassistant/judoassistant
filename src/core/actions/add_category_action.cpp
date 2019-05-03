@@ -1,6 +1,6 @@
 #include "core/actions/add_category_action.hpp"
 #include "core/draw_systems/draw_systems.hpp"
-#include "core/rulesets/rulesets.hpp"
+#include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
 
@@ -27,7 +27,7 @@ void AddCategoryAction::redoImpl(TournamentStore & tournament) {
     if (tournament.containsCategory(mId))
         throw ActionExecutionException("Failed to redo AddCategoryAction. Category already exists.");
 
-    const auto &rulesets = Rulesets::getRulesets();
+    const auto &rulesets = Ruleset::getRulesets();
     if (mRuleset > rulesets.size())
         throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid ruleset specified.");
     auto ruleset = rulesets[mRuleset]->clone();
