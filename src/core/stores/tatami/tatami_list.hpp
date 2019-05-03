@@ -44,7 +44,7 @@ public:
     SequentialBlockGroup & at(SequentialGroupLocation location);
 
     void moveBlock(const TournamentStore &tournament, std::pair<CategoryId, MatchType> block, std::optional<BlockLocation> from, std::optional<BlockLocation> to);
-    void recomputeBlock(const TournamentStore &tournament, BlockLocation);
+    void recomputeBlocks(const TournamentStore &tournament, const std::vector<BlockLocation> &locations);
     void updateStatus(const TournamentStore &tournament, BlockLocation location);
 
     // std::vector<std::tuple<CategoryId, MatchType, TatamiLocation>> popTatami();

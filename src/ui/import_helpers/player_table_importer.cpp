@@ -1,7 +1,6 @@
 #include <sstream>
 
-#include "core/actions/category_actions.hpp"
-#include "core/actions/player_actions.hpp"
+#include "core/actions/add_players_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/import_helpers/player_table_importer.hpp"

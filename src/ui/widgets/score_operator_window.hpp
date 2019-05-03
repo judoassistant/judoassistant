@@ -44,8 +44,8 @@ private:
 
     void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
-    void beginResetMatches(CategoryId categoryId);
-    void endResetMatches(CategoryId categoryId);
+    void beginResetMatches(const std::vector<CategoryId> &categoryIds);
+    void endResetMatches(const std::vector<CategoryId> &categoryIds);
 
     void setTatami(TatamiLocation tatami);
 

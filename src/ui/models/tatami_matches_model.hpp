@@ -48,7 +48,7 @@ protected:
 
     void loadBlocks(bool shouldSignal = true);
 
-    void beginResetCategory(CategoryId categoryId);
+    void beginResetCategory(const std::vector<CategoryId> &categoryIds);
 
 private:
     StoreManager & mStoreManager;

@@ -1,6 +1,7 @@
 #include <queue>
 
-#include "core/actions/match_actions.hpp"
+#include "core/actions/add_match_action.hpp"
+#include "core/actions/set_match_player_action.hpp"
 #include "core/draw_systems/double_pool_draw_system.hpp"
 #include "core/misc/merge_queue_element.hpp"
 #include "core/rulesets/ruleset.hpp"

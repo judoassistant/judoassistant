@@ -1,4 +1,5 @@
 #include "core/rulesets/ruleset.hpp"
+#include "core/rulesets/rulesets.hpp"
 
 bool Ruleset::canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto &score = match.getScore(playerIndex);
@@ -135,5 +136,17 @@ bool Ruleset::shouldStopOsaekomi(const MatchStore &match, std::chrono::milliseco
         return true;
 
     return false;
+}
+
+const std::vector<std::unique_ptr<Ruleset>> & Ruleset::getRulesets() {
+    static std::vector<std::unique_ptr<Ruleset>> rulesets;
+
+    if (rulesets.empty()) {
+        rulesets.push_back(std::make_unique<TwentyEighteenRuleset>());
+        rulesets.push_back(std::make_unique<TwentyEighteenChildrenRuleset>());
+        rulesets.push_back(std::make_unique<TwentyEighteenVeteranRuleset>());
+    }
+
+    return rulesets;
 }
 

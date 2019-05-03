@@ -142,11 +142,16 @@ void ResultsModel::endResetResults() {
     endResetModel();
 }
 
-void ResultsModel::resetCategoryResults(CategoryId categoryId) {
-    log_debug().msg("Resetting results");
-    if (mCategory == categoryId) {
-        beginResetResults();
-        endResetResults();
+void ResultsModel::resetCategoryResults(const std::vector<CategoryId> &categoryIds) {
+    if (!mCategory)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (*mCategory == categoryId) {
+            beginResetResults();
+            endResetResults();
+            return;
+        }
     }
 }
 

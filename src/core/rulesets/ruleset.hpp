@@ -67,6 +67,8 @@ public:
 
     virtual std::unique_ptr<Ruleset> clone() const = 0;
 
+    static const std::vector<std::unique_ptr<Ruleset>> & getRulesets();
+
     // TODO: Move some 2018 specific implementations into subclasses
 protected:
     void updateStatus(MatchStore &match, std::chrono::milliseconds masterTime) const;

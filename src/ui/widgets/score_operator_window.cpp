@@ -10,7 +10,15 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 
-#include "core/actions/match_actions.hpp"
+#include "core/actions/award_hansoku_make_action.hpp"
+#include "core/actions/award_ippon_action.hpp"
+#include "core/actions/award_shido_action.hpp"
+#include "core/actions/award_wazari_action.hpp"
+#include "core/actions/pause_match_action.hpp"
+#include "core/actions/reset_match_action.hpp"
+#include "core/actions/resume_match_action.hpp"
+#include "core/actions/start_osaekomi_action.hpp"
+#include "core/actions/stop_osaekomi_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
 #include "ui/constants/homepage.hpp"
@@ -118,7 +126,7 @@ void ScoreOperatorWindow::populateTatamiMenu() {
         QAction *action = new QAction(tr("Tatami %1").arg(QString::number(i+1)), mTatamiMenu);
         action->setCheckable(true);
         mTatamiActionGroup->addAction(action);
-        if (mTatami && location.equiv(*mTatami)) {
+        if (mTatami && location == *mTatami) {
             action->setChecked(true);
         }
 
@@ -415,7 +423,7 @@ void ScoreOperatorWindow::changeTatamis(std::vector<BlockLocation> locations, st
         return;
 
     for (const auto &location: locations) {
-        if (location.getTatamiHandle().equiv(mTatami->handle)) {
+        if (location.getTatamiHandle() == mTatami->handle) {
             findNextMatch();
             return;
         }
@@ -476,14 +484,20 @@ void ScoreOperatorWindow::changeMatches(CategoryId categoryId, std::vector<Match
         updateNextButton();
 }
 
-void ScoreOperatorWindow::beginResetMatches(CategoryId categoryId) {
+void ScoreOperatorWindow::beginResetMatches(const std::vector<CategoryId> &categoryIds) {
     // next match category resetting is handled by tatami hooks
-    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId) {
-        disableControlButtons(); // disable controls
+    if (!mCurrentMatch)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (mCurrentMatch->first == categoryId) {
+            disableControlButtons(); // disable controls
+            return;
+        }
     }
 }
 
-void ScoreOperatorWindow::endResetMatches(CategoryId categoryId) {
+void ScoreOperatorWindow::endResetMatches(const std::vector<CategoryId> &categoryIds) {
     // next match category resetting is handled by tatami hooks
     updateControlButtons();
 }

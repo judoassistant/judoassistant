@@ -99,10 +99,16 @@ void MatchCardWidget::changeMatches(CategoryId categoryId, std::vector<MatchId> 
     }
 }
 
-void MatchCardWidget::resetMatches(CategoryId categoryId) {
-    if (mCombinedId && mCombinedId->first == categoryId) {
-        mCombinedId = std::nullopt;
-        update(0, 0, width(), height());
+void MatchCardWidget::resetMatches(const std::vector<CategoryId> &categoryIds) {
+    if (!mCombinedId)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (mCombinedId->first == categoryId) {
+            mCombinedId = std::nullopt;
+            update(0, 0, width(), height());
+            return;
+        }
     }
 }
 

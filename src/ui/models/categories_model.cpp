@@ -156,9 +156,11 @@ void CategoriesModel::tournamentReset() {
     endResetModel();
 }
 
-void CategoriesModel::matchesReset(CategoryId categoryId) {
-    int row = getRow(categoryId);
-    emit dataChanged(createIndex(row, 4), createIndex(row, 4));
+void CategoriesModel::matchesReset(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        int row = getRow(categoryId);
+        emit dataChanged(createIndex(row, 4), createIndex(row, 4));
+    }
 }
 
 void CategoriesModel::categoryPlayersChanged(CategoryId categoryId) {

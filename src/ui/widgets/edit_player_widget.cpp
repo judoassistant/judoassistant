@@ -5,8 +5,14 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "core/actions/category_actions.hpp"
-#include "core/actions/player_actions.hpp"
+#include "core/actions/change_players_age_action.hpp"
+#include "core/actions/change_players_club_action.hpp"
+#include "core/actions/change_players_country_action.hpp"
+#include "core/actions/change_players_first_name_action.hpp"
+#include "core/actions/change_players_last_name_action.hpp"
+#include "core/actions/change_players_rank_action.hpp"
+#include "core/actions/change_players_sex_action.hpp"
+#include "core/actions/change_players_weight_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"

@@ -139,20 +139,20 @@ void QTournamentStore::changeMatches(CategoryId categoryId, const std::vector<Ma
     emit matchesChanged(categoryId, matchIds);
 }
 
-void QTournamentStore::beginResetMatches(CategoryId categoryId) {
+void QTournamentStore::beginResetMatches(const std::vector<CategoryId> &categoryIds) {
     if (mResettingMatches)
         throw std::runtime_error("beginResetMatches called immidiately after another beginResetMatches call.");
 
     mResettingMatches = true;
-    emit matchesAboutToBeReset(categoryId);
+    emit matchesAboutToBeReset(categoryIds);
 }
 
-void QTournamentStore::endResetMatches(CategoryId categoryId) {
+void QTournamentStore::endResetMatches(const std::vector<CategoryId> &categoryIds) {
     if (!mResettingMatches)
         throw std::runtime_error("endResetMatches called with calling beginResetMatches first.");
 
     mResettingMatches = false;
-    emit matchesReset(categoryId);
+    emit matchesReset(categoryIds);
 }
 
 void QTournamentStore::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
@@ -175,7 +175,7 @@ void QTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locati
     emit tatamisErased(locations);
 }
 
-void QTournamentStore::resetCategoryResults(CategoryId categoryId) {
-    emit categoryResultsReset(categoryId);
+void QTournamentStore::resetCategoryResults(const std::vector<CategoryId> &categoryIds) {
+    emit categoryResultsReset(categoryIds);
 }
 

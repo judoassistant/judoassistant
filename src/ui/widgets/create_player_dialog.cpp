@@ -4,8 +4,7 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "core/actions/category_actions.hpp"
-#include "core/actions/player_actions.hpp"
+#include "core/actions/add_players_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"

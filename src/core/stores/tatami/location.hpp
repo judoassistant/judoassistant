@@ -19,8 +19,8 @@ struct TatamiLocation {
         return handle == other.handle;
     }
 
-    bool equiv(const TatamiLocation &other) const {
-        return handle.equiv(other.handle);
+    bool operator!=(const TatamiLocation &other) const {
+        return handle != other.handle;
     }
 };
 
@@ -37,8 +37,8 @@ struct ConcurrentGroupLocation {
         return handle == other.handle && tatami == other.tatami;
     }
 
-    bool equiv(const ConcurrentGroupLocation &other) const {
-        return tatami.equiv(other.tatami) && handle.equiv(other.handle);
+    bool operator!=(const ConcurrentGroupLocation &other) const {
+        return handle != other.handle || tatami != other.tatami;
     }
 };
 
@@ -55,8 +55,8 @@ struct SequentialGroupLocation {
         return handle == other.handle && concurrentGroup == other.concurrentGroup;
     }
 
-    bool equiv(const SequentialGroupLocation &other) const {
-        return concurrentGroup.equiv(other.concurrentGroup) && handle.equiv(other.handle);
+    bool operator!=(const SequentialGroupLocation &other) const {
+        return handle != other.handle || concurrentGroup != other.concurrentGroup;
     }
 };
 
@@ -71,6 +71,10 @@ struct BlockLocation {
 
     bool operator==(const BlockLocation &other) const {
         return pos == other.pos && sequentialGroup == other.sequentialGroup;
+    }
+
+    bool operator!=(const BlockLocation &other) const {
+        return pos != other.pos || sequentialGroup != other.sequentialGroup;
     }
 
     PositionHandle getTatamiHandle() const {

@@ -454,9 +454,16 @@ void ScoreDisplayWidget::changePlayers(std::vector<PlayerId> playerIds) {
     }
 }
 
-void ScoreDisplayWidget::resetMatches(CategoryId categoryId) {
-    if (mCombinedId && mCombinedId->first == categoryId)
-        update(0, 0, width(), height());
+void ScoreDisplayWidget::resetMatches(const std::vector<CategoryId> &categoryIds) {
+    if (!mCombinedId)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (mCombinedId->first == categoryId) {
+            update(0, 0, width(), height());
+            return;
+        }
+    }
 }
 
 void ScoreDisplayWidget::changeCategories(std::vector<CategoryId> categoryIds) {

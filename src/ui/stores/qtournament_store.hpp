@@ -44,8 +44,8 @@ public:
     void endResetCategories() override;
 
     void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) override;
-    void beginResetMatches(CategoryId categoryId) override;
-    void endResetMatches(CategoryId categoryId) override;
+    void beginResetMatches(const std::vector<CategoryId> &categoryIds) override;
+    void endResetMatches(const std::vector<CategoryId> &categoryIds) override;
 
     void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) override;
     void beginAddTatamis(const std::vector<TatamiLocation> &locations) override;
@@ -53,7 +53,7 @@ public:
     void beginEraseTatamis(const std::vector<TatamiLocation> &locations) override;
     void endEraseTatamis(const std::vector<TatamiLocation> &locations) override;
 
-    void resetCategoryResults(CategoryId categoryId) override;
+    void resetCategoryResults(const std::vector<CategoryId> &categoryIds) override;
 
 signals:
     void tournamentChanged();
@@ -78,8 +78,8 @@ signals:
     void categoriesReset();
 
     void matchesChanged(CategoryId categoryId, const std::vector<MatchId> &matchIds);
-    void matchesAboutToBeReset(CategoryId categoryId);
-    void matchesReset(CategoryId categoryId);
+    void matchesAboutToBeReset(const std::vector<CategoryId> &categoryId);
+    void matchesReset(const std::vector<CategoryId> &categoryId);
 
     void tatamisChanged(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks);
     void tatamisAboutToBeAdded(const std::vector<TatamiLocation> &locations);
@@ -87,7 +87,7 @@ signals:
     void tatamisAboutToBeErased(const std::vector<TatamiLocation> &locations);
     void tatamisErased(const std::vector<TatamiLocation> &locations);
 
-    void categoryResultsReset(CategoryId categoryId);
+    void categoryResultsReset(const std::vector<CategoryId> &categoryId);
 
 private:
     bool mResettingPlayers;

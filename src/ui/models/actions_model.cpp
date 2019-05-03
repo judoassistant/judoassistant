@@ -197,13 +197,27 @@ void ActionsProxyModel::endResetTournament() {
     invalidateFilter();
 }
 
-void ActionsProxyModel::beginResetMatches(CategoryId categoryId) {
-    if (mMatchId && mMatchId->first == categoryId)
-        invalidateFilter();
+void ActionsProxyModel::beginResetMatches(const std::vector<CategoryId> &categoryIds) {
+    if (!mMatchId)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (mMatchId->first == categoryId) {
+            invalidateFilter();
+            return;
+        }
+    }
 }
 
-void ActionsProxyModel::endResetMatches(CategoryId categoryId) {
-    if (mMatchId && mMatchId->first == categoryId)
-        invalidateFilter();
+void ActionsProxyModel::endResetMatches(const std::vector<CategoryId> &categoryIds) {
+    if (!mMatchId)
+        return;
+
+    for (auto categoryId : categoryIds) {
+        if (mMatchId->first == categoryId) {
+            invalidateFilter();
+            return;
+        }
+    }
 }
 

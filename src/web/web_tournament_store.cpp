@@ -189,14 +189,16 @@ void WebTournamentStore::changeMatches(CategoryId categoryId, const std::vector<
     }
 }
 
-void WebTournamentStore::beginResetMatches(CategoryId categoryId) {
+void WebTournamentStore::beginResetMatches(const std::vector<CategoryId> &categoryIds) {
     // noop
 }
 
-void WebTournamentStore::endResetMatches(CategoryId categoryId) {
-    mCategoryMatchResets.insert(categoryId);
-    for (auto playerId : getCategory(categoryId).getPlayers())
-        mPlayerMatchResets.insert(playerId);
+void WebTournamentStore::endResetMatches(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        mCategoryMatchResets.insert(categoryId);
+        for (auto playerId : getCategory(categoryId).getPlayers())
+            mPlayerMatchResets.insert(playerId);
+    }
 }
 
 void WebTournamentStore::addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {

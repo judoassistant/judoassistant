@@ -21,11 +21,11 @@ struct PositionHandle {
     }
 
     bool operator==(const PositionHandle &other) const {
-        return id == other.id && index == other.index;
+        return id == other.id;
     }
 
-    bool equiv(const PositionHandle &other) const {
-        return id == other.id;
+    bool operator!=(const PositionHandle &other) const {
+        return id != other.id;
     }
 };
 
@@ -33,10 +33,7 @@ namespace std {
     template <>
     struct hash<PositionHandle> {
         size_t operator()(const PositionHandle &v) const {
-            size_t seed = 0;
-            hash_combine(seed, v.id);
-            hash_combine(seed, v.index);
-            return seed;
+            return std::hash<PositionId>()(v.id);
         }
     };
 };

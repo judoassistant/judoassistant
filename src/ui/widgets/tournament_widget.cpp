@@ -5,8 +5,8 @@
 #include <QString>
 #include <QVBoxLayout>
 
-#include "core/actions/tatami_actions.hpp"
-#include "core/actions/tournament_actions.hpp"
+#include "core/actions/set_tatami_count_action.hpp"
+#include "core/actions/change_tournament_name_action.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/tournament_widget.hpp"

@@ -32,7 +32,7 @@ public slots:
     void categoriesAboutToBeErased(const std::vector<CategoryId> &categoryIds);
     void categoriesAboutToBeReset();
     void categoriesReset();
-    void matchesReset(CategoryId categoryId);
+    void matchesReset(const std::vector<CategoryId> &categoryIds);
     void categoryPlayersChanged(CategoryId categoryId);
     void tournamentAboutToBeReset();
     void tournamentReset();

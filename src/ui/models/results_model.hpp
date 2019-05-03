@@ -37,7 +37,7 @@ private:
     void beginResetTournament();
     void endResetTournament();
 
-    void resetCategoryResults(CategoryId categoryId);
+    void resetCategoryResults(const std::vector<CategoryId> &categoryIds);
 
     void beginResetResults();
     void endResetResults();

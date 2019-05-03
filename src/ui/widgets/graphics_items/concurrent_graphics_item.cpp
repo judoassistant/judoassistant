@@ -3,8 +3,7 @@
 #include <QGraphicsSceneDragDropEvent>
 #include <QPainter>
 
-#include "core/actions/tatami_actions.hpp"
-#include "core/log.hpp"
+#include "core/actions/set_tatami_location_action.hpp"
 #include "ui/misc/judoassistant_mime.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"

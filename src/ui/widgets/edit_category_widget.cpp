@@ -4,10 +4,12 @@
 #include <QGridLayout>
 #include <QFormLayout>
 
-#include "core/log.hpp"
-#include "core/actions/category_actions.hpp"
-#include "core/draw_systems/draw_systems.hpp"
-#include "core/rulesets/rulesets.hpp"
+#include "core/actions/change_categories_draw_system_action.hpp"
+#include "core/actions/change_categories_name_action.hpp"
+#include "core/actions/change_categories_ruleset_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
+#include "core/draw_systems/draw_system.hpp"
+#include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -55,12 +57,12 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
 
     mRulesetContent = new QComboBox;
     connect(mRulesetContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editRuleset();});
-    for (const auto & ruleset : Rulesets::getRulesets())
+    for (const auto & ruleset : Ruleset::getRulesets())
         mRulesetContent->addItem(QString::fromStdString(ruleset->getName()));
 
     mDrawSystemContent = new QComboBox;
     connect(mDrawSystemContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editDrawSystem();});
-    for (const auto & system : DrawSystems::getDrawSystems())
+    for (const auto & system : DrawSystem::getDrawSystems())
         mDrawSystemContent->addItem(QString::fromStdString(system->getName()));
 
     mPlayerCountContent = new QLabel("");
@@ -99,7 +101,6 @@ void EditCategoryWidget::endResetTournament() {
 }
 
 void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryIds) {
-    log_debug().field("ids", categoryIds).msg("Setting category ids");
     mCategoryIds.clear();
     mCategoryIds.insert(categoryIds.begin(), categoryIds.end());
 
@@ -110,11 +111,13 @@ void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryId
     updateMatchCount();
 }
 
-void EditCategoryWidget::resetMatches(CategoryId categoryId) {
-    if (mCategoryIds.find(categoryId) == mCategoryIds.end())
-        return;
-
-    updateMatchCount();
+void EditCategoryWidget::resetMatches(const std::vector<CategoryId> &categoryIds) {
+    for (auto categoryId : categoryIds) {
+        if (mCategoryIds.find(categoryId) != mCategoryIds.end()) {
+            updateMatchCount();
+            return;
+        }
+    }
 }
 
 void EditCategoryWidget::changePlayerCount(CategoryId categoryId, std::vector<PlayerId> playerIds) {
@@ -211,13 +214,13 @@ void EditCategoryWidget::updateRuleset() {
 
     auto rulesetText = getRulesetText();
     if (rulesetText == MULTIPLE_TEXT) {
-        if (static_cast<size_t>(mRulesetContent->count()) == Rulesets::getRulesets().size()) {
+        if (static_cast<size_t>(mRulesetContent->count()) == Ruleset::getRulesets().size()) {
             mRulesetContent->addItem(MULTIPLE_TEXT);
             mRulesetContent->setItemData(mRulesetContent->count() - 1, QBrush(Qt::gray), Qt::ForegroundRole);
         }
     }
     else {
-        if (static_cast<size_t>(mRulesetContent->count()) != Rulesets::getRulesets().size())
+        if (static_cast<size_t>(mRulesetContent->count()) != Ruleset::getRulesets().size())
             mRulesetContent->removeItem(mRulesetContent->count() - 1);
     }
 
@@ -234,13 +237,13 @@ void EditCategoryWidget::updateDrawSystem() {
 
     auto drawSystemText = getDrawSystemText();
     if (drawSystemText == MULTIPLE_TEXT) {
-        if (static_cast<size_t>(mDrawSystemContent->count()) == DrawSystems::getDrawSystems().size()) {
+        if (static_cast<size_t>(mDrawSystemContent->count()) == DrawSystem::getDrawSystems().size()) {
             mDrawSystemContent->addItem(MULTIPLE_TEXT);
             mDrawSystemContent->setItemData(mDrawSystemContent->count() - 1, QBrush(Qt::gray), Qt::ForegroundRole);
         }
     }
     else {
-        if (static_cast<size_t>(mDrawSystemContent->count()) != DrawSystems::getDrawSystems().size())
+        if (static_cast<size_t>(mDrawSystemContent->count()) != DrawSystem::getDrawSystems().size())
             mDrawSystemContent->removeItem(mDrawSystemContent->count() - 1);
     }
 
