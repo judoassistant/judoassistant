@@ -8,7 +8,6 @@
 #include "core/stores/tournament_store.hpp"
 #include "core/rulesets/ruleset.hpp"
 
-// TODO: Make use of add categories with players action
 std::string AutoAddCategoriesAction::getDescription() const {
     return "Automatically add categories for players";
 }
