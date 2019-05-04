@@ -325,7 +325,7 @@ std::weak_ptr<TCPParticipant> LoadedTournament::getOwner() {
 void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participant) {
     boost::asio::dispatch(mStrand, [this, participant](){
         JsonEncoder encoder;
-        auto message = encoder.encodeTournamentSubscriptionMessage(*mTournament, std::nullopt, std::nullopt, mClockDiff);
+        auto message = encoder.encodeTournamentSubscriptionMessage(*mTournament, std::nullopt, std::nullopt, mClockDiff, false);
         participant->deliver(std::move(message));
 
         mWebParticipants.insert(std::move(participant));
@@ -406,7 +406,7 @@ void LoadedTournament::deliverSync() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
-        auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, mClockDiff);
+        auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, mClockDiff, true);
         participant->deliver(std::move(buffer));
     }
 
