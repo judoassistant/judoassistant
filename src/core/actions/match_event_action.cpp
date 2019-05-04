@@ -67,10 +67,8 @@ void MatchEventAction::recover(TournamentStore &tournament) {
             match.popEvent();
     }
 
-    // Updates tatami groups
-    auto blockLocation = category.getLocation(match.getType());
-
-    if (blockLocation && updatedStatus != mPrevStatus) {
+    // Update category and tatamis if matches went to/from finished or not_started
+    if (updatedStatus != mPrevStatus && (mPrevStatus == MatchStatus::NOT_STARTED || mPrevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
         auto &categoryStatus = category.getStatus(match.getType());
 
         if (updatedStatus == MatchStatus::NOT_STARTED) {
@@ -93,12 +91,17 @@ void MatchEventAction::recover(TournamentStore &tournament) {
         else if (mPrevStatus == MatchStatus::FINISHED)
             ++(categoryStatus.finishedMatches);
 
-        auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
-        concurrentGroup.updateStatus(match);
+        auto blockLocation = category.getLocation(match.getType());
+        if (blockLocation) {
+            auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
+            concurrentGroup.updateStatus(match);
 
-        std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
-        tournament.changeTatamis({*blockLocation}, {block});
+            std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
+
+            tournament.changeTatamis({*blockLocation}, {block});
+        }
     }
+
 
     // Notify of match changed
     tournament.changeMatches(match.getCategory(), {match.getId()});
@@ -114,37 +117,40 @@ bool MatchEventAction::shouldRecover() {
 
 void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &match) {
     auto &category = tournament.getCategory(match.getCategory());
+    auto updatedStatus = match.getStatus();
 
     // update category status
     auto & categoryStatus = category.getStatus(match.getType());
-    if (mPrevStatus == MatchStatus::NOT_STARTED) {
-        assert(categoryStatus.notStartedMatches > 0);
-        --(categoryStatus.notStartedMatches);
-    }
-    else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
-        assert(categoryStatus.startedMatches > 0);
-        --(categoryStatus.startedMatches);
-    }
-    else if (mPrevStatus == MatchStatus::FINISHED) {
-        assert(categoryStatus.finishedMatches > 0);
-        --(categoryStatus.finishedMatches);
-    }
+    if (updatedStatus != mPrevStatus && (mPrevStatus == MatchStatus::NOT_STARTED || mPrevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
+        if (mPrevStatus == MatchStatus::NOT_STARTED) {
+            assert(categoryStatus.notStartedMatches > 0);
+            --(categoryStatus.notStartedMatches);
+        }
+        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
+            assert(categoryStatus.startedMatches > 0);
+            --(categoryStatus.startedMatches);
+        }
+        else if (mPrevStatus == MatchStatus::FINISHED) {
+            assert(categoryStatus.finishedMatches > 0);
+            --(categoryStatus.finishedMatches);
+        }
 
-    if (match.getStatus() == MatchStatus::NOT_STARTED)
-        ++(categoryStatus.notStartedMatches);
-    else if (match.getStatus() == MatchStatus::PAUSED || match.getStatus() == MatchStatus::UNPAUSED)
-        ++(categoryStatus.startedMatches);
-    else if (match.getStatus() == MatchStatus::FINISHED)
-        ++(categoryStatus.finishedMatches);
+        if (updatedStatus == MatchStatus::NOT_STARTED)
+            ++(categoryStatus.notStartedMatches);
+        else if (updatedStatus == MatchStatus::PAUSED || updatedStatus == MatchStatus::UNPAUSED)
+            ++(categoryStatus.startedMatches);
+        else if (updatedStatus == MatchStatus::FINISHED)
+            ++(categoryStatus.finishedMatches);
 
-    // Updates tatami groups
-    auto blockLocation = category.getLocation(match.getType());
-    if (blockLocation && match.getStatus() != mPrevStatus) {
-        auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
-        concurrentGroup.updateStatus(match);
+        // Updates tatami groups
+        auto blockLocation = category.getLocation(match.getType());
+        if (blockLocation) {
+            auto &concurrentGroup = tournament.getTatamis().at(blockLocation->sequentialGroup.concurrentGroup);
+            concurrentGroup.updateStatus(match);
 
-        std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
-        tournament.changeTatamis({*blockLocation}, {block});
+            std::pair<CategoryId, MatchType> block{category.getId(), match.getType()};
+            tournament.changeTatamis({*blockLocation}, {block});
+        }
     }
 
     // Notify draw system
