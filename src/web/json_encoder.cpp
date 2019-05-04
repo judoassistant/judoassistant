@@ -109,7 +109,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator, shouldCache), allocator);
     }
 
     document.AddMember("matches", matches, allocator);
@@ -134,7 +134,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     // matches
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &match : category.getMatches())
-        matches.PushBack(encodeMatch(category, *match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, *match, clockDiff, allocator, false), allocator);
     document.AddMember("matches", matches, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
@@ -159,7 +159,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     for (auto combinedId : player.getMatches()) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator, false), allocator);
     }
     document.AddMember("matches", matches, allocator);
 
@@ -385,7 +385,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator, true), allocator);
     }
     document.AddMember("matches", matches, allocator);
 
@@ -475,13 +475,22 @@ rapidjson::Value JsonEncoder::encodeSubscribedCategory(const TournamentStore &to
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator, bool shouldCache) {
+    auto combinedId = match.getCombinedId();
+
+    auto it = mCachedMatches.find(combinedId);
+    if (it != mCachedMatches.end()) {
+        log_debug().msg("Copying match from cache");
+        rapidjson::Value res(it->second, allocator);
+        return res;
+    }
+
     const auto &ruleset = category.getRuleset();
 
     rapidjson::Value res;
     res.SetObject();
 
-    res.AddMember("combinedId", encodeCombinedId(match.getCombinedId(), allocator), allocator);
+    res.AddMember("combinedId", encodeCombinedId(combinedId, allocator), allocator);
     res.AddMember("bye", match.isBye(), allocator);
     res.AddMember("title", encodeString(match.getTitle(), allocator), allocator);
 
@@ -524,6 +533,12 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
         events.PushBack(encodeMatchEvent(event, allocator), allocator);
 
     res.AddMember("events", events, allocator);
+
+    if (shouldCache) {
+        rapidjson::Document cache;
+        cache.CopyFrom(res, cache.GetAllocator());
+        mCachedMatches.emplace(combinedId, std::move(cache));
+    }
 
     return res;
 }
