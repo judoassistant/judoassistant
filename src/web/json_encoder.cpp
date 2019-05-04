@@ -37,23 +37,33 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
         categories.PushBack(encodeCategory(*(p.second), allocator), allocator);
     document.AddMember("categories", categories, allocator);
 
-    // subscribed category field
-    if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory))
-        document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, tournament.getCategory(*subscribedCategory), allocator), allocator);
-    else
-        document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
-
     // players field
     rapidjson::Value players(rapidjson::kArrayType);
     for (const auto &p : tournament.getPlayers())
         players.PushBack(encodePlayer(*(p.second), allocator), allocator);
     document.AddMember("players", players, allocator);
 
+    // Encode tatamis
+    rapidjson::Value tatamis(rapidjson::kArrayType);
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+        tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
+    }
+
+    document.AddMember("tatamis", tatamis, allocator);
+
     // subscribed category field
     if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer))
         document.AddMember("subscribedPlayer", encodeSubscribedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
     else
         document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
+
+    // subscribed category field
+    if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory))
+        document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, tournament.getCategory(*subscribedCategory), allocator), allocator);
+    else
+        document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
+
 
     // Identify matches
     std::unordered_set<std::pair<CategoryId, MatchId>> matchIds;
@@ -88,15 +98,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     }
 
     document.AddMember("matches", matches, allocator);
-
-    // Encode tatamis
-    rapidjson::Value tatamis(rapidjson::kArrayType);
-    for (size_t i = 0; i < tatamiCount; ++i) {
-        const auto &model = tournament.getWebTatamiModel(i);
-        tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
-    }
-
-    document.AddMember("tatamis", tatamis, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -272,6 +273,18 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     }
     document.AddMember("erasedPlayers", erasedPlayers, allocator);
 
+    // Encode tatamis
+    rapidjson::Value tatamis(rapidjson::kArrayType);
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = tournament.getWebTatamiModel(i);
+
+        if (model.changed())
+            tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
+    }
+
+    document.AddMember("tatamis", tatamis, allocator);
+
+    // Encode subscribed category or player
     if (subscribedCategory.has_value()) { // encode subscribed category
         if (tournament.getErasedCategories().find(*subscribedCategory) != tournament.getErasedCategories().end()) {
             document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
@@ -349,17 +362,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
     }
     document.AddMember("matches", matches, allocator);
-
-    // Encode tatamis
-    rapidjson::Value tatamis(rapidjson::kArrayType);
-    for (size_t i = 0; i < tatamiCount; ++i) {
-        const auto &model = tournament.getWebTatamiModel(i);
-
-        if (model.changed())
-            tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
-    }
-
-    document.AddMember("tatamis", tatamis, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
