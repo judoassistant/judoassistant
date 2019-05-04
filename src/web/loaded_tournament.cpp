@@ -325,7 +325,7 @@ std::weak_ptr<TCPParticipant> LoadedTournament::getOwner() {
 void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participant) {
     boost::asio::dispatch(mStrand, [this, participant](){
         JsonEncoder encoder;
-        auto message = encoder.encodeTournamentSubscriptionMessage(*mTournament, std::nullopt, std::nullopt, mClockDiff);
+        auto message = encoder.encodeTournamentSubscriptionMessage(*mTournament, std::nullopt, std::nullopt, mClockDiff, false);
         participant->deliver(std::move(message));
 
         mWebParticipants.insert(std::move(participant));
@@ -341,27 +341,31 @@ void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> particip
 }
 
 void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> participant, CategoryId category) {
-    log_debug().field("category", category).msg("LoadedTournament::subscribeCategory");
     boost::asio::dispatch(mStrand, [this, participant, category](){
         mCategorySubscriptions[participant] = category;
         mPlayerSubscriptions.erase(participant);
         JsonEncoder encoder;
-        if (!mTournament->containsCategory(category))
-            return;
-        auto message = encoder.encodeCategorySubscriptionMessage(*mTournament, mTournament->getCategory(category), mClockDiff);
+        std::unique_ptr<JsonBuffer> message;
+        if (mTournament->containsCategory(category))
+            message = encoder.encodeCategorySubscriptionMessage(*mTournament, mTournament->getCategory(category), mClockDiff);
+        else
+            message = encoder.encodePlayerSubscriptionFailMessage();
+
         participant->deliver(std::move(message));
     });
 }
 
 void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participant, PlayerId player) {
-    log_debug().msg("LoadedTournament::subscribePlayer");
     boost::asio::dispatch(mStrand, [this, participant, player](){
         mPlayerSubscriptions[participant] = player;
         mCategorySubscriptions.erase(participant);
         JsonEncoder encoder;
-        if (!mTournament->containsPlayer(player))
-            return;
-        auto message = encoder.encodePlayerSubscriptionMessage(*mTournament, mTournament->getPlayer(player), mClockDiff);
+        std::unique_ptr<JsonBuffer> message;
+        if (mTournament->containsPlayer(player))
+            message = encoder.encodePlayerSubscriptionMessage(*mTournament, mTournament->getPlayer(player), mClockDiff);
+        else
+            message = encoder.encodePlayerSubscriptionFailMessage();
+
         participant->deliver(std::move(message));
     });
 }
@@ -402,7 +406,7 @@ void LoadedTournament::deliverSync() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
-        auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, mClockDiff);
+        auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, mClockDiff, true);
         participant->deliver(std::move(buffer));
     }
 

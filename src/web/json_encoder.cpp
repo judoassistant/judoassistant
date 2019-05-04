@@ -21,21 +21,57 @@ rapidjson::StringBuffer& JsonBuffer::getStringBuffer() {
     return mStringBuffer;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff, bool shouldCache) {
     rapidjson::Document document;
-    document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournamentSubscription", allocator), allocator);
+    // See if values common to all participants are already cached
+    if (mCachedSubscriptionObject.has_value()) {
+        log_debug().msg("Fetching cached object");
+        document.CopyFrom(*mCachedSubscriptionObject, allocator);
+    }
+    else {
+        document.SetObject();
 
-    // Tournament meta data field
-    document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
+        document.AddMember("messageType", encodeString("tournamentSubscription", allocator), allocator);
 
-    // categories field
-    rapidjson::Value categories(rapidjson::kArrayType);
-    for (const auto &p : tournament.getCategories())
-        categories.PushBack(encodeCategory(*(p.second), allocator), allocator);
-    document.AddMember("categories", categories, allocator);
+        // Tournament meta data field
+        document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
+
+        // categories field
+        rapidjson::Value categories(rapidjson::kArrayType);
+        for (const auto &p : tournament.getCategories())
+            categories.PushBack(encodeCategory(*(p.second), allocator), allocator);
+        document.AddMember("categories", categories, allocator);
+
+        // players field
+        rapidjson::Value players(rapidjson::kArrayType);
+        for (const auto &p : tournament.getPlayers())
+            players.PushBack(encodePlayer(*(p.second), allocator), allocator);
+        document.AddMember("players", players, allocator);
+
+        // Encode tatamis
+        rapidjson::Value tatamis(rapidjson::kArrayType);
+        auto tatamiCount = tournament.getTatamis().tatamiCount();
+        for (size_t i = 0; i < tatamiCount; ++i) {
+            const auto &model = tournament.getWebTatamiModel(i);
+            tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
+        }
+
+        document.AddMember("tatamis", tatamis, allocator);
+
+        // Save to cache
+        if (shouldCache) {
+            mCachedSubscriptionObject = rapidjson::Document();
+            mCachedSubscriptionObject->CopyFrom(document, mCachedSubscriptionObject->GetAllocator());
+        }
+    }
+
+    // subscribed category field
+    if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer))
+        document.AddMember("subscribedPlayer", encodeSubscribedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
+    else
+        document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
 
     // subscribed category field
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory))
@@ -43,17 +79,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     else
         document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
 
-    // players field
-    rapidjson::Value players(rapidjson::kArrayType);
-    for (const auto &p : tournament.getPlayers())
-        players.PushBack(encodePlayer(*(p.second), allocator), allocator);
-    document.AddMember("players", players, allocator);
-
-    // subscribed category field
-    if (subscribedPlayer.has_value() && tournament.containsPlayer(*subscribedPlayer))
-        document.AddMember("subscribedPlayer", encodeSubscribedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
-    else
-        document.AddMember("subscribedPlayer", rapidjson::Value(), allocator);
 
     // Identify matches
     std::unordered_set<std::pair<CategoryId, MatchId>> matchIds;
@@ -84,19 +109,10 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator, shouldCache), allocator);
     }
 
     document.AddMember("matches", matches, allocator);
-
-    // Encode tatamis
-    rapidjson::Value tatamis(rapidjson::kArrayType);
-    for (size_t i = 0; i < tatamiCount; ++i) {
-        const auto &model = tournament.getWebTatamiModel(i);
-        tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
-    }
-
-    document.AddMember("tatamis", tatamis, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -118,7 +134,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     // matches
     rapidjson::Value matches(rapidjson::kArrayType);
     for (const auto &match : category.getMatches())
-        matches.PushBack(encodeMatch(category, *match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, *match, clockDiff, allocator, false), allocator);
     document.AddMember("matches", matches, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
@@ -143,7 +159,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     for (auto combinedId : player.getMatches()) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator, false), allocator);
     }
     document.AddMember("matches", matches, allocator);
 
@@ -219,59 +235,82 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
 
 std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
-    document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournamentChanges", allocator), allocator);
+    if (mCachedChangesObject.has_value()) {
+        log_debug().msg("Fetching cached object");
+        document.CopyFrom(*mCachedChangesObject, allocator);
+    }
+    else {
+        document.SetObject();
+        document.AddMember("messageType", encodeString("tournamentChanges", allocator), allocator);
 
-    // Tournament meta data field
-    if (tournament.tournamentChanged())
-        document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
+        // Tournament meta data field
+        if (tournament.tournamentChanged())
+            document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
 
-    // categories field
-    rapidjson::Value categories(rapidjson::kArrayType);
-    for (auto categoryId : tournament.getChangedCategories()) {
-        const auto &category = tournament.getCategory(categoryId);
-        categories.PushBack(encodeCategory(category, allocator), allocator);
+        // categories field
+        rapidjson::Value categories(rapidjson::kArrayType);
+        for (auto categoryId : tournament.getChangedCategories()) {
+            const auto &category = tournament.getCategory(categoryId);
+            categories.PushBack(encodeCategory(category, allocator), allocator);
+        }
+
+        for (auto categoryId : tournament.getAddedCategories()) {
+            const auto &category = tournament.getCategory(categoryId);
+            categories.PushBack(encodeCategory(category, allocator), allocator);
+        }
+        document.AddMember("categories", categories, allocator);
+
+        // erased categories field
+        rapidjson::Value erasedCategories(rapidjson::kArrayType);
+        for (auto categoryId : tournament.getErasedCategories()) {
+            rapidjson::Value val(categoryId.getValue());
+
+            erasedCategories.PushBack(val, allocator);
+        }
+        document.AddMember("erasedCategories", erasedCategories, allocator);
+
+        // players field
+        rapidjson::Value players(rapidjson::kArrayType);
+        for (auto playerId : tournament.getChangedPlayers()) {
+            const auto &player = tournament.getPlayer(playerId);
+            players.PushBack(encodePlayer(player, allocator), allocator);
+        }
+
+        for (auto playerId : tournament.getAddedPlayers()) {
+            const auto &player = tournament.getPlayer(playerId);
+            players.PushBack(encodePlayer(player, allocator), allocator);
+        }
+        document.AddMember("players", players, allocator);
+
+        // erased players field
+        rapidjson::Value erasedPlayers(rapidjson::kArrayType);
+        for (auto playerId : tournament.getErasedPlayers()) {
+            rapidjson::Value val(playerId.getValue());
+
+            erasedPlayers.PushBack(val, allocator);
+        }
+        document.AddMember("erasedPlayers", erasedPlayers, allocator);
+
+        // Encode tatamis
+        rapidjson::Value tatamis(rapidjson::kArrayType);
+        auto tatamiCount = tournament.getTatamis().tatamiCount();
+        for (size_t i = 0; i < tatamiCount; ++i) {
+            const auto &model = tournament.getWebTatamiModel(i);
+
+            if (model.changed())
+                tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
+        }
+
+        document.AddMember("tatamis", tatamis, allocator);
+
+        // save object to cache
+        mCachedChangesObject = rapidjson::Document();
+        mCachedChangesObject->CopyFrom(document, mCachedChangesObject->GetAllocator());
     }
 
-    for (auto categoryId : tournament.getAddedCategories()) {
-        const auto &category = tournament.getCategory(categoryId);
-        categories.PushBack(encodeCategory(category, allocator), allocator);
-    }
-    document.AddMember("categories", categories, allocator);
-
-    // erased categories field
-    rapidjson::Value erasedCategories(rapidjson::kArrayType);
-    for (auto categoryId : tournament.getErasedCategories()) {
-        rapidjson::Value val(categoryId.getValue());
-
-        erasedCategories.PushBack(val, allocator);
-    }
-    document.AddMember("erasedCategories", erasedCategories, allocator);
-
-    // players field
-    rapidjson::Value players(rapidjson::kArrayType);
-    for (auto playerId : tournament.getChangedPlayers()) {
-        const auto &player = tournament.getPlayer(playerId);
-        players.PushBack(encodePlayer(player, allocator), allocator);
-    }
-
-    for (auto playerId : tournament.getAddedPlayers()) {
-        const auto &player = tournament.getPlayer(playerId);
-        players.PushBack(encodePlayer(player, allocator), allocator);
-    }
-    document.AddMember("players", players, allocator);
-
-    // erased players field
-    rapidjson::Value erasedPlayers(rapidjson::kArrayType);
-    for (auto playerId : tournament.getErasedPlayers()) {
-        rapidjson::Value val(playerId.getValue());
-
-        erasedPlayers.PushBack(val, allocator);
-    }
-    document.AddMember("erasedPlayers", erasedPlayers, allocator);
-
+    // Encode subscribed category or player
     if (subscribedCategory.has_value()) { // encode subscribed category
         if (tournament.getErasedCategories().find(*subscribedCategory) != tournament.getErasedCategories().end()) {
             document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
@@ -346,20 +385,9 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     for (const auto &combinedId : matchIds) {
         const auto &category = tournament.getCategory(combinedId.first);
         const auto &match = category.getMatch(combinedId.second);
-        matches.PushBack(encodeMatch(category, match, clockDiff, allocator), allocator);
+        matches.PushBack(encodeMatch(category, match, clockDiff, allocator, true), allocator);
     }
     document.AddMember("matches", matches, allocator);
-
-    // Encode tatamis
-    rapidjson::Value tatamis(rapidjson::kArrayType);
-    for (size_t i = 0; i < tatamiCount; ++i) {
-        const auto &model = tournament.getWebTatamiModel(i);
-
-        if (model.changed())
-            tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
-    }
-
-    document.AddMember("tatamis", tatamis, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -447,13 +475,22 @@ rapidjson::Value JsonEncoder::encodeSubscribedCategory(const TournamentStore &to
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator, bool shouldCache) {
+    auto combinedId = match.getCombinedId();
+
+    auto it = mCachedMatches.find(combinedId);
+    if (it != mCachedMatches.end()) {
+        log_debug().msg("Copying match from cache");
+        rapidjson::Value res(it->second, allocator);
+        return res;
+    }
+
     const auto &ruleset = category.getRuleset();
 
     rapidjson::Value res;
     res.SetObject();
 
-    res.AddMember("combinedId", encodeCombinedId(match.getCombinedId(), allocator), allocator);
+    res.AddMember("combinedId", encodeCombinedId(combinedId, allocator), allocator);
     res.AddMember("bye", match.isBye(), allocator);
     res.AddMember("title", encodeString(match.getTitle(), allocator), allocator);
 
@@ -496,6 +533,12 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
         events.PushBack(encodeMatchEvent(event, allocator), allocator);
 
     res.AddMember("events", events, allocator);
+
+    if (shouldCache) {
+        rapidjson::Document cache;
+        cache.CopyFrom(res, cache.GetAllocator());
+        mCachedMatches.emplace(combinedId, std::move(cache));
+    }
 
     return res;
 }
