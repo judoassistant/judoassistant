@@ -112,9 +112,7 @@ void WebTatamiModel::reset() {
 
     mResetting = false;
 
-    mInsertedMatches.clear();
     mChanged = true;
-    mMatches.clear();
 }
 
 void WebTatamiModel::loadBlocks() {
@@ -192,12 +190,11 @@ void WebTatamiModel::flush() {
             ++jt;
         }
         else {
-            // Matches are different. Load from unfinished matches
-            mMatches.insert(it, combinedId);
-            mInsertedMatches.push_back(combinedId);
+            // Matches are different. Erase from matches and continue
+            auto next = std::next(it);
+            mMatches.erase(it);
+            it = next;
             mChanged = true;
-            ++i;
-            ++jt;
             continue;
         }
     }

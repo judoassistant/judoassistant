@@ -27,7 +27,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
 
     // See if values common to all participants are already cached
     if (mCachedSubscriptionObject.has_value()) {
-        log_debug().msg("Fetching cached object");
         document.CopyFrom(*mCachedSubscriptionObject, allocator);
     }
     else {
@@ -238,7 +237,6 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     auto &allocator = document.GetAllocator();
 
     if (mCachedChangesObject.has_value()) {
-        log_debug().msg("Fetching cached object");
         document.CopyFrom(*mCachedChangesObject, allocator);
     }
     else {
@@ -480,7 +478,6 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
 
     auto it = mCachedMatches.find(combinedId);
     if (it != mCachedMatches.end()) {
-        log_debug().msg("Copying match from cache");
         rapidjson::Value res(it->second, allocator);
         return res;
     }
