@@ -10,13 +10,14 @@
 class PlayerStore;
 class CategoryStore;
 class MatchStore;
+class PreferencesStore;
 
 enum class MatchType;
 
 class TournamentStore {
 public:
     TournamentStore();
-    TournamentStore(TournamentId id);
+    // TournamentStore(TournamentId id);
     TournamentStore(const TournamentStore &other);
     TournamentStore(TournamentStore &&other) = default;
     virtual ~TournamentStore();

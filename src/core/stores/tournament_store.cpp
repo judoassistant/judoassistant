@@ -10,9 +10,9 @@ TournamentStore::TournamentStore()
     : mPreferences(std::make_unique<PreferencesStore>())
 {}
 
-TournamentStore::TournamentStore(TournamentId id)
-    : mId(id)
-{}
+// TournamentStore::TournamentStore(TournamentId id)
+//     : mId(id)
+// {}
 
 TournamentStore::~TournamentStore() {}
 

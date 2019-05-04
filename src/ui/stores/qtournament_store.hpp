@@ -15,7 +15,7 @@ class QTournamentStore : public QObject, public TournamentStore {
     Q_OBJECT
 public:
     QTournamentStore();
-    QTournamentStore(TournamentId id);
+    // QTournamentStore(TournamentId id);
 
     // Slightly hacky since QObject does not have a move constructor. Only
     // moves TournamentStore fields
