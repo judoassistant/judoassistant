@@ -8,6 +8,7 @@
 #include "core/stores/tatami/tatami_list.hpp"
 #include "core/stores/tatami/location.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/stores/preferences_store.hpp"
 
 #include "core/actions/actions.hpp"
 #include "core/rulesets/rulesets.hpp"

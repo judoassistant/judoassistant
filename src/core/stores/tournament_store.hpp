@@ -26,7 +26,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mName, mWebName, mPlayers, mCategories, mTatamis);
+        ar(mId, mName, mWebName, mPlayers, mCategories, mTatamis, mPreferences);
     }
 
     const std::string & getName() const;
@@ -52,6 +52,9 @@ public:
 
     const TatamiList & getTatamis() const;
     TatamiList & getTatamis();
+
+    const PreferencesStore& getPreferences() const;
+    PreferencesStore& getPreferences();
 
     // signals used for frontends. Called by actions
     virtual void changeTournament() {}
@@ -89,6 +92,8 @@ public:
     virtual void beginEraseTatamis(const std::vector<TatamiLocation> &locations) {}
     virtual void endEraseTatamis(const std::vector<TatamiLocation> &locations) {}
 
+    virtual void changePreferences() {};
+
 private:
     TournamentId mId;
     std::string mName;
@@ -97,5 +102,7 @@ private:
     std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> mPlayers;
     std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> mCategories;
     TatamiList mTatamis;
+
+    std::unique_ptr<PreferencesStore> mPreferences;
 };
 

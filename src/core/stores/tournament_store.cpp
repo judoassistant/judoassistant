@@ -4,8 +4,10 @@
 #include "core/stores/match_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/stores/preferences_store.hpp"
 
 TournamentStore::TournamentStore()
+    : mPreferences(std::make_unique<PreferencesStore>())
 {}
 
 TournamentStore::TournamentStore(TournamentId id)
@@ -108,6 +110,7 @@ TournamentStore::TournamentStore(const TournamentStore &other)
     , mName(other.mName)
     , mWebName(other.mWebName)
     , mTatamis(other.mTatamis)
+    , mPreferences(std::make_unique<PreferencesStore>(*other.mPreferences))
 {
     for (const auto &p : other.mPlayers)
         mPlayers[p.first] = std::make_unique<PlayerStore>(*p.second);
@@ -130,3 +133,12 @@ const std::string & TournamentStore::getWebName() const {
 void TournamentStore::setWebName(const std::string & name) {
     mWebName = name;
 }
+
+const PreferencesStore& TournamentStore::getPreferences() const {
+    return *mPreferences;
+}
+
+PreferencesStore& TournamentStore::getPreferences() {
+    return *mPreferences;
+}
+

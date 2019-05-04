@@ -55,6 +55,8 @@ public:
 
     void resetCategoryResults(const std::vector<CategoryId> &categoryIds) override;
 
+    void changePreferences() override;
+
 signals:
     void tournamentChanged();
 
@@ -89,6 +91,7 @@ signals:
 
     void categoryResultsReset(const std::vector<CategoryId> &categoryId);
 
+    void preferencesChanged();
 private:
     bool mResettingPlayers;
     bool mResettingCategories;
