@@ -6,6 +6,7 @@
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/stores/preferences_store.hpp"
 #include "core/rulesets/ruleset.hpp"
 
 std::string AutoAddCategoriesAction::getDescription() const {
@@ -126,13 +127,13 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     }
 
     const auto &rulesets = Ruleset::getRulesets();
-    const auto &drawSystems = DrawSystem::getDrawSystems();
+    const auto &preferences = tournament.getPreferences();
     tournament.beginAddCategories(mCategoryIds);
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
         std::stringstream ss;
         ss << mBaseName << " " << i+1;
         auto ruleset = rulesets[0]->clone();
-        auto drawSystem = drawSystems[0]->clone();
+        auto drawSystem = preferences.getPreferredDrawSystem(mPlayerIds[i].size())->clone();
         tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], ss.str(), std::move(ruleset), std::move(drawSystem)));
     }
     tournament.endAddCategories(mCategoryIds);
