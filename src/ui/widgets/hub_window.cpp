@@ -28,11 +28,15 @@
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+    setPalette(palette);
+
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
     createViewMenu();
-    createPreferencesMenu();
+    // createPreferencesMenu();
     createHelpMenu();
 
     SidebarWidget * sidebar = new SidebarWidget(this);
@@ -149,6 +153,14 @@ void HubWindow::createEditMenu() {
         menu->addAction(action);
         connect(&mStoreManager, &MasterStoreManager::redoStatusChanged, action, &QAction::setEnabled);
         connect(action, &QAction::triggered, &mStoreManager, &MasterStoreManager::redo);
+    }
+
+    menu->addSeparator();
+    {
+        QAction *action = new QAction(tr("Tournament Preferences.."), this);
+        action->setStatusTip(tr("Open the Tournament Preferences dialog"));
+        menu->addAction(action);
+        connect(action, &QAction::triggered, this, &HubWindow::showTournamentPreferences);
     }
 }
 
@@ -348,5 +360,9 @@ void HubWindow::openImportPlayers() {
     ImportPlayersCSVDialog dialog(mStoreManager, &reader);
 
     dialog.exec();
+}
+
+void HubWindow::showTournamentPreferences() {
+
 }
 
