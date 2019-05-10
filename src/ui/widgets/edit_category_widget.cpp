@@ -8,6 +8,7 @@
 #include "core/actions/change_categories_name_action.hpp"
 #include "core/actions/change_categories_ruleset_action.hpp"
 #include "core/actions/draw_categories_action.hpp"
+#include "core/actions/set_categories_draw_disabled.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
@@ -65,6 +66,10 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
     for (const auto & system : DrawSystem::getDrawSystems())
         mDrawSystemContent->addItem(QString::fromStdString(system->getName()));
 
+    mDrawDisabledContent = new QCheckBox;
+    mDrawDisabledContent->setTristate(true);
+    connect(mDrawDisabledContent, &QCheckBox::clicked, this, &EditCategoryWidget::editDrawDisabled);
+
     mPlayerCountContent = new QLabel("");
     mMatchCountContent = new QLabel("");
 
@@ -72,6 +77,7 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
     formLayout->addRow(tr("Name"), mNameContent);
     formLayout->addRow(tr("Ruleset"), mRulesetContent);
     formLayout->addRow(tr("Draw System"), mDrawSystemContent);
+    formLayout->addRow(tr("Disable Draw"), mDrawDisabledContent);
     formLayout->addRow(tr("Player Count"), mPlayerCountContent);
     formLayout->addRow(tr("Match Count"), mMatchCountContent);
 
@@ -107,6 +113,7 @@ void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryId
     updateName();
     updateRuleset();
     updateDrawSystem();
+    updateDrawDisabled();
     updatePlayerCount();
     updateMatchCount();
 }
@@ -151,6 +158,16 @@ void EditCategoryWidget::changeCategories(std::vector<CategoryId> ids) {
     updateName();
     updateRuleset();
     updateDrawSystem();
+    updateDrawDisabled();
+}
+
+void EditCategoryWidget::editDrawDisabled(int state) {
+    if (mCategoryIds.empty())
+        return;
+
+    bool disabled = mDrawDisabledContent->isChecked();
+
+    mStoreManager.dispatch(std::make_unique<SetCategoriesDrawDisabled>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), disabled));
 }
 
 void EditCategoryWidget::editName() {
@@ -189,6 +206,32 @@ void EditCategoryWidget::editDrawSystem() {
         return;
 
     mStoreManager.dispatch(std::make_unique<ChangeCategoriesDrawSystemAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), mDrawSystemContent->currentIndex()));
+}
+
+void EditCategoryWidget::updateDrawDisabled() {
+    if (mCategoryIds.empty()) {
+        mDrawDisabledContent->setEnabled(false);
+        mDrawDisabledContent->setCheckState(Qt::Unchecked);
+        return;
+    }
+
+    mDrawDisabledContent->setEnabled(true);
+    TournamentStore &tournament = mStoreManager.getTournament();
+
+    bool disabled;
+    for (auto it = mCategoryIds.begin(); it != mCategoryIds.end(); ++it) {
+        const auto &category = tournament.getCategory(*it);
+        if (it == mCategoryIds.begin()) {
+            disabled = category.isDrawDisabled();
+        }
+        else if (category.isDrawDisabled() != disabled) {
+            // Multiple values
+            mDrawDisabledContent->setCheckState(Qt::PartiallyChecked);
+            return;
+        }
+    }
+
+    mDrawDisabledContent->setCheckState(disabled ? Qt::Checked : Qt::Unchecked);
 }
 
 void EditCategoryWidget::updateName() {

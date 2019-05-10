@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QLabel>
+#include <QCheckBox>
 #include <QMetaObject>
 
 #include "core/core.hpp"
@@ -28,6 +29,7 @@ private:
     void changeCategories(std::vector<CategoryId> ids);
     void updateName();
     void updateRuleset();
+    void updateDrawDisabled();
     void updateDrawSystem();
 
     void resetMatches(const std::vector<CategoryId> &categoryIds);
@@ -42,12 +44,14 @@ private:
     void editName();
     void editRuleset();
     void editDrawSystem();
+    void editDrawDisabled(int state);
 
     StoreManager & mStoreManager;
     std::unordered_set<CategoryId> mCategoryIds;
     QLineEdit *mNameContent;
     QComboBox *mRulesetContent;
     QComboBox *mDrawSystemContent;
+    QCheckBox *mDrawDisabledContent;
     QLabel *mPlayerCountContent;
     QLabel *mMatchCountContent;
     std::stack<QMetaObject::Connection> mConnections;
