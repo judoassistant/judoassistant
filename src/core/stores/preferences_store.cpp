@@ -16,16 +16,15 @@ PreferencesStore::PreferencesStore(const PreferencesStore &other) {
         mPreferredDrawSystems.emplace_back(p.first, p.second->clone());
 }
 
-const std::unique_ptr<const DrawSystem>& PreferencesStore::getPreferredDrawSystem(std::size_t size) const {
-    auto it = mPreferredDrawSystems.begin();
-    while (true) {
-        auto next = std::next(it);
-        if (next == mPreferredDrawSystems.end())
-            break;
-        if (next->playerLowerLimit > size)
-            break;
-        it = next;
+struct Comparator {
+    bool operator()(std::size_t value, const DrawSystemPreference &preference) {
+        return value < preference.playerLowerLimit;
     }
-    return it->drawSystem;
+};
+
+const std::unique_ptr<const DrawSystem>& PreferencesStore::getPreferredDrawSystem(std::size_t size) const {
+    assert(size > 0);
+    auto it = std::upper_bound(mPreferredDrawSystems.begin(), mPreferredDrawSystems.end(), size, Comparator());
+    return std::prev(it)->drawSystem;
 }
 
