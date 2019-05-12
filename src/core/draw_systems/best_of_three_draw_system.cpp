@@ -121,3 +121,8 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> BestOfThreeDrawSys
 bool BestOfThreeDrawSystem::hasFinalBlock() const {
     return false;
 }
+
+DrawSystemIdentifier BestOfThreeDrawSystem::getIdentifier() const {
+    return DrawSystemIdentifier::BEST_OF_THREE;
+}
+

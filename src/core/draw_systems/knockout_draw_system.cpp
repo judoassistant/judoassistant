@@ -229,3 +229,8 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> KnockoutDrawSystem
 bool KnockoutDrawSystem::hasFinalBlock() const {
     return true;
 }
+
+DrawSystemIdentifier KnockoutDrawSystem::getIdentifier() const {
+    return DrawSystemIdentifier::KNOCKOUT;
+}
+

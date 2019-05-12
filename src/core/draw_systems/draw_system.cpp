@@ -1,18 +1,28 @@
 #include "core/draw_systems/draw_system.hpp"
 #include "core/draw_systems/draw_systems.hpp"
 
-// TODO: Have a better way of checking if two draw systems are the same. This
-// is currently done by name which is not ideal
-
-const std::vector<std::unique_ptr<DrawSystem>> & DrawSystem::getDrawSystems() {
-    static std::vector<std::unique_ptr<DrawSystem>> systems;
+const std::vector<std::unique_ptr<const DrawSystem>> & DrawSystem::getDrawSystems() {
+    static std::vector<std::unique_ptr<const DrawSystem>> systems;
 
     if (systems.empty()) {
-        systems.push_back(std::make_unique<PoolDrawSystem>());
-        systems.push_back(std::make_unique<DoublePoolDrawSystem>());
-        systems.push_back(std::make_unique<BestOfThreeDrawSystem>());
-        systems.push_back(std::make_unique<KnockoutDrawSystem>());
+        systems.push_back(std::make_unique<const PoolDrawSystem>());
+        systems.push_back(std::make_unique<const DoublePoolDrawSystem>());
+        systems.push_back(std::make_unique<const BestOfThreeDrawSystem>());
+        systems.push_back(std::make_unique<const KnockoutDrawSystem>());
     }
 
     return systems;
 }
+
+std::unique_ptr<DrawSystem> DrawSystem::getDrawSystem(DrawSystemIdentifier identifier) {
+    static std::unordered_map<DrawSystemIdentifier, std::size_t> systems;
+
+    if (systems.empty()) {
+        std::size_t i = 0;
+        for (const auto &system : DrawSystem::getDrawSystems())
+            systems[system->getIdentifier()] = i++;
+    }
+
+    return getDrawSystems()[systems.at(identifier)]->clone();
+}
+

@@ -12,6 +12,7 @@ public:
     std::unique_ptr<DrawSystem> clone() const override;
     std::string getName() const override;
     bool hasFinalBlock() const override;
+    DrawSystemIdentifier getIdentifier() const override;
 
     std::vector<std::unique_ptr<AddMatchAction>> initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) override;
     std::vector<std::unique_ptr<Action>> updateCategory(const TournamentStore &tournament, const CategoryStore &category) const override;
