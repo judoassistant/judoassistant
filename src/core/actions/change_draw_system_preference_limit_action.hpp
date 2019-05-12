@@ -24,7 +24,8 @@ private:
     std::size_t mLimit;
 
     // undo members
-    std::size_t mPrevLimit;
+    std::vector<std::size_t> mPrevAboveLimits;
+    std::vector<std::size_t> mPrevBelowLimits;
 };
 
 CEREAL_REGISTER_TYPE(ChangeDrawSystemPreferenceLimitAction)

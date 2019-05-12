@@ -12,8 +12,27 @@ void ChangeDrawSystemPreferenceLimitAction::redoImpl(TournamentStore & tournamen
 
     if (mRow >= systems.size())
         return;
-    mPrevLimit = systems[mRow].playerLowerLimit;
+
+    if (mRow == 0) // First limit should always be 1
+        return;
+
+    mPrevBelowLimits.push_back(systems[mRow].playerLowerLimit);
     systems[mRow].playerLowerLimit = mLimit;
+
+    // Make sure limits stay sorted by capping other limits
+    for (int i = static_cast<int>(mRow) - 1; i >= 0; --i) {
+        if (systems[i].playerLowerLimit <= mLimit)
+            break;
+        mPrevAboveLimits.push_back(systems[i].playerLowerLimit);
+        systems[i].playerLowerLimit = mLimit;
+    }
+
+    for (size_t i = mRow + 1; i < systems.size(); ++i) {
+        if (systems[i].playerLowerLimit >= mLimit)
+            break;
+        mPrevBelowLimits.push_back(systems[i].playerLowerLimit);
+        systems[i].playerLowerLimit = mLimit;
+    }
 
     tournament.changePreferences();
 }
@@ -23,7 +42,15 @@ void ChangeDrawSystemPreferenceLimitAction::undoImpl(TournamentStore & tournamen
 
     if (mRow >= systems.size())
         return;
-    systems[mRow].playerLowerLimit = mPrevLimit;
+
+    if (mRow == 0) // First limit should always be 1
+        return;
+
+    for (int i = static_cast<int>(mRow)-1, j=0; j < static_cast<int>(mPrevAboveLimits.size()); --i, ++j)
+        systems[i].playerLowerLimit = mPrevAboveLimits[j];
+
+    for (size_t i = mRow, j = 0; j < mPrevBelowLimits.size(); ++i, ++j)
+        systems[i].playerLowerLimit = mPrevBelowLimits[j];
 
     tournament.changePreferences();
 }

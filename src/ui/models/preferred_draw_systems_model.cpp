@@ -107,6 +107,9 @@ bool PreferredDrawSystemsModel::setData(const QModelIndex &index, const QVariant
 }
 
 Qt::ItemFlags PreferredDrawSystemsModel::flags(const QModelIndex &index) const {
-    return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+    auto flags = QAbstractTableModel::flags(index);
+    if (!(index.row() == 0 && index.column() == 0))
+        flags |= Qt::ItemIsEditable;
+    return flags;
 }
 
