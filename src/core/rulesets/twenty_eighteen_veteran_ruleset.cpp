@@ -16,3 +16,7 @@ std::chrono::milliseconds TwentyEighteenVeteranRuleset::getExpectedTime() const 
     return std::chrono::minutes(4);
 }
 
+RulesetIdentifier TwentyEighteenVeteranRuleset::getIdentifier() const {
+    return RulesetIdentifier::TWENTY_EIGHTEEN_VETERAN;
+}
+

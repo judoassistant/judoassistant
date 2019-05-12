@@ -10,6 +10,7 @@ class TwentyEighteenVeteranRuleset : public TwentyEighteenRuleset {
 private:
 public:
     std::string getName() const override;
+    RulesetIdentifier getIdentifier() const override;
 
     std::chrono::milliseconds getNormalTime() const override;
     std::chrono::milliseconds getExpectedTime() const override;

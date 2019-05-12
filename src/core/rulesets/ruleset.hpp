@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/core.hpp"
+#include "core/rulesets/ruleset_identifier.hpp"
 #include "core/serialize.hpp"
 #include "core/stores/match_store.hpp"
 
@@ -9,6 +10,7 @@ public:
     virtual ~Ruleset() {}
 
     virtual std::string getName() const = 0;
+    virtual RulesetIdentifier getIdentifier() const = 0;
 
     virtual std::chrono::milliseconds getNormalTime() const = 0;
     virtual std::chrono::milliseconds getExpectedTime() const = 0;
@@ -67,7 +69,9 @@ public:
 
     virtual std::unique_ptr<Ruleset> clone() const = 0;
 
-    static const std::vector<std::unique_ptr<Ruleset>> & getRulesets();
+    static const std::vector<std::unique_ptr<const Ruleset>> & getRulesets();
+    static std::unique_ptr<Ruleset> getRuleset(RulesetIdentifier identifier);
+    static std::unique_ptr<Ruleset> getDefaultRuleset();
 
     // TODO: Move some 2018 specific implementations into subclasses
 protected:

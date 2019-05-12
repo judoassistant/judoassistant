@@ -138,8 +138,8 @@ bool Ruleset::shouldStopOsaekomi(const MatchStore &match, std::chrono::milliseco
     return false;
 }
 
-const std::vector<std::unique_ptr<Ruleset>> & Ruleset::getRulesets() {
-    static std::vector<std::unique_ptr<Ruleset>> rulesets;
+const std::vector<std::unique_ptr<const Ruleset>> & Ruleset::getRulesets() {
+    static std::vector<std::unique_ptr<const Ruleset>> rulesets;
 
     if (rulesets.empty()) {
         rulesets.push_back(std::make_unique<TwentyEighteenRuleset>());
@@ -148,5 +148,21 @@ const std::vector<std::unique_ptr<Ruleset>> & Ruleset::getRulesets() {
     }
 
     return rulesets;
+}
+
+std::unique_ptr<Ruleset> Ruleset::getRuleset(RulesetIdentifier identifier) {
+    static std::unordered_map<RulesetIdentifier, std::size_t> rulesets;
+
+    if (rulesets.empty()) {
+        std::size_t i = 0;
+        for (const auto &ruleset : Ruleset::getRulesets())
+            rulesets[ruleset->getIdentifier()] = i++;
+    }
+
+    return getRulesets()[rulesets.at(identifier)]->clone();
+}
+
+std::unique_ptr<Ruleset> Ruleset::getDefaultRuleset() {
+    return getRuleset(RulesetIdentifier::TWENTY_EIGHTEEN);
 }
 

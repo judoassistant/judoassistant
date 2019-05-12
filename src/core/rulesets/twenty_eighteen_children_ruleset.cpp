@@ -16,4 +16,7 @@ std::chrono::milliseconds TwentyEighteenChildrenRuleset::getExpectedTime() const
     return std::chrono::minutes(3);
 }
 
+RulesetIdentifier TwentyEighteenChildrenRuleset::getIdentifier() const {
+    return RulesetIdentifier::TWENTY_EIGHTEEN_CHILDREN;
+}
 
