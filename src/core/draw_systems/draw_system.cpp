@@ -15,6 +15,10 @@ const std::vector<std::unique_ptr<const DrawSystem>> & DrawSystem::getDrawSystem
 }
 
 std::unique_ptr<DrawSystem> DrawSystem::getDrawSystem(DrawSystemIdentifier identifier) {
+    return getDrawSystems()[DrawSystem::getDrawSystemIndex(identifier)]->clone();
+}
+
+std::size_t DrawSystem::getDrawSystemIndex(DrawSystemIdentifier identifier) {
     static std::unordered_map<DrawSystemIdentifier, std::size_t> systems;
 
     if (systems.empty()) {
@@ -23,6 +27,6 @@ std::unique_ptr<DrawSystem> DrawSystem::getDrawSystem(DrawSystemIdentifier ident
             systems[system->getIdentifier()] = i++;
     }
 
-    return getDrawSystems()[systems.at(identifier)]->clone();
+    return systems.at(identifier);
 }
 

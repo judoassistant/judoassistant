@@ -21,6 +21,7 @@
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
+#include "ui/widgets/tournament_preferences_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 #include "ui/widgets/sidebar_widget.hpp"
@@ -363,6 +364,8 @@ void HubWindow::openImportPlayers() {
 }
 
 void HubWindow::showTournamentPreferences() {
+    TournamentPreferencesDialog dialog(mStoreManager);
 
+    dialog.exec();
 }
 

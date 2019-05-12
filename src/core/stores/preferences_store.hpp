@@ -33,6 +33,6 @@ public:
     DrawSystemIdentifier getPreferredDrawSystem(std::size_t size) const;
 
 private:
-    std::vector<std::pair<std::size_t, std::unique_ptr<DrawSystem>>> mPreferredDrawSystems;
+    std::vector<DrawSystemPreference> mPreferredDrawSystems;
 };
 

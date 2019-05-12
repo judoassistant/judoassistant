@@ -30,5 +30,6 @@ public:
 
     static const std::vector<std::unique_ptr<const DrawSystem>> & getDrawSystems();
     static std::unique_ptr<DrawSystem> getDrawSystem(DrawSystemIdentifier identifier);
+    static std::size_t getDrawSystemIndex(DrawSystemIdentifier identifier);
 };
 
