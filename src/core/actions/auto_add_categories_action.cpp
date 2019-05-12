@@ -126,14 +126,13 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
             throw ActionExecutionException("Failed to redo AutoAddCategoriesAction. Category already exists.");
     }
 
-    const auto &rulesets = Ruleset::getRulesets();
     const auto &preferences = tournament.getPreferences();
     tournament.beginAddCategories(mCategoryIds);
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
         std::stringstream ss;
         ss << mBaseName << " " << i+1;
-        auto ruleset = rulesets[0]->clone();
-        auto drawSystem = preferences.getPreferredDrawSystem(mPlayerIds[i].size())->clone();
+        auto ruleset = Ruleset::getDefaultRuleset();
+        auto drawSystem = DrawSystem::getDrawSystem(preferences.getPreferredDrawSystem(mPlayerIds[i].size()));
         tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], ss.str(), std::move(ruleset), std::move(drawSystem)));
     }
     tournament.endAddCategories(mCategoryIds);

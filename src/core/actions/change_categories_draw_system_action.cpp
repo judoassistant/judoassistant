@@ -5,11 +5,11 @@
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
 
-ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem)
+ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, DrawSystemIdentifier drawSystem)
     : ChangeCategoriesDrawSystemAction(categoryIds, drawSystem, getSeed())
 {}
 
-ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem, unsigned int seed)
+ChangeCategoriesDrawSystemAction::ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, DrawSystemIdentifier drawSystem, unsigned int seed)
     : mCategoryIds(categoryIds)
     , mDrawSystem(drawSystem)
     , mSeed(seed)
@@ -20,10 +20,7 @@ std::unique_ptr<Action> ChangeCategoriesDrawSystemAction::freshClone() const {
 }
 
 void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
-    const auto &drawSystems = DrawSystem::getDrawSystems();
-    if (mDrawSystem > drawSystems.size())
-        throw ActionExecutionException("Failed to redo ChangeCategoriesDrawSystemAction. Invalid drawSystem specified.");
-    const auto &drawSystem = drawSystems[mDrawSystem];
+    auto drawSystem = DrawSystem::getDrawSystem(mDrawSystem);
 
     std::vector<CategoryId> categoryIds;
     for (auto categoryId : mCategoryIds) {

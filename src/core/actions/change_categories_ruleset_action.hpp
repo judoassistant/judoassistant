@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/actions/action.hpp"
+#include "core/rulesets/ruleset_identifier.hpp"
 
 class TournamentStore;
 class Ruleset;
@@ -9,8 +10,8 @@ class DrawCategoriesAction;
 class ChangeCategoriesRulesetAction : public Action {
 public:
     ChangeCategoriesRulesetAction() = default;
-    ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset);
-    ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset, unsigned int seed);
+    ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, RulesetIdentifier ruleset);
+    ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, RulesetIdentifier ruleset, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -24,7 +25,7 @@ public:
 
 private:
     std::vector<CategoryId> mCategoryIds;
-    size_t mRuleset;
+    RulesetIdentifier mRuleset;
     unsigned int mSeed;
 
     // undo members
