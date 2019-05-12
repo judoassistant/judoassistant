@@ -1,6 +1,5 @@
 #include "core/actions/change_draw_system_preference_identifier_action.hpp"
 #include "core/actions/change_draw_system_preference_limit_action.hpp"
-#include "core/log.hpp"
 #include "ui/models/preferred_draw_systems_model.hpp"
 #include "ui/store_managers/store_manager.hpp"
 
@@ -91,13 +90,11 @@ bool PreferredDrawSystemsModel::setData(const QModelIndex &index, const QVariant
 
         if (index.column() == 0) {
             std::size_t limit = value.toInt();
-            log_debug().field("newValue", limit).msg("Edited cell bound");
             mStoreManager.dispatch(std::make_unique<ChangeDrawSystemPreferenceLimitAction>(index.row(), limit));
         }
         else if (index.column() == 1) {
             DrawSystemIdentifier identifier = value.value<DrawSystemIdentifier>();
             mStoreManager.dispatch(std::make_unique<ChangeDrawSystemPreferenceIdentifierAction>(index.row(), identifier));
-            log_debug().field("newValue", (int)identifier).msg("Edited cell identifier");
         }
 
         return true;
