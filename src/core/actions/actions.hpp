@@ -13,6 +13,7 @@
 #include "core/actions/change_categories_draw_system_action.hpp"
 #include "core/actions/change_categories_name_action.hpp"
 #include "core/actions/change_categories_ruleset_action.hpp"
+#include "core/actions/change_draw_system_preference_limit_action.hpp"
 #include "core/actions/change_players_age_action.hpp"
 #include "core/actions/change_players_club_action.hpp"
 #include "core/actions/change_players_first_name_action.hpp"
