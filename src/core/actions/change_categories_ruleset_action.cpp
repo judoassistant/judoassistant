@@ -50,6 +50,9 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
 
     assert(categoryIds.size() == mOldRulesets.size());
 
+    mDrawAction->undo(tournament);
+    mDrawAction.reset();
+
     for (auto i = categoryIds.rbegin(); i != categoryIds.rend(); ++i) {
         auto categoryId = *i;
 
@@ -58,9 +61,6 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
         category.setRuleset(std::move(mOldRulesets.back()));
         mOldRulesets.pop_back();
     }
-
-    mDrawAction->undo(tournament);
-    mDrawAction.reset();
 
     tournament.changeCategories(categoryIds);
 }

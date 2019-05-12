@@ -49,6 +49,9 @@ void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
 
     assert(categoryIds.size() == mOldDrawSystems.size());
 
+    mDrawAction->undo(tournament);
+    mDrawAction.reset();
+
     for (auto i = categoryIds.rbegin(); i != categoryIds.rend(); ++i) {
         auto categoryId = *i;
 
@@ -58,12 +61,10 @@ void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
         mOldDrawSystems.pop_back();
     }
 
-    mDrawAction->undo(tournament);
-    mDrawAction.reset();
-
     tournament.changeCategories(categoryIds);
 }
 
 std::string ChangeCategoriesDrawSystemAction::getDescription() const {
     return "Change categories draw system";
 }
+
