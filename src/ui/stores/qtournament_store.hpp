@@ -98,3 +98,6 @@ private:
     bool mResettingMatches;
 };
 
+Q_DECLARE_METATYPE(DrawSystemIdentifier);
+Q_DECLARE_METATYPE(RulesetIdentifier);
+
