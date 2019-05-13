@@ -31,6 +31,7 @@ PreferredDrawSystemsWidget::PreferredDrawSystemsWidget(StoreManager &storeManage
 
     layout->addWidget(tableView);
     setLayout(layout);
+    setMinimumWidth(300);
 }
 
 DrawSystemPreferenceDelegate::DrawSystemPreferenceDelegate(QObject *parent)

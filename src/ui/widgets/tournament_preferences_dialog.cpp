@@ -14,7 +14,7 @@ TournamentPreferencesDialog::TournamentPreferencesDialog(StoreManager & storeMan
 {
     QStackedWidget *stackedWidget = new QStackedWidget;
     QListWidget *listWidget = new QListWidget;
-    listWidget->setMaximumWidth(200);
+    listWidget->setMaximumWidth(150);
 
     // Add general page
     {
@@ -31,8 +31,9 @@ TournamentPreferencesDialog::TournamentPreferencesDialog(StoreManager & storeMan
         stackedWidget->addWidget(widget);
     }
 
-    // listWidget->setCurrentIndex(1);
-    stackedWidget->setCurrentIndex(1);
+    listWidget->setCurrentRow(0);
+    stackedWidget->setCurrentIndex(0);
+    connect(listWidget, &QListWidget::currentRowChanged, stackedWidget, &QStackedWidget::setCurrentIndex);
 
     // Setup layouts
     QVBoxLayout *mainLayout = new QVBoxLayout;
