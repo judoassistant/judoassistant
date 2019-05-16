@@ -54,6 +54,7 @@ TournamentPreferencesDialog::TournamentPreferencesDialog(StoreManager & storeMan
 
     setLayout(mainLayout);
     setWindowTitle(tr("Tournament Preferences"));
+    setGeometry(geometry().x(), geometry().y(), 800, 400);
 }
 
 void TournamentPreferencesDialog::closeClick() {
