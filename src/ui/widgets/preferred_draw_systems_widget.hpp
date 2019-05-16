@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <unordered_set>
 #include <QMetaObject>
 #include <QWidget>
 #include <QStyledItemDelegate>
@@ -8,6 +9,7 @@
 #include "core/core.hpp"
 
 class StoreManager;
+class QTableView;
 
 class PreferredDrawSystemsWidget : public QWidget {
     Q_OBJECT
@@ -16,6 +18,12 @@ public:
 
 private:
     StoreManager &mStoreManager;
+    QTableView *mTableView;
+
+    void showContextMenu(const QPoint &pos);
+    void insertRowBelow();
+    void eraseRow();
+    std::unordered_set<std::size_t> selectedRows();
 };
 
 class DrawSystemPreferenceDelegate : public QStyledItemDelegate {

@@ -1,16 +1,18 @@
-#include "core/log.hpp"
+#include "core/actions/add_draw_system_preference_row.hpp"
+#include "core/actions/erase_draw_system_preference_row.hpp"
 #include "ui/models/preferred_draw_systems_model.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/preferred_draw_systems_widget.hpp"
 
-#include <QLabel>
-#include <QPushButton>
-#include <QGridLayout>
 #include <QComboBox>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QMenu>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QTableView>
-#include <QHeaderView>
 
 constexpr int FIRST_ROW_WIDTH = 150;
 constexpr int LAST_ROW_WIDTH = 100;
@@ -20,18 +22,52 @@ PreferredDrawSystemsWidget::PreferredDrawSystemsWidget(StoreManager &storeManage
     , mStoreManager(storeManager)
 {
     QVBoxLayout *layout = new QVBoxLayout;
-    auto *tableView = new QTableView;
-    auto *model = new PreferredDrawSystemsModel(storeManager, tableView);
+    mTableView = new QTableView;
+    auto *model = new PreferredDrawSystemsModel(storeManager, mTableView);
 
-    tableView->setModel(model);
-    // tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tableView->horizontalHeader()->setStretchLastSection(true);
-    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    tableView->setItemDelegate(new DrawSystemPreferenceDelegate(this));
+    mTableView->setModel(model);
+    // mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mTableView->horizontalHeader()->setStretchLastSection(true);
+    mTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    mTableView->setItemDelegate(new DrawSystemPreferenceDelegate(this));
+    mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(mTableView, &QTableView::customContextMenuRequested, this, &PreferredDrawSystemsWidget::showContextMenu);
 
-    layout->addWidget(tableView);
+    layout->addWidget(mTableView);
     setLayout(layout);
     setMinimumWidth(300);
+}
+
+std::unordered_set<std::size_t> PreferredDrawSystemsWidget::selectedRows() {
+    std::unordered_set<std::size_t> rows;
+    auto selection = mTableView->selectionModel()->selection();
+
+    for (auto index : selection.indexes())
+        rows.insert(index.row());
+
+    return rows;
+}
+
+void PreferredDrawSystemsWidget::showContextMenu(const QPoint &pos) {
+    auto rows = selectedRows();
+
+    if (rows.empty())
+        return;
+
+    QMenu menu;
+    {
+        QAction *action = menu.addAction(tr("Insert row below"));
+        connect(action, &QAction::triggered, this, &PreferredDrawSystemsWidget::insertRowBelow);
+    }
+    {
+        QAction *action = menu.addAction(tr("Erase row"));
+        if (rows.size() != 1)
+            action->setEnabled(false);
+        connect(action, &QAction::triggered, this, &PreferredDrawSystemsWidget::eraseRow);
+    }
+
+    menu.exec(mTableView->mapToGlobal(pos), 0);
 }
 
 DrawSystemPreferenceDelegate::DrawSystemPreferenceDelegate(QObject *parent)
@@ -93,5 +129,28 @@ void DrawSystemPreferenceDelegate::commitComboBox() {
     QComboBox *editor = static_cast<QComboBox*>(sender());
     emit commitData(editor);
     emit closeEditor(editor);
+}
+
+void PreferredDrawSystemsWidget::insertRowBelow() {
+    auto rows = selectedRows();
+
+    if (rows.empty())
+        return;
+
+    std::size_t bottomRow = 0;
+    for (std::size_t val : rows)
+        bottomRow = std::max(val,bottomRow);
+
+    mStoreManager.dispatch(std::make_unique<AddDrawSystemPreferenceRow>(bottomRow+1));
+}
+
+void PreferredDrawSystemsWidget::eraseRow() {
+    auto rows = selectedRows();
+
+    if (rows.size() != 1)
+        return;
+
+    std::size_t row = *(rows.begin());
+    mStoreManager.dispatch(std::make_unique<EraseDrawSystemPreferenceRow>(row));
 }
 
