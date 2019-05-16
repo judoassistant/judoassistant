@@ -15,7 +15,7 @@ constexpr size_t FILE_HEADER_SIZE = 9;
 MasterStoreManager::MasterStoreManager()
     : StoreManager()
     , mWebClientState(WebClientState::NOT_CONNECTED)
-    , mWebClient(getWorkerThread().getContext())
+    , mWebClient(*this, getWorkerThread().getContext())
     , mNetworkServerState(NetworkServerState::STOPPED)
     , mDirty(false)
 {

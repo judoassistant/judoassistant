@@ -1,14 +1,17 @@
 #include <boost/asio/connect.hpp>
+#include <QSettings>
 
 #include "core/log.hpp"
 #include "ui/constants/web.hpp"
-#include "ui/web/web_client.hpp"
 #include "ui/network/network_server.hpp"
+#include "ui/store_managers/master_store_manager.hpp"
+#include "ui/web/web_client.hpp"
 
 using boost::asio::ip::tcp;
 
-WebClient::WebClient(boost::asio::io_context &context)
-    : mContext(context)
+WebClient::WebClient(MasterStoreManager &storeManager, boost::asio::io_context &context)
+    : mStoreManager(storeManager)
+    , mContext(context)
     , mState(WebClientState::NOT_CONNECTED)
 {
     qRegisterMetaType<WebToken>("WebToken");
@@ -36,8 +39,19 @@ void WebClient::createConnection(ConnectionHandler handler) {
         tcp::resolver resolver(mContext);
         tcp::resolver::results_type endpoints;
 
+        const QSettings &settings = mStoreManager.getSettings();
         try {
-            endpoints = resolver.resolve(Constants::WEB_HOST, std::to_string(Constants::WEB_PORT));
+            std::string hostname, port;
+            if (settings.value("web/customServer", false).toBool()) { // use custom server
+                hostname = settings.value("web/hostname", Constants::WEB_HOST).toString().toStdString();
+                port = std::to_string(settings.value("web/port", Constants::WEB_PORT).toInt());
+            }
+            else {
+                hostname = Constants::WEB_HOST;
+                port = std::to_string(Constants::WEB_PORT);
+            }
+
+            endpoints = resolver.resolve(hostname, port);
         }
         catch(const std::exception &e) {
             log_error().field("message", e.what()).msg("Failed resolving web host. Failing");
