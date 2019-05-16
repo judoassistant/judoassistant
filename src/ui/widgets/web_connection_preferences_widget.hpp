@@ -6,7 +6,7 @@
 
 #include "core/core.hpp"
 
-class StoreManager;
+class MasterStoreManager;
 class QLineEdit;
 class QSpinBox;
 class QCheckBox;
@@ -14,11 +14,14 @@ class QCheckBox;
 class WebConnectionPreferencesWidget : public QWidget {
     Q_OBJECT
 public:
-    WebConnectionPreferencesWidget(StoreManager &storeManager, QWidget *parent = nullptr);
+    WebConnectionPreferencesWidget(MasterStoreManager &storeManager, QWidget *parent = nullptr);
 
 private:
-    void useCustomServer(bool checked);
-    StoreManager &mStoreManager;
+    void setCustomServer(bool value);
+    void setHostname(const QString &value);
+    void setPort(int value);
+    void setSSL(bool value);
+    MasterStoreManager &mStoreManager;
 
     QLineEdit *mHostnameContent;
     QSpinBox *mPortContent;

@@ -8,7 +8,7 @@
 #include "ui/widgets/judoassistant_preferences_dialog.hpp"
 #include "ui/widgets/web_connection_preferences_widget.hpp"
 
-JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(StoreManager & storeManager, QWidget *parent)
+JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(MasterStoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
     , mStoreManager(storeManager)
 {

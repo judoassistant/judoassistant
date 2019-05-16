@@ -4,6 +4,8 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/web/web_client.hpp"
 
+class QSettings;
+
 class MasterStoreManager : public StoreManager {
     Q_OBJECT
 public:
@@ -36,6 +38,9 @@ public:
 
     std::chrono::milliseconds masterTime() const override;
 
+    QSettings& getSettings();
+    const QSettings& getSettings() const;
+
 private:
     void changeNetworkServerState(NetworkServerState state);
     void changeWebClientState(WebClientState state);
@@ -47,5 +52,6 @@ private:
     std::shared_ptr<NetworkServer> mNetworkServer;
 
     bool mDirty;
+    QSettings *mSettings;
 };
 

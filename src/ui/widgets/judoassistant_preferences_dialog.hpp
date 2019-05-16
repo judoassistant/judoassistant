@@ -4,17 +4,17 @@
 
 #include "core/core.hpp"
 
-class StoreManager;
+class MasterStoreManager;
 class CSVReader;
 
 class JudoassistantPreferencesDialog : public QDialog {
     Q_OBJECT
 public:
-    JudoassistantPreferencesDialog(StoreManager & storeManager, QWidget *parent = nullptr);
+    JudoassistantPreferencesDialog(MasterStoreManager & storeManager, QWidget *parent = nullptr);
 
 private:
     void closeClick();
 
-    StoreManager &mStoreManager;
+    MasterStoreManager &mStoreManager;
 };
 
