@@ -33,8 +33,13 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
     // find existing categories
     std::vector<CategoryId> categoryIds;
     for (auto categoryId : mCategoryIds) {
-        if (tournament.containsCategory(categoryId))
-            categoryIds.push_back(categoryId);
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        const auto &category = tournament.getCategory(categoryId);
+        // Skip category if draw is disabled the category has no matches already
+        if (category.isDrawDisabled() && category.getMatches().empty())
+            continue;
+        categoryIds.push_back(categoryId);
     }
 
     tournament.beginResetMatches(categoryIds);
@@ -62,16 +67,19 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
         status[static_cast<size_t>(MatchType::FINAL)] = category.getStatus(MatchType::FINAL);
         mOldStati.push_back(std::move(status));
 
-        // Init the category using the draw system
-        std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
         // TODO: Change mAction to have AddMatchActions instead
-        std::vector<std::unique_ptr<AddMatchAction>> addMatchActions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
         std::vector<std::unique_ptr<Action>> actions;
+        if (!category.isDrawDisabled()) {
+            // Init the category using the draw system
+            std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
+            std::vector<std::unique_ptr<AddMatchAction>> addMatchActions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
 
-        for (auto &actionPtr : addMatchActions) {
-            actionPtr->redo(tournament);
-            actions.push_back(std::move(actionPtr));
+            for (auto &actionPtr : addMatchActions) {
+                actionPtr->redo(tournament);
+                actions.push_back(std::move(actionPtr));
+            }
         }
+
         mActions.push_back(std::move(actions));
 
         // Compute category status
@@ -118,8 +126,13 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
     // find existing categories
     std::vector<CategoryId> categoryIds;
     for (auto categoryId : mCategoryIds) {
-        if (tournament.containsCategory(categoryId))
-            categoryIds.push_back(categoryId);
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        const auto &category = tournament.getCategory(categoryId);
+        // Skip category if draw is disabled the category has no matches already
+        if (category.isDrawDisabled() && category.getMatches().empty())
+            continue;
+        categoryIds.push_back(categoryId);
     }
 
     tournament.beginResetMatches(categoryIds);

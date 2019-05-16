@@ -150,3 +150,7 @@ bool PoolDrawSystem::hasFinalBlock() const {
     return false;
 }
 
+DrawSystemIdentifier PoolDrawSystem::getIdentifier() const {
+    return DrawSystemIdentifier::POOL;
+}
+

@@ -15,7 +15,7 @@ class QTournamentStore : public QObject, public TournamentStore {
     Q_OBJECT
 public:
     QTournamentStore();
-    QTournamentStore(TournamentId id);
+    // QTournamentStore(TournamentId id);
 
     // Slightly hacky since QObject does not have a move constructor. Only
     // moves TournamentStore fields
@@ -55,6 +55,8 @@ public:
 
     void resetCategoryResults(const std::vector<CategoryId> &categoryIds) override;
 
+    void changePreferences() override;
+
 signals:
     void tournamentChanged();
 
@@ -89,9 +91,13 @@ signals:
 
     void categoryResultsReset(const std::vector<CategoryId> &categoryId);
 
+    void preferencesChanged();
 private:
     bool mResettingPlayers;
     bool mResettingCategories;
     bool mResettingMatches;
 };
+
+Q_DECLARE_METATYPE(DrawSystemIdentifier);
+Q_DECLARE_METATYPE(RulesetIdentifier);
 

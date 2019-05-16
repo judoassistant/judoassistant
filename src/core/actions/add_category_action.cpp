@@ -4,15 +4,15 @@
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
 
-AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem)
+AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, RulesetIdentifier ruleset, DrawSystemIdentifier drawSystem)
+    : AddCategoryAction(CategoryId::generate(tournament), name, ruleset, drawSystem)
+{}
+
+AddCategoryAction::AddCategoryAction(CategoryId id, const std::string &name, RulesetIdentifier ruleset, DrawSystemIdentifier drawSystem)
     : mId(id)
     , mName(name)
     , mRuleset(ruleset)
     , mDrawSystem(drawSystem)
-{}
-
-AddCategoryAction::AddCategoryAction(TournamentStore & tournament, const std::string &name, size_t ruleset, size_t drawSystem)
-    : AddCategoryAction(CategoryId::generate(tournament), name, ruleset, drawSystem)
 {}
 
 std::unique_ptr<Action> AddCategoryAction::freshClone() const {
@@ -27,15 +27,8 @@ void AddCategoryAction::redoImpl(TournamentStore & tournament) {
     if (tournament.containsCategory(mId))
         throw ActionExecutionException("Failed to redo AddCategoryAction. Category already exists.");
 
-    const auto &rulesets = Ruleset::getRulesets();
-    if (mRuleset > rulesets.size())
-        throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid ruleset specified.");
-    auto ruleset = rulesets[mRuleset]->clone();
-
-    const auto &drawSystems = DrawSystem::getDrawSystems();
-    if (mDrawSystem > drawSystems.size())
-        throw ActionExecutionException("Failed to redo AddCategoryAction. Invalid drawSystem specified.");
-    auto drawSystem = drawSystems[mDrawSystem]->clone();
+    auto ruleset = Ruleset::getRuleset(mRuleset);
+    auto drawSystem = DrawSystem::getDrawSystem(mDrawSystem);
 
     tournament.beginAddCategories({mId});
     tournament.addCategory(std::make_unique<CategoryStore>(mId, mName, std::move(ruleset), std::move(drawSystem)));

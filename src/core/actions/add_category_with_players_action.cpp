@@ -6,7 +6,11 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 
-AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem, const std::vector<PlayerId> &playerIds, unsigned int seed)
+AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(TournamentStore & tournament, const std::string &name, RulesetIdentifier ruleset, DrawSystemIdentifier drawSystem, const std::vector<PlayerId> &playerIds)
+    : AddCategoryWithPlayersAction(CategoryId::generate(tournament), name, ruleset, drawSystem, playerIds, getSeed())
+{}
+
+AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(CategoryId id, const std::string &name, RulesetIdentifier ruleset, DrawSystemIdentifier drawSystem, const std::vector<PlayerId> &playerIds, unsigned int seed)
     : mId(id)
     , mName(name)
     , mRuleset(ruleset)
@@ -14,11 +18,6 @@ AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(CategoryId id, const 
     , mPlayerIds(playerIds)
     , mSeed(seed)
 {}
-
-AddCategoryWithPlayersAction::AddCategoryWithPlayersAction(TournamentStore & tournament, const std::string &name, size_t ruleset, size_t drawSystem, const std::vector<PlayerId> &playerIds)
-    : AddCategoryWithPlayersAction(CategoryId::generate(tournament), name, ruleset, drawSystem, playerIds, getSeed())
-{}
-
 
 std::unique_ptr<Action> AddCategoryWithPlayersAction::freshClone() const {
     return std::make_unique<AddCategoryWithPlayersAction>(mId, mName, mRuleset, mDrawSystem, mPlayerIds, mSeed);

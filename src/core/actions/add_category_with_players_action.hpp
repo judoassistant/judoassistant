@@ -2,6 +2,8 @@
 
 #include "core/actions/action.hpp"
 #include "core/id.hpp"
+#include "core/rulesets/ruleset_identifier.hpp"
+#include "core/draw_systems/draw_system_identifier.hpp"
 
 class TournamentStore;
 class AddCategoryAction;
@@ -10,8 +12,8 @@ class AddPlayersToCategoryAction;
 class AddCategoryWithPlayersAction : public Action {
 public:
     AddCategoryWithPlayersAction() = default;
-    AddCategoryWithPlayersAction(TournamentStore & tournament, const std::string &name, size_t ruleset, size_t drawSystem, const std::vector<PlayerId> &playerIds);
-    AddCategoryWithPlayersAction(CategoryId id, const std::string &name, size_t ruleset, size_t drawSystem, const std::vector<PlayerId> &playerIds, unsigned int seed);
+    AddCategoryWithPlayersAction(TournamentStore & tournament, const std::string &name, RulesetIdentifier ruleset, DrawSystemIdentifier drawSystem, const std::vector<PlayerId> &playerIds);
+    AddCategoryWithPlayersAction(CategoryId id, const std::string &name, RulesetIdentifier ruleset, DrawSystemIdentifier drawSystem, const std::vector<PlayerId> &playerIds, unsigned int seed);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -27,8 +29,8 @@ public:
 private:
     CategoryId mId;
     std::string mName;
-    size_t mRuleset;
-    size_t mDrawSystem;
+    RulesetIdentifier mRuleset;
+    DrawSystemIdentifier mDrawSystem;
     std::vector<PlayerId> mPlayerIds;
     unsigned int mSeed;
 

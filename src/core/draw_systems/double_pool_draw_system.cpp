@@ -216,3 +216,7 @@ bool DoublePoolDrawSystem::hasFinalBlock() const {
     return true;
 }
 
+DrawSystemIdentifier DoublePoolDrawSystem::getIdentifier() const {
+    return DrawSystemIdentifier::DOUBLE_POOL;
+}
+

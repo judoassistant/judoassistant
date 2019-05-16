@@ -89,19 +89,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId);
-        ar(mName);
-        ar(mPlayers);
-        ar(mMatches);
-        ar(mMatchMap);
-        ar(mMatchCount);
-        ar(mStatus);
-        ar(mLocation);
-        ar(mRuleset);
-        ar(mDrawSystem);
+        ar(mId, mName, mPlayers, mMatches, mMatchMap, mMatchCount, mStatus, mLocation, mRuleset, mDrawSystem, mDrawDisabled);
     }
 
     std::chrono::milliseconds expectedDuration(MatchType type) const;
+
+    void setDrawDisabled(bool disabled);
+    bool isDrawDisabled() const;
 
 private:
     CategoryId mId;
@@ -114,5 +108,6 @@ private:
     std::array<std::optional<BlockLocation>, 2> mLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;
+    bool mDrawDisabled;
 };
 

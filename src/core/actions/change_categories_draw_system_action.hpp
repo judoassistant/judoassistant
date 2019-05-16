@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/actions/action.hpp"
+#include "core/draw_systems/draw_system_identifier.hpp"
 
 class TournamentStore;
 class CategoryId;
@@ -10,8 +11,8 @@ class DrawSystem;
 class ChangeCategoriesDrawSystemAction : public Action {
 public:
     ChangeCategoriesDrawSystemAction() = default;
-    ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem);
-    ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, size_t drawSystem, unsigned int seed);
+    ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, DrawSystemIdentifier drawSystem);
+    ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, DrawSystemIdentifier drawSystem, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -25,7 +26,7 @@ public:
 
 private:
     std::vector<CategoryId> mCategoryIds;
-    size_t mDrawSystem;
+    DrawSystemIdentifier mDrawSystem;
     unsigned int mSeed;
 
     // undo members

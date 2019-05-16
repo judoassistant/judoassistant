@@ -133,10 +133,12 @@ void ResultsModel::endResetResults() {
     const auto &tournament = mStoreManager.getTournament();
     const auto &category = tournament.getCategory(*mCategory);
 
-    mResults = category.getDrawSystem().getResults(tournament, category);
-    for (size_t i = 0; i < mResults.size(); ++i) {
-        auto playerId = mResults[i].first;
-        mPlayers[playerId] = i;
+    if (!category.isDrawDisabled()) {
+        mResults = category.getDrawSystem().getResults(tournament, category);
+        for (size_t i = 0; i < mResults.size(); ++i) {
+            auto playerId = mResults[i].first;
+            mPlayers[playerId] = i;
+        }
     }
 
     endResetModel();

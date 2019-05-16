@@ -6,11 +6,11 @@
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 
-ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset)
+ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, RulesetIdentifier ruleset)
     : ChangeCategoriesRulesetAction(categoryIds, ruleset, getSeed())
 {}
 
-ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, size_t ruleset, unsigned int seed)
+ChangeCategoriesRulesetAction::ChangeCategoriesRulesetAction(std::vector<CategoryId> categoryIds, RulesetIdentifier ruleset, unsigned int seed)
     : mCategoryIds(categoryIds)
     , mRuleset(ruleset)
     , mSeed(seed)
@@ -21,10 +21,7 @@ std::unique_ptr<Action> ChangeCategoriesRulesetAction::freshClone() const {
 }
 
 void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
-    const auto &rulesets = Ruleset::getRulesets();
-    if (mRuleset > rulesets.size())
-        throw ActionExecutionException("Failed to redo ChangeCategoriesRulesetAction. Invalid ruleset specified.");
-    const auto &ruleset = rulesets[mRuleset];
+    auto ruleset = Ruleset::getRuleset(mRuleset);
 
     std::vector<CategoryId> categoryIds;
     for (auto categoryId : mCategoryIds) {
@@ -53,6 +50,9 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
 
     assert(categoryIds.size() == mOldRulesets.size());
 
+    mDrawAction->undo(tournament);
+    mDrawAction.reset();
+
     for (auto i = categoryIds.rbegin(); i != categoryIds.rend(); ++i) {
         auto categoryId = *i;
 
@@ -61,9 +61,6 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
         category.setRuleset(std::move(mOldRulesets.back()));
         mOldRulesets.pop_back();
     }
-
-    mDrawAction->undo(tournament);
-    mDrawAction.reset();
 
     tournament.changeCategories(categoryIds);
 }

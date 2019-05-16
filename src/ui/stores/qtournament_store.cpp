@@ -4,6 +4,7 @@
 #include "core/stores/match_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/category_store.hpp"
+#include "core/stores/preferences_store.hpp"
 
 QTournamentStore::QTournamentStore()
     : QObject()
@@ -17,13 +18,13 @@ QTournamentStore::QTournamentStore(QTournamentStore &&other)
     , TournamentStore(std::move(other))
 {}
 
-QTournamentStore::QTournamentStore(TournamentId id)
-    : QObject()
-    , TournamentStore(id)
-    , mResettingPlayers(false)
-    , mResettingCategories(false)
-    , mResettingMatches(false)
-{}
+// QTournamentStore::QTournamentStore(TournamentId id)
+//     : QObject()
+//     , TournamentStore(id)
+//     , mResettingPlayers(false)
+//     , mResettingCategories(false)
+//     , mResettingMatches(false)
+// {}
 
 void QTournamentStore::changeTournament() {
     // log_debug().msg("Emitting tournamentChanged");
@@ -177,5 +178,9 @@ void QTournamentStore::endEraseTatamis(const std::vector<TatamiLocation> &locati
 
 void QTournamentStore::resetCategoryResults(const std::vector<CategoryId> &categoryIds) {
     emit categoryResultsReset(categoryIds);
+}
+
+void QTournamentStore::changePreferences() {
+    emit preferencesChanged();
 }
 

@@ -184,3 +184,7 @@ std::chrono::milliseconds TwentyEighteenRuleset::getOsaekomiWazariTime() const {
     return std::chrono::seconds(10);
 }
 
+RulesetIdentifier TwentyEighteenRuleset::getIdentifier() const {
+    return RulesetIdentifier::TWENTY_EIGHTEEN;
+}
+
