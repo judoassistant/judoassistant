@@ -27,6 +27,7 @@ private slots:
     void openReportIssue();
     void showAboutDialog();
     void showTournamentPreferences();
+    void showJudoAssistantPreferences();
     void showServerStartFailure();
 
 private:

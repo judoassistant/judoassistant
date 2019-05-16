@@ -22,6 +22,7 @@
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
 #include "ui/widgets/tournament_preferences_dialog.hpp"
+#include "ui/widgets/judoassistant_preferences_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 #include "ui/widgets/sidebar_widget.hpp"
@@ -162,6 +163,12 @@ void HubWindow::createEditMenu() {
         action->setStatusTip(tr("Open the Tournament Preferences dialog"));
         menu->addAction(action);
         connect(action, &QAction::triggered, this, &HubWindow::showTournamentPreferences);
+    }
+    {
+        QAction *action = new QAction(tr("JudoAssistant Preferences.."), this);
+        action->setStatusTip(tr("Open the JudoAssistant Preferences dialog"));
+        menu->addAction(action);
+        connect(action, &QAction::triggered, this, &HubWindow::showJudoAssistantPreferences);
     }
 }
 
@@ -365,6 +372,12 @@ void HubWindow::openImportPlayers() {
 
 void HubWindow::showTournamentPreferences() {
     TournamentPreferencesDialog dialog(mStoreManager);
+
+    dialog.exec();
+}
+
+void HubWindow::showJudoAssistantPreferences() {
+    JudoassistantPreferencesDialog dialog(mStoreManager);
 
     dialog.exec();
 }
