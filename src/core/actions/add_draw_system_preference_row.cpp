@@ -9,6 +9,8 @@ AddDrawSystemPreferenceRow::AddDrawSystemPreferenceRow(std::size_t row)
 void AddDrawSystemPreferenceRow::redoImpl(TournamentStore & tournament) {
     auto &systems = tournament.getPreferences().getPreferredDrawSystems();
 
+    if (mRow == 0)
+        return;
     if (mRow > systems.size())
         return;
 
@@ -22,6 +24,8 @@ void AddDrawSystemPreferenceRow::redoImpl(TournamentStore & tournament) {
 void AddDrawSystemPreferenceRow::undoImpl(TournamentStore & tournament) {
     auto &systems = tournament.getPreferences().getPreferredDrawSystems();
 
+    if (mRow == 0)
+        return;
     if (mRow > systems.size())
         return;
 

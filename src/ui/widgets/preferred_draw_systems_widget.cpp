@@ -60,7 +60,7 @@ void PreferredDrawSystemsWidget::showContextMenu(const QPoint &pos) {
     }
     {
         QAction *action = menu.addAction(tr("Erase row"));
-        if (rows.size() != 1)
+        if (rows.size() != 1 || *(rows.begin()) == 0)
             action->setEnabled(false);
         connect(action, &QAction::triggered, this, &PreferredDrawSystemsWidget::eraseRow);
     }
@@ -149,6 +149,10 @@ void PreferredDrawSystemsWidget::eraseRow() {
         return;
 
     std::size_t row = *(rows.begin());
+
+    if (row == 0)
+        return;
+
     mStoreManager.dispatch(std::make_unique<EraseDrawSystemPreferenceRow>(row));
 }
 

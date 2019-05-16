@@ -8,6 +8,8 @@ EraseDrawSystemPreferenceRow::EraseDrawSystemPreferenceRow(std::size_t row)
 void EraseDrawSystemPreferenceRow::redoImpl(TournamentStore & tournament) {
     auto &systems = tournament.getPreferences().getPreferredDrawSystems();
 
+    if (mRow == 0)
+        return;
     if (mRow >= systems.size())
         return;
 
@@ -21,6 +23,8 @@ void EraseDrawSystemPreferenceRow::redoImpl(TournamentStore & tournament) {
 void EraseDrawSystemPreferenceRow::undoImpl(TournamentStore & tournament) {
     auto &systems = tournament.getPreferences().getPreferredDrawSystems();
 
+    if (mRow == 0)
+        return;
     if (mRow > systems.size())
         return;
 
