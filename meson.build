@@ -9,9 +9,13 @@ thread_dep = dependency('threads')
 if get_option('ui')
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
+    crypto_dep = dependency('libssl') # SSL library
+    ssl_dep = dependency('libcrypto') # Crypto library for SSL
 else
     qt5 = disabler()
     qt5_dep = disabler()
+    crypto_dep = disabler()
+    ssl_dep = disabler()
 endif
 
 # Web server dependencies
@@ -78,7 +82,7 @@ if get_option('ui')
 endif
 
 # Executables
-hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, lz4_dep])
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, lz4_dep, ssl_dep, crypto_dep])
 score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
 kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
 web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep])
