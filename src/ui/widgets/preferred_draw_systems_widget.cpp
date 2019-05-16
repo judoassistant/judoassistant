@@ -14,9 +14,6 @@
 #include <QSpinBox>
 #include <QTableView>
 
-constexpr int FIRST_ROW_WIDTH = 150;
-constexpr int LAST_ROW_WIDTH = 100;
-
 PreferredDrawSystemsWidget::PreferredDrawSystemsWidget(StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
     , mStoreManager(storeManager)
@@ -32,6 +29,7 @@ PreferredDrawSystemsWidget::PreferredDrawSystemsWidget(StoreManager &storeManage
     mTableView->setItemDelegate(new DrawSystemPreferenceDelegate(this));
     mTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     mTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    mTableView->setColumnWidth(0, 150);
     connect(mTableView, &QTableView::customContextMenuRequested, this, &PreferredDrawSystemsWidget::showContextMenu);
 
     layout->addWidget(mTableView);

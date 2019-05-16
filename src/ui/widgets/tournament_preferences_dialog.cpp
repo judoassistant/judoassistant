@@ -3,10 +3,10 @@
 #include <QHBoxLayout>
 #include <QStackedWidget>
 #include <QListWidget>
-#include <QTableView>
 
-#include "ui/widgets/tournament_preferences_dialog.hpp"
+#include "ui/widgets/general_tournament_preferences_widget.hpp"
 #include "ui/widgets/preferred_draw_systems_widget.hpp"
+#include "ui/widgets/tournament_preferences_dialog.hpp"
 
 TournamentPreferencesDialog::TournamentPreferencesDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
@@ -18,7 +18,7 @@ TournamentPreferencesDialog::TournamentPreferencesDialog(StoreManager & storeMan
 
     // Add general page
     {
-        QWidget *widget = new QTableView;
+        QWidget *widget = new GeneralTournamentPreferencesWidget(mStoreManager);
 
         listWidget->addItem(tr("General Preferences"));
         stackedWidget->addWidget(widget);

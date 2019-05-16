@@ -48,12 +48,6 @@ QWidget* TournamentWidget::basicInformationSection() {
     layout->addWidget(new QLabel(tr("Tatami Count")), 1, 0);
     layout->addWidget(mTatamiCountContent, 1, 1);
 
-    mLanguageContent = new QComboBox;
-    mLanguageContent->addItem("English");
-    // connect(mNameContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentName);
-    layout->addWidget(new QLabel(tr("Tournament Language")), 2, 0);
-    layout->addWidget(mLanguageContent, 2, 1);
-
     return box;
 }
 
