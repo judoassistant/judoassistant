@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl.hpp>
 
 #include "core/network/network_socket.hpp"
 
@@ -13,7 +14,10 @@ public:
     void asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandler handler) override;
 
 private:
+    typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> SocketType;
+
     boost::asio::io_context &mContext;
-    boost::asio::ip::tcp::socket mSocket;
+    boost::asio::ssl::context mSSLContext;
+    SocketType mSocket;
 };
 

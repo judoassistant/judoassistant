@@ -4,7 +4,7 @@
 #include "core/log.hpp"
 #include "core/network/network_message.hpp"
 #include "core/network/plain_socket.hpp"
-// #include "core/network/ssl_socket.hpp"
+#include "core/network/ssl_socket.hpp"
 #include "ui/constants/web.hpp"
 #include "ui/network/network_server.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -43,17 +43,23 @@ void WebClient::createConnection(ConnectionHandler handler) {
 
         std::string hostname;
         unsigned int port;
+        bool useSSL;
 
         if (settings.value("web/customServer", false).toBool()) { // use custom server
             hostname = settings.value("web/hostname", Constants::WEB_HOST).toString().toStdString();
             port = settings.value("web/port", Constants::WEB_PORT).toUInt();
+            useSSL = settings.value("web/ssl", true).toBool();
         }
         else {
             hostname = Constants::WEB_HOST;
             port = Constants::WEB_PORT;
+            useSSL = true;
         }
 
-        mSocket = std::make_unique<PlainSocket>(mContext);
+        if (useSSL)
+            mSocket = std::make_unique<SSLSocket>(mContext);
+        else
+            mSocket = std::make_unique<PlainSocket>(mContext);
 
         // TODO: Somehow kill when taking too long
         mSocket->asyncConnect(hostname, port, [this, handler](boost::system::error_code ec) {

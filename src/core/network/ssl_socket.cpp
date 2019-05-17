@@ -8,13 +8,11 @@
 
 SSLSocket::SSLSocket(boost::asio::io_context &context)
     : mContext(context)
-    , mSocket(context)
-{}
-
-SSLSocket::SSLSocket(boost::asio::io_context &context, boost::asio::ip::tcp::socket socket)
-    : mContext(context)
-    , mSocket(std::move(socket))
-{}
+    , mSSLContext(boost::asio::ssl::context::sslv23)
+    , mSocket(mContext, mSSLContext)
+{
+    mSSLContext.set_default_verify_paths();
+}
 
 void SSLSocket::asyncConnect(const std::string &hostname, unsigned int port, ConnectHandler handler) {
     boost::asio::ip::tcp::resolver resolver(mContext);
@@ -29,8 +27,15 @@ void SSLSocket::asyncConnect(const std::string &hostname, unsigned int port, Con
         return;
     }
 
-    boost::asio::async_connect(mSocket, endpoints, [this, handler](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) {
-        boost::asio::post(mContext, std::bind(handler, ec));
+    boost::asio::async_connect(mSocket.lowest_layer(), endpoints, [this, handler](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) {
+        if (ec) {
+            boost::asio::post(mContext, std::bind(handler, ec));
+            return;
+        }
+
+        mSocket.async_handshake(SocketType::client, [this, handler](boost::system::error_code ec) {
+            boost::asio::post(mContext, std::bind(handler, ec));
+        });
     });
 }
 
