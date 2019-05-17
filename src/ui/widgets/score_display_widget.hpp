@@ -39,6 +39,8 @@ private:
     void changePlayers(std::vector<PlayerId> playerIds);
     void resetMatches(const std::vector<CategoryId> &categoryIds);
     void changeCategories(std::vector<CategoryId> categoryIds);
+    void changePreferences();
+    void loadPainter();
 
     const StoreManager &mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;

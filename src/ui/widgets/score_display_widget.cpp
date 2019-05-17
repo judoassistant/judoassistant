@@ -12,8 +12,9 @@ ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget
     : QWidget(parent)
     , mStoreManager(storeManager)
     , mState(ScoreDisplayState::INTRODUCTION)
-    , mScoreboardPainter(std::make_unique<InternationalScoreboardPainter>())
 {
+    loadPainter();
+
     mIntroTimer.setSingleShot(true);
     mWinnerTimer.setSingleShot(true);
     mDurationTimer.start(DURATION_INTERVAL);
@@ -106,6 +107,9 @@ void ScoreDisplayWidget::endResetTournament() {
     mConnections.push(connect(&tournament, &QTournamentStore::playersChanged, this, &ScoreDisplayWidget::changePlayers));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &ScoreDisplayWidget::resetMatches));
     mConnections.push(connect(&tournament, &QTournamentStore::categoriesChanged, this, &ScoreDisplayWidget::changeCategories));
+    mConnections.push(connect(&tournament, &QTournamentStore::preferencesChanged, this, &ScoreDisplayWidget::loadPainter));
+
+    loadPainter();
 }
 
 void ScoreDisplayWidget::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
@@ -173,5 +177,23 @@ void ScoreDisplayWidget::durationTimerHit() {
         return;
     QRect lowerRect(0,2*(height()/3),width(), height() - 2*(height()/3));
     update(lowerRect);
+}
+
+void ScoreDisplayWidget::loadPainter() {
+    const auto &preferences = mStoreManager.getTournament().getPreferences();
+    auto style = preferences.getScoreboardStyle();
+
+    log_debug().field("style", (unsigned int) style).msg("Trying Loading painter");
+    if (mScoreboardPainter != nullptr && mScoreboardStyle == style)
+        return;
+
+    log_debug().msg("Loading painter");
+    mScoreboardStyle = style;
+    if (style == ScoreboardStylePreference::INTERNATIONAL)
+        mScoreboardPainter = std::make_unique<InternationalScoreboardPainter>();
+    else if (style == ScoreboardStylePreference::NATIONAL)
+        mScoreboardPainter = std::make_unique<InternationalScoreboardPainter>();
+
+    update(0, 0, width(), height());
 }
 
