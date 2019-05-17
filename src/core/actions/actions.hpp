@@ -18,6 +18,7 @@
 #include "core/actions/change_draw_system_preference_limit_action.hpp"
 #include "core/actions/change_players_age_action.hpp"
 #include "core/actions/change_players_club_action.hpp"
+#include "core/actions/change_players_country_action.hpp"
 #include "core/actions/change_players_first_name_action.hpp"
 #include "core/actions/change_players_last_name_action.hpp"
 #include "core/actions/change_players_rank_action.hpp"
