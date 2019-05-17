@@ -14,6 +14,7 @@ PreferencesStore::PreferencesStore() {
     mPreferredDrawSystems.emplace_back(1, DrawSystemIdentifier::BEST_OF_THREE);
     mPreferredDrawSystems.emplace_back(3, DrawSystemIdentifier::POOL);
     mPreferredDrawSystems.emplace_back(7, DrawSystemIdentifier::DOUBLE_POOL);
+    mScoreboardStyle = ScoreboardStylePreference::NATIONAL;
 }
 
 const std::vector<DrawSystemPreference>& PreferencesStore::getPreferredDrawSystems() const {
@@ -34,5 +35,13 @@ DrawSystemIdentifier PreferencesStore::getPreferredDrawSystem(std::size_t size) 
     assert(size > 0);
     auto it = std::upper_bound(mPreferredDrawSystems.begin(), mPreferredDrawSystems.end(), size, Comparator());
     return std::prev(it)->drawSystem;
+}
+
+ScoreboardStylePreference PreferencesStore::getScoreboardStyle() const {
+    return mScoreboardStyle;
+}
+
+void PreferencesStore::setScoreboardStyle(ScoreboardStylePreference style) {
+    mScoreboardStyle = style;
 }
 

@@ -18,13 +18,15 @@ struct DrawSystemPreference {
     }
 };
 
+enum class ScoreboardStylePreference { NATIONAL, INTERNATIONAL };
+
 class PreferencesStore {
 public:
     PreferencesStore();
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPreferredDrawSystems);
+        ar(mPreferredDrawSystems, mScoreboardStyle);
     }
 
     const std::vector<DrawSystemPreference>& getPreferredDrawSystems() const;
@@ -32,7 +34,11 @@ public:
 
     DrawSystemIdentifier getPreferredDrawSystem(std::size_t size) const;
 
+    ScoreboardStylePreference getScoreboardStyle() const;
+    void setScoreboardStyle(ScoreboardStylePreference style);
+
 private:
     std::vector<DrawSystemPreference> mPreferredDrawSystems;
+    ScoreboardStylePreference mScoreboardStyle;
 };
 

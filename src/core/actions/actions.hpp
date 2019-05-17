@@ -23,6 +23,7 @@
 #include "core/actions/change_players_rank_action.hpp"
 #include "core/actions/change_players_sex_action.hpp"
 #include "core/actions/change_players_weight_action.hpp"
+#include "core/actions/change_scoreboard_style_preference_action.hpp"
 #include "core/actions/change_tournament_name_action.hpp"
 #include "core/actions/change_tournament_web_name_action.hpp"
 #include "core/actions/draw_categories_action.hpp"
