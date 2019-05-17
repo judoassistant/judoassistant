@@ -7,6 +7,7 @@
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/score_display_widget.hpp"
 #include "ui/widgets/scoreboard_painters/international_scoreboard_painter.hpp"
+#include "ui/widgets/scoreboard_painters/national_scoreboard_painter.hpp"
 
 ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
@@ -192,7 +193,7 @@ void ScoreDisplayWidget::loadPainter() {
     if (style == ScoreboardStylePreference::INTERNATIONAL)
         mScoreboardPainter = std::make_unique<InternationalScoreboardPainter>();
     else if (style == ScoreboardStylePreference::NATIONAL)
-        mScoreboardPainter = std::make_unique<InternationalScoreboardPainter>();
+        mScoreboardPainter = std::make_unique<NationalScoreboardPainter>();
 
     update(0, 0, width(), height());
 }
