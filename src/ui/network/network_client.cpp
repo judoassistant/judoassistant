@@ -1,5 +1,6 @@
 #include <boost/asio/connect.hpp>
 
+#include "core/network/plain_socket.hpp"
 #include "ui/network/network_client.hpp"
 #include "ui/stores/qtournament_store.hpp"
 
@@ -69,10 +70,10 @@ void NetworkClient::connect(const std::string &host, unsigned int port) {
             return;
         }
 
-        mSocket = tcp::socket(mContext);
+        mSocket = std::make_unique<PlainSocket>(mContext);
 
         // TODO: Somehow kill when taking too long
-        boost::asio::async_connect(*mSocket, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
+        mSocket->asyncConnect(endpoints, [this](boost::system::error_code ec) {
             if (ec) {
                 log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
                 killConnection();
@@ -81,7 +82,7 @@ void NetworkClient::connect(const std::string &host, unsigned int port) {
                 return;
             }
 
-            mConnection = NetworkConnection(std::move(*mSocket));
+            mConnection = NetworkConnection(std::move(mSocket));
             mSocket.reset();
             connectJoin();
         });

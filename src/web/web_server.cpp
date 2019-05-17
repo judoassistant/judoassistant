@@ -6,6 +6,7 @@
 
 #include "core/id.hpp"
 #include "core/log.hpp"
+#include "core/network/plain_socket.hpp"
 #include "core/web/web_types.hpp"
 #include "web/web_server.hpp"
 
@@ -82,7 +83,7 @@ void WebServer::tcpAccept() {
             log_error().field("message", ec.message()).msg("Received error code in tcp async_accept");
         }
         else {
-            auto connection = std::make_shared<NetworkConnection>(std::move(socket));
+            auto connection = std::make_shared<NetworkConnection>(std::make_unique<PlainSocket>(mContext, std::move(socket)));
 
             connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection](boost::system::error_code ec) {
                 if (ec)

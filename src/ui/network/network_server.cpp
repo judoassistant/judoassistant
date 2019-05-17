@@ -1,5 +1,6 @@
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
+#include "core/network/plain_socket.hpp"
 #include "ui/network/network_participant.hpp"
 #include "ui/network/network_server.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -65,7 +66,7 @@ void NetworkServer::accept() {
             log_error().field("message", ec.message()).msg("Received error code in async_accept");
         }
         else {
-            auto connection = std::make_shared<NetworkConnection>(std::move(socket));
+            auto connection = std::make_shared<NetworkConnection>(std::make_unique<PlainSocket>(mContext, std::move(socket)));
 
             connection->asyncAccept([this, connection](boost::system::error_code ec) {
                 if (ec) {

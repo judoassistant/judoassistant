@@ -7,13 +7,14 @@
 #include "core/core.hpp"
 #include "core/log.hpp"
 #include "core/network/network_message.hpp"
+#include "core/network/network_socket.hpp"
 #include "core/version.hpp"
 
 class NetworkMessage;
 
 class NetworkConnection {
 public:
-    NetworkConnection(boost::asio::ip::tcp::socket socket)
+    NetworkConnection(std::unique_ptr<NetworkSocket> socket)
         : mSocket(std::move(socket))
     {}
 
@@ -103,16 +104,14 @@ private:
     template <typename Handler>
     void writeHeader(NetworkMessage &message, Handler handler) {
         // TODO: Consider writing header and body at the same time
-        boost::asio::async_write(mSocket, message.headerBuffer(),
-            [this, handler, &message](boost::system::error_code ec, size_t length) {
-                if (ec) {
-                    handler(ec);
-                }
-                else {
-                    writeBody(message, handler);
-                }
+        mSocket->asyncWrite(message.headerBuffer(), [this, handler, &message](boost::system::error_code ec, size_t length) {
+            if (ec) {
+                handler(ec);
             }
-        );
+            else {
+                writeBody(message, handler);
+            }
+        });
     }
 
     template <typename Handler>
@@ -123,41 +122,36 @@ private:
             return;
         }
 
-        boost::asio::async_write(mSocket, message.bodyBuffer(),
-            [this, handler](boost::system::error_code ec, size_t length) {
-                handler(ec);
-            }
-        );
+        mSocket->asyncWrite(message.bodyBuffer(), [this, handler](boost::system::error_code ec, size_t length) {
+            handler(ec);
+        });
     }
 
     template <typename Handler>
     void readHeader(NetworkMessage &message, Handler handler) {
-        boost::asio::async_read(mSocket, message.headerBuffer(),
-            [this, handler, &message](boost::system::error_code ec, size_t length) {
-                if (ec) {
-                    handler(ec);
-                    return;
-                }
-
-                if (!message.decodeHeader()) {
-                    handler(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
-                    return;
-                }
-
-                readBody(message, handler);
+        mSocket->asyncRead(message.headerBuffer(), [this, handler, &message](boost::system::error_code ec, size_t length) {
+            if (ec) {
+                handler(ec);
+                return;
             }
-        );
+
+            if (!message.decodeHeader()) {
+                handler(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
+                return;
+            }
+
+            readBody(message, handler);
+        });
     }
 
     template <typename Handler>
     void readBody(NetworkMessage &message, Handler handler) {
-        boost::asio::async_read(mSocket, message.bodyBuffer(),
-            [this, handler](boost::system::error_code ec, size_t length) {
-                handler(ec);
-            }
-        );
+        mSocket->asyncRead(message.bodyBuffer(), [this, handler](boost::system::error_code ec, size_t length) {
+            handler(ec);
+        });
     }
 
 private:
-    boost::asio::ip::tcp::socket mSocket;
+    std::unique_ptr<NetworkSocket> mSocket;
 };
+

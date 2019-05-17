@@ -2,6 +2,7 @@
 #include <QSettings>
 
 #include "core/log.hpp"
+#include "core/network/plain_socket.hpp"
 #include "ui/constants/web.hpp"
 #include "ui/network/network_server.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -59,10 +60,10 @@ void WebClient::createConnection(ConnectionHandler handler) {
             return;
         }
 
-        mSocket = tcp::socket(mContext);
+        mSocket = std::make_unique<PlainSocket>(mContext);
 
         // TODO: Somehow kill when taking too long
-        boost::asio::async_connect(*mSocket, endpoints, [this, handler](boost::system::error_code ec, tcp::endpoint) {
+        mSocket->asyncConnect(endpoints, [this, handler](boost::system::error_code ec) {
             if (ec) {
                 log_error().field("message", ec.message()).msg("Encountered error when connecting to web host. Failing");
                 killConnection();
@@ -76,7 +77,7 @@ void WebClient::createConnection(ConnectionHandler handler) {
                 return;
             }
 
-            mConnection = NetworkConnection(std::move(*mSocket));
+            mConnection = NetworkConnection(std::move(mSocket));
             mSocket.reset();
             mConnection->asyncJoin([this, handler](boost::system::error_code ec) {
                 if (ec) {

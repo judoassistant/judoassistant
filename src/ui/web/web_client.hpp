@@ -21,6 +21,7 @@ enum class WebClientState {
 
 class NetworkServer;
 class MasterStoreManager;
+class NetworkSocket;
 
 class WebClient : public QObject {
 Q_OBJECT
@@ -65,7 +66,7 @@ private:
     MasterStoreManager &mStoreManager;
     boost::asio::io_context &mContext;
     WebClientState mState;
-    std::optional<boost::asio::ip::tcp::socket> mSocket;
+    std::unique_ptr<NetworkSocket> mSocket;
     std::optional<NetworkConnection> mConnection;
     bool mDisconnecting;
     std::queue<std::shared_ptr<NetworkMessage>> mWriteQueue;

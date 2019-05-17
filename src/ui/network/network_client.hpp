@@ -13,6 +13,8 @@
 #include "core/network/network_message.hpp"
 #include "ui/network/network_interface.hpp"
 
+class NetworkSocket;
+
 enum class NetworkClientState {
     NOT_CONNECTED,
     CONNECTED,
@@ -56,7 +58,7 @@ private:
 
     NetworkClientState mState;
     boost::asio::io_context &mContext;
-    std::optional<boost::asio::ip::tcp::socket> mSocket;
+    std::unique_ptr<NetworkSocket> mSocket;
     std::optional<NetworkConnection> mConnection;
     std::string mHost;
     int mPort;
