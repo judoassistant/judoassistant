@@ -503,20 +503,26 @@ void ScoreOperatorWindow::endResetMatches(const std::vector<CategoryId> &categor
 }
 
 void ScoreOperatorWindow::updateNextButton() {
+    const auto &tournament = mStoreManager.getTournament();
     bool enabled = true;
     if (!mNextMatch.has_value()) {
         enabled = false;
     }
     else {
-        const auto &match = mStoreManager.getTournament().getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+        const auto &match = tournament.getCategory(mNextMatch->first).getMatch(mNextMatch->second);
         if (!match.getWhitePlayer() || !match.getBluePlayer())
             enabled = false;
     }
 
     if (enabled && mCurrentMatch.has_value()) {
-        const auto &match = mStoreManager.getTournament().getCategory(mCurrentMatch->first).getMatch(mCurrentMatch->second);
-        if (match.getStatus() != MatchStatus::FINISHED)
-            enabled = false;
+        if (tournament.containsCategory(mCurrentMatch->first)) {
+            const auto &category = tournament.getCategory(mCurrentMatch->first);
+            if (category.containsMatch(mCurrentMatch->second)) {
+                const auto &match = category.getMatch(mCurrentMatch->second);
+                if (match.getStatus() != MatchStatus::FINISHED)
+                    enabled = false;
+            }
+        }
     }
 
     mNextButton->setEnabled(enabled);
