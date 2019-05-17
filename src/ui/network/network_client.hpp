@@ -11,9 +11,8 @@
 
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
+#include "core/network/network_socket.hpp"
 #include "ui/network/network_interface.hpp"
-
-class NetworkSocket;
 
 enum class NetworkClientState {
     NOT_CONNECTED,

@@ -8,6 +8,7 @@
 
 #include "core/id.hpp"
 #include "core/web/web_types.hpp"
+#include "core/network/network_socket.hpp"
 #include "core/network/network_connection.hpp"
 
 enum class WebClientState {
@@ -21,7 +22,6 @@ enum class WebClientState {
 
 class NetworkServer;
 class MasterStoreManager;
-class NetworkSocket;
 
 class WebClient : public QObject {
 Q_OBJECT

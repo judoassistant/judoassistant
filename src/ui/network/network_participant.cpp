@@ -1,3 +1,4 @@
+#include "core/log.hpp"
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
 #include "ui/network/network_participant.hpp"

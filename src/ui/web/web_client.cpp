@@ -2,6 +2,7 @@
 #include <QSettings>
 
 #include "core/log.hpp"
+#include "core/network/network_message.hpp"
 #include "core/network/plain_socket.hpp"
 #include "ui/constants/web.hpp"
 #include "ui/network/network_server.hpp"

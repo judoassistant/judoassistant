@@ -4,12 +4,13 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/buffer.hpp>
 
+#include "core/log.hpp"
 #include "core/network/network_connection.hpp"
 #include "web/database.hpp"
+#include "web/json_encoder.hpp"
 #include "web/loaded_tournament.hpp"
 #include "web/web_participant.hpp"
 #include "web/web_server.hpp"
-#include "web/json_encoder.hpp"
 
 // TODO: Try to see if message size can be limited in async_read
 // TODO: Send error messages on load failure, tournament not exists etc.

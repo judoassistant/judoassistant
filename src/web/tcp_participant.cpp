@@ -1,6 +1,8 @@
 #include <boost/asio/bind_executor.hpp>
 
+#include "core/log.hpp"
 #include "core/actions/action.hpp"
+#include "core/network/network_message.hpp"
 #include "core/stores/tournament_store.hpp"
 #include "web/tcp_participant.hpp"
 #include "web/web_server.hpp"

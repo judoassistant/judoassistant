@@ -6,6 +6,7 @@
 
 #include "core/id.hpp"
 #include "core/log.hpp"
+#include "core/network/network_message.hpp"
 #include "core/network/plain_socket.hpp"
 #include "core/web/web_types.hpp"
 #include "web/web_server.hpp"
