@@ -4,6 +4,7 @@
 #include "core/log.hpp"
 #include "core/network/network_message.hpp"
 #include "core/network/plain_socket.hpp"
+// #include "core/network/ssl_socket.hpp"
 #include "ui/constants/web.hpp"
 #include "ui/network/network_server.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -38,33 +39,24 @@ void WebClient::createConnection(ConnectionHandler handler) {
         mState = WebClientState::CONNECTING;
         emit stateChanged(mState);
 
-        tcp::resolver resolver(mContext);
-        tcp::resolver::results_type endpoints;
-
         const QSettings &settings = mStoreManager.getSettings();
-        try {
-            std::string hostname, port;
-            if (settings.value("web/customServer", false).toBool()) { // use custom server
-                hostname = settings.value("web/hostname", Constants::WEB_HOST).toString().toStdString();
-                port = std::to_string(settings.value("web/port", Constants::WEB_PORT).toInt());
-            }
-            else {
-                hostname = Constants::WEB_HOST;
-                port = std::to_string(Constants::WEB_PORT);
-            }
 
-            endpoints = resolver.resolve(hostname, port);
+        std::string hostname;
+        unsigned int port;
+
+        if (settings.value("web/customServer", false).toBool()) { // use custom server
+            hostname = settings.value("web/hostname", Constants::WEB_HOST).toString().toStdString();
+            port = settings.value("web/port", Constants::WEB_PORT).toUInt();
         }
-        catch(const std::exception &e) {
-            log_error().field("message", e.what()).msg("Failed resolving web host. Failing");
-            handler(boost::system::errc::make_error_code(boost::system::errc::invalid_argument));
-            return;
+        else {
+            hostname = Constants::WEB_HOST;
+            port = Constants::WEB_PORT;
         }
 
         mSocket = std::make_unique<PlainSocket>(mContext);
 
         // TODO: Somehow kill when taking too long
-        mSocket->asyncConnect(endpoints, [this, handler](boost::system::error_code ec) {
+        mSocket->asyncConnect(hostname, port, [this, handler](boost::system::error_code ec) {
             if (ec) {
                 log_error().field("message", ec.message()).msg("Encountered error when connecting to web host. Failing");
                 killConnection();

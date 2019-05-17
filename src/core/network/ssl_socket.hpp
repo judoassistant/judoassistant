@@ -4,10 +4,10 @@
 
 #include "core/network/network_socket.hpp"
 
-class PlainSocket : public NetworkSocket {
+class SSLSocket : public NetworkSocket {
 public:
-    PlainSocket(boost::asio::io_context &context);
-    PlainSocket(boost::asio::io_context &context, boost::asio::ip::tcp::socket mSocket);
+    SSLSocket(boost::asio::io_context &context);
+    SSLSocket(boost::asio::io_context &context, boost::asio::ip::tcp::socket mSocket);
     void asyncConnect(const std::string &hostname, unsigned int port, ConnectHandler handler) override;
     void asyncWrite(const boost::asio::mutable_buffer &buffer, WriteHandler handler) override;
     void asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandler handler) override;

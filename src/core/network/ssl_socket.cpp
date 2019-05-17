@@ -4,19 +4,19 @@
 #include <boost/asio/write.hpp>
 
 #include "core/log.hpp"
-#include "core/network/plain_socket.hpp"
+#include "core/network/ssl_socket.hpp"
 
-PlainSocket::PlainSocket(boost::asio::io_context &context)
+SSLSocket::SSLSocket(boost::asio::io_context &context)
     : mContext(context)
     , mSocket(context)
 {}
 
-PlainSocket::PlainSocket(boost::asio::io_context &context, boost::asio::ip::tcp::socket socket)
+SSLSocket::SSLSocket(boost::asio::io_context &context, boost::asio::ip::tcp::socket socket)
     : mContext(context)
     , mSocket(std::move(socket))
 {}
 
-void PlainSocket::asyncConnect(const std::string &hostname, unsigned int port, ConnectHandler handler) {
+void SSLSocket::asyncConnect(const std::string &hostname, unsigned int port, ConnectHandler handler) {
     boost::asio::ip::tcp::resolver resolver(mContext);
     boost::asio::ip::tcp::resolver::results_type endpoints;
 
@@ -34,11 +34,11 @@ void PlainSocket::asyncConnect(const std::string &hostname, unsigned int port, C
     });
 }
 
-void PlainSocket::asyncWrite(const boost::asio::mutable_buffer &buffer, WriteHandler handler) {
+void SSLSocket::asyncWrite(const boost::asio::mutable_buffer &buffer, WriteHandler handler) {
     boost::asio::async_write(mSocket, buffer, handler);
 }
 
-void PlainSocket::asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandler handler) {
+void SSLSocket::asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandler handler) {
     boost::asio::async_read(mSocket, buffer, handler);
 }
 

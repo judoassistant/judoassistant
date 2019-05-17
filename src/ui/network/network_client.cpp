@@ -59,22 +59,10 @@ void NetworkClient::connect(const std::string &host, unsigned int port) {
     mContext.post([this, host, port]() {
         emit stateChanged(mState = NetworkClientState::CONNECTING);
         mQuitPosted = false;
-        tcp::resolver resolver(mContext);
-        tcp::resolver::results_type endpoints;
-        try {
-            endpoints = resolver.resolve(host, std::to_string(port));
-        }
-        catch(const std::exception &e) {
-            log_error().field("message", e.what()).msg("Encountered resolving host. Failing");
-            emit connectionAttemptFailed();
-            emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
-            return;
-        }
-
         mSocket = std::make_unique<PlainSocket>(mContext);
 
         // TODO: Somehow kill when taking too long
-        mSocket->asyncConnect(endpoints, [this](boost::system::error_code ec) {
+        mSocket->asyncConnect(host, port, [this](boost::system::error_code ec) {
             if (ec) {
                 log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
                 killConnection();
