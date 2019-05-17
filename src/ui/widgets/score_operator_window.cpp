@@ -848,7 +848,7 @@ void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerInde
 
 void ScoreOperatorWindow::show() {
     ClientWindow::show();
-    mDisplayWindow.show();
+    // mDisplayWindow.show();
 }
 
 void ScoreOperatorWindow::resetButtonClick() {

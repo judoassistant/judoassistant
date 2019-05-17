@@ -1,4 +1,5 @@
 subdir('graphics_items')
+subdir('scoreboard_painters')
 
 hub_sources += ['src/ui/widgets/auto_add_category_dialog.cpp']
 hub_sources += ['src/ui/widgets/categories_widget.cpp']
