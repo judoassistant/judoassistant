@@ -1,6 +1,7 @@
 #include <QGridLayout>
 #include <QLabel>
 
+#include "core/log.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/configure_dialog.hpp"

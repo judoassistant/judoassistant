@@ -7,6 +7,8 @@
 #include "ui/widgets/hub_window.hpp"
 
 HubApplication::HubApplication(int &argc, char *argv[]) : QApplication(argc, argv) {
+    setOrganizationName("JudoAssistant");
+    setOrganizationDomain("judoassistant.com");
     setApplicationName("JudoAssistant");
     setApplicationVersion(QString::fromStdString(ApplicationVersion::current().toString()));
 

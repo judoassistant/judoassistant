@@ -1,6 +1,8 @@
 #include <fstream>
-#include "ui/store_managers/client_store_manager.hpp"
+
+#include "core/log.hpp"
 #include "ui/network/network_client.hpp"
+#include "ui/store_managers/client_store_manager.hpp"
 
 ClientStoreManager::ClientStoreManager()
     : StoreManager()

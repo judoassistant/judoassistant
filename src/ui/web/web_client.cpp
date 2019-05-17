@@ -1,14 +1,20 @@
 #include <boost/asio/connect.hpp>
+#include <QSettings>
 
 #include "core/log.hpp"
+#include "core/network/network_message.hpp"
+#include "core/network/plain_socket.hpp"
+#include "core/network/ssl_socket.hpp"
 #include "ui/constants/web.hpp"
-#include "ui/web/web_client.hpp"
 #include "ui/network/network_server.hpp"
+#include "ui/store_managers/master_store_manager.hpp"
+#include "ui/web/web_client.hpp"
 
 using boost::asio::ip::tcp;
 
-WebClient::WebClient(boost::asio::io_context &context)
-    : mContext(context)
+WebClient::WebClient(MasterStoreManager &storeManager, boost::asio::io_context &context)
+    : mStoreManager(storeManager)
+    , mContext(context)
     , mState(WebClientState::NOT_CONNECTED)
 {
     qRegisterMetaType<WebToken>("WebToken");
@@ -33,22 +39,30 @@ void WebClient::createConnection(ConnectionHandler handler) {
         mState = WebClientState::CONNECTING;
         emit stateChanged(mState);
 
-        tcp::resolver resolver(mContext);
-        tcp::resolver::results_type endpoints;
+        const QSettings &settings = mStoreManager.getSettings();
 
-        try {
-            endpoints = resolver.resolve(Constants::WEB_HOST, std::to_string(Constants::WEB_PORT));
+        std::string hostname;
+        unsigned int port;
+        bool useSSL;
+
+        if (settings.value("web/customServer", false).toBool()) { // use custom server
+            hostname = settings.value("web/hostname", Constants::WEB_HOST).toString().toStdString();
+            port = settings.value("web/port", Constants::WEB_PORT).toUInt();
+            useSSL = settings.value("web/ssl", true).toBool();
         }
-        catch(const std::exception &e) {
-            log_error().field("message", e.what()).msg("Failed resolving web host. Failing");
-            handler(boost::system::errc::make_error_code(boost::system::errc::invalid_argument));
-            return;
+        else {
+            hostname = Constants::WEB_HOST;
+            port = Constants::WEB_PORT;
+            useSSL = true;
         }
 
-        mSocket = tcp::socket(mContext);
+        if (useSSL)
+            mSocket = std::make_unique<SSLSocket>(mContext);
+        else
+            mSocket = std::make_unique<PlainSocket>(mContext);
 
         // TODO: Somehow kill when taking too long
-        boost::asio::async_connect(*mSocket, endpoints, [this, handler](boost::system::error_code ec, tcp::endpoint) {
+        mSocket->asyncConnect(hostname, port, [this, handler](boost::system::error_code ec) {
             if (ec) {
                 log_error().field("message", ec.message()).msg("Encountered error when connecting to web host. Failing");
                 killConnection();
@@ -62,7 +76,7 @@ void WebClient::createConnection(ConnectionHandler handler) {
                 return;
             }
 
-            mConnection = NetworkConnection(std::move(*mSocket));
+            mConnection = NetworkConnection(std::move(mSocket));
             mSocket.reset();
             mConnection->asyncJoin([this, handler](boost::system::error_code ec) {
                 if (ec) {

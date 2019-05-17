@@ -8,6 +8,7 @@
 
 #include "core/id.hpp"
 #include "core/web/web_types.hpp"
+#include "core/network/network_socket.hpp"
 #include "core/network/network_connection.hpp"
 
 enum class WebClientState {
@@ -20,11 +21,12 @@ enum class WebClientState {
 };
 
 class NetworkServer;
+class MasterStoreManager;
 
 class WebClient : public QObject {
 Q_OBJECT
 public:
-    WebClient(boost::asio::io_context &context);
+    WebClient(MasterStoreManager &storeManager, boost::asio::io_context &context);
     void setNetworkServer(std::shared_ptr<NetworkServer> networkServer);
 
     void stop();
@@ -61,9 +63,10 @@ signals:
 private:
     void killConnection();
 
+    MasterStoreManager &mStoreManager;
     boost::asio::io_context &mContext;
     WebClientState mState;
-    std::optional<boost::asio::ip::tcp::socket> mSocket;
+    std::unique_ptr<NetworkSocket> mSocket;
     std::optional<NetworkConnection> mConnection;
     bool mDisconnecting;
     std::queue<std::shared_ptr<NetworkMessage>> mWriteQueue;

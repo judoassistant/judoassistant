@@ -6,8 +6,9 @@
 #include <QTableView>
 
 #include "ui/widgets/judoassistant_preferences_dialog.hpp"
+#include "ui/widgets/web_connection_preferences_widget.hpp"
 
-JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(StoreManager & storeManager, QWidget *parent)
+JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(MasterStoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
     , mStoreManager(storeManager)
 {
@@ -17,7 +18,7 @@ JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(StoreManager & st
 
     // Add general page
     {
-        QWidget *widget = new QTableView;
+        QWidget *widget = new WebConnectionPreferencesWidget(storeManager);
 
         listWidget->addItem(tr("Web Connection"));
         stackedWidget->addWidget(widget);

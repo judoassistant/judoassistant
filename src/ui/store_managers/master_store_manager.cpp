@@ -2,6 +2,7 @@
 
 #include <boost/system/system_error.hpp>
 #include <lz4.h>
+#include <QSettings>
 
 #include "core/log.hpp"
 #include "ui/network/network_server.hpp"
@@ -14,7 +15,7 @@ constexpr size_t FILE_HEADER_SIZE = 9;
 MasterStoreManager::MasterStoreManager()
     : StoreManager()
     , mWebClientState(WebClientState::NOT_CONNECTED)
-    , mWebClient(getWorkerThread().getContext())
+    , mWebClient(*this, getWorkerThread().getContext())
     , mNetworkServerState(NetworkServerState::STOPPED)
     , mDirty(false)
 {
@@ -27,6 +28,8 @@ MasterStoreManager::MasterStoreManager()
     connect(mNetworkServer.get(), &NetworkServer::stateChanged, this, &MasterStoreManager::changeNetworkServerState);
     connect(&mWebClient, &WebClient::stateChanged, this, &MasterStoreManager::changeWebClientState);
     setInterface(mNetworkServer);
+
+    mSettings = new QSettings(this);
 }
 
 void MasterStoreManager::startServer(int port) {
@@ -236,5 +239,13 @@ WebClientState MasterStoreManager::getWebClientState() const {
 
 std::chrono::milliseconds MasterStoreManager::masterTime() const {
     return localTime();
+}
+
+QSettings& MasterStoreManager::getSettings() {
+    return *mSettings;
+}
+
+const QSettings& MasterStoreManager::getSettings() const {
+    return *mSettings;
 }
 
