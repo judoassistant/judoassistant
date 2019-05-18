@@ -13,7 +13,7 @@ DrawSystemPreference::DrawSystemPreference(std::size_t playerLowerLimit, DrawSys
 PreferencesStore::PreferencesStore() {
     mPreferredDrawSystems.emplace_back(1, DrawSystemIdentifier::BEST_OF_THREE);
     mPreferredDrawSystems.emplace_back(3, DrawSystemIdentifier::POOL);
-    mPreferredDrawSystems.emplace_back(7, DrawSystemIdentifier::DOUBLE_POOL);
+    mPreferredDrawSystems.emplace_back(6, DrawSystemIdentifier::DOUBLE_POOL);
     mScoreboardStyle = ScoreboardStylePreference::NATIONAL;
 }
 
