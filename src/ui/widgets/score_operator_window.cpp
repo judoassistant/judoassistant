@@ -15,7 +15,7 @@
 #include "core/actions/award_shido_action.hpp"
 #include "core/actions/award_wazari_action.hpp"
 #include "core/actions/pause_match_action.hpp"
-#include "core/actions/reset_match_action.hpp"
+#include "core/actions/reset_matches_action.hpp"
 #include "core/actions/resume_match_action.hpp"
 #include "core/actions/start_osaekomi_action.hpp"
 #include "core/actions/stop_osaekomi_action.hpp"
@@ -859,6 +859,6 @@ void ScoreOperatorWindow::resetButtonClick() {
     if (!mCurrentMatch)
         return;
 
-    mStoreManager.dispatch(std::make_unique<ResetMatchAction>(mCurrentMatch->first, mCurrentMatch->second));
+    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(mCurrentMatch->first, std::vector<MatchId>{mCurrentMatch->second}));
 }
 

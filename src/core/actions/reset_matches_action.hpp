@@ -4,10 +4,10 @@
 #include "core/id.hpp"
 #include "core/stores/match_store.hpp"
 
-class ResetMatchAction : public Action {
+class ResetMatchesAction : public Action {
 public:
-    ResetMatchAction() = default;
-    ResetMatchAction(CategoryId categoryId, MatchId matchId);
+    ResetMatchesAction() = default;
+    ResetMatchesAction(CategoryId categoryId, const std::vector<MatchId> &matchIds);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -18,18 +18,18 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId);
+        ar(mCategoryId, mMatchIds);
     }
 
 private:
     CategoryId mCategoryId;
-    MatchId mMatchId;
+    std::vector<MatchId> mMatchIds;
 
     // undo fields
-    MatchStore::State mPrevState;
-    std::vector<MatchEvent> mPrevEvents;
+    std::stack<MatchStore::State> mPrevStates;
+    std::stack<std::vector<MatchEvent>> mPrevEvents;
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
-CEREAL_REGISTER_TYPE(ResetMatchAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ResetMatchAction)
+CEREAL_REGISTER_TYPE(ResetMatchesAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ResetMatchesAction)

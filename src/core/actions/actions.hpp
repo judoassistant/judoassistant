@@ -34,7 +34,7 @@
 #include "core/actions/erase_players_from_all_categories_action.hpp"
 #include "core/actions/erase_players_from_category_action.hpp"
 #include "core/actions/pause_match_action.hpp"
-#include "core/actions/reset_match_action.hpp"
+#include "core/actions/reset_matches_action.hpp"
 #include "core/actions/resume_match_action.hpp"
 #include "core/actions/set_categories_draw_disabled.hpp"
 #include "core/actions/set_match_bye_action.hpp"
