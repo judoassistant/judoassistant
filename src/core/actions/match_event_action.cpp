@@ -11,21 +11,7 @@ MatchEventAction::MatchEventAction(CategoryId categoryId, MatchId matchId)
 
 void MatchEventAction::save(const MatchStore &match, unsigned int eventsToSave ) {
     mDidSave = true;
-    mPrevStatus = match.getStatus();
-    mPrevWhiteScore = match.getScore(MatchStore::PlayerIndex::WHITE);
-    mPrevBlueScore = match.getScore(MatchStore::PlayerIndex::BLUE);
-    mPrevGoldenScore = match.isGoldenScore();
-    mPrevResumeTime = match.getResumeTime();
-    mPrevDuration = match.getDuration();
-    mPrevEventSize = match.getEvents().size();
-    mPrevBye = match.isBye();
-    mPrevOsaekomi = match.getOsaekomi();
-    mPrevHasAwardedOsaekomiWazari = match.hasAwardedOsaekomiWazari();
-
-    const auto &events = match.getEvents();
-    eventsToSave = std::min(eventsToSave, static_cast<unsigned int>(events.size()));
-    for (auto i = events.rbegin(); i != events.rbegin() + eventsToSave; ++i)
-        mSavedEvents.push_back(*i);
+    mPrevState = match.getState();
 }
 
 void MatchEventAction::recover(TournamentStore &tournament) {
@@ -39,36 +25,12 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     auto &category = tournament.getCategory(mCategoryId);
     auto &match = category.getMatch(mMatchId);
     auto updatedStatus = match.getStatus();
+    auto prevStatus = mPrevState.status;
 
-    match.setStatus(mPrevStatus);
-    match.getScore(MatchStore::PlayerIndex::WHITE) = mPrevWhiteScore;
-    match.getScore(MatchStore::PlayerIndex::BLUE) = mPrevBlueScore;
-
-    match.setGoldenScore(mPrevGoldenScore);
-    match.setResumeTime(mPrevResumeTime);
-    match.setDuration(mPrevDuration);
-    match.setBye(mPrevBye);
-
-    match.setHasAwardedOsaekomiWazari(mPrevHasAwardedOsaekomiWazari);
-    match.setOsaekomi(mPrevOsaekomi);
-
-    if (match.getEvents().size() < mPrevEventSize) {
-        assert(mPrevEventSize - match.getEvents().size() <= mSavedEvents.size());
-        while (mPrevEventSize - match.getEvents().size() > mSavedEvents.size())
-            match.popEvent(); // pop added events
-
-        for (auto &event : mSavedEvents)
-            match.pushEvent(event);
-        mSavedEvents.clear();
-    }
-    else {
-        // pop events if neccesary
-        while (match.getEvents().size() > mPrevEventSize)
-            match.popEvent();
-    }
+    match.setState(std::move(mPrevState));
 
     // Update category and tatamis if matches went to/from finished or not_started
-    if (updatedStatus != mPrevStatus && (mPrevStatus == MatchStatus::NOT_STARTED || mPrevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
+    if (updatedStatus != prevStatus && (prevStatus == MatchStatus::NOT_STARTED || prevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
         auto &categoryStatus = category.getStatus(match.getType());
 
         if (updatedStatus == MatchStatus::NOT_STARTED) {
@@ -84,11 +46,11 @@ void MatchEventAction::recover(TournamentStore &tournament) {
             --(categoryStatus.finishedMatches);
         }
 
-        if (mPrevStatus == MatchStatus::NOT_STARTED)
+        if (prevStatus == MatchStatus::NOT_STARTED)
             ++(categoryStatus.notStartedMatches);
-        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED)
+        else if (prevStatus == MatchStatus::PAUSED || prevStatus == MatchStatus::UNPAUSED)
             ++(categoryStatus.startedMatches);
-        else if (mPrevStatus == MatchStatus::FINISHED)
+        else if (prevStatus == MatchStatus::FINISHED)
             ++(categoryStatus.finishedMatches);
 
         auto blockLocation = category.getLocation(match.getType());
@@ -107,7 +69,7 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     tournament.changeMatches(match.getCategory(), {match.getId()});
 
     // Notify results
-    if (updatedStatus == MatchStatus::FINISHED || mPrevStatus == MatchStatus::FINISHED)
+    if (updatedStatus == MatchStatus::FINISHED || prevStatus == MatchStatus::FINISHED)
         tournament.resetCategoryResults({match.getCategory()});
 }
 
@@ -118,19 +80,20 @@ bool MatchEventAction::shouldRecover() {
 void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &match) {
     auto &category = tournament.getCategory(match.getCategory());
     auto updatedStatus = match.getStatus();
+    auto prevStatus = mPrevState.status;
 
     // update category status
     auto & categoryStatus = category.getStatus(match.getType());
-    if (updatedStatus != mPrevStatus && (mPrevStatus == MatchStatus::NOT_STARTED || mPrevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
-        if (mPrevStatus == MatchStatus::NOT_STARTED) {
+    if (updatedStatus != prevStatus && (prevStatus == MatchStatus::NOT_STARTED || prevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
+        if (prevStatus == MatchStatus::NOT_STARTED) {
             assert(categoryStatus.notStartedMatches > 0);
             --(categoryStatus.notStartedMatches);
         }
-        else if (mPrevStatus == MatchStatus::PAUSED || mPrevStatus == MatchStatus::UNPAUSED) {
+        else if (prevStatus == MatchStatus::PAUSED || prevStatus == MatchStatus::UNPAUSED) {
             assert(categoryStatus.startedMatches > 0);
             --(categoryStatus.startedMatches);
         }
-        else if (mPrevStatus == MatchStatus::FINISHED) {
+        else if (prevStatus == MatchStatus::FINISHED) {
             assert(categoryStatus.finishedMatches > 0);
             --(categoryStatus.finishedMatches);
         }
@@ -155,7 +118,7 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
 
     // Notify draw system
     // Changes to draws can only occur if the match was finished or is finished
-    if (mPrevStatus == MatchStatus::FINISHED || match.getStatus() == MatchStatus::FINISHED) {
+    if (prevStatus == MatchStatus::FINISHED || match.getStatus() == MatchStatus::FINISHED) {
         const auto &drawSystem = category.getDrawSystem();
         auto drawActions = drawSystem.updateCategory(tournament, category);
         for (std::unique_ptr<Action> &action : drawActions) {

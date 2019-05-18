@@ -26,18 +26,7 @@ protected:
 
     // undo fields
     bool mDidSave;
-    size_t mPrevEventSize;
-    MatchStatus mPrevStatus;
-    MatchStore::Score mPrevWhiteScore;
-    MatchStore::Score mPrevBlueScore;
-    bool mPrevGoldenScore;
-    std::chrono::milliseconds mPrevResumeTime; // the time when the clock was last resumed
-    std::chrono::milliseconds mPrevDuration; // the match duration when the clock was last paused
-    bool mPrevBye;
-    std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>> mPrevOsaekomi;
-    bool mPrevHasAwardedOsaekomiWazari;
-    std::vector<MatchEvent> mSavedEvents;
-
+    MatchStore::State mPrevState;
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 

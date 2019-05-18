@@ -39,8 +39,26 @@ public:
         void serialize(Archive& ar, uint32_t const version) {
             ar(ippon, wazari, shido, hansokuMake);
         }
+    };
 
-        void clear();
+    // Struct containing score and related fields.
+    // Used for saving state in actions
+    struct State {
+        State(bool finished = false);
+
+        MatchStatus status;
+        bool goldenScore; // whether the match is currently in golden score or not
+        std::chrono::milliseconds resumeTime; // the time when the clock was last resumed
+        std::chrono::milliseconds duration; // the match duration when the clock was last paused
+        std::vector<MatchEvent> events;
+        std::array<Score,2> scores;
+        std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>> osaekomi;
+        bool hasAwardedOsaekomiWazari;
+
+        template<typename Archive>
+        void serialize(Archive& ar, uint32_t const version) {
+            ar(status, goldenScore, resumeTime, duration, events, scores, osaekomi, hasAwardedOsaekomiWazari);
+        }
     };
 
     MatchStore() {}
@@ -94,7 +112,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mScores, mPlayers, mStatus, mGoldenScore, mResumeTime, mDuration, mEvents, mOsaekomi, mHasAwardedOsaekomiWazari);
+        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mPlayers, mState);
     }
 
     const std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>>& getOsaekomi() const;
@@ -105,7 +123,9 @@ public:
     bool hasAwardedOsaekomiWazari() const;
     void setHasAwardedOsaekomiWazari(bool val);
 
-    void clear(); // Clears the scores, events, etc.
+    State& getState();
+    const State& getState() const;
+    void setState(const State &state);
 private:
     MatchId mId;
     CategoryId mCategory;
@@ -113,16 +133,8 @@ private:
     std::string mTitle;
     bool mPermanentBye;
     bool mBye;
-    std::array<Score,2> mScores;
     std::array<std::optional<PlayerId>,2> mPlayers;
-    MatchStatus mStatus;
-    bool mGoldenScore; // whether the match is currently in golden score or not
-    std::chrono::milliseconds mResumeTime; // the time when the clock was last resumed
-    std::chrono::milliseconds mDuration; // the match duration when the clock was last paused
-    std::vector<MatchEvent> mEvents;
-
-    std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>> mOsaekomi;
-    bool mHasAwardedOsaekomiWazari;
+    State mState;
 };
 
 enum class MatchEventType {

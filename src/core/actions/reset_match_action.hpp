@@ -3,9 +3,8 @@
 #include "core/actions/action.hpp"
 #include "core/id.hpp"
 #include "core/stores/match_store.hpp"
-#include "core/actions/match_event_action.hpp"
 
-class ResetMatchAction : public MatchEventAction {
+class ResetMatchAction : public Action {
 public:
     ResetMatchAction() = default;
     ResetMatchAction(CategoryId categoryId, MatchId matchId);
@@ -19,9 +18,17 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::base_class<MatchEventAction>(this));
+        ar(mCategoryId, mMatchId);
     }
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+
+    // undo fields
+    MatchStore::State mPrevState;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
 CEREAL_REGISTER_TYPE(ResetMatchAction)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(MatchEventAction, ResetMatchAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ResetMatchAction)
