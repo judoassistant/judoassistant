@@ -27,6 +27,7 @@ protected:
     // undo fields
     bool mDidSave;
     MatchStore::State mPrevState;
+    std::size_t mPrevEventSize;
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 

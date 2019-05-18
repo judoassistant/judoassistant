@@ -50,14 +50,13 @@ public:
         bool goldenScore; // whether the match is currently in golden score or not
         std::chrono::milliseconds resumeTime; // the time when the clock was last resumed
         std::chrono::milliseconds duration; // the match duration when the clock was last paused
-        std::vector<MatchEvent> events;
         std::array<Score,2> scores;
         std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>> osaekomi;
         bool hasAwardedOsaekomiWazari;
 
         template<typename Archive>
         void serialize(Archive& ar, uint32_t const version) {
-            ar(status, goldenScore, resumeTime, duration, events, scores, osaekomi, hasAwardedOsaekomiWazari);
+            ar(status, goldenScore, resumeTime, duration, scores, osaekomi, hasAwardedOsaekomiWazari);
         }
     };
 
@@ -90,7 +89,10 @@ public:
 
     void pushEvent(const MatchEvent & event);
     void popEvent();
-    const std::vector<MatchEvent> & getEvents() const;
+    void clearEvents();
+    const std::vector<MatchEvent>& getEvents() const;
+    std::vector<MatchEvent>& getEvents();
+    void setEvents(const std::vector<MatchEvent> &events);
 
     void finish();
     bool isGoldenScore() const;
@@ -112,7 +114,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mPlayers, mState);
+        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mPlayers, mState, mEvents);
     }
 
     const std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>>& getOsaekomi() const;
@@ -135,6 +137,7 @@ private:
     bool mBye;
     std::array<std::optional<PlayerId>,2> mPlayers;
     State mState;
+    std::vector<MatchEvent> mEvents;
 };
 
 enum class MatchEventType {

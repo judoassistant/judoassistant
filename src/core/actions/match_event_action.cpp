@@ -12,6 +12,7 @@ MatchEventAction::MatchEventAction(CategoryId categoryId, MatchId matchId)
 void MatchEventAction::save(const MatchStore &match, unsigned int eventsToSave ) {
     mDidSave = true;
     mPrevState = match.getState();
+    mPrevEventSize = match.getEvents().size();
 }
 
 void MatchEventAction::recover(TournamentStore &tournament) {
@@ -28,6 +29,10 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     auto prevStatus = mPrevState.status;
 
     match.setState(std::move(mPrevState));
+
+    assert(match.getEvents().size() >= mPrevEventSize);
+    while (match.getEvents().size() > mPrevEventSize)
+        match.popEvent();
 
     // Update category and tatamis if matches went to/from finished or not_started
     if (updatedStatus != prevStatus && (prevStatus == MatchStatus::NOT_STARTED || prevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {

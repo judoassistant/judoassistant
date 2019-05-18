@@ -25,7 +25,9 @@ void ResetMatchAction::redoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
 
     mPrevState = std::move(match.getState());
+    mPrevEvents = std::move(match.getEvents());
     match.setState(MatchStore::State());
+    match.clearEvents();
 
     auto updatedStatus = match.getStatus();
     auto prevStatus = mPrevState.status;
@@ -93,6 +95,7 @@ void ResetMatchAction::undoImpl(TournamentStore & tournament) {
     auto updatedStatus = match.getStatus();
     auto prevStatus = mPrevState.status;
     match.setState(std::move(mPrevState));
+    match.setEvents(std::move(mPrevEvents));
 
     // Update category and tatamis if matches went to/from finished or not_started
     if (updatedStatus != prevStatus) {

@@ -39,15 +39,19 @@ std::optional<PlayerId> MatchStore::getPlayer(PlayerIndex index) const {
 }
 
 void MatchStore::pushEvent(const MatchEvent & event) {
-    mState.events.push_back(event);
+    mEvents.push_back(event);
 }
 
 void MatchStore::popEvent() {
-    mState.events.pop_back();
+    mEvents.pop_back();
 }
 
-const std::vector<MatchEvent> & MatchStore::getEvents() const {
-    return mState.events;
+const std::vector<MatchEvent>& MatchStore::getEvents() const {
+    return mEvents;
+}
+
+std::vector<MatchEvent>& MatchStore::getEvents() {
+    return mEvents;
 }
 
 MatchStore::Score & MatchStore::getScore(PlayerIndex index) {
@@ -123,6 +127,7 @@ MatchStore::MatchStore(const MatchStore &other)
     , mBye(other.mBye)
     , mPlayers(other.mPlayers)
     , mState(other.mState)
+    , mEvents(other.mEvents)
 {}
 
 MatchStore::Score::Score()
@@ -207,5 +212,13 @@ MatchStore::State& MatchStore::getState() {
 
 void MatchStore::setState(const MatchStore::State &state) {
     mState = state;
+}
+
+void MatchStore::clearEvents() {
+    mEvents.clear();
+}
+
+void MatchStore::setEvents(const std::vector<MatchEvent> &events) {
+    mEvents = events;
 }
 

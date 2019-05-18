@@ -27,6 +27,7 @@ private:
 
     // undo fields
     MatchStore::State mPrevState;
+    std::vector<MatchEvent> mPrevEvents;
     std::stack<std::unique_ptr<Action>> mDrawActions;
 };
 
