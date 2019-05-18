@@ -859,6 +859,6 @@ void ScoreOperatorWindow::resetButtonClick() {
     if (!mCurrentMatch)
         return;
 
-    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(mCurrentMatch->first, std::vector<MatchId>{mCurrentMatch->second}));
+    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(mCurrentMatch->first, mCurrentMatch->second));
 }
 

@@ -4,36 +4,70 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-ResetMatchesAction::ResetMatchesAction(CategoryId categoryId, const std::vector<MatchId> &matchIds)
-    : mCategoryId(categoryId), mMatchIds(matchIds)
+ResetMatchesAction::ResetMatchesAction(const std::vector<CategoryId> &categoryIds)
+    : mCategoryIds(categoryIds)
+    , mMatchId(std::nullopt)
 {}
 
+ResetMatchesAction::ResetMatchesAction(CategoryId categoryId, MatchId matchId)
+    : mCategoryIds({categoryId})
+    , mMatchId(matchId)
+{}
+
+ResetMatchesAction::ResetMatchesAction(const std::vector<CategoryId> &categoryIds, std::optional<MatchId> matchId)
+    : mCategoryIds(categoryIds)
+    , mMatchId(matchId)
+{
+    assert((!mMatchId.has_value()) || mCategoryIds.size() == 1);
+}
+
 std::unique_ptr<Action> ResetMatchesAction::freshClone() const {
-    return std::make_unique<ResetMatchesAction>(mCategoryId, mMatchIds);
+    return std::make_unique<ResetMatchesAction>(mCategoryIds, mMatchId);
 }
 
 std::string ResetMatchesAction::getDescription() const {
-    return "Reset match";
+    return "Reset matches";
 }
 
 void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
-        return;
-    auto &category = tournament.getCategory(mCategoryId);
-
     std::unordered_set<BlockLocation> changedBlockLocations;
     std::unordered_set<std::pair<CategoryId, MatchType>> changedBlocks;
-    bool shouldUpdateDraw = false;
+    std::unordered_set<CategoryId> categoryDrawUpdates;
 
-    std::vector<MatchId> matchIds;
-    for (auto matchId : mMatchIds) {
-        if (!category.containsMatch(matchId))
-            continue;
-        matchIds.push_back(matchId);
+    if (mMatchId.has_value()) {
+        assert(mCategoryIds.size() == 1);
+
+        const auto &category = tournament.getCategory(mCategoryIds.front());
+
+        if (!category.containsMatch(*mMatchId))
+            return;
+        auto &match = category.getMatch(*mMatchId);
+
+        if (match.getStatus() == MatchStatus::NOT_STARTED)
+            return;
+
+        mChangedMatches.push_back(match.getCombinedId());
+    }
+    else {
+        for (auto categoryId : mCategoryIds) {
+            if (!tournament.containsCategory(categoryId))
+                continue;
+            const auto &category = tournament.getCategory(categoryId);
+            for (const auto &match : category.getMatches()) {
+                if (match->getStatus() == MatchStatus::NOT_STARTED)
+                    continue;
+
+                mChangedMatches.push_back(match->getCombinedId());
+            }
+        }
     }
 
-    for (auto matchId : matchIds) {
-        auto &match = category.getMatch(matchId);
+    if (mChangedMatches.empty())
+        return;
+
+    for (auto combinedId : mChangedMatches) {
+        auto &category = tournament.getCategory(combinedId.first);
+        auto &match = category.getMatch(combinedId.second);
 
         auto prevStatus = match.getState().status;
 
@@ -74,7 +108,7 @@ void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
             }
 
             if (prevStatus == MatchStatus::FINISHED)
-                shouldUpdateDraw = true;
+                categoryDrawUpdates.insert(category.getId());
         }
     }
 
@@ -87,32 +121,26 @@ void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
 
     // Notify draw system
     // Changes to draws can only occur if the match was finished or is finished
-    if (shouldUpdateDraw) {
+    for (auto categoryId : categoryDrawUpdates) {
+        auto &category = tournament.getCategory(categoryId);
         const auto &drawSystem = category.getDrawSystem();
         auto drawActions = drawSystem.updateCategory(tournament, category);
         for (std::unique_ptr<Action> &action : drawActions) {
             action->redo(tournament);
             mDrawActions.push(std::move(action));
         }
-
-        tournament.resetCategoryResults({mCategoryId});
     }
 
+    if (!categoryDrawUpdates.empty())
+        tournament.resetCategoryResults(std::vector(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
+
     // Notify of match changed
-    tournament.changeMatches(mCategoryId, matchIds);
+    // TODO tournament.changeMatches(mCategoryId, mChangedMatches);
 }
 
 void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (mChangedMatches.empty())
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-
-    std::vector<MatchId> matchIds;
-    for (auto matchId : mMatchIds) {
-        if (!category.containsMatch(matchId))
-            continue;
-        matchIds.push_back(matchId);
-    }
 
     // undo draw actions
     while (!mDrawActions.empty()) {
@@ -123,14 +151,12 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
     // recover all matches
     std::unordered_set<BlockLocation> changedBlockLocations;
     std::unordered_set<std::pair<CategoryId, MatchType>> changedBlocks;
-    bool shouldUpdateResults = false;
+    std::unordered_set<CategoryId> categoryDrawUpdates;
 
-    for (auto it = matchIds.rbegin(); it != matchIds.rend(); ++it) {
-        auto matchId = *it;
-
-        if (!category.containsMatch(matchId))
-            return;
-        auto &match = category.getMatch(matchId);
+    for (auto it = mChangedMatches.rbegin(); it != mChangedMatches.rend(); ++it) {
+        auto combinedId = *it;
+        auto &category = tournament.getCategory(combinedId.first);
+        auto &match = category.getMatch(combinedId.second);
 
         auto updatedStatus = match.getStatus();
         auto prevStatus = mPrevStates.top().status;
@@ -164,12 +190,13 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
             }
 
             if (prevStatus == MatchStatus::FINISHED)
-                shouldUpdateResults = true;
+                categoryDrawUpdates.insert(category.getId());
         }
     }
 
     // Notify of match changed
-    tournament.changeMatches(mCategoryId, matchIds);
+    // TODO tournament.changeMatches(mCategoryId, mChangedMatches);
+    mChangedMatches.clear();
 
     if (!changedBlockLocations.empty()) {
         std::vector<BlockLocation> locations(changedBlockLocations.begin(), changedBlockLocations.end());
@@ -179,19 +206,22 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
     }
 
     // Notify results
-    if (shouldUpdateResults)
-        tournament.resetCategoryResults({mCategoryId});
+    if (!categoryDrawUpdates.empty())
+        tournament.resetCategoryResults(std::vector(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
 }
 
 bool ResetMatchesAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    if (mCategoryId != categoryId)
-        return false;
-
-    for (auto id : mMatchIds) {
-        if (id == matchId)
-            return true;
+    bool res = false;
+    for (auto el : mCategoryIds) {
+        if (el == categoryId) {
+            res = true;
+            break;
+        }
     }
 
-    return false;
+    if (mMatchId.has_value())
+        res &= (mMatchId == matchId);
+
+    return res;
 }
 
