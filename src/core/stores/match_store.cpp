@@ -17,10 +17,23 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mTitle(title)
     , mPermanentBye(permanentBye)
     , mBye(permanentBye)
+    , mState(permanentBye)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
 }
+
+MatchStore::MatchStore(const MatchStore &other)
+    : mId(other.mId)
+    , mCategory(other.mCategory)
+    , mType(other.mType)
+    , mTitle(other.mTitle)
+    , mPermanentBye(other.mPermanentBye)
+    , mBye(other.mBye)
+    , mPlayers(other.mPlayers)
+    , mState(other.mState)
+    , mEvents(other.mEvents)
+{}
 
 MatchId MatchStore::getId() const {
     return mId;
@@ -118,18 +131,6 @@ bool MatchStore::isPermanentBye() const {
     return mPermanentBye;
 }
 
-MatchStore::MatchStore(const MatchStore &other)
-    : mId(other.mId)
-    , mCategory(other.mCategory)
-    , mType(other.mType)
-    , mTitle(other.mTitle)
-    , mPermanentBye(other.mPermanentBye)
-    , mBye(other.mBye)
-    , mPlayers(other.mPlayers)
-    , mState(other.mState)
-    , mEvents(other.mEvents)
-{}
-
 MatchStore::Score::Score()
     : ippon(0)
     , wazari(0)
@@ -220,5 +221,9 @@ void MatchStore::clearEvents() {
 
 void MatchStore::setEvents(const std::vector<MatchEvent> &events) {
     mEvents = events;
+}
+
+void MatchStore::clearState() {
+    mState = State(mBye);
 }
 

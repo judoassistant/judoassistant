@@ -128,6 +128,7 @@ public:
     State& getState();
     const State& getState() const;
     void setState(const State &state);
+    void clearState();
 private:
     MatchId mId;
     CategoryId mCategory;

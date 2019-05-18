@@ -34,7 +34,7 @@ void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
 
         mPrevStates.push(std::move(match.getState()));
         mPrevEvents.push(std::move(match.getEvents()));
-        match.setState(MatchStore::State());
+        match.clearState();
         match.clearEvents();
 
         auto updatedStatus = match.getStatus();
