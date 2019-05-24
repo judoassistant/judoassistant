@@ -25,6 +25,7 @@ private:
     std::string mValue;
 
     // undo members
+    std::vector<PlayerId> mChangedPlayers;
     std::vector<std::string> mOldValues;
 };
 

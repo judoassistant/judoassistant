@@ -30,6 +30,7 @@ private:
     unsigned int mSeed;
 
     // undo members
+    std::vector<CategoryId> mChangedCategories;
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
     std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };

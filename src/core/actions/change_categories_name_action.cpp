@@ -20,17 +20,20 @@ void ChangeCategoriesNameAction::redoImpl(TournamentStore & tournament) {
             continue;
 
         CategoryStore & category = tournament.getCategory(categoryId);
+
+        if (category.getName() == mValue)
+            continue;
+
+        mChangedCategories.push_back(categoryId);
         mOldValues.push_back(category.getName());
         category.setName(mValue);
     }
-    tournament.changeCategories(mCategoryIds);
+    tournament.changeCategories(mChangedCategories);
 }
 
 void ChangeCategoriesNameAction::undoImpl(TournamentStore & tournament) {
     auto i = mOldValues.begin();
-    for (auto categoryId : mCategoryIds) {
-        if (!tournament.containsCategory(categoryId))
-            continue;
+    for (auto categoryId : mChangedCategories) {
         assert(i != mOldValues.end());
 
         CategoryStore & category = tournament.getCategory(categoryId);
@@ -40,8 +43,9 @@ void ChangeCategoriesNameAction::undoImpl(TournamentStore & tournament) {
         std::advance(i, 1);
     }
 
-    tournament.changeCategories(mCategoryIds);
+    tournament.changeCategories(mChangedCategories);
     mOldValues.clear();
+    mChangedCategories.clear();
 }
 
 std::string ChangeCategoriesNameAction::getDescription() const {

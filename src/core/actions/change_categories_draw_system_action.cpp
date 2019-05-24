@@ -22,37 +22,33 @@ std::unique_ptr<Action> ChangeCategoriesDrawSystemAction::freshClone() const {
 void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
     auto drawSystem = DrawSystem::getDrawSystem(mDrawSystem);
 
-    std::vector<CategoryId> categoryIds;
     for (auto categoryId : mCategoryIds) {
-        if (tournament.containsCategory(categoryId))
-            categoryIds.push_back(categoryId);
+        if (!tournament.containsCategory(categoryId))
+            continue;
+
+        const CategoryStore & category = tournament.getCategory(categoryId);
+        if (category.getDrawSystem().getIdentifier() == mDrawSystem)
+            continue;
+        mChangedCategories.push_back(categoryId);
     }
 
-    for (auto categoryId : categoryIds) {
+    for (auto categoryId : mChangedCategories) {
         CategoryStore & category = tournament.getCategory(categoryId);
 
         mOldDrawSystems.push_back(category.setDrawSystem(drawSystem->clone()));
     }
 
-    mDrawAction = std::make_unique<DrawCategoriesAction>(categoryIds, mSeed);
+    mDrawAction = std::make_unique<DrawCategoriesAction>(mChangedCategories, mSeed);
     mDrawAction->redo(tournament);
 
-    tournament.changeCategories(categoryIds);
+    tournament.changeCategories(mChangedCategories);
 }
 
 void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
-    std::vector<CategoryId> categoryIds;
-    for (auto categoryId : mCategoryIds) {
-        if (tournament.containsCategory(categoryId))
-            categoryIds.push_back(categoryId);
-    }
-
-    assert(categoryIds.size() == mOldDrawSystems.size());
-
     mDrawAction->undo(tournament);
     mDrawAction.reset();
 
-    for (auto i = categoryIds.rbegin(); i != categoryIds.rend(); ++i) {
+    for (auto i = mChangedCategories.rbegin(); i != mChangedCategories.rend(); ++i) {
         auto categoryId = *i;
 
         CategoryStore & category = tournament.getCategory(categoryId);
@@ -61,7 +57,8 @@ void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
         mOldDrawSystems.pop_back();
     }
 
-    tournament.changeCategories(categoryIds);
+    tournament.changeCategories(mChangedCategories);
+    mChangedCategories.clear();
 }
 
 std::string ChangeCategoriesDrawSystemAction::getDescription() const {

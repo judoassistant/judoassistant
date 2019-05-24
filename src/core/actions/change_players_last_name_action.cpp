@@ -12,17 +12,18 @@ void ChangePlayersLastNameAction::redoImpl(TournamentStore & tournament) {
             continue;
 
         PlayerStore & player = tournament.getPlayer(playerId);
+        if (player.getLastName() == mValue)
+            continue;
+        mChangedPlayers.push_back(playerId);
         mOldValues.push_back(player.getLastName());
         player.setLastName(mValue);
     }
-    tournament.changePlayers(mPlayerIds);
+    tournament.changePlayers(mChangedPlayers);
 }
 
 void ChangePlayersLastNameAction::undoImpl(TournamentStore & tournament) {
     auto i = mOldValues.begin();
-    for (auto playerId : mPlayerIds) {
-        if (!tournament.containsPlayer(playerId))
-            continue;
+    for (auto playerId : mChangedPlayers) {
         assert(i != mOldValues.end());
 
         PlayerStore & player = tournament.getPlayer(playerId);
@@ -31,7 +32,8 @@ void ChangePlayersLastNameAction::undoImpl(TournamentStore & tournament) {
         std::advance(i, 1);
     }
 
-    tournament.changePlayers(mPlayerIds);
+    tournament.changePlayers(mChangedPlayers);
+    mChangedPlayers.clear();
     mOldValues.clear();
 }
 

@@ -26,6 +26,7 @@ private:
     std::string mValue;
 
     // undo members
+    std::vector<CategoryId> mChangedCategories;
     std::vector<std::string> mOldValues;
 };
 

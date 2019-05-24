@@ -12,17 +12,19 @@ void ChangePlayersAgeAction::redoImpl(TournamentStore & tournament) {
             continue;
 
         PlayerStore & player = tournament.getPlayer(playerId);
+        if (player.getAge() == mValue)
+            continue;
+
+        mChangedPlayers.push_back(playerId);
         mOldValues.push_back(player.getAge());
         player.setAge(mValue);
     }
-    tournament.changePlayers(mPlayerIds);
+    tournament.changePlayers(mChangedPlayers);
 }
 
 void ChangePlayersAgeAction::undoImpl(TournamentStore & tournament) {
     auto i = mOldValues.begin();
-    for (auto playerId : mPlayerIds) {
-        if (!tournament.containsPlayer(playerId))
-            continue;
+    for (auto playerId : mChangedPlayers) {
         assert(i != mOldValues.end());
 
         PlayerStore & player = tournament.getPlayer(playerId);
@@ -31,8 +33,9 @@ void ChangePlayersAgeAction::undoImpl(TournamentStore & tournament) {
         std::advance(i, 1);
     }
 
-    tournament.changePlayers(mPlayerIds);
+    tournament.changePlayers(mChangedPlayers);
     mOldValues.clear();
+    mChangedPlayers.clear();
 }
 
 std::unique_ptr<Action> ChangePlayersAgeAction::freshClone() const {

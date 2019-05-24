@@ -27,6 +27,7 @@ private:
     RulesetIdentifier mRuleset;
 
     // undo members
+    std::vector<CategoryId> mChangedCategories;
     std::vector<std::unique_ptr<Ruleset>> mOldRulesets;
     std::unique_ptr<ResetMatchesAction> mResetAction;
 };

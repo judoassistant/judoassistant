@@ -25,6 +25,7 @@ private:
     std::optional<PlayerWeight> mValue;
 
     // undo members
+    std::vector<PlayerId> mChangedPlayers;
     std::vector<std::optional<PlayerWeight>> mOldValues;
 };
 

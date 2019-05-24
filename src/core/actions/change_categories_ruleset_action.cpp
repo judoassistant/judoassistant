@@ -18,37 +18,32 @@ std::unique_ptr<Action> ChangeCategoriesRulesetAction::freshClone() const {
 void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
     auto ruleset = Ruleset::getRuleset(mRuleset);
 
-    std::vector<CategoryId> categoryIds;
     for (auto categoryId : mCategoryIds) {
-        if (tournament.containsCategory(categoryId))
-            categoryIds.push_back(categoryId);
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        const CategoryStore & category = tournament.getCategory(categoryId);
+        if (category.getRuleset().getIdentifier() == mRuleset)
+            continue;
+        mChangedCategories.push_back(categoryId);
     }
 
-    for (auto categoryId : categoryIds) {
+    for (auto categoryId : mChangedCategories) {
         CategoryStore & category = tournament.getCategory(categoryId);
 
         mOldRulesets.push_back(category.setRuleset(ruleset->clone()));
     }
 
-    mResetAction = std::make_unique<ResetMatchesAction>(categoryIds);
+    mResetAction = std::make_unique<ResetMatchesAction>(mChangedCategories);
     mResetAction->redo(tournament);
 
-    tournament.changeCategories(categoryIds);
+    tournament.changeCategories(mChangedCategories);
 }
 
 void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
-    std::vector<CategoryId> categoryIds;
-    for (auto categoryId : mCategoryIds) {
-        if (tournament.containsCategory(categoryId))
-            categoryIds.push_back(categoryId);
-    }
-
-    assert(categoryIds.size() == mOldRulesets.size());
-
     mResetAction->undo(tournament);
     mResetAction.reset();
 
-    for (auto i = categoryIds.rbegin(); i != categoryIds.rend(); ++i) {
+    for (auto i = mChangedCategories.rbegin(); i != mChangedCategories.rend(); ++i) {
         auto categoryId = *i;
 
         CategoryStore & category = tournament.getCategory(categoryId);
@@ -57,7 +52,8 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
         mOldRulesets.pop_back();
     }
 
-    tournament.changeCategories(categoryIds);
+    tournament.changeCategories(mChangedCategories);
+    mChangedCategories.clear();
 }
 
 std::string ChangeCategoriesRulesetAction::getDescription() const {

@@ -25,6 +25,7 @@ private:
     std::optional<PlayerRank> mValue;
 
     // undo members
+    std::vector<PlayerId> mChangedPlayers;
     std::vector<std::optional<PlayerRank>> mOldValues;
 };
 
