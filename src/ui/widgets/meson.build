@@ -1,4 +1,5 @@
 subdir('graphics_items')
+subdir('scoreboard_painters')
 
 hub_sources += ['src/ui/widgets/auto_add_category_dialog.cpp']
 hub_sources += ['src/ui/widgets/categories_widget.cpp']
@@ -15,6 +16,7 @@ hub_sources += ['src/ui/widgets/judoassistant_preferences_dialog.cpp']
 hub_sources += ['src/ui/widgets/login_dialog.cpp']
 hub_sources += ['src/ui/widgets/players_widget.cpp']
 hub_sources += ['src/ui/widgets/preferred_draw_systems_widget.cpp']
+hub_sources += ['src/ui/widgets/scoreboard_preferences_widget.cpp']
 hub_sources += ['src/ui/widgets/sidebar_widget.cpp']
 hub_sources += ['src/ui/widgets/tatamis_widget.cpp']
 hub_sources += ['src/ui/widgets/tournament_preferences_dialog.cpp']
@@ -38,6 +40,7 @@ hub_moc_headers += ['src/ui/widgets/judoassistant_preferences_dialog.hpp']
 hub_moc_headers += ['src/ui/widgets/login_dialog.hpp']
 hub_moc_headers += ['src/ui/widgets/players_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/preferred_draw_systems_widget.hpp']
+hub_moc_headers += ['src/ui/widgets/scoreboard_preferences_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/sidebar_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/tatamis_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/tournament_preferences_dialog.hpp']

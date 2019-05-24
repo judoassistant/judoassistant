@@ -6,20 +6,16 @@
 
 #include "core/stores/match_store.hpp"
 #include "core/stores/player_store.hpp"
+#include "core/stores/preferences_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
+#include "ui/widgets/scoreboard_painters/scoreboard_painter.hpp"
 
 class CategoryStore;
 class QPainter;
+class ScoreboardPainter;
 
 enum class ScoreDisplayState {
     INTRODUCTION, NORMAL, WINNER
-};
-
-struct FlagImage {
-    void update(std::optional<PlayerCountry> country);
-
-    std::optional<QImage> image;
-    std::optional<PlayerCountry> country;
 };
 
 class ScoreDisplayWidget : public QWidget {
@@ -31,20 +27,11 @@ public:
     void setState(ScoreDisplayState state);
     void paintEvent(QPaintEvent *event);
 private:
-    static const int PADDING = 5;
     static constexpr auto INTRO_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto WINNER_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto DURATION_INTERVAL = std::chrono::milliseconds(200);
 
     void durationTimerHit();
-
-    void paintNullMatch(QPainter &painter);
-
-    void paintPlayerIntroduction(QRect rect, MatchStore::PlayerIndex playerIndex, QPainter &painter, const MatchStore &match, const PlayerStore &player);
-    void paintLowerIntroduction(QRect rect, QPainter &painter, const CategoryStore &category, const MatchStore &match);
-
-    void paintPlayerNormal(QRect rect, MatchStore::PlayerIndex playerIndex, QPainter &painter, const MatchStore &match, const PlayerStore &player);
-    void paintLowerNormal(QRect rect, QPainter &painter, const CategoryStore &category, const MatchStore &match);
 
     void beginResetTournament();
     void endResetTournament();
@@ -52,15 +39,18 @@ private:
     void changePlayers(std::vector<PlayerId> playerIds);
     void resetMatches(const std::vector<CategoryId> &categoryIds);
     void changeCategories(std::vector<CategoryId> categoryIds);
+    void changePreferences();
+    void loadPainter();
 
     const StoreManager &mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;
     std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
     ScoreDisplayState mState;
-    QFont mFont;
     QTimer mIntroTimer;
     QTimer mWinnerTimer;
     QTimer mDurationTimer;
-    std::array<FlagImage,2> mFlags;
+
+    std::unique_ptr<ScoreboardPainter> mScoreboardPainter;
+    ScoreboardStylePreference mScoreboardStyle;
 };
 

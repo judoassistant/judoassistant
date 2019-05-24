@@ -8,6 +8,7 @@
 #include "core/actions/change_categories_name_action.hpp"
 #include "core/actions/change_categories_ruleset_action.hpp"
 #include "core/actions/draw_categories_action.hpp"
+#include "core/actions/reset_matches_action.hpp"
 #include "core/actions/set_categories_draw_disabled.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"

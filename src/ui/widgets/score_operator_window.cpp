@@ -15,7 +15,7 @@
 #include "core/actions/award_shido_action.hpp"
 #include "core/actions/award_wazari_action.hpp"
 #include "core/actions/pause_match_action.hpp"
-#include "core/actions/reset_match_action.hpp"
+#include "core/actions/reset_matches_action.hpp"
 #include "core/actions/resume_match_action.hpp"
 #include "core/actions/start_osaekomi_action.hpp"
 #include "core/actions/stop_osaekomi_action.hpp"
@@ -503,20 +503,26 @@ void ScoreOperatorWindow::endResetMatches(const std::vector<CategoryId> &categor
 }
 
 void ScoreOperatorWindow::updateNextButton() {
+    const auto &tournament = mStoreManager.getTournament();
     bool enabled = true;
     if (!mNextMatch.has_value()) {
         enabled = false;
     }
     else {
-        const auto &match = mStoreManager.getTournament().getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+        const auto &match = tournament.getCategory(mNextMatch->first).getMatch(mNextMatch->second);
         if (!match.getWhitePlayer() || !match.getBluePlayer())
             enabled = false;
     }
 
     if (enabled && mCurrentMatch.has_value()) {
-        const auto &match = mStoreManager.getTournament().getCategory(mCurrentMatch->first).getMatch(mCurrentMatch->second);
-        if (match.getStatus() != MatchStatus::FINISHED)
-            enabled = false;
+        if (tournament.containsCategory(mCurrentMatch->first)) {
+            const auto &category = tournament.getCategory(mCurrentMatch->first);
+            if (category.containsMatch(mCurrentMatch->second)) {
+                const auto &match = category.getMatch(mCurrentMatch->second);
+                if (match.getStatus() != MatchStatus::FINISHED)
+                    enabled = false;
+            }
+        }
     }
 
     mNextButton->setEnabled(enabled);
@@ -842,7 +848,7 @@ void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerInde
 
 void ScoreOperatorWindow::show() {
     ClientWindow::show();
-    mDisplayWindow.show();
+    // mDisplayWindow.show();
 }
 
 void ScoreOperatorWindow::resetButtonClick() {
@@ -853,6 +859,6 @@ void ScoreOperatorWindow::resetButtonClick() {
     if (!mCurrentMatch)
         return;
 
-    mStoreManager.dispatch(std::make_unique<ResetMatchAction>(mCurrentMatch->first, mCurrentMatch->second));
+    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(mCurrentMatch->first, mCurrentMatch->second));
 }
 

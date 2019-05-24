@@ -1,6 +1,15 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/match_store.hpp"
 
+MatchStore::State::State(bool finished)
+    : status(finished ? MatchStatus::FINISHED : MatchStatus::NOT_STARTED)
+    , goldenScore(false)
+    , duration(std::chrono::seconds(0))
+    , hasAwardedOsaekomiWazari(false)
+{
+
+}
+
 MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool permanentBye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
     : mId(id)
     , mCategory(categoryId)
@@ -8,25 +17,34 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
     , mTitle(title)
     , mPermanentBye(permanentBye)
     , mBye(permanentBye)
-    , mStatus(permanentBye ? MatchStatus::FINISHED : MatchStatus::NOT_STARTED)
-    , mGoldenScore(false)
-    , mDuration(0)
-    , mHasAwardedOsaekomiWazari(false)
+    , mState(permanentBye)
 {
     mPlayers[static_cast<size_t>(PlayerIndex::WHITE)] = whitePlayer;
     mPlayers[static_cast<size_t>(PlayerIndex::BLUE)] = bluePlayer;
 }
+
+MatchStore::MatchStore(const MatchStore &other)
+    : mId(other.mId)
+    , mCategory(other.mCategory)
+    , mType(other.mType)
+    , mTitle(other.mTitle)
+    , mPermanentBye(other.mPermanentBye)
+    , mBye(other.mBye)
+    , mPlayers(other.mPlayers)
+    , mState(other.mState)
+    , mEvents(other.mEvents)
+{}
 
 MatchId MatchStore::getId() const {
     return mId;
 }
 
 bool MatchStore::isGoldenScore() const {
-    return mGoldenScore;
+    return mState.goldenScore;
 }
 
 void MatchStore::setGoldenScore(bool val) {
-    mGoldenScore = val;
+    mState.goldenScore = val;
 }
 
 std::optional<PlayerId> MatchStore::getPlayer(PlayerIndex index) const {
@@ -41,16 +59,20 @@ void MatchStore::popEvent() {
     mEvents.pop_back();
 }
 
-const std::vector<MatchEvent> & MatchStore::getEvents() const {
+const std::vector<MatchEvent>& MatchStore::getEvents() const {
+    return mEvents;
+}
+
+std::vector<MatchEvent>& MatchStore::getEvents() {
     return mEvents;
 }
 
 MatchStore::Score & MatchStore::getScore(PlayerIndex index) {
-    return mScores[static_cast<size_t>(index)];
+    return mState.scores[static_cast<size_t>(index)];
 }
 
 const MatchStore::Score & MatchStore::getScore(PlayerIndex index) const {
-    return mScores[static_cast<size_t>(index)];
+    return mState.scores[static_cast<size_t>(index)];
 }
 
 CategoryId MatchStore::getCategory() const {
@@ -109,24 +131,6 @@ bool MatchStore::isPermanentBye() const {
     return mPermanentBye;
 }
 
-MatchStore::MatchStore(const MatchStore &other)
-    : mId(other.mId)
-    , mCategory(other.mCategory)
-    , mType(other.mType)
-    , mTitle(other.mTitle)
-    , mPermanentBye(other.mPermanentBye)
-    , mBye(other.mBye)
-    , mScores(other.mScores)
-    , mPlayers(other.mPlayers)
-    , mStatus(other.mStatus)
-    , mGoldenScore(other.mGoldenScore)
-    , mResumeTime(other.mResumeTime)
-    , mDuration(other.mDuration)
-    , mEvents(other.mEvents)
-    , mOsaekomi(other.mOsaekomi)
-    , mHasAwardedOsaekomiWazari(other.mHasAwardedOsaekomiWazari)
-{}
-
 MatchStore::Score::Score()
     : ippon(0)
     , wazari(0)
@@ -134,23 +138,16 @@ MatchStore::Score::Score()
     , hansokuMake(0)
 {}
 
-void MatchStore::Score::clear() {
-    ippon = 0;
-    wazari = 0;
-    shido = 0;
-    hansokuMake = 0;
-}
-
 void MatchStore::finish() {
-    mStatus = MatchStatus::FINISHED;
+    mState.status = MatchStatus::FINISHED;
 }
 
 MatchStatus MatchStore::getStatus() const {
-    return mStatus;
+    return mState.status;
 }
 
 void MatchStore::setStatus(MatchStatus status) {
-    mStatus = status;
+    mState.status = status;
 }
 
 const std::string & MatchStore::getTitle() const {
@@ -158,26 +155,26 @@ const std::string & MatchStore::getTitle() const {
 }
 
 void MatchStore::setDuration(std::chrono::milliseconds duration) {
-    mDuration = duration;
+    mState.duration = duration;
 }
 
 std::chrono::milliseconds MatchStore::getDuration() const {
-    return mDuration;
+    return mState.duration;
 }
 
 void MatchStore::setResumeTime(std::chrono::milliseconds resumeTime) {
-    mResumeTime = resumeTime;
+    mState.resumeTime = resumeTime;
 }
 
 std::chrono::milliseconds MatchStore::getResumeTime() const {
-    return mResumeTime;
+    return mState.resumeTime;
 }
 
 std::chrono::milliseconds MatchStore::currentDuration(std::chrono::milliseconds masterTime) const {
-    if (mStatus != MatchStatus::UNPAUSED)
-        return mDuration;
+    if (mState.status != MatchStatus::UNPAUSED)
+        return mState.duration;
 
-    return (masterTime - mResumeTime) + mDuration;
+    return (masterTime - mState.resumeTime) + mState.duration;
 }
 
 void MatchStore::setPlayer(PlayerIndex index, std::optional<PlayerId> playerId) {
@@ -185,35 +182,48 @@ void MatchStore::setPlayer(PlayerIndex index, std::optional<PlayerId> playerId) 
 }
 
 const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& MatchStore::getOsaekomi() const {
-    return mOsaekomi;
+    return mState.osaekomi;
 }
 
 void MatchStore::setOsaekomi(const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& value) {
-    mOsaekomi = value;
+    mState.osaekomi = value;
 }
 
 bool MatchStore::hasAwardedOsaekomiWazari() const {
-    return mHasAwardedOsaekomiWazari;
+    return mState.hasAwardedOsaekomiWazari;
 }
 
 void MatchStore::setHasAwardedOsaekomiWazari(bool val) {
-    mHasAwardedOsaekomiWazari = val;
+    mState.hasAwardedOsaekomiWazari = val;
 }
 
 std::chrono::milliseconds MatchStore::currentOsaekomiTime(std::chrono::milliseconds masterTime) const {
-    assert(mOsaekomi.has_value());
+    assert(mState.osaekomi.has_value());
 
-    return (masterTime - mOsaekomi->second);
+    return (masterTime - mState.osaekomi->second);
 }
 
-void MatchStore::clear() {
-    mScores[0].clear();
-    mScores[1].clear();
-    mStatus = MatchStatus::NOT_STARTED;
-    mGoldenScore = false;
-    mDuration = std::chrono::seconds(0);
+const MatchStore::State& MatchStore::getState() const {
+    return mState;
+}
+
+MatchStore::State& MatchStore::getState() {
+    return mState;
+}
+
+void MatchStore::setState(const MatchStore::State &state) {
+    mState = state;
+}
+
+void MatchStore::clearEvents() {
     mEvents.clear();
-    mOsaekomi.reset();
-    mHasAwardedOsaekomiWazari = false;
+}
+
+void MatchStore::setEvents(const std::vector<MatchEvent> &events) {
+    mEvents = events;
+}
+
+void MatchStore::clearState() {
+    mState = State(mBye);
 }
 
