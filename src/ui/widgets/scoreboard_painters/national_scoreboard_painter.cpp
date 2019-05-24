@@ -237,23 +237,22 @@ void NationalScoreboardPainter::paintNormalLower(QPainter &painter, const QRect 
     painter.drawRect(boundingRect);
 
     // Calculate rectangles
-    const int innerHeight = rect.height() - 2 * PADDING;
-    const int titleHeight = innerHeight * 1/3 - PADDING;
-    const int categoryHeight = innerHeight * 1/3;
+    const int titleHeight = (rect.height() - 3 * PADDING) / 2;
+    const int categoryHeight = titleHeight;
 
     QRect titleRect(PADDING, PADDING, columnTwo-PADDING, titleHeight);
     QRect categoryRect(PADDING, rect.height() - PADDING - categoryHeight, columnTwo-PADDING, categoryHeight);
 
     // Paint title
     auto font = mFont;
-    font.setPixelSize(titleHeight*8/10);
+    font.setPixelSize(titleHeight*3/6);
     painter.setFont(font);
     painter.setPen(COLOR_SCOREBOARD_WHITE);
 
     painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(params.match.getTitle()));
 
     // Paint category name
-    font.setPixelSize(categoryHeight*8/10);
+    font.setPixelSize(categoryHeight*3/6);
     painter.setFont(font);
 
     painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(params.category.getName()));
