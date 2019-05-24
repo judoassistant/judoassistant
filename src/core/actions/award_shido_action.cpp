@@ -43,6 +43,3 @@ void AwardShidoAction::undoImpl(TournamentStore & tournament) {
         recover(tournament);
 }
 
-bool AwardShidoAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    return (mCategoryId == categoryId && mMatchId == matchId);
-}

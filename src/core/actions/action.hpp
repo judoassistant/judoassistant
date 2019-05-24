@@ -13,7 +13,6 @@ public:
     virtual ~Action() {}
 
     virtual std::string getDescription() const = 0;
-    virtual bool shouldDisplay(CategoryId categoryId, MatchId matchId) const;
 
     virtual std::unique_ptr<Action> freshClone() const = 0;
 

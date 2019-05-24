@@ -50,7 +50,4 @@ void AwardIpponAction::undoImpl(TournamentStore & tournament) {
     if (shouldRecover())
         recover(tournament);
 }
-bool AwardIpponAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    return (mCategoryId == categoryId && mMatchId == matchId);
-}
 

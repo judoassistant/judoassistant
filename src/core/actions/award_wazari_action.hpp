@@ -12,7 +12,6 @@ public:
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
-    bool shouldDisplay(CategoryId categoryId, MatchId matchId) const override;
 
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;

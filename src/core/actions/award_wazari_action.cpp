@@ -57,6 +57,4 @@ void AwardWazariAction::undoImpl(TournamentStore & tournament) {
     if (shouldRecover())
         recover(tournament);
 }
-bool AwardWazariAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    return (mCategoryId == categoryId && mMatchId == matchId);
-}
+

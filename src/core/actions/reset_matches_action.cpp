@@ -210,18 +210,3 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
         tournament.resetCategoryResults(std::vector(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
 }
 
-bool ResetMatchesAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    bool res = false;
-    for (auto el : mCategoryIds) {
-        if (el == categoryId) {
-            res = true;
-            break;
-        }
-    }
-
-    if (mMatchId.has_value())
-        res &= (mMatchId == matchId);
-
-    return res;
-}
-
