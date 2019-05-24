@@ -24,8 +24,6 @@ public:
     virtual void show();
 
 private:
-    static constexpr auto PAUSING_TIMER_INTERVAL = std::chrono::milliseconds(100);
-
     void quit();
     void openHomePage();
     void openManual();
@@ -37,8 +35,6 @@ private:
 
     void beginResetTournament();
     void endResetTournament();
-
-    void pausingTimerHit();
 
     void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
@@ -69,7 +65,6 @@ private:
     void createHelpMenu();
 
     QWidget* createScoreboardSection();
-    QWidget* createButtonSection();
     QWidget* createLowerSection();
 
     void changeNetworkClientState(NetworkClientState state);
@@ -88,22 +83,8 @@ private:
     std::stack<QMetaObject::Connection> mConnections;
 
     QPushButton *mNextButton;
-    QPushButton *mResumeButton;
     QPushButton *mResetButton;
 
-    QPushButton *mWhiteIpponButton;
-    QPushButton *mWhiteWazariButton;
-    QPushButton *mWhiteShidoButton;
-    QPushButton *mWhiteHansokuMakeButton;
-    QPushButton *mWhiteOsaekomiButton;
-
-    QPushButton *mBlueIpponButton;
-    QPushButton *mBlueWazariButton;
-    QPushButton *mBlueShidoButton;
-    QPushButton *mBlueHansokuMakeButton;
-    QPushButton *mBlueOsaekomiButton;
-
-    QTimer mPausingTimer;
 
     ScoreDisplayWindow mDisplayWindow;
 };

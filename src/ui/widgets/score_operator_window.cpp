@@ -9,16 +9,9 @@
 #include <QMessageBox>
 #include <QSplitter>
 #include <QVBoxLayout>
+#include <QShortcut>
 
-#include "core/actions/award_hansoku_make_action.hpp"
-#include "core/actions/award_ippon_action.hpp"
-#include "core/actions/award_shido_action.hpp"
-#include "core/actions/award_wazari_action.hpp"
-#include "core/actions/pause_match_action.hpp"
 #include "core/actions/reset_matches_action.hpp"
-#include "core/actions/resume_match_action.hpp"
-#include "core/actions/start_osaekomi_action.hpp"
-#include "core/actions/stop_osaekomi_action.hpp"
 #include "core/log.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
@@ -41,7 +34,6 @@ ScoreOperatorWindow::ScoreOperatorWindow()
     createHelpMenu();
 
     layout->addWidget(createScoreboardSection(), 1); // stretch=1 such that all remaining space is filled by this widget
-    layout->addWidget(createButtonSection());
     layout->addWidget(createLowerSection());
     setCentralWidget(centralWidget);
 
@@ -52,9 +44,6 @@ ScoreOperatorWindow::ScoreOperatorWindow()
 
     findNextMatch();
     disableControlButtons();
-
-    connect(&mPausingTimer, &QTimer::timeout, this, &ScoreOperatorWindow::pausingTimerHit);
-    mPausingTimer.start(PAUSING_TIMER_INTERVAL);
 }
 
 void ScoreOperatorWindow::createStatusBar() {
@@ -251,13 +240,11 @@ QWidget* ScoreOperatorWindow::createLowerSection() {
 
         mNextButton = new QPushButton("Go to next match", matchBox);
         connect(mNextButton, &QPushButton::clicked, this, &ScoreOperatorWindow::goNextMatch);
-        mResumeButton = new QPushButton("Resume Match", matchBox);
-        connect(mResumeButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resumeButtonClick);
+
         mResetButton = new QPushButton("Reset Match", matchBox);
         connect(mResetButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resetButtonClick);
 
         subLayout->addWidget(mNextButton);
-        subLayout->addWidget(mResumeButton);
         subLayout->addWidget(mResetButton);
 
         matchBox->setLayout(subLayout);
@@ -288,73 +275,6 @@ QWidget* ScoreOperatorWindow::createScoreboardSection() {
 
     return viewBox;
 }
-
-QWidget* ScoreOperatorWindow::createButtonSection() {
-    QWidget *res = new QWidget;
-    QHBoxLayout *layout = new QHBoxLayout;
-
-    {
-        QGroupBox *whiteBox = new QGroupBox("White Player Controls", res);
-        QVBoxLayout *subLayout = new QVBoxLayout(res);
-
-        mWhiteIpponButton = new QPushButton("Award Ippon to White");
-        connect(mWhiteIpponButton, &QPushButton::clicked, [this](){awardIppon(MatchStore::PlayerIndex::WHITE);});
-
-        mWhiteWazariButton = new QPushButton("Award Wazari to White");
-        connect(mWhiteWazariButton, &QPushButton::clicked, [this](){awardWazari(MatchStore::PlayerIndex::WHITE);});
-
-        mWhiteShidoButton = new QPushButton("Award Shido to White");
-        connect(mWhiteShidoButton, &QPushButton::clicked, [this](){awardShido(MatchStore::PlayerIndex::WHITE);});
-
-        mWhiteHansokuMakeButton = new QPushButton("Award Hansoku Make to White");
-        connect(mWhiteHansokuMakeButton, &QPushButton::clicked, [this](){awardHansokuMake(MatchStore::PlayerIndex::WHITE);});
-
-        mWhiteOsaekomiButton = new QPushButton("Start Osaekomi for White");
-        connect(mWhiteOsaekomiButton, &QPushButton::clicked, [this](){osaekomiButtonClick(MatchStore::PlayerIndex::WHITE);});
-
-        subLayout->addWidget(mWhiteIpponButton);
-        subLayout->addWidget(mWhiteWazariButton);
-        subLayout->addWidget(mWhiteShidoButton);
-        subLayout->addWidget(mWhiteHansokuMakeButton);
-        subLayout->addWidget(mWhiteOsaekomiButton);
-
-        whiteBox->setLayout(subLayout);
-        layout->addWidget(whiteBox);
-    }
-
-    {
-        QGroupBox *blueBox = new QGroupBox("Blue Player Controls", res);
-        QVBoxLayout *subLayout = new QVBoxLayout(res);
-
-        mBlueIpponButton = new QPushButton("Award Ippon to Blue");
-        connect(mBlueIpponButton, &QPushButton::clicked, [this](){awardIppon(MatchStore::PlayerIndex::BLUE);});
-
-        mBlueWazariButton = new QPushButton("Award Wazari to Blue");
-        connect(mBlueWazariButton, &QPushButton::clicked, [this](){awardWazari(MatchStore::PlayerIndex::BLUE);});
-
-        mBlueShidoButton = new QPushButton("Award Shido to Blue");
-        connect(mBlueShidoButton, &QPushButton::clicked, [this](){awardShido(MatchStore::PlayerIndex::BLUE);});
-
-        mBlueHansokuMakeButton = new QPushButton("Award Hansoku Make to Blue");
-        connect(mBlueHansokuMakeButton, &QPushButton::clicked, [this](){awardHansokuMake(MatchStore::PlayerIndex::BLUE);});
-
-        mBlueOsaekomiButton = new QPushButton("Start Osaekomi for Blue");
-        connect(mBlueOsaekomiButton, &QPushButton::clicked, [this](){osaekomiButtonClick(MatchStore::PlayerIndex::BLUE);});
-
-        subLayout->addWidget(mBlueIpponButton);
-        subLayout->addWidget(mBlueWazariButton);
-        subLayout->addWidget(mBlueShidoButton);
-        subLayout->addWidget(mBlueHansokuMakeButton);
-        subLayout->addWidget(mBlueOsaekomiButton);
-
-        blueBox->setLayout(subLayout);
-        layout->addWidget(blueBox);
-    }
-
-    res->setLayout(layout);
-    return res;
-}
-
 
 void ScoreOperatorWindow::beginResetTournament() {
     while (!mConnections.empty()) {
@@ -512,289 +432,20 @@ void ScoreOperatorWindow::goNextMatch() {
 }
 
 void ScoreOperatorWindow::disableControlButtons() {
-    mResumeButton->setEnabled(false);
-    mResumeButton->setText("Resume Match");
-
     mResetButton->setEnabled(false);
-
-    mWhiteIpponButton->setEnabled(false);
-    mWhiteWazariButton->setEnabled(false);
-    mWhiteShidoButton->setEnabled(false);
-    mWhiteHansokuMakeButton->setEnabled(false);
-
-    mBlueIpponButton->setEnabled(false);
-    mBlueWazariButton->setEnabled(false);
-    mBlueShidoButton->setEnabled(false);
-    mBlueHansokuMakeButton->setEnabled(false);
-
-    mWhiteOsaekomiButton->setEnabled(false);
-    mWhiteOsaekomiButton->setText("Start Osaekomi for White");
-
-    mBlueOsaekomiButton->setEnabled(false);
-    mBlueOsaekomiButton->setText("Start Osaekomi for Blue");
 }
 
 void ScoreOperatorWindow::updateControlButtons() {
-    if (!mCurrentMatch) {
+    if (!mCurrentMatch)
         disableControlButtons();
-        return;
-    }
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first)) {
-        disableControlButtons();
-        return;
-    }
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second)) {
-        disableControlButtons();
-        return;
-    }
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value()) {
-        disableControlButtons();
-        return;
-    }
-
-    const auto &ruleset = category.getRuleset();
-    auto masterTime = mStoreManager.masterTime();
-
-    if (match.getStatus() == MatchStatus::UNPAUSED) {
-        mResumeButton->setText("Pause match");
-        mResumeButton->setEnabled(true);
-    }
-    else {
-        mResumeButton->setText("Resume Match");
-        mResumeButton->setEnabled(ruleset.canResume(match, masterTime));
-    }
-
-    mResetButton->setEnabled(true);
-
-    mWhiteIpponButton->setEnabled(ruleset.canAddIppon(match, MatchStore::PlayerIndex::WHITE));
-    mWhiteWazariButton->setEnabled(ruleset.canAddWazari(match, MatchStore::PlayerIndex::WHITE));
-    mWhiteShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::WHITE));
-    mWhiteHansokuMakeButton->setEnabled(ruleset.canAddHansokuMake(match, MatchStore::PlayerIndex::WHITE));
-
-    mBlueIpponButton->setEnabled(ruleset.canAddIppon(match, MatchStore::PlayerIndex::BLUE));
-    mBlueWazariButton->setEnabled(ruleset.canAddWazari(match, MatchStore::PlayerIndex::BLUE));
-    mBlueShidoButton->setEnabled(ruleset.canAddShido(match, MatchStore::PlayerIndex::BLUE));
-    mBlueHansokuMakeButton->setEnabled(ruleset.canAddHansokuMake(match, MatchStore::PlayerIndex::BLUE));
-
-    auto osaekomi = match.getOsaekomi();
-    if (osaekomi.has_value()) {
-        if (osaekomi->first == MatchStore::PlayerIndex::WHITE) {
-            mWhiteOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match, masterTime));
-            mWhiteOsaekomiButton->setText("Stop Osaekomi for White");
-
-            mBlueOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::BLUE));
-            mBlueOsaekomiButton->setText("Start Osaekomi for Blue");
-        }
-        else {
-            mWhiteOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::WHITE));
-            mWhiteOsaekomiButton->setText("Start Osaekomi for White");
-
-            mBlueOsaekomiButton->setEnabled(ruleset.canStopOsaekomi(match, masterTime));
-            mBlueOsaekomiButton->setText("Stop Osaekomi for Blue");
-        }
-    }
-    else {
-        mWhiteOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::WHITE));
-        mWhiteOsaekomiButton->setText("Start Osaekomi for White");
-
-        mBlueOsaekomiButton->setEnabled(ruleset.canStartOsaekomi(match, MatchStore::PlayerIndex::BLUE));
-        mBlueOsaekomiButton->setText("Start Osaekomi for Blue");
-    }
+    else
+        mResetButton->setEnabled(true);
 }
 
-void ScoreOperatorWindow::resumeButtonClick() {
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    if (match.getStatus() == MatchStatus::UNPAUSED) {
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, mStoreManager.masterTime()));
-    }
-    else {
-        auto masterTime = mStoreManager.masterTime();
-        if (!ruleset.canResume(match, masterTime))
-            return;
-        mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-    }
-}
-
-void ScoreOperatorWindow::awardIppon(MatchStore::PlayerIndex playerIndex) {
-    // TODO: Somehow avoid repeating these 14 lines in the functions
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
-
-    if (ruleset.shouldPause(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-}
-
-void ScoreOperatorWindow::awardWazari(MatchStore::PlayerIndex playerIndex) {
-    // TODO: Somehow avoid repeating these 14 lines in the functions
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
-
-    if (ruleset.shouldPause(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-}
-
-void ScoreOperatorWindow::awardShido(MatchStore::PlayerIndex playerIndex) {
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardShidoAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
-
-    if (ruleset.shouldPause(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-}
-
-void ScoreOperatorWindow::awardHansokuMake(MatchStore::PlayerIndex playerIndex) {
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    auto masterTime = mStoreManager.masterTime();
-    mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
-
-    if (ruleset.shouldPause(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-}
-
-void ScoreOperatorWindow::pausingTimerHit() {
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    auto masterTime = mStoreManager.masterTime();
-    if (ruleset.shouldAwardOsaekomiWazari(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<AwardWazariAction>(mCurrentMatch->first, mCurrentMatch->second, match.getOsaekomi()->first, masterTime, true));
-
-    if (ruleset.shouldAwardOsaekomiIppon(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<AwardIpponAction>(mCurrentMatch->first, mCurrentMatch->second, match.getOsaekomi()->first, masterTime, true));
-
-    if (ruleset.shouldStopOsaekomi(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-
-    if (ruleset.shouldPause(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-}
 
 void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
     mConnectAction->setEnabled(state == NetworkClientState::NOT_CONNECTED);
     mDisconnectAction->setEnabled(state == NetworkClientState::CONNECTED);
-}
-
-void ScoreOperatorWindow::osaekomiButtonClick(MatchStore::PlayerIndex playerIndex) {
-    if (!mCurrentMatch)
-        return;
-
-    const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCurrentMatch->first))
-        return;
-    const auto &category = tournament.getCategory(mCurrentMatch->first);
-    if (!category.containsMatch(mCurrentMatch->second))
-        return;
-    const auto &match = category.getMatch(mCurrentMatch->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
-        return;
-
-    const auto &ruleset = category.getRuleset();
-
-    auto masterTime = mStoreManager.masterTime();
-    auto osaekomi = match.getOsaekomi();
-    if (!osaekomi.has_value() || osaekomi->first != playerIndex) {
-        // Start osaekomi
-        mStoreManager.dispatch(std::make_unique<StartOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, playerIndex, masterTime));
-
-        if (match.getStatus() != MatchStatus::UNPAUSED && (match.getDuration() < ruleset.getNormalTime() || match.isGoldenScore()))
-            mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-
-    }
-    else {
-        // Stop osaekomi
-        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-
-        if (ruleset.shouldPause(match, masterTime))
-            mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-    }
 }
 
 void ScoreOperatorWindow::show() {
