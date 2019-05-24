@@ -17,7 +17,6 @@
 
 class ScoreOperatorWindow : public ClientWindow {
     Q_OBJECT
-
 public:
     ScoreOperatorWindow();
     void silentConnect(QString host, int port=Constants::DEFAULT_PORT);
@@ -69,8 +68,9 @@ private:
     void createPreferencesMenu();
     void createHelpMenu();
 
-    QWidget* createMainArea();
-    QWidget* createSideArea();
+    QWidget* createScoreboardSection();
+    QWidget* createButtonSection();
+    QWidget* createLowerSection();
 
     void changeNetworkClientState(NetworkClientState state);
 

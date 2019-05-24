@@ -19,6 +19,7 @@
 #include "core/actions/resume_match_action.hpp"
 #include "core/actions/start_osaekomi_action.hpp"
 #include "core/actions/stop_osaekomi_action.hpp"
+#include "core/log.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
 #include "ui/constants/homepage.hpp"
@@ -29,6 +30,9 @@
 ScoreOperatorWindow::ScoreOperatorWindow()
     : mDisplayWindow(mStoreManager)
 {
+    QWidget *centralWidget = new QWidget;
+    QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
@@ -36,13 +40,10 @@ ScoreOperatorWindow::ScoreOperatorWindow()
     createPreferencesMenu();
     createHelpMenu();
 
-    QSplitter * splitter = new QSplitter(this);
-    splitter->setChildrenCollapsible(false);
-
-    splitter->addWidget(createMainArea());
-    splitter->addWidget(createSideArea());
-
-    setCentralWidget(splitter);
+    layout->addWidget(createScoreboardSection(), 1); // stretch=1 such that all remaining space is filled by this widget
+    layout->addWidget(createButtonSection());
+    layout->addWidget(createLowerSection());
+    setCentralWidget(centralWidget);
 
     setWindowTitle(tr("JudoAssistant Score"));
 
@@ -240,20 +241,57 @@ void ScoreOperatorWindow::showAboutDialog() {
     QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
 }
 
-QWidget* ScoreOperatorWindow::createMainArea() {
-    QWidget *res = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(res);
+QWidget* ScoreOperatorWindow::createLowerSection() {
+    QWidget *res = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout;
 
     {
-        QGroupBox *viewBox = new QGroupBox("Spectator View", res);
+        QGroupBox *matchBox = new QGroupBox("Match Controls", res);
         QVBoxLayout *subLayout = new QVBoxLayout(res);
 
-        mScoreDisplayWidget = new ScoreDisplayWidget(mStoreManager, viewBox);
-        subLayout->addWidget(mScoreDisplayWidget);
+        mNextButton = new QPushButton("Go to next match", matchBox);
+        connect(mNextButton, &QPushButton::clicked, this, &ScoreOperatorWindow::goNextMatch);
+        mResumeButton = new QPushButton("Resume Match", matchBox);
+        connect(mResumeButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resumeButtonClick);
+        mResetButton = new QPushButton("Reset Match", matchBox);
+        connect(mResetButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resetButtonClick);
 
-        viewBox->setLayout(subLayout);
-        layout->addWidget(viewBox);
+        subLayout->addWidget(mNextButton);
+        subLayout->addWidget(mResumeButton);
+        subLayout->addWidget(mResetButton);
+
+        matchBox->setLayout(subLayout);
+        layout->addWidget(matchBox);
     }
+
+    {
+        QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
+        QVBoxLayout *nextMatchLayout = new QVBoxLayout(nextMatchBox);
+        mNextMatchWidget = new MatchCardWidget(mStoreManager, nextMatchBox);
+        nextMatchLayout->addWidget(mNextMatchWidget);
+
+        layout->addWidget(nextMatchBox);
+    }
+
+    res->setLayout(layout);
+    return res;
+}
+
+QWidget* ScoreOperatorWindow::createScoreboardSection() {
+    QGroupBox *viewBox = new QGroupBox("Spectator View");
+    QVBoxLayout *subLayout = new QVBoxLayout;
+
+    mScoreDisplayWidget = new ScoreDisplayWidget(mStoreManager, viewBox);
+    subLayout->addWidget(mScoreDisplayWidget);
+
+    viewBox->setLayout(subLayout);
+
+    return viewBox;
+}
+
+QWidget* ScoreOperatorWindow::createButtonSection() {
+    QWidget *res = new QWidget;
+    QHBoxLayout *layout = new QHBoxLayout;
 
     {
         QGroupBox *whiteBox = new QGroupBox("White Player Controls", res);
@@ -313,45 +351,10 @@ QWidget* ScoreOperatorWindow::createMainArea() {
         layout->addWidget(blueBox);
     }
 
-    {
-        QGroupBox *matchBox = new QGroupBox("Match Controls", res);
-        QVBoxLayout *subLayout = new QVBoxLayout(res);
-
-        mNextButton = new QPushButton("Go to next match", matchBox);
-        connect(mNextButton, &QPushButton::clicked, this, &ScoreOperatorWindow::goNextMatch);
-        mResumeButton = new QPushButton("Resume Match", matchBox);
-        connect(mResumeButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resumeButtonClick);
-        mResetButton = new QPushButton("Reset Match", matchBox);
-        connect(mResetButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resetButtonClick);
-
-        subLayout->addWidget(mNextButton);
-        subLayout->addWidget(mResumeButton);
-        subLayout->addWidget(mResetButton);
-
-        matchBox->setLayout(subLayout);
-        layout->addWidget(matchBox);
-    }
-
     res->setLayout(layout);
     return res;
 }
 
-QWidget* ScoreOperatorWindow::createSideArea() {
-    QWidget *res = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(res);
-
-    {
-        QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
-        QVBoxLayout *nextMatchLayout = new QVBoxLayout(nextMatchBox);
-        mNextMatchWidget = new MatchCardWidget(mStoreManager, nextMatchBox);
-        nextMatchLayout->addWidget(mNextMatchWidget);
-
-        layout->addWidget(nextMatchBox);
-    }
-
-    res->setLayout(layout);
-    return res;
-}
 
 void ScoreOperatorWindow::beginResetTournament() {
     while (!mConnections.empty()) {
