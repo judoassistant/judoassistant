@@ -184,7 +184,6 @@ void ScoreDisplayWidget::loadPainter() {
     const auto &preferences = mStoreManager.getTournament().getPreferences();
     auto style = preferences.getScoreboardStyle();
 
-    log_debug().field("style", (unsigned int) style).msg("Trying Loading painter");
     if (mScoreboardPainter != nullptr && mScoreboardStyle == style)
         return;
 
