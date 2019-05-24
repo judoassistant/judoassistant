@@ -10,7 +10,6 @@
 #include "core/core.hpp"
 #include "core/stores/tatami/location.hpp"
 #include "ui/constants/network.hpp"
-#include "ui/models/actions_model.hpp"
 #include "ui/widgets/client_window.hpp"
 #include "ui/widgets/match_card_widget.hpp"
 #include "ui/widgets/score_display_widget.hpp"
@@ -55,9 +54,6 @@ private:
     void disableControlButtons();
     void updateControlButtons();
 
-    void updateUndoButton();
-    void undoSelectedAction();
-
     void resumeButtonClick();
     void resetButtonClick();
     void awardIppon(MatchStore::PlayerIndex playerIndex);
@@ -82,10 +78,6 @@ private:
     QActionGroup *mTatamiActionGroup;
     MatchCardWidget *mNextMatchWidget;
     ScoreDisplayWidget *mScoreDisplayWidget;
-
-    ActionsProxyModel *mActionsModel;
-    QTableView *mActionsTable;
-    QPushButton *mUndoButton;
 
     QAction *mConnectAction;
     QAction *mDisconnectAction;

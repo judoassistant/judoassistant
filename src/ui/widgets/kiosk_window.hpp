@@ -10,7 +10,6 @@
 #include "core/core.hpp"
 #include "core/stores/tatami/location.hpp"
 #include "ui/constants/network.hpp"
-#include "ui/models/actions_model.hpp"
 #include "ui/widgets/client_window.hpp"
 #include "ui/widgets/match_card_widget.hpp"
 #include "ui/widgets/score_display_widget.hpp"

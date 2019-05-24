@@ -341,36 +341,6 @@ QWidget* ScoreOperatorWindow::createSideArea() {
     QVBoxLayout *layout = new QVBoxLayout(res);
 
     {
-        mActionsModel = new ActionsProxyModel(mStoreManager, res);
-        mActionsModel->hideAll();
-
-        QGroupBox *actionBox = new QGroupBox("Actions", res);
-        QVBoxLayout *subLayout = new QVBoxLayout(actionBox);
-
-        mActionsTable = new QTableView(actionBox);
-        mActionsTable->setModel(mActionsModel);
-        mActionsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mActionsTable->setSelectionMode(QAbstractItemView::SingleSelection);
-        mActionsTable->horizontalHeader()->setStretchLastSection(true);
-        mActionsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-        mActionsTable->setColumnHidden(0, true); // hide client column
-        connect(mActionsTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ScoreOperatorWindow::updateUndoButton);
-
-        subLayout->addWidget(mActionsTable);
-
-        mUndoButton = new QPushButton("Undo selected action", res);
-        mUndoButton->setEnabled(false);
-        connect(mUndoButton, &QPushButton::clicked, this, &ScoreOperatorWindow::undoSelectedAction);
-
-        subLayout->addWidget(mUndoButton);
-
-        actionBox->setLayout(subLayout);
-
-        layout->addWidget(actionBox);
-    }
-
-
-    {
         QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
         QVBoxLayout *nextMatchLayout = new QVBoxLayout(nextMatchBox);
         mNextMatchWidget = new MatchCardWidget(mStoreManager, nextMatchBox);
@@ -534,7 +504,6 @@ void ScoreOperatorWindow::goNextMatch() {
     mCurrentMatch = mNextMatch;
     mScoreDisplayWidget->setMatch(mCurrentMatch);
     mDisplayWindow.getDisplayWidget().setMatch(mCurrentMatch);
-    mActionsModel->setMatch(mCurrentMatch);
     findNextMatch();
     updateControlButtons();
 }
@@ -783,27 +752,6 @@ void ScoreOperatorWindow::pausingTimerHit() {
 
     if (ruleset.shouldPause(match, masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(mCurrentMatch->first, mCurrentMatch->second, masterTime));
-}
-
-void ScoreOperatorWindow::updateUndoButton() {
-    auto actions = mActionsModel->getActions(mActionsTable->selectionModel()->selection());
-    mUndoButton->setEnabled(actions.size() == 1);
-}
-
-void ScoreOperatorWindow::undoSelectedAction() {
-    auto actionIds = mActionsModel->getActions(mActionsTable->selectionModel()->selection());
-    if (actionIds.size() != 1)
-        return;
-
-    ClientActionId actionId = actionIds.front();
-    const Action &action = mStoreManager.getAction(actionId);
-
-    auto description = QString::fromStdString(action.getDescription());
-    auto reply = QMessageBox::question(this, tr("Would you like to undo the action?"), tr("Are you sure you would like to undo the action \"%1\"?").arg(description), QMessageBox::Yes | QMessageBox::Cancel);
-    if (reply == QMessageBox::Cancel)
-        return;
-
-    mStoreManager.undo(actionId);
 }
 
 void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
