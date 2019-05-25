@@ -12,7 +12,6 @@
 
 class CategoryStore;
 class QPainter;
-class ScoreboardPainter;
 
 enum class ScoreDisplayState {
     INTRODUCTION, NORMAL, WINNER

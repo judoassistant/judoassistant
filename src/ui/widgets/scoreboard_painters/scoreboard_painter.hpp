@@ -1,5 +1,9 @@
 #pragma once
 
+#include <chrono>
+#include <QRect>
+#include "core/core.hpp"
+
 class QPainter;
 class CategoryStore;
 class MatchStore;
@@ -23,5 +27,14 @@ public:
     virtual void paintIntroduction(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) = 0;
     virtual void paintNormal(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) = 0;
     virtual void paintWinner(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) = 0;
+
+    virtual void resizeEvent(const QRect &rect) = 0;
+
+    const QRect& getDurationRect();
+protected:
+    void setDurationRect(const QRect &rect);
+
+    QRect mDurationRect;
+private:
 };
 

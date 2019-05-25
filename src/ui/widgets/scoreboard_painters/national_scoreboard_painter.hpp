@@ -15,6 +15,8 @@ public:
     void paintNormal(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) override;
     void paintWinner(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) override;
 
+    void resizeEvent(const QRect &rect) override;
+
 private:
     static constexpr int PADDING = 5;
 

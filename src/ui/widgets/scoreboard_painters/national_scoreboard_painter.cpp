@@ -302,3 +302,7 @@ void NationalScoreboardPainter::paintNormalLower(QPainter &painter, const QRect 
     painter.restore();
 }
 
+void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
+    setDurationRect(QRect(0, 0, 100, 100));
+}
+
