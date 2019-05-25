@@ -9,10 +9,11 @@
 #include "ui/widgets/scoreboard_painters/international_scoreboard_painter.hpp"
 #include "ui/widgets/scoreboard_painters/national_scoreboard_painter.hpp"
 
-ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
+ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, ScoreDisplayMode mode, QWidget *parent)
     : QWidget(parent)
     , mStoreManager(storeManager)
     , mState(ScoreDisplayState::INTRODUCTION)
+    , mMode(mode)
 {
     loadPainter();
 
@@ -69,6 +70,9 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
         return;
     }
     else if (mState == ScoreDisplayState::NORMAL) {
+        if (mMode == ScoreDisplayMode::OPERATOR)
+            paintOperatorControls(painter);
+
         mScoreboardPainter->paintNormal(painter, rect, params);
     }
     else {
@@ -194,6 +198,18 @@ void ScoreDisplayWidget::loadPainter() {
     else if (style == ScoreboardStylePreference::NATIONAL)
         mScoreboardPainter = std::make_unique<NationalScoreboardPainter>();
 
+    mScoreboardPainter->resizeEvent(rect());
+
     update(0, 0, width(), height());
+}
+
+void ScoreDisplayWidget::resizeEvent(QResizeEvent *event) {
+    mScoreboardPainter->resizeEvent(rect());
+}
+
+void ScoreDisplayWidget::paintOperatorControls(QPainter &painter) {
+    painter.setBrush(Qt::NoBrush);
+    painter.setPen(COLOR_SCOREBOARD_CONTROLS);
+    painter.drawRect(mScoreboardPainter->getDurationRect());
 }
 

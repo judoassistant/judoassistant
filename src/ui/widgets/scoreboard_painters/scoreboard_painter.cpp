@@ -4,7 +4,3 @@ const QRect& ScoreboardPainter::getDurationRect() {
     return mDurationRect;
 }
 
-void ScoreboardPainter::setDurationRect(const QRect &rect) {
-    mDurationRect = rect;
-}
-

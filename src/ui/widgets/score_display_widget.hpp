@@ -17,14 +17,21 @@ enum class ScoreDisplayState {
     INTRODUCTION, NORMAL, WINNER
 };
 
+enum class ScoreDisplayMode {
+    OPERATOR, DISPLAY
+};
+
 class ScoreDisplayWidget : public QWidget {
     Q_OBJECT
 public:
-    ScoreDisplayWidget(const StoreManager &mStoreManager, QWidget *parent = nullptr);
+    ScoreDisplayWidget(const StoreManager &mStoreManager, ScoreDisplayMode mode,  QWidget *parent = nullptr);
 
     void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId, bool showIntro = true);
     void setState(ScoreDisplayState state);
-    void paintEvent(QPaintEvent *event);
+
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void paintOperatorControls(QPainter &painter);
 private:
     static constexpr auto INTRO_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto WINNER_INTERVAL = std::chrono::milliseconds(4000);
@@ -51,5 +58,6 @@ private:
 
     std::unique_ptr<ScoreboardPainter> mScoreboardPainter;
     ScoreboardStylePreference mScoreboardStyle;
+    ScoreDisplayMode mMode;
 };
 

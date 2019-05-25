@@ -20,12 +20,49 @@ public:
 private:
     static constexpr int PADDING = 5;
 
-    void paintIntroductionPlayer(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
-    void paintIntroductionLower(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params);
+    void paintIntroductionPlayer(QPainter &painter, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void paintIntroductionLower(QPainter &painter, const ScoreboardPainterParams &params);
 
-    void paintNormalPlayer(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
-    void paintNormalLower(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params);
+    void paintNormalPlayer(QPainter &painter, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void paintNormalLower(QPainter &painter, const ScoreboardPainterParams &params);
 
     QFont mFont;
+    // int mColumnOne;
+    // int mColumnTwo;
+    // int mColumnThree;
+    QRect mWhiteRect;
+    QRect mBlueRect;
+    QRect mLowerRect;
+
+    // Introduction Mode
+    QRect mIntroductionTitleRect;
+    QRect mIntroductionCategoryRect;
+
+    QRect mIntroductionWhiteNameRect;
+    QRect mIntroductionBlueNameRect;
+
+    QRect mIntroductionWhiteClubRect;
+    QRect mIntroductionBlueClubRect;
+
+    // Normal Mode
+    QRect mNormalTitleRect;
+    QRect mNormalCategoryRect;
+    QRect mOsaekomiRect;
+    QRect mGoldenScoreRect;
+
+    int mNormalTitleFontSize;
+    int mNormalCategoryFontSize;
+    int mDurationFontSize;
+    int mOsaekomiFontSize;
+    int mGoldenScoreFontSize;
+    int mNormalClubFontSize;
+    int mNormalNameFontSize;
+    int mScoreFontSize;
+
+    QRect mNormalWhiteNameRect;
+    QRect mNormalBlueNameRect;
+
+    QRect mNormalWhiteClubRect;
+    QRect mNormalBlueClubRect;
 };
 

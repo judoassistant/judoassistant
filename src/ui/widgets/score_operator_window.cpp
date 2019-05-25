@@ -281,7 +281,7 @@ QWidget* ScoreOperatorWindow::createScoreboardSection() {
     QGroupBox *viewBox = new QGroupBox("Spectator View");
     QVBoxLayout *subLayout = new QVBoxLayout;
 
-    mScoreDisplayWidget = new ScoreDisplayWidget(mStoreManager, viewBox);
+    mScoreDisplayWidget = new ScoreDisplayWidget(mStoreManager, ScoreDisplayMode::OPERATOR, viewBox);
     subLayout->addWidget(mScoreDisplayWidget);
 
     viewBox->setLayout(subLayout);

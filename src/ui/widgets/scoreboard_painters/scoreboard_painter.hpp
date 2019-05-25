@@ -31,10 +31,18 @@ public:
     virtual void resizeEvent(const QRect &rect) = 0;
 
     const QRect& getDurationRect();
-protected:
-    void setDurationRect(const QRect &rect);
 
+protected:
     QRect mDurationRect;
-private:
+    QRect mOsaekomiRect;
+
+    QRect mWhiteScoreRect;
+    QRect mBlueScoreRect;
+
+    QRect mWhiteFirstPenaltyRect;
+    QRect mBlueFirstPenaltyRect;
+
+    QRect mWhiteSecondPenaltyRect;
+    QRect mBlueSecondPenaltyRect;
 };
 
