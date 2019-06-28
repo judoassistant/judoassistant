@@ -54,7 +54,7 @@ std::unique_ptr<PlayerStore> TournamentStore::erasePlayer(PlayerId id) {
     assert(it != mPlayers.end());
     auto ptr = std::move(it->second);
     mPlayers.erase(it);
-    return std::move(ptr);
+    return ptr;
 }
 
 CategoryStore & TournamentStore::getCategory(CategoryId id) {
@@ -79,7 +79,7 @@ std::unique_ptr<CategoryStore> TournamentStore::eraseCategory(CategoryId id) {
     assert(it != mCategories.end());
     auto ptr = std::move(it->second);
     mCategories.erase(it);
-    return std::move(ptr);
+    return ptr;
 }
 
 bool TournamentStore::containsPlayer(PlayerId id) const {

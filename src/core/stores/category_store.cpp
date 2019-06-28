@@ -69,7 +69,7 @@ const CategoryId & CategoryStore::getId() const {
 std::unique_ptr<Ruleset> CategoryStore::setRuleset(std::unique_ptr<Ruleset> ptr) {
     auto old = std::move(mRuleset);
     mRuleset = std::move(ptr);
-    return std::move(old);
+    return old;
 }
 
 Ruleset & CategoryStore::getRuleset() {
@@ -83,7 +83,7 @@ const Ruleset & CategoryStore::getRuleset() const {
 std::unique_ptr<DrawSystem> CategoryStore::setDrawSystem(std::unique_ptr<DrawSystem> ptr) {
     auto old = std::move(mDrawSystem);
     mDrawSystem = std::move(ptr);
-    return std::move(old);
+    return old;
 }
 
 DrawSystem & CategoryStore::getDrawSystem() {
@@ -136,7 +136,7 @@ std::unique_ptr<MatchStore> CategoryStore::popMatch() {
     mMatchMap.erase(match->getId());
     --(mMatchCount[static_cast<int>(match->getType())]);
 
-    return std::move(match);
+    return match;
 }
 
 bool CategoryStore::containsMatch(MatchId id) const {
@@ -150,7 +150,7 @@ CategoryStore::MatchList CategoryStore::clearMatches() {
     mMatchCount[0] = 0;
     mMatchCount[1] = 0;
 
-    return std::move(res);
+    return res;
 }
 
 size_t CategoryStore::getMatchCount(MatchType type) const {

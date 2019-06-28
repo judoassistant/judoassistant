@@ -78,7 +78,7 @@ std::vector<CategoryId> CategoriesModel::getCategories(const QItemSelection &sel
     for (auto row : rows)
         categoryIds.push_back(getCategory(row));
 
-    return std::move(categoryIds);
+    return categoryIds;
 }
 
 CategoryId CategoriesModel::getCategory(int row) const {

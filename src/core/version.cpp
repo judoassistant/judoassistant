@@ -7,7 +7,7 @@ ApplicationVersion ApplicationVersion::current() {
     res.mVersionMinor = VERSION_MINOR;
     res.mVersionPatch = VERSION_PATCH;
 
-    return std::move(res);
+    return res;
 }
 
 bool ApplicationVersion::isCompatible(const ApplicationVersion &other) const {

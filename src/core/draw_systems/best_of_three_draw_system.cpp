@@ -44,7 +44,7 @@ std::vector<std::unique_ptr<AddMatchAction>> BestOfThreeDrawSystem::initCategory
         actions.push_back(std::move(action));
     }
 
-    return std::move(actions);
+    return actions;
 }
 
 std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {

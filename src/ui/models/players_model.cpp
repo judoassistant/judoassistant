@@ -105,7 +105,7 @@ std::vector<PlayerId> PlayersModel::getPlayers(const QItemSelection &selection) 
     for (auto row : rows)
         playerIds.push_back(getPlayer(row));
 
-    return std::move(playerIds);
+    return playerIds;
 }
 
 PlayerId PlayersModel::getPlayer(int row) const {
