@@ -22,10 +22,9 @@ void NationalScoreboardPainter::paintEmpty(QPainter &painter, const QRect &rect)
 }
 
 void NationalScoreboardPainter::paintIntroduction(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
-    paintNormal(painter, rect, params);
-    // paintIntroductionPlayer(painter, params, MatchStore::PlayerIndex::WHITE);
-    // paintIntroductionPlayer(painter, params, MatchStore::PlayerIndex::BLUE);
-    // paintIntroductionLower(painter, params);
+    paintIntroductionPlayer(painter, params, MatchStore::PlayerIndex::WHITE);
+    paintIntroductionPlayer(painter, params, MatchStore::PlayerIndex::BLUE);
+    paintIntroductionLower(painter, params);
 }
 
 void NationalScoreboardPainter::paintNormal(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
@@ -42,88 +41,59 @@ void NationalScoreboardPainter::paintWinner(QPainter &painter, const QRect &rect
 }
 
 void NationalScoreboardPainter::paintIntroductionPlayer(QPainter &painter, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
-    // const PlayerStore &player = (playerIndex == MatchStore::PlayerIndex::WHITE ? params.whitePlayer : params.bluePlayer);
+    const PlayerStore &player = (playerIndex == MatchStore::PlayerIndex::WHITE ? params.whitePlayer : params.bluePlayer);
 
-    // painter.save();
-    // painter.translate(rect.x(), rect.y());
+    // Paint background
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_SCOREBOARD_WHITE : COLOR_SCOREBOARD_BLUE);
+    painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteRect : mBlueRect);
 
-    // // Paint background
-    // QRect boundingRect(0, 0, rect.width(), rect.height());
-    // painter.setPen(Qt::NoPen);
-    // if (playerIndex == MatchStore::PlayerIndex::WHITE)
-    //     painter.setBrush(COLOR_SCOREBOARD_WHITE);
-    // else
-    //     painter.setBrush(COLOR_SCOREBOARD_BLUE);
-    // painter.drawRect(boundingRect);
+    // Set pen color
+    painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_SCOREBOARD_BLACK : COLOR_SCOREBOARD_WHITE);
 
-    // // Set pen color
-    // if (playerIndex == MatchStore::PlayerIndex::WHITE)
-    //     painter.setPen(COLOR_SCOREBOARD_BLACK);
-    // else
-    //     painter.setPen(COLOR_SCOREBOARD_WHITE);
+    // Calculate rectangles
+    auto font = mFont;
 
-    // // Calculate rectangles
-    // auto font = mFont;
+    // Paint club name
+    QString clubText = QString::fromStdString(player.getClub());
+    font.setPixelSize(mIntroductionClubFontSize);
+    painter.setFont(font);
 
-    // const int innerHeight = rect.height() - PADDING * 2;
-    // const int nameHeight = innerHeight * 3 / 6;
-    // const int clubHeight = innerHeight * 2 / 6;
+    if (playerIndex == MatchStore::PlayerIndex::WHITE)
+        painter.drawText(mIntroductionWhiteClubRect, Qt::AlignBottom | Qt::AlignLeft, clubText);
+    else
+        painter.drawText(mIntroductionBlueClubRect, Qt::AlignTop | Qt::AlignLeft, clubText);
 
-    // const int nameOffset = (playerIndex == MatchStore::PlayerIndex::WHITE ? PADDING : rect.height() - PADDING - nameHeight);
-    // const int clubOffset = (playerIndex == MatchStore::PlayerIndex::WHITE ? rect.height() - PADDING - clubHeight : PADDING);
+    // Paint player name
+    font.setPixelSize(mIntroductionNameFontSize);
+    painter.setFont(font);
+    QString nameText = QString::fromStdString(player.getLastName()) + QString(", ") + QString::fromStdString(player.getFirstName());
 
-    // QRect clubRect(mColumnOne, clubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
-    // QRect nameRect(mColumnOne, nameOffset, rect.width() - mColumnOne - PADDING, nameHeight);
-
-    // // Paint club name
-    // QString clubText = QString::fromStdString(player.getClub());
-    // font.setPixelSize(clubHeight*8/10);
-    // painter.setFont(font);
-
-    // painter.drawText(clubRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignBottom : Qt::AlignTop) | Qt::AlignLeft, clubText);
-
-    // // Paint player name
-    // font.setPixelSize(nameHeight*7/10);
-    // painter.setFont(font);
-    // QString nameText = QString::fromStdString(player.getLastName()) + QString(", ") + QString::fromStdString(player.getFirstName());
-    // painter.drawText(nameRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignLeft, nameText);
-
-    // painter.restore();
+    if (playerIndex == MatchStore::PlayerIndex::WHITE)
+        painter.drawText(mIntroductionWhiteNameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
+    else
+        painter.drawText(mIntroductionBlueNameRect, Qt::AlignBottom | Qt::AlignLeft, nameText);
 }
 
 void NationalScoreboardPainter::paintIntroductionLower(QPainter &painter, const ScoreboardPainterParams &params) {
-    // painter.save();
-    // painter.translate(rect.x(), rect.y());
+    // Paint background
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(COLOR_SCOREBOARD_BLACK);
+    painter.drawRect(mLowerRect);
 
-    // // Paint background
-    // QRect boundingRect(0, 0, rect.width(), rect.height());
-    // painter.setPen(Qt::NoPen);
-    // painter.setBrush(COLOR_SCOREBOARD_BLACK);
-    // painter.drawRect(boundingRect);
+    // Paint title
+    auto font = mFont;
+    font.setPixelSize(mIntroductionTitleFontSize);
+    painter.setFont(font);
+    painter.setPen(COLOR_SCOREBOARD_WHITE);
 
-    // // Calculate rectangles
-    // const int innerHeight = rect.height() - 2 * PADDING;
-    // const int titleHeight = innerHeight * 1/2 - PADDING;
-    // const int categoryHeight = innerHeight * 1/2;
+    painter.drawText(mIntroductionTitleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(params.match.getTitle()));
 
-    // QRect titleRect(PADDING, PADDING, rect.width()-PADDING*2, titleHeight);
-    // QRect categoryRect(PADDING, rect.height() - PADDING - categoryHeight, rect.width()-PADDING*2, categoryHeight);
+    // Paint category name
+    font.setPixelSize(mIntroductionCategoryFontSize);
+    painter.setFont(font);
 
-    // // Paint title
-    // auto font = mFont;
-    // font.setPixelSize(titleHeight*9/10);
-    // painter.setFont(font);
-    // painter.setPen(COLOR_SCOREBOARD_WHITE);
-
-    // painter.drawText(titleRect, Qt::AlignBottom | Qt::AlignLeft, QString::fromStdString(params.match.getTitle()));
-
-    // // Paint category name
-    // font.setPixelSize(categoryHeight*9/10);
-    // painter.setFont(font);
-
-    // painter.drawText(categoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(params.category.getName()));
-
-    // painter.restore();
+    painter.drawText(mIntroductionCategoryRect, Qt::AlignTop | Qt::AlignLeft, QString::fromStdString(params.category.getName()));
 }
 
 void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -301,13 +271,15 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
 
         mNormalClubFontSize = clubHeight * 7/10;
         mNormalNameFontSize = nameHeight * 8/10;
+        mIntroductionClubFontSize = clubHeight * 8/10;
+        mIntroductionNameFontSize = nameHeight * 8/10;
         mScoreFontSize = scoreHeight * 4/5;
 
-        // mIntroductionWhiteClubRect(mColumnOne, whiteClubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
-        // mIntroductionBlueClubRect(mColumnOne, blueClubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
+        mIntroductionWhiteClubRect = QRect(mColumnOne, whiteClubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
+        mIntroductionBlueClubRect = QRect(mColumnOne, blueClubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
 
-        // mIntroductionWhiteNameRect(mColumnOne, whiteNameOffset, whiteRect.width() - mColumnOne - PADDING, nameHeight);
-        // mIntroductionBlueNameRect(mColumnOne, blueNameOffset, blueRect.width() - mColumnOne - PADDING, nameHeight);
+        mIntroductionWhiteNameRect = QRect(mColumnOne, whiteNameOffset, mWhiteRect.width() - mColumnOne - PADDING, nameHeight);
+        mIntroductionBlueNameRect = QRect(mColumnOne, blueNameOffset, mBlueRect.width() - mColumnOne - PADDING, nameHeight);
 
         mNormalWhiteClubRect = QRect(mColumnOne, whiteClubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
         mNormalBlueClubRect = QRect(mColumnOne, blueClubOffset, mColumnThree - mColumnOne - PADDING, clubHeight);
@@ -315,16 +287,12 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         mNormalWhiteNameRect = QRect(mColumnOne, whiteNameOffset, mWhiteRect.width() - mColumnOne - PADDING, nameHeight);
         mNormalBlueNameRect = QRect(mColumnOne, blueNameOffset, mBlueRect.width() - mColumnOne - PADDING, nameHeight);
 
-
         mWhiteScoreRect = QRect(mColumnOne, whiteScoreOffset, mColumnThree - mColumnOne - PADDING, scoreHeight);
         mBlueScoreRect = QRect(mColumnOne, blueScoreOffset, mColumnThree - mColumnOne - PADDING, scoreHeight);
     }
 
 
     // Calculate lower rectangles
-    // mIntroductionTitleRect(PADDING, PADDING, rect.width()-PADDING*2, titleHeight);
-    // mIntroductionCategoryRect(PADDING, rect.height() - PADDING - categoryHeight, rect.width()-PADDING*2, categoryHeight);
-
     const int titleHeight = (mLowerRect.height() - 3 * PADDING) / 2;
     const int categoryHeight = titleHeight;
     const int durationHeight = mLowerRect.height() - PADDING * 2;
@@ -342,6 +310,12 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
     mDurationFontSize = mLowerRect.height() * 6/8;
     mOsaekomiFontSize = mLowerRect.height() * 5/8;
     mGoldenScoreFontSize = mLowerRect.height() * 1/3;
+
+    mIntroductionCategoryFontSize = categoryHeight * 9/10;
+    mIntroductionTitleFontSize = titleHeight * 9/10;
+
+    mIntroductionTitleRect = QRect(PADDING, rect.height() - mLowerRect.height() + PADDING, rect.width()-PADDING*2, titleHeight);
+    mIntroductionCategoryRect = QRect(PADDING, rect.height() - PADDING - categoryHeight, rect.width()-PADDING*2, categoryHeight);
 
     mNormalTitleRect = QRect(PADDING, titleOffset, rect.width()-PADDING*2, titleHeight);
     mNormalCategoryRect = QRect(PADDING, categoryOffset, rect.width()-PADDING*2, categoryHeight);

@@ -44,6 +44,11 @@ private:
     QRect mIntroductionWhiteClubRect;
     QRect mIntroductionBlueClubRect;
 
+    int mIntroductionTitleFontSize;
+    int mIntroductionCategoryFontSize;
+    int mIntroductionClubFontSize;
+    int mIntroductionNameFontSize;
+
     // Normal Mode
     QRect mNormalTitleRect;
     QRect mNormalCategoryRect;
