@@ -26,23 +26,29 @@ public:
     virtual void paintEmpty(QPainter &painter, const QRect &rect) = 0;
     virtual void paintIntroduction(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) = 0;
     virtual void paintNormal(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) = 0;
+    virtual void paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params);
     virtual void paintWinner(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) = 0;
 
     virtual void resizeEvent(const QRect &rect) = 0;
 
-    const QRect& getDurationRect();
-
 protected:
     QRect mDurationRect;
-    QRect mOsaekomiRect;
+    QRect mWhiteOsaekomiRect;
+    QRect mBlueOsaekomiRect;
 
-    QRect mWhiteScoreRect;
-    QRect mBlueScoreRect;
+    QRect mWhiteIpponRect;
+    QRect mWhiteWazariRect;
 
-    QRect mWhiteFirstPenaltyRect;
-    QRect mBlueFirstPenaltyRect;
+    QRect mBlueIpponRect;
+    QRect mBlueWazariRect;
 
-    QRect mWhiteSecondPenaltyRect;
-    QRect mBlueSecondPenaltyRect;
+    QRect mWhiteShidoRect;
+    QRect mWhiteHansokuRect;
+
+    QRect mBlueShidoRect;
+    QRect mBlueHansokuRect;
+
+    QRect mWhiteSecondShidoRect;
+    QRect mBlueSecondShidoRect;
 };
 

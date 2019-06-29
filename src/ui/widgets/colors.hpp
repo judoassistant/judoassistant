@@ -25,5 +25,5 @@ static const QColor COLOR_SCOREBOARD_TIME_PAUSED("#ff3639"); // Red
 
 static const QColor COLOR_SCOREBOARD_OSAEKOMI("#ffffff"); // White
 
-static const QColor COLOR_SCOREBOARD_CONTROLS("#ff3639"); // Red
+static const QColor COLOR_SCOREBOARD_CONTROLS("#f7ba02"); // Orange
 

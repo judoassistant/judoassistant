@@ -74,6 +74,7 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
             paintOperatorControls(painter);
 
         mScoreboardPainter->paintNormal(painter, rect, params);
+        mScoreboardPainter->paintControls(painter, rect, params);
     }
     else {
         assert(mState == ScoreDisplayState::WINNER);
@@ -208,8 +209,7 @@ void ScoreDisplayWidget::resizeEvent(QResizeEvent *event) {
 }
 
 void ScoreDisplayWidget::paintOperatorControls(QPainter &painter) {
-    painter.setBrush(Qt::NoBrush);
-    painter.setPen(COLOR_SCOREBOARD_CONTROLS);
-    painter.drawRect(mScoreboardPainter->getDurationRect());
+    // painter.setBrush(Qt::NoBrush);
+    // painter.setPen(COLOR_SCOREBOARD_CONTROLS);
 }
 

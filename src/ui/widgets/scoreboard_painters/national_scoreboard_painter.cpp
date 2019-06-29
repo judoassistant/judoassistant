@@ -159,15 +159,15 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
         painter.setPen(COLOR_SCOREBOARD_BLACK);
         painter.setBrush(COLOR_SCOREBOARD_HANSOKU);
 
-        painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteFirstPenaltyRect : mBlueFirstPenaltyRect);
+        painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteShidoRect : mBlueShidoRect);
     }
     else {
         painter.setPen(COLOR_SCOREBOARD_BLACK);
         painter.setBrush(COLOR_SCOREBOARD_SHIDO);
         if (score.shido > 0)
-            painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteFirstPenaltyRect : mBlueFirstPenaltyRect);
+            painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteShidoRect : mBlueShidoRect);
         if (score.shido > 1)
-            painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteSecondPenaltyRect : mBlueSecondPenaltyRect);
+            painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteSecondShidoRect : mBlueSecondShidoRect);
 
     }
 }
@@ -248,8 +248,8 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         const int nameHeight = innerHeight / 3;
         const int clubHeight = nameHeight;
         const int scoreHeight = innerHeight - PADDING - nameHeight;
-        const int penaltyHeight = scoreHeight / 2;
-        const int penaltyWidth = penaltyHeight * 3/4;
+        const int shidoHeight = scoreHeight / 2;
+        const int shidoWidth = shidoHeight * 3/4;
 
         const int whiteNameOffset = PADDING;
         const int blueNameOffset = mWhiteRect.height() + mBlueRect.height() - PADDING - nameHeight;
@@ -260,14 +260,16 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         const int whiteScoreOffset = PADDING * 2 + nameHeight;
         const int blueScoreOffset = mWhiteRect.height() + PADDING;
 
-        const int whitePenaltyOffset = whiteScoreOffset + (scoreHeight - penaltyHeight)/2;
-        const int bluePenaltyOffset = blueScoreOffset + (scoreHeight - penaltyHeight)/2;
+        const int whiteShidoOffset = whiteScoreOffset + (scoreHeight - shidoHeight)/2;
+        const int blueShidoOffset = blueScoreOffset + (scoreHeight - shidoHeight)/2;
 
-        mWhiteFirstPenaltyRect = QRect(mColumnThree, whitePenaltyOffset, penaltyWidth, penaltyHeight);
-        mWhiteSecondPenaltyRect = QRect(mColumnThree + PADDING + penaltyWidth, whitePenaltyOffset, penaltyWidth, penaltyHeight);
+        mWhiteShidoRect = QRect(mColumnThree, whiteShidoOffset, shidoWidth, shidoHeight);
+        mWhiteSecondShidoRect = QRect(mColumnThree + PADDING + shidoWidth, whiteShidoOffset, shidoWidth, shidoHeight);
+        mWhiteHansokuRect = QRect(mColumnThree + (PADDING + shidoWidth)*2, whiteShidoOffset, shidoWidth, shidoHeight);
 
-        mBlueFirstPenaltyRect = QRect(mColumnThree, bluePenaltyOffset, penaltyWidth, penaltyHeight);
-        mBlueSecondPenaltyRect = QRect(mColumnThree + PADDING + penaltyWidth, bluePenaltyOffset, penaltyWidth, penaltyHeight);
+        mBlueShidoRect = QRect(mColumnThree, blueShidoOffset, shidoWidth, shidoHeight);
+        mBlueSecondShidoRect = QRect(mColumnThree + PADDING + shidoWidth, blueShidoOffset, shidoWidth, shidoHeight);
+        mBlueHansokuRect = QRect(mColumnThree + (PADDING + shidoWidth)*2, blueShidoOffset, shidoWidth, shidoHeight);
 
         mNormalClubFontSize = clubHeight * 7/10;
         mNormalNameFontSize = nameHeight * 8/10;
@@ -287,7 +289,14 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         mNormalWhiteNameRect = QRect(mColumnOne, whiteNameOffset, mWhiteRect.width() - mColumnOne - PADDING, nameHeight);
         mNormalBlueNameRect = QRect(mColumnOne, blueNameOffset, mBlueRect.width() - mColumnOne - PADDING, nameHeight);
 
+
+        const int ipponRectWidth = 0.5 * (mColumnThree - mColumnOne - 2 * PADDING);
+        const int wazariRectWidth = mColumnThree - mColumnOne - ipponRectWidth - 2 * PADDING;
         mWhiteScoreRect = QRect(mColumnOne, whiteScoreOffset, mColumnThree - mColumnOne - PADDING, scoreHeight);
+        mWhiteIpponRect = QRect(mColumnOne, whiteScoreOffset, ipponRectWidth, scoreHeight);
+        mWhiteWazariRect = QRect(mColumnOne + ipponRectWidth + PADDING, whiteScoreOffset, wazariRectWidth, scoreHeight);
+
+
         mBlueScoreRect = QRect(mColumnOne, blueScoreOffset, mColumnThree - mColumnOne - PADDING, scoreHeight);
     }
 
@@ -321,7 +330,10 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
     mNormalCategoryRect = QRect(PADDING, categoryOffset, rect.width()-PADDING*2, categoryHeight);
 
     mDurationRect = QRect(mColumnTwo, durationOffset, mColumnThree-mColumnTwo-PADDING, durationHeight);
-    mOsaekomiRect = QRect(mColumnThree, osaekomiOffset, rect.width() - mColumnThree - PADDING, osaekomiHeight);
     mGoldenScoreRect = QRect(mColumnThree, goldenScoreOffset, rect.width() - mColumnThree - PADDING, goldenScoreHeight);
+    mOsaekomiRect = QRect(mColumnThree, osaekomiOffset, rect.width() - mColumnThree - PADDING, osaekomiHeight);
+    mWhiteOsaekomiRect = QRect(mColumnThree, osaekomiOffset, rect.width() - mColumnThree - PADDING, osaekomiHeight/2);
+    mBlueOsaekomiRect = QRect(mColumnThree, osaekomiOffset + PADDING + osaekomiHeight/2, rect.width() - mColumnThree - PADDING, osaekomiHeight - osaekomiHeight/2 - PADDING);
+
 }
 

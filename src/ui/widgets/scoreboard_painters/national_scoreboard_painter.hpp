@@ -50,9 +50,12 @@ private:
     int mIntroductionNameFontSize;
 
     // Normal Mode
+    QRect mWhiteScoreRect;
+    QRect mBlueScoreRect;
+    QRect mOsaekomiRect;
+
     QRect mNormalTitleRect;
     QRect mNormalCategoryRect;
-    QRect mOsaekomiRect;
     QRect mGoldenScoreRect;
 
     int mNormalTitleFontSize;
