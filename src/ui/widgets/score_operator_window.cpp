@@ -281,8 +281,8 @@ QWidget* ScoreOperatorWindow::createScoreboardSection() {
     QGroupBox *viewBox = new QGroupBox("Spectator View");
     QVBoxLayout *subLayout = new QVBoxLayout;
 
-    mScoreDisplayWidget = new ScoreDisplayWidget(mStoreManager, ScoreDisplayMode::OPERATOR, viewBox);
-    subLayout->addWidget(mScoreDisplayWidget);
+    mScoreOperatorWidget = new ScoreOperatorWidget(mStoreManager, viewBox);
+    subLayout->addWidget(mScoreOperatorWidget);
 
     viewBox->setLayout(subLayout);
 
@@ -505,7 +505,7 @@ void ScoreOperatorWindow::goNextMatch() {
     if (!mNextButton->isEnabled()) return;
 
     mCurrentMatch = mNextMatch;
-    mScoreDisplayWidget->setMatch(mCurrentMatch);
+    mScoreOperatorWidget->setMatch(mCurrentMatch);
     mDisplayWindow.getDisplayWidget().setMatch(mCurrentMatch);
     findNextMatch();
     updateControlButtons();

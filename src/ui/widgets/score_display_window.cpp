@@ -5,7 +5,7 @@
 ScoreDisplayWindow::ScoreDisplayWindow(const StoreManager &storeManager)
     : mStoreManager(storeManager)
 {
-    mScoreWidget = new ScoreDisplayWidget(mStoreManager, ScoreDisplayMode::DISPLAY, this);
+    mScoreWidget = new ScoreDisplayWidget(mStoreManager, this);
     setCentralWidget(mScoreWidget);
 
     setWindowTitle(tr("JudoAssistant Score (Display)"));

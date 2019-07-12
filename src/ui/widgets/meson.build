@@ -52,11 +52,13 @@ hub_moc_headers += ['src/ui/widgets/web_connection_preferences_widget.hpp']
 score_sources += ['src/ui/widgets/match_card_widget.cpp']
 score_sources += ['src/ui/widgets/score_display_widget.cpp']
 score_sources += ['src/ui/widgets/score_display_window.cpp']
+score_sources += ['src/ui/widgets/score_operator_widget.cpp']
 score_sources += ['src/ui/widgets/score_operator_window.cpp']
 
 score_moc_headers += ['src/ui/widgets/match_card_widget.hpp']
 score_moc_headers += ['src/ui/widgets/score_display_widget.hpp']
 score_moc_headers += ['src/ui/widgets/score_display_window.hpp']
+score_moc_headers += ['src/ui/widgets/score_operator_widget.hpp']
 score_moc_headers += ['src/ui/widgets/score_operator_window.hpp']
 
 kiosk_sources += ['src/ui/widgets/kiosk_window.cpp']

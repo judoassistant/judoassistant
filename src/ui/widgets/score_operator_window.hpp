@@ -12,7 +12,7 @@
 #include "ui/constants/network.hpp"
 #include "ui/widgets/client_window.hpp"
 #include "ui/widgets/match_card_widget.hpp"
-#include "ui/widgets/score_display_widget.hpp"
+#include "ui/widgets/score_operator_widget.hpp"
 #include "ui/widgets/score_display_window.hpp"
 
 class ScoreOperatorWindow : public ClientWindow {
@@ -77,7 +77,7 @@ private:
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
     MatchCardWidget *mNextMatchWidget;
-    ScoreDisplayWidget *mScoreDisplayWidget;
+    ScoreOperatorWidget *mScoreOperatorWidget;
 
     QAction *mConnectAction;
     QAction *mDisconnectAction;

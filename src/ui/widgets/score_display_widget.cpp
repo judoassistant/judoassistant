@@ -1,19 +1,18 @@
 #include <QPainter>
+#include <QMouseEvent>
 
 #include "core/log.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "ui/stores/qtournament_store.hpp"
-#include "ui/widgets/colors.hpp"
 #include "ui/widgets/score_display_widget.hpp"
 #include "ui/widgets/scoreboard_painters/international_scoreboard_painter.hpp"
 #include "ui/widgets/scoreboard_painters/national_scoreboard_painter.hpp"
 
-ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, ScoreDisplayMode mode, QWidget *parent)
+ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
     , mStoreManager(storeManager)
     , mState(ScoreDisplayState::INTRODUCTION)
-    , mMode(mode)
 {
     loadPainter();
 
@@ -71,9 +70,6 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     }
     else if (mState == ScoreDisplayState::NORMAL) {
         mScoreboardPainter->paintNormal(painter, rect, params);
-
-        if (mMode == ScoreDisplayMode::OPERATOR)
-            paintControls(painter, rect, params);
     }
     else {
         assert(mState == ScoreDisplayState::WINNER);
@@ -205,23 +201,5 @@ void ScoreDisplayWidget::loadPainter() {
 
 void ScoreDisplayWidget::resizeEvent(QResizeEvent *event) {
     mScoreboardPainter->resizeEvent(rect());
-}
-
-void ScoreDisplayWidget::paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
-    painter.setPen(COLOR_SCOREBOARD_CONTROLS);
-    painter.setBrush(Qt::NoBrush);
-
-    painter.drawRect(mScoreboardPainter->getDurationRect());
-    painter.drawRect(mScoreboardPainter->getWhiteIpponRect());
-    painter.drawRect(mScoreboardPainter->getWhiteWazariRect());
-    painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
-    painter.drawRect(mScoreboardPainter->getWhiteShidoRect());
-    painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
-
-    painter.drawRect(mScoreboardPainter->getBlueIpponRect());
-    painter.drawRect(mScoreboardPainter->getBlueWazariRect());
-    painter.drawRect(mScoreboardPainter->getBlueOsaekomiRect());
-    painter.drawRect(mScoreboardPainter->getBlueShidoRect());
-    painter.drawRect(mScoreboardPainter->getBlueHansokuRect());
 }
 
