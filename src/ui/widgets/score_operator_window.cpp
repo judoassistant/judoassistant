@@ -9,7 +9,6 @@
 #include <QMessageBox>
 #include <QSplitter>
 #include <QVBoxLayout>
-#include <QShortcut>
 
 #include "core/actions/reset_matches_action.hpp"
 #include "core/log.hpp"

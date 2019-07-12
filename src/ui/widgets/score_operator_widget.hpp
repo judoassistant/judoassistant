@@ -13,6 +13,9 @@ public:
 
     void pausingTimerHit();
 private:
+    void durationShortcut();
+    std::optional<ScoreboardPainterParams> getParams();
+
     void durationClick(ScoreboardPainterParams &params);
     void osaekomiClick(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
     void awardIppon(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);

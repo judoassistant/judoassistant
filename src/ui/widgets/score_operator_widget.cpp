@@ -25,7 +25,7 @@ ScoreOperatorWidget::ScoreOperatorWidget(StoreManager &storeManager, QWidget *pa
     mPausingTimer.start(PAUSING_TIMER_INTERVAL);
 
     auto *shortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
-    connect(shortcut, &QShortcut::activated, this, &ScoreOperatorWidget::durationClick);
+    connect(shortcut, &QShortcut::activated, this, &ScoreOperatorWidget::durationShortcut);
 }
 
 void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
@@ -86,15 +86,15 @@ void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
     else if (mScoreboardPainter->getWhiteHansokuRect().contains(pos))
         awardHansokuMake(params, MatchStore::PlayerIndex::WHITE);
     else if (mScoreboardPainter->getBlueOsaekomiRect().contains(pos))
-        osaekomiClick(params, MatchStore::PlayerIndex::WHITE);
+        osaekomiClick(params, MatchStore::PlayerIndex::BLUE);
     else if (mScoreboardPainter->getBlueIpponRect().contains(pos))
-        awardIppon(params, MatchStore::PlayerIndex::WHITE);
+        awardIppon(params, MatchStore::PlayerIndex::BLUE);
     else if (mScoreboardPainter->getBlueWazariRect().contains(pos))
-        awardWazari(params, MatchStore::PlayerIndex::WHITE);
+        awardWazari(params, MatchStore::PlayerIndex::BLUE);
     else if (mScoreboardPainter->getBlueShidoRect().contains(pos))
-        awardShido(params, MatchStore::PlayerIndex::WHITE);
+        awardShido(params, MatchStore::PlayerIndex::BLUE);
     else if (mScoreboardPainter->getBlueHansokuRect().contains(pos))
-        awardHansokuMake(params, MatchStore::PlayerIndex::WHITE);
+        awardHansokuMake(params, MatchStore::PlayerIndex::BLUE);
 }
 
 void ScoreOperatorWidget::paintEvent(QPaintEvent *event) {
@@ -198,7 +198,6 @@ void ScoreOperatorWidget::awardShido(ScoreboardPainterParams &params, MatchStore
 }
 
 void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
-
     mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
 
     const auto &ruleset = params.category.getRuleset();
@@ -208,31 +207,57 @@ void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, Matc
 }
 
 void ScoreOperatorWidget::pausingTimerHit() {
-    if (!mCombinedId)
+    auto optParams = getParams();
+    if (!optParams)
         return;
+
+    ScoreboardPainterParams params = *optParams;
+
+    const auto &ruleset = params.category.getRuleset();
+    if (ruleset.shouldAwardOsaekomiWazari(params.match, params.masterTime))
+        mStoreManager.dispatch(std::make_unique<AwardWazariAction>(params.category.getId(), params.match.getId(), params.match.getOsaekomi()->first, params.masterTime, true));
+
+    if (ruleset.shouldAwardOsaekomiIppon(params.match, params.masterTime))
+        mStoreManager.dispatch(std::make_unique<AwardIpponAction>(params.category.getId(), params.match.getId(), params.match.getOsaekomi()->first, params.masterTime, true));
+
+    if (ruleset.shouldStopOsaekomi(params.match, params.masterTime))
+        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(params.category.getId(),  params.match.getId(), params.masterTime));
+
+    if (ruleset.shouldPause(params.match, params.masterTime))
+        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(),  params.match.getId(), params.masterTime));
+}
+
+std::optional<ScoreboardPainterParams> ScoreOperatorWidget::getParams() {
+    if (!mCombinedId)
+        return std::nullopt;
 
     const auto &tournament = mStoreManager.getTournament();
+
     if (!tournament.containsCategory(mCombinedId->first))
-        return;
+        return std::nullopt;
+
     const auto &category = tournament.getCategory(mCombinedId->first);
+
     if (!category.containsMatch(mCombinedId->second))
-        return;
+        return std::nullopt;
+
     const auto &match = category.getMatch(mCombinedId->second);
-    if (!match.getWhitePlayer().has_value() || !match.getBluePlayer().has_value())
+
+    if (!match.getWhitePlayer() || !match.getBluePlayer())
+        return std::nullopt;
+
+    const auto &whitePlayer = tournament.getPlayer(*(match.getWhitePlayer()));
+    const auto &bluePlayer = tournament.getPlayer(*(match.getBluePlayer()));
+    return ScoreboardPainterParams{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime()};
+}
+
+void ScoreOperatorWidget::durationShortcut() {
+    auto optParams = getParams();
+    if (!optParams)
         return;
 
-    const auto &ruleset = category.getRuleset();
+    ScoreboardPainterParams params = *optParams;
 
-    auto masterTime = mStoreManager.masterTime();
-    if (ruleset.shouldAwardOsaekomiWazari(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<AwardWazariAction>(category.getId(), match.getId(), match.getOsaekomi()->first, masterTime, true));
-
-    if (ruleset.shouldAwardOsaekomiIppon(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<AwardIpponAction>(category.getId(), match.getId(), match.getOsaekomi()->first, masterTime, true));
-
-    if (ruleset.shouldStopOsaekomi(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(category.getId(),  match.getId(), masterTime));
-
-    if (ruleset.shouldPause(match, masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(category.getId(),  match.getId(), masterTime));
+    durationClick(params);
 }
+
