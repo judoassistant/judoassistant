@@ -117,7 +117,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
@@ -140,7 +140,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff) {
@@ -166,7 +166,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
@@ -391,7 +391,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 rapidjson::Value JsonEncoder::encodePlayer(const PlayerStore &player, rapidjson::Document::AllocatorType &allocator) {
@@ -598,7 +598,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionFailMessage
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionFailMessage() {
@@ -612,7 +612,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionFailMessage()
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionFailMessage() {
@@ -626,7 +626,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionFailMessage() {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
     document.Accept(writer);
 
-    return std::move(buffer);
+    return buffer;
 }
 
 rapidjson::Value JsonEncoder::encodeMatchEvent(const MatchEvent &event, rapidjson::Document::AllocatorType &allocator) {

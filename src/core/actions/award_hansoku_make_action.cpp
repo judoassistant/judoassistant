@@ -43,6 +43,3 @@ void AwardHansokuMakeAction::undoImpl(TournamentStore & tournament) {
         recover(tournament);
 }
 
-bool AwardHansokuMakeAction::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    return (mCategoryId == categoryId && mMatchId == matchId);
-}

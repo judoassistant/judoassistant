@@ -10,15 +10,13 @@
 #include "core/core.hpp"
 #include "core/stores/tatami/location.hpp"
 #include "ui/constants/network.hpp"
-#include "ui/models/actions_model.hpp"
 #include "ui/widgets/client_window.hpp"
 #include "ui/widgets/match_card_widget.hpp"
-#include "ui/widgets/score_display_widget.hpp"
+#include "ui/widgets/score_operator_widget.hpp"
 #include "ui/widgets/score_display_window.hpp"
 
 class ScoreOperatorWindow : public ClientWindow {
     Q_OBJECT
-
 public:
     ScoreOperatorWindow();
     void silentConnect(QString host, int port=Constants::DEFAULT_PORT);
@@ -26,8 +24,6 @@ public:
     virtual void show();
 
 private:
-    static constexpr auto PAUSING_TIMER_INTERVAL = std::chrono::milliseconds(100);
-
     void quit();
     void openHomePage();
     void openManual();
@@ -39,8 +35,6 @@ private:
 
     void beginResetTournament();
     void endResetTournament();
-
-    void pausingTimerHit();
 
     void changeTatamis(std::vector<BlockLocation> locations, std::vector<std::pair<CategoryId, MatchType>> blocks);
     void changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds);
@@ -54,9 +48,6 @@ private:
     void goNextMatch();
     void disableControlButtons();
     void updateControlButtons();
-
-    void updateUndoButton();
-    void undoSelectedAction();
 
     void resumeButtonClick();
     void resetButtonClick();
@@ -73,19 +64,15 @@ private:
     void createPreferencesMenu();
     void createHelpMenu();
 
-    QWidget* createMainArea();
-    QWidget* createSideArea();
+    QWidget* createScoreboardSection();
+    QWidget* createLowerSection();
 
     void changeNetworkClientState(NetworkClientState state);
 
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
     MatchCardWidget *mNextMatchWidget;
-    ScoreDisplayWidget *mScoreDisplayWidget;
-
-    ActionsProxyModel *mActionsModel;
-    QTableView *mActionsTable;
-    QPushButton *mUndoButton;
+    ScoreOperatorWidget *mScoreOperatorWidget;
 
     QAction *mConnectAction;
     QAction *mDisconnectAction;
@@ -96,22 +83,8 @@ private:
     std::stack<QMetaObject::Connection> mConnections;
 
     QPushButton *mNextButton;
-    QPushButton *mResumeButton;
     QPushButton *mResetButton;
 
-    QPushButton *mWhiteIpponButton;
-    QPushButton *mWhiteWazariButton;
-    QPushButton *mWhiteShidoButton;
-    QPushButton *mWhiteHansokuMakeButton;
-    QPushButton *mWhiteOsaekomiButton;
-
-    QPushButton *mBlueIpponButton;
-    QPushButton *mBlueWazariButton;
-    QPushButton *mBlueShidoButton;
-    QPushButton *mBlueHansokuMakeButton;
-    QPushButton *mBlueOsaekomiButton;
-
-    QTimer mPausingTimer;
 
     ScoreDisplayWindow mDisplayWindow;
 };

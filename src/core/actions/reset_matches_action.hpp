@@ -17,7 +17,6 @@ public:
 
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;
-    bool shouldDisplay(CategoryId categoryId, MatchId matchId) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

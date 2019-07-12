@@ -12,7 +12,6 @@
 
 class CategoryStore;
 class QPainter;
-class ScoreboardPainter;
 
 enum class ScoreDisplayState {
     INTRODUCTION, NORMAL, WINNER
@@ -21,11 +20,20 @@ enum class ScoreDisplayState {
 class ScoreDisplayWidget : public QWidget {
     Q_OBJECT
 public:
-    ScoreDisplayWidget(const StoreManager &mStoreManager, QWidget *parent = nullptr);
+    ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
 
     void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId, bool showIntro = true);
     void setState(ScoreDisplayState state);
-    void paintEvent(QPaintEvent *event);
+
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+
+protected:
+    std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
+    ScoreDisplayState mState;
+    std::unique_ptr<ScoreboardPainter> mScoreboardPainter;
+    ScoreboardStylePreference mScoreboardStyle;
+
 private:
     static constexpr auto INTRO_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto WINNER_INTERVAL = std::chrono::milliseconds(4000);
@@ -44,13 +52,8 @@ private:
 
     const StoreManager &mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;
-    std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
-    ScoreDisplayState mState;
     QTimer mIntroTimer;
     QTimer mWinnerTimer;
     QTimer mDurationTimer;
-
-    std::unique_ptr<ScoreboardPainter> mScoreboardPainter;
-    ScoreboardStylePreference mScoreboardStyle;
 };
 

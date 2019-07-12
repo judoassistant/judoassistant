@@ -140,7 +140,7 @@ std::vector<MatchId> CategoryMatchesModel::getMatches(const QItemSelection &sele
     for (auto row : rows)
         matchIds.push_back(getMatch(row));
 
-    return std::move(matchIds);
+    return matchIds;
 }
 
 MatchId CategoryMatchesModel::getMatch(int row) const {

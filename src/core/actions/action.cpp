@@ -22,6 +22,3 @@ bool Action::isDone() const {
     return mDone;
 }
 
-bool Action::shouldDisplay(CategoryId categoryId, MatchId matchId) const {
-    return false;
-}

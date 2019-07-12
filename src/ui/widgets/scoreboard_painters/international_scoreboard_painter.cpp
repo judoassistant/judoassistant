@@ -345,3 +345,7 @@ void FlagImage::update(std::optional<PlayerCountry> country) {
     this->image = QImage(filename);
 }
 
+void InternationalScoreboardPainter::resizeEvent(const QRect &rect) {
+
+}
+

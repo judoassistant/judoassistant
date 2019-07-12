@@ -1,18 +1,18 @@
 #include <QPainter>
+#include <QMouseEvent>
 
 #include "core/log.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "ui/stores/qtournament_store.hpp"
-#include "ui/widgets/colors.hpp"
 #include "ui/widgets/score_display_widget.hpp"
 #include "ui/widgets/scoreboard_painters/international_scoreboard_painter.hpp"
 #include "ui/widgets/scoreboard_painters/national_scoreboard_painter.hpp"
 
 ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
-    , mStoreManager(storeManager)
     , mState(ScoreDisplayState::INTRODUCTION)
+    , mStoreManager(storeManager)
 {
     loadPainter();
 
@@ -184,7 +184,6 @@ void ScoreDisplayWidget::loadPainter() {
     const auto &preferences = mStoreManager.getTournament().getPreferences();
     auto style = preferences.getScoreboardStyle();
 
-    log_debug().field("style", (unsigned int) style).msg("Trying Loading painter");
     if (mScoreboardPainter != nullptr && mScoreboardStyle == style)
         return;
 
@@ -195,6 +194,12 @@ void ScoreDisplayWidget::loadPainter() {
     else if (style == ScoreboardStylePreference::NATIONAL)
         mScoreboardPainter = std::make_unique<NationalScoreboardPainter>();
 
+    mScoreboardPainter->resizeEvent(rect());
+
     update(0, 0, width(), height());
+}
+
+void ScoreDisplayWidget::resizeEvent(QResizeEvent *event) {
+    mScoreboardPainter->resizeEvent(rect());
 }
 

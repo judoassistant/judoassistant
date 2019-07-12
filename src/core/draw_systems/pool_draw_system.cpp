@@ -48,7 +48,7 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const 
             std::swap(shiftedIds[i], temp);
     }
 
-    return std::move(actions);
+    return actions;
 }
 
 std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {

@@ -198,7 +198,7 @@ std::vector<std::pair<CategoryId, MatchId>> TatamiMatchesModel::getMatches(const
     for (auto row : rows)
         matchIds.push_back(getMatch(row));
 
-    return std::move(matchIds);
+    return matchIds;
 }
 
 std::pair<CategoryId, MatchId> TatamiMatchesModel::getMatch(int row) const {

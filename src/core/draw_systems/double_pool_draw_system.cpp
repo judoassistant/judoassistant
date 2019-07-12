@@ -95,7 +95,7 @@ std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(
     actions.push_back(std::move(secondSemiFinal));
     actions.push_back(std::move(finaly)); // final is a reserved keyword. Hence the weird varname
 
-    return std::move(actions);
+    return actions;
 }
 
 std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const TournamentStore &tournament, const CategoryStore &category) const {
