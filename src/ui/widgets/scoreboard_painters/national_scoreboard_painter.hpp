@@ -53,6 +53,8 @@ private:
     QRect mWhiteScoreRect;
     QRect mBlueScoreRect;
     QRect mOsaekomiRect;
+    QRect mWhiteSecondShidoRect;
+    QRect mBlueSecondShidoRect;
 
     QRect mNormalTitleRect;
     QRect mNormalCategoryRect;

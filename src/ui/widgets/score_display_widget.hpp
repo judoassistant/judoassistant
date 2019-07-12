@@ -31,12 +31,12 @@ public:
 
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
-    void paintOperatorControls(QPainter &painter);
 private:
     static constexpr auto INTRO_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto WINNER_INTERVAL = std::chrono::milliseconds(4000);
     static constexpr auto DURATION_INTERVAL = std::chrono::milliseconds(200);
 
+    void paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params);
     void durationTimerHit();
 
     void beginResetTournament();

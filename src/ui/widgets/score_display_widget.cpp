@@ -70,11 +70,10 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
         return;
     }
     else if (mState == ScoreDisplayState::NORMAL) {
-        if (mMode == ScoreDisplayMode::OPERATOR)
-            paintOperatorControls(painter);
-
         mScoreboardPainter->paintNormal(painter, rect, params);
-        mScoreboardPainter->paintControls(painter, rect, params);
+
+        if (mMode == ScoreDisplayMode::OPERATOR)
+            paintControls(painter, rect, params);
     }
     else {
         assert(mState == ScoreDisplayState::WINNER);
@@ -208,8 +207,21 @@ void ScoreDisplayWidget::resizeEvent(QResizeEvent *event) {
     mScoreboardPainter->resizeEvent(rect());
 }
 
-void ScoreDisplayWidget::paintOperatorControls(QPainter &painter) {
-    // painter.setBrush(Qt::NoBrush);
-    // painter.setPen(COLOR_SCOREBOARD_CONTROLS);
+void ScoreDisplayWidget::paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
+    painter.setPen(COLOR_SCOREBOARD_CONTROLS);
+    painter.setBrush(Qt::NoBrush);
+
+    painter.drawRect(mScoreboardPainter->getDurationRect());
+    painter.drawRect(mScoreboardPainter->getWhiteIpponRect());
+    painter.drawRect(mScoreboardPainter->getWhiteWazariRect());
+    painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
+    painter.drawRect(mScoreboardPainter->getWhiteShidoRect());
+    painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
+
+    painter.drawRect(mScoreboardPainter->getBlueIpponRect());
+    painter.drawRect(mScoreboardPainter->getBlueWazariRect());
+    painter.drawRect(mScoreboardPainter->getBlueOsaekomiRect());
+    painter.drawRect(mScoreboardPainter->getBlueShidoRect());
+    painter.drawRect(mScoreboardPainter->getBlueHansokuRect());
 }
 

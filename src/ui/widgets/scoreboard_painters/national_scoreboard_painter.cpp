@@ -296,8 +296,9 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         mWhiteIpponRect = QRect(mColumnOne, whiteScoreOffset, ipponRectWidth, scoreHeight);
         mWhiteWazariRect = QRect(mColumnOne + ipponRectWidth + PADDING, whiteScoreOffset, wazariRectWidth, scoreHeight);
 
-
         mBlueScoreRect = QRect(mColumnOne, blueScoreOffset, mColumnThree - mColumnOne - PADDING, scoreHeight);
+        mBlueIpponRect = QRect(mColumnOne, blueScoreOffset, ipponRectWidth, scoreHeight);
+        mBlueWazariRect = QRect(mColumnOne + ipponRectWidth + PADDING, blueScoreOffset, wazariRectWidth, scoreHeight);
     }
 
 
