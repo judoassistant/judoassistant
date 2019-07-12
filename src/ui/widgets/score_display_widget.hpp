@@ -29,7 +29,6 @@ public:
     void resizeEvent(QResizeEvent *event) override;
 
 protected:
-    const StoreManager &mStoreManager;
     std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
     ScoreDisplayState mState;
     std::unique_ptr<ScoreboardPainter> mScoreboardPainter;
@@ -51,6 +50,7 @@ private:
     void changePreferences();
     void loadPainter();
 
+    const StoreManager &mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;
     QTimer mIntroTimer;
     QTimer mWinnerTimer;

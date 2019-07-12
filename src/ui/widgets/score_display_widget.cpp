@@ -11,8 +11,8 @@
 
 ScoreDisplayWidget::ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent)
     : QWidget(parent)
-    , mStoreManager(storeManager)
     , mState(ScoreDisplayState::INTRODUCTION)
+    , mStoreManager(storeManager)
 {
     loadPainter();
 

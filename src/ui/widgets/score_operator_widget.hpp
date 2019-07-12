@@ -5,12 +5,20 @@
 class ScoreOperatorWidget : public ScoreDisplayWidget {
     Q_OBJECT
 public:
-    ScoreOperatorWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
+    ScoreOperatorWidget(StoreManager &storeManager, QWidget *parent = nullptr);
 
     void paintEvent(QPaintEvent *event) override;
     void paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params);
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
+    void durationClick(ScoreboardPainterParams &params);
+    void osaekomiClick(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void awardIppon(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void awardWazari(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void awardShido(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void awardHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+
+    StoreManager &mStoreManager;
 };
 
