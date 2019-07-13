@@ -5,7 +5,7 @@ MatchStore::State::State(bool finished)
     : status(finished ? MatchStatus::FINISHED : MatchStatus::NOT_STARTED)
     , goldenScore(false)
     , duration(std::chrono::seconds(0))
-    , hasAwardedOsaekomiWazari(false)
+    , osaekomiWazari(false)
 {
 
 }
@@ -189,12 +189,12 @@ void MatchStore::setOsaekomi(const std::optional<std::pair<MatchStore::PlayerInd
     mState.osaekomi = value;
 }
 
-bool MatchStore::hasAwardedOsaekomiWazari() const {
-    return mState.hasAwardedOsaekomiWazari;
+bool MatchStore::isOsaekomiWazari() const {
+    return mState.osaekomiWazari;
 }
 
-void MatchStore::setHasAwardedOsaekomiWazari(bool val) {
-    mState.hasAwardedOsaekomiWazari = val;
+void MatchStore::setOsaekomiWazari(bool val) {
+    mState.osaekomiWazari = val;
 }
 
 std::chrono::milliseconds MatchStore::currentOsaekomiTime(std::chrono::milliseconds masterTime) const {

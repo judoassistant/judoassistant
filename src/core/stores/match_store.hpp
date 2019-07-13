@@ -52,11 +52,11 @@ public:
         std::chrono::milliseconds duration; // the match duration when the clock was last paused
         std::array<Score,2> scores;
         std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>> osaekomi;
-        bool hasAwardedOsaekomiWazari;
+        bool osaekomiWazari;
 
         template<typename Archive>
         void serialize(Archive& ar, uint32_t const version) {
-            ar(status, goldenScore, resumeTime, duration, scores, osaekomi, hasAwardedOsaekomiWazari);
+            ar(status, goldenScore, resumeTime, duration, scores, osaekomi, osaekomiWazari);
         }
     };
 
@@ -122,8 +122,8 @@ public:
 
     std::chrono::milliseconds currentOsaekomiTime(std::chrono::milliseconds masterTime) const;
 
-    bool hasAwardedOsaekomiWazari() const;
-    void setHasAwardedOsaekomiWazari(bool val);
+    bool isOsaekomiWazari() const;
+    void setOsaekomiWazari(bool val);
 
     State& getState();
     const State& getState() const;

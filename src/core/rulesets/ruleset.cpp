@@ -100,7 +100,7 @@ void Ruleset::startOsaekomi(MatchStore &match, MatchStore::PlayerIndex playerInd
 
     auto p = std::make_pair(playerIndex, masterTime);
     match.setOsaekomi(p);
-    match.setHasAwardedOsaekomiWazari(false);
+    match.setOsaekomiWazari(false);
 }
 
 bool Ruleset::canStopOsaekomi(const MatchStore &match, std::chrono::milliseconds /*masterTime*/) const {
@@ -109,6 +109,7 @@ bool Ruleset::canStopOsaekomi(const MatchStore &match, std::chrono::milliseconds
 
 void Ruleset::stopOsaekomi(MatchStore &match, std::chrono::milliseconds masterTime) const {
     match.setOsaekomi(std::nullopt);
+    match.setOsaekomiWazari(false);
 
     if (match.getStatus() == MatchStatus::PAUSED && isFinished(match, masterTime))
         match.setStatus(MatchStatus::FINISHED);
@@ -117,7 +118,7 @@ void Ruleset::stopOsaekomi(MatchStore &match, std::chrono::milliseconds masterTi
 bool Ruleset::shouldAwardOsaekomiWazari(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (!match.getOsaekomi().has_value())
         return false;
-    return (match.currentOsaekomiTime(masterTime) > getOsaekomiWazariTime() && !match.hasAwardedOsaekomiWazari());
+    return (match.currentOsaekomiTime(masterTime) > getOsaekomiWazariTime() && !match.isOsaekomiWazari());
 }
 
 bool Ruleset::shouldAwardOsaekomiIppon(const MatchStore &match, std::chrono::milliseconds masterTime) const {
