@@ -1,5 +1,6 @@
 #include <QPainter>
 
+#include "core/log.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
@@ -7,7 +8,7 @@
 #include "ui/widgets/scoreboard_painters/national_scoreboard_painter.hpp"
 
 NationalScoreboardPainter::NationalScoreboardPainter()
-    : mFont("Noto Sans")
+    : mFont("Noto Sans Mono")
 {
     mFont.setBold(true);
     mFont.setCapitalization(QFont::AllUppercase);
@@ -149,10 +150,19 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
     else
         scoreText = QString::number(score.wazari);
 
-    if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.drawText(mWhiteScoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
-    else
-        painter.drawText(mBlueScoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
+    bool blinkScore = false;
+    if (params.blink) {
+        auto osaekomi = params.match.getOsaekomi();
+        if (osaekomi.has_value() && osaekomi->first == playerIndex && params.match.isOsaekomiWazari())
+            blinkScore = true;
+    }
+
+    if (!blinkScore) {
+        if (playerIndex == MatchStore::PlayerIndex::WHITE)
+            painter.drawText(mWhiteScoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
+        else
+            painter.drawText(mBlueScoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
+    }
 
     // Penalties
     if (score.hansokuMake > 0) {
@@ -208,7 +218,14 @@ void NationalScoreboardPainter::paintNormalLower(QPainter &painter, const Scoreb
             painter.setPen(COLOR_SCOREBOARD_TIME_UNPAUSED);
         else
             painter.setPen(COLOR_SCOREBOARD_TIME_PAUSED);
-        painter.drawText(mDurationRect, Qt::AlignVCenter | Qt::AlignRight, QString("%1:%2").arg(minutes, seconds));
+
+        QString durationText;
+        if (params.blink)
+            durationText = QString("%1 %2").arg(minutes, seconds);
+        else
+            durationText = QString("%1:%2").arg(minutes, seconds);
+
+        painter.drawText(mDurationRect, Qt::AlignVCenter | Qt::AlignRight, durationText);
     }
 
     auto osaekomi = params.match.getOsaekomi();

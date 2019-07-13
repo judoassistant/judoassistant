@@ -71,7 +71,7 @@ void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
     const auto &whitePlayer = tournament.getPlayer(*(match.getWhitePlayer()));
     const auto &bluePlayer = tournament.getPlayer(*(match.getBluePlayer()));
 
-    ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime()};
+    ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime(), false};
 
     if (mScoreboardPainter->getDurationRect().contains(pos))
         durationClick(params);
@@ -127,7 +127,7 @@ void ScoreOperatorWidget::paintEvent(QPaintEvent *event) {
     const auto &whitePlayer = tournament.getPlayer(*(match.getWhitePlayer()));
     const auto &bluePlayer = tournament.getPlayer(*(match.getBluePlayer()));
 
-    ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime()};
+    ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime(), false};
 
     if (mState == ScoreDisplayState::NORMAL)
         paintControls(painter, rect, params);
@@ -248,7 +248,7 @@ std::optional<ScoreboardPainterParams> ScoreOperatorWidget::getParams() {
 
     const auto &whitePlayer = tournament.getPlayer(*(match.getWhitePlayer()));
     const auto &bluePlayer = tournament.getPlayer(*(match.getBluePlayer()));
-    return ScoreboardPainterParams{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime()};
+    return ScoreboardPainterParams{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime(), false};
 }
 
 void ScoreOperatorWidget::durationShortcut() {

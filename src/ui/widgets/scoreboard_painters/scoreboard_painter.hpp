@@ -17,6 +17,7 @@ struct ScoreboardPainterParams {
     const PlayerStore &whitePlayer;
     const PlayerStore &bluePlayer;
     std::chrono::milliseconds masterTime;
+    bool blink;
 };
 
 class ScoreboardPainter {
