@@ -33,6 +33,9 @@ void StartOsaekomiAction::redoImpl(TournamentStore & tournament) {
 
     save(match);
     ruleset.startOsaekomi(match, mPlayerIndex, mMasterTime);
+    if (match.getStatus() != MatchStatus::UNPAUSED && (match.getDuration() < ruleset.getNormalTime() || match.isGoldenScore()))
+        ruleset.resume(match, mMasterTime);
+
     notify(tournament, match);
 }
 

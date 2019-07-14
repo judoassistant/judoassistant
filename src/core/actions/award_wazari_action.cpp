@@ -50,6 +50,10 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
 
     auto type = (mOsaekomi ? MatchEventType::WAZARI_OSAEKOMI : MatchEventType::WAZARI);
     match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

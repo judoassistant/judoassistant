@@ -37,6 +37,10 @@ void CancelWazariAction::redoImpl(TournamentStore & tournament) {
     ruleset.cancelWazari(match, mPlayerIndex, mMasterTime);
 
     match.pushEvent({MatchEventType::CANCEL_WAZARI, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

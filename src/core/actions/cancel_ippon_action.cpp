@@ -36,6 +36,10 @@ void CancelIpponAction::redoImpl(TournamentStore & tournament) {
     save(match);
     ruleset.cancelIppon(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::CANCEL_IPPON, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

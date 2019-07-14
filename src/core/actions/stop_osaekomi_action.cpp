@@ -32,6 +32,9 @@ void StopOsaekomiAction::redoImpl(TournamentStore & tournament) {
 
     save(match);
     ruleset.stopOsaekomi(match, mMasterTime);
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

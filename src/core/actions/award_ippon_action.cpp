@@ -43,6 +43,8 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
     ruleset.awardIppon(match, mPlayerIndex, mMasterTime);
     auto type = (mOsaekomi ? MatchEventType::IPPON_OSAEKOMI : MatchEventType::IPPON);
     match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
     notify(tournament, match);
 }
 

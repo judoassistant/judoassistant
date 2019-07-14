@@ -35,6 +35,10 @@ void CancelShidoAction::redoImpl(TournamentStore & tournament) {
     save(match);
     ruleset.cancelShido(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::CANCEL_SHIDO, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

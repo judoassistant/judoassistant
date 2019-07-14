@@ -35,6 +35,10 @@ void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
     save(match);
     ruleset.awardHansokuMake(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::HANSOKU_MAKE, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

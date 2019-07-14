@@ -35,6 +35,10 @@ void AwardShidoAction::redoImpl(TournamentStore & tournament) {
     save(match);
     ruleset.awardShido(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::SHIDO, mPlayerIndex, match.currentDuration(mMasterTime)});
+
+    if (ruleset.shouldPause(match, mMasterTime))
+        ruleset.pause(match, mMasterTime);
+
     notify(tournament, match);
 }
 

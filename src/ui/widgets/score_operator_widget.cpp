@@ -198,18 +198,15 @@ void ScoreOperatorWidget::osaekomiClick(ScoreboardPainterParams &params, MatchSt
     auto osaekomi = params.match.getOsaekomi();
     if (!osaekomi.has_value() || osaekomi->first != playerIndex) {
         // Start osaekomi
+        if (!ruleset.canStartOsaekomi(params.match, playerIndex))
+            return;
         mStoreManager.dispatch(std::make_unique<StartOsaekomiAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-        if (params.match.getStatus() != MatchStatus::UNPAUSED && (params.match.getDuration() < ruleset.getNormalTime() || params.match.isGoldenScore()))
-            mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
-
     }
     else {
         // Stop osaekomi
+        if (!ruleset.canStopOsaekomi(params.match, params.masterTime))
+            return;
         mStoreManager.dispatch(std::make_unique<StopOsaekomiAction>(params.category.getId(), params.match.getId(), params.masterTime));
-
-        if (ruleset.shouldPause(params.match, params.masterTime))
-            mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
     }
 }
 
@@ -219,9 +216,6 @@ void ScoreOperatorWidget::awardIppon(ScoreboardPainterParams &params, MatchStore
         return;
 
     mStoreManager.dispatch(std::make_unique<AwardIpponAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::awardWazari(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -230,9 +224,6 @@ void ScoreOperatorWidget::awardWazari(ScoreboardPainterParams &params, MatchStor
         return;
 
     mStoreManager.dispatch(std::make_unique<AwardWazariAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::awardShido(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -241,9 +232,6 @@ void ScoreOperatorWidget::awardShido(ScoreboardPainterParams &params, MatchStore
         return;
 
     mStoreManager.dispatch(std::make_unique<AwardShidoAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -256,9 +244,6 @@ void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, Matc
         return;
 
     mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::pausingTimerHit() {
@@ -322,9 +307,6 @@ void ScoreOperatorWidget::cancelIppon(ScoreboardPainterParams &params, MatchStor
         return;
 
     mStoreManager.dispatch(std::make_unique<CancelIpponAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::cancelWazari(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -333,9 +315,6 @@ void ScoreOperatorWidget::cancelWazari(ScoreboardPainterParams &params, MatchSto
         return;
 
     mStoreManager.dispatch(std::make_unique<CancelWazariAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::cancelShido(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -344,9 +323,6 @@ void ScoreOperatorWidget::cancelShido(ScoreboardPainterParams &params, MatchStor
         return;
 
     mStoreManager.dispatch(std::make_unique<CancelShidoAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::cancelHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
@@ -355,8 +331,5 @@ void ScoreOperatorWidget::cancelHansokuMake(ScoreboardPainterParams &params, Mat
         return;
 
     mStoreManager.dispatch(std::make_unique<CancelHansokuMakeAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
-
-    if (ruleset.shouldPause(params.match, params.masterTime))
-        mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
