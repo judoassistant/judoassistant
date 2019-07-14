@@ -18,24 +18,35 @@ public:
     std::chrono::milliseconds getOsaekomiIpponTime() const override;
     std::chrono::milliseconds getOsaekomiWazariTime() const override;
 
-    bool canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
-    void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+    // Ippon
+    bool canAwardIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
+    void awardIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
 
-    // bool canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
-    // void subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+    bool canCancelIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
+    void cancelIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
 
-    bool canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
-    void addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+    // Wazari
+    bool canAwardWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void awardWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
-    // bool canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
-    // void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+    bool canCancelWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void cancelWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
-    bool canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
-    void addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+    // Shido
+    bool canAwardShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void awardShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
-    // bool canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
-    // void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+    bool canCancelShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void cancelShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
+    // Hansoku-Make
+    bool canAwardHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void awardHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+
+    bool canCancelHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void cancelHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
+
+    // Misc
     bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const override;
 
     std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const override;

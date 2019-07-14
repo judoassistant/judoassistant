@@ -29,11 +29,11 @@ void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
 
     const auto &ruleset = category.getRuleset();
-    if (!ruleset.canAddHansokuMake(match, mPlayerIndex))
+    if (!ruleset.canAwardHansokuMake(match, mPlayerIndex))
         return;
 
     save(match);
-    ruleset.addHansokuMake(match, mPlayerIndex, mMasterTime);
+    ruleset.awardHansokuMake(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::HANSOKU_MAKE, mPlayerIndex, match.currentDuration(mMasterTime)});
     notify(tournament, match);
 }

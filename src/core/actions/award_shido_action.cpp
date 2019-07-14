@@ -29,11 +29,11 @@ void AwardShidoAction::redoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
 
     const auto &ruleset = category.getRuleset();
-    if (!ruleset.canAddShido(match, mPlayerIndex))
+    if (!ruleset.canAwardShido(match, mPlayerIndex))
         return;
 
     save(match);
-    ruleset.addShido(match, mPlayerIndex, mMasterTime);
+    ruleset.awardShido(match, mPlayerIndex, mMasterTime);
     match.pushEvent({MatchEventType::SHIDO, mPlayerIndex, match.currentDuration(mMasterTime)});
     notify(tournament, match);
 }

@@ -62,11 +62,16 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     const auto &whitePlayer = tournament.getPlayer(*(match.getWhitePlayer()));
     const auto &bluePlayer = tournament.getPlayer(*(match.getBluePlayer()));
 
-    ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime()};
+    std::chrono::milliseconds masterTime = mStoreManager.masterTime();
+    bool blink = false;
+    if (match.getStatus() == MatchStatus::UNPAUSED) {
+        std::chrono::milliseconds diff = match.getResumeTime() - masterTime;
+        blink = (diff.count() / (100*5)) % 2 == 0;
+    }
+    ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, masterTime, blink};
 
     if (mState == ScoreDisplayState::INTRODUCTION) {
         mScoreboardPainter->paintIntroduction(painter, rect, params);
-        return;
     }
     else if (mState == ScoreDisplayState::NORMAL) {
         mScoreboardPainter->paintNormal(painter, rect, params);
@@ -176,8 +181,9 @@ void ScoreDisplayWidget::durationTimerHit() {
         return;
     if (mState != ScoreDisplayState::NORMAL)
         return;
-    QRect lowerRect(0,2*(height()/3),width(), height() - 2*(height()/3));
-    update(lowerRect);
+    // QRect lowerRect(0,2*(height()/3),width(), height() - 2*(height()/3));
+    // update(lowerRect);
+    update(rect());
 }
 
 void ScoreDisplayWidget::loadPainter() {

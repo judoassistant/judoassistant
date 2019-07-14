@@ -18,37 +18,44 @@ public:
     virtual std::chrono::milliseconds getOsaekomiIpponTime() const = 0;
     virtual std::chrono::milliseconds getOsaekomiWazariTime() const = 0;
 
-    virtual bool canAddIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
-    virtual void addIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
-
-    // virtual bool canSubtractIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
-    // virtual void subtractIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
-
+    // Pausing
     virtual bool shouldPause(const MatchStore &match, std::chrono::milliseconds masterTime) const;
     virtual bool canPause(const MatchStore &match, std::chrono::milliseconds masterTime) const;
     virtual void pause(MatchStore &match, std::chrono::milliseconds masterTime) const;
 
+    // Resuming
     virtual bool canResume(const MatchStore &match, std::chrono::milliseconds masterTime) const;
     virtual void resume(MatchStore &match, std::chrono::milliseconds masterTime) const;
 
-    virtual bool canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+    // Ippon
+    virtual bool canAwardIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void awardIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
-    // virtual bool canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    // virtual void subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+    virtual bool canCancelIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void cancelIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
-    virtual bool canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+    // Wazari
+    virtual bool canAwardWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void awardWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
-    // virtual bool canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    // virtual void subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+    virtual bool canCancelWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void cancelWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
-    virtual bool canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    virtual void addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+    // Shido
+    virtual bool canAwardShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void awardShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
-    // virtual bool canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
-    // virtual void subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+    virtual bool canCancelShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void cancelShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
 
+    // Hansoku-Make
+    virtual bool canAwardHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void awardHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+
+    virtual bool canCancelHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const = 0;
+    virtual void cancelHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const = 0;
+
+    // Osaekomi
     virtual bool canStartOsaekomi(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
     virtual void startOsaekomi(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
 
@@ -59,11 +66,13 @@ public:
     virtual bool shouldAwardOsaekomiWazari(const MatchStore &match, std::chrono::milliseconds masterTime) const;
     virtual bool shouldAwardOsaekomiIppon(const MatchStore &match, std::chrono::milliseconds masterTime) const;
 
+    // Getting status / winner
     virtual bool isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
 
     virtual std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match, std::chrono::milliseconds masterTime) const = 0;
     virtual std::optional<MatchStore::PlayerIndex> getWinner(const MatchStore &match) const = 0; // Get winner when match is finished
 
+    // Misc
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}
 
@@ -73,7 +82,6 @@ public:
     static std::unique_ptr<Ruleset> getRuleset(RulesetIdentifier identifier);
     static std::unique_ptr<Ruleset> getDefaultRuleset();
 
-    // TODO: Move some 2018 specific implementations into subclasses
 protected:
     void updateStatus(MatchStore &match, std::chrono::milliseconds masterTime) const;
 };

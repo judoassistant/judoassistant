@@ -30,14 +30,16 @@ public:
     struct Score {
         Score();
 
-        uint8_t ippon;
-        uint8_t wazari;
-        uint8_t shido;
+        unsigned int wazari;
+        unsigned int shido;
+        bool ippon;
+        bool directIppon; // Used for checks before cancelling ippon
         bool hansokuMake;
+        bool directHansokuMake; // Used for checks before cancelling hansoku
 
         template<typename Archive>
         void serialize(Archive& ar, uint32_t const version) {
-            ar(ippon, wazari, shido, hansokuMake);
+            ar(wazari, shido, ippon, directIppon, hansokuMake, directHansokuMake);
         }
     };
 
@@ -52,11 +54,11 @@ public:
         std::chrono::milliseconds duration; // the match duration when the clock was last paused
         std::array<Score,2> scores;
         std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>> osaekomi;
-        bool hasAwardedOsaekomiWazari;
+        bool osaekomiWazari;
 
         template<typename Archive>
         void serialize(Archive& ar, uint32_t const version) {
-            ar(status, goldenScore, resumeTime, duration, scores, osaekomi, hasAwardedOsaekomiWazari);
+            ar(status, goldenScore, resumeTime, duration, scores, osaekomi, osaekomiWazari);
         }
     };
 
@@ -122,8 +124,8 @@ public:
 
     std::chrono::milliseconds currentOsaekomiTime(std::chrono::milliseconds masterTime) const;
 
-    bool hasAwardedOsaekomiWazari() const;
-    void setHasAwardedOsaekomiWazari(bool val);
+    bool isOsaekomiWazari() const;
+    void setOsaekomiWazari(bool val);
 
     State& getState();
     const State& getState() const;
@@ -143,6 +145,7 @@ private:
 
 enum class MatchEventType {
     IPPON, WAZARI, SHIDO, HANSOKU_MAKE, IPPON_OSAEKOMI, WAZARI_OSAEKOMI,
+    CANCEL_IPPON, CANCEL_WAZARI, CANCEL_SHIDO, CANCEL_HANSOKU_MAKE,
 };
 
 struct MatchEvent {
