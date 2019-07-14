@@ -35,10 +35,8 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
 
     const Ruleset &ruleset = params.category.getRuleset();
 
-    const auto masterTime = mStoreManager.masterTime();
-
     // Pause/Resume control
-    if (ruleset.canPause(params.match, masterTime) || ruleset.canResume(params.match, masterTime))
+    if (ruleset.canPause(params.match, params.masterTime) || ruleset.canResume(params.match, params.masterTime))
         painter.drawRect(mScoreboardPainter->getDurationRect());
 
     // White Player Controls
@@ -54,8 +52,6 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
         painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
 
     // Blue Player Controls
-    if (ruleset.canPause(params.match, masterTime) || ruleset.canResume(params.match, masterTime))
-        painter.drawRect(mScoreboardPainter->getDurationRect());
     if (ruleset.canAwardIppon(params.match, MatchStore::PlayerIndex::BLUE))
         painter.drawRect(mScoreboardPainter->getBlueIpponRect());
     if (ruleset.canAwardWazari(params.match, MatchStore::PlayerIndex::BLUE))
@@ -185,46 +181,54 @@ void ScoreOperatorWidget::osaekomiClick(ScoreboardPainterParams &params, MatchSt
         if (ruleset.shouldPause(params.match, params.masterTime))
             mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
     }
-
 }
 
 void ScoreOperatorWidget::awardIppon(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
+    const Ruleset &ruleset = params.category.getRuleset();
+    if (!ruleset.canAwardIppon(params.match, playerIndex))
+        return;
+
     mStoreManager.dispatch(std::make_unique<AwardIpponAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
 
-    const auto &ruleset = params.category.getRuleset();
     if (ruleset.shouldPause(params.match, params.masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
 }
 
 void ScoreOperatorWidget::awardWazari(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
+    const Ruleset &ruleset = params.category.getRuleset();
+    if (!ruleset.canAwardWazari(params.match, playerIndex))
+        return;
+
     mStoreManager.dispatch(std::make_unique<AwardWazariAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
 
-    const auto &ruleset = params.category.getRuleset();
     if (ruleset.shouldPause(params.match, params.masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
-
 }
 
 void ScoreOperatorWidget::awardShido(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
+    const Ruleset &ruleset = params.category.getRuleset();
+    if (!ruleset.canAwardShido(params.match, playerIndex))
+        return;
+
     mStoreManager.dispatch(std::make_unique<AwardShidoAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
 
-    const auto &ruleset = params.category.getRuleset();
     if (ruleset.shouldPause(params.match, params.masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
-
 }
 
 void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
+    const Ruleset &ruleset = params.category.getRuleset();
+    if (!ruleset.canAwardHansokuMake(params.match, playerIndex))
+        return;
+
     auto reply = QMessageBox::question(this, tr("Would you like to award direct hansoku-make?"), tr("Are you sure you would like to award direct hansoku-make?"), QMessageBox::Yes | QMessageBox::Cancel);
     if (reply == QMessageBox::Cancel)
         return;
 
     mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
 
-    const auto &ruleset = params.category.getRuleset();
     if (ruleset.shouldPause(params.match, params.masterTime))
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
-
 }
 
 void ScoreOperatorWidget::pausingTimerHit() {
