@@ -44,28 +44,18 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
         painter.drawRect(mScoreboardPainter->getDurationRect());
 
     // White Player Controls
-    if (ruleset.canAwardIppon(params.match, MatchStore::PlayerIndex::WHITE))
-        painter.drawRect(mScoreboardPainter->getWhiteIpponRect());
-    if (ruleset.canAwardWazari(params.match, MatchStore::PlayerIndex::WHITE))
-        painter.drawRect(mScoreboardPainter->getWhiteWazariRect());
-    if (ruleset.canStartOsaekomi(params.match, MatchStore::PlayerIndex::WHITE))
-        painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
-    if (ruleset.canAwardShido(params.match, MatchStore::PlayerIndex::WHITE))
-        painter.drawRect(mScoreboardPainter->getWhiteShidoRect());
-    if (ruleset.canAwardHansokuMake(params.match, MatchStore::PlayerIndex::WHITE))
-        painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
+    painter.drawRect(mScoreboardPainter->getWhiteIpponRect());
+    painter.drawRect(mScoreboardPainter->getWhiteWazariRect());
+    painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
+    painter.drawRect(mScoreboardPainter->getWhiteShidoRect());
+    painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
 
     // Blue Player Controls
-    if (ruleset.canAwardIppon(params.match, MatchStore::PlayerIndex::BLUE))
-        painter.drawRect(mScoreboardPainter->getBlueIpponRect());
-    if (ruleset.canAwardWazari(params.match, MatchStore::PlayerIndex::BLUE))
-        painter.drawRect(mScoreboardPainter->getBlueWazariRect());
-    if (ruleset.canStartOsaekomi(params.match, MatchStore::PlayerIndex::BLUE))
-        painter.drawRect(mScoreboardPainter->getBlueOsaekomiRect());
-    if (ruleset.canAwardShido(params.match, MatchStore::PlayerIndex::BLUE))
-        painter.drawRect(mScoreboardPainter->getBlueShidoRect());
-    if (ruleset.canAwardHansokuMake(params.match, MatchStore::PlayerIndex::BLUE))
-        painter.drawRect(mScoreboardPainter->getBlueHansokuRect());
+    painter.drawRect(mScoreboardPainter->getBlueIpponRect());
+    painter.drawRect(mScoreboardPainter->getBlueWazariRect());
+    painter.drawRect(mScoreboardPainter->getBlueOsaekomiRect());
+    painter.drawRect(mScoreboardPainter->getBlueShidoRect());
+    painter.drawRect(mScoreboardPainter->getBlueHansokuRect());
 }
 
 void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
