@@ -23,6 +23,10 @@ private:
     void awardShido(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
     void awardHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
 
+    void cancelIppon(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void cancelWazari(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void cancelShido(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
+    void cancelHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex);
     static constexpr auto PAUSING_TIMER_INTERVAL = std::chrono::milliseconds(100);
 
     StoreManager &mStoreManager;
