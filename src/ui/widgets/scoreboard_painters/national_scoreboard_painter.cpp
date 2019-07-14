@@ -242,7 +242,8 @@ void NationalScoreboardPainter::paintNormalLower(QPainter &painter, const Scoreb
         painter.setPen(COLOR_SCOREBOARD_OSAEKOMI);
         painter.drawText(mOsaekomiRect, Qt::AlignBottom | Qt::AlignRight, secondsString);
     }
-    else if (params.match.isGoldenScore()) {
+
+    if (params.match.isGoldenScore()) {
         // Paint golden score indicator
         font.setPixelSize(mGoldenScoreFontSize);
         painter.setFont(font);
