@@ -1,5 +1,6 @@
-#include <QPainter>
+#include <QMessageBox>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QShortcut>
 
 #include "core/actions/award_hansoku_make_action.hpp"
@@ -198,6 +199,10 @@ void ScoreOperatorWidget::awardShido(ScoreboardPainterParams &params, MatchStore
 }
 
 void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
+    auto reply = QMessageBox::question(this, tr("Would you like to award direct hansoku-make?"), tr("Are you sure you would like to award direct hansoku-make?"), QMessageBox::Yes | QMessageBox::Cancel);
+    if (reply == QMessageBox::Cancel)
+        return;
+
     mStoreManager.dispatch(std::make_unique<AwardHansokuMakeAction>(params.category.getId(), params.match.getId(), playerIndex, params.masterTime));
 
     const auto &ruleset = params.category.getRuleset();
