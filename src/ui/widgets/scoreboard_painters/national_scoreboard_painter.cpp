@@ -145,7 +145,9 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
     const auto &otherScore = params.match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
 
     QString scoreText;
-    if (score.hansokuMake == 0 && (score.ippon > 0 || otherScore.hansokuMake == 1))
+    if (score.hansokuMake)
+        scoreText = "";
+    else if (score.ippon || otherScore.hansokuMake)
         scoreText = "IPPON";
     else
         scoreText = QString::number(score.wazari);
