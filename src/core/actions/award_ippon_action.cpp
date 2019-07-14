@@ -36,11 +36,11 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
     auto &match = category.getMatch(mMatchId);
 
     const auto &ruleset = category.getRuleset();
-    if (!ruleset.canAddIppon(match, mPlayerIndex))
+    if (!ruleset.canAwardIppon(match, mPlayerIndex))
         return;
 
     save(match);
-    ruleset.addIppon(match, mPlayerIndex, mMasterTime);
+    ruleset.awardIppon(match, mPlayerIndex, mMasterTime);
     auto type = (mOsaekomi ? MatchEventType::IPPON_OSAEKOMI : MatchEventType::IPPON);
     match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
     notify(tournament, match);

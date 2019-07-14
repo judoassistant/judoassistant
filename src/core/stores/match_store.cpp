@@ -132,10 +132,12 @@ bool MatchStore::isPermanentBye() const {
 }
 
 MatchStore::Score::Score()
-    : ippon(0)
-    , wazari(0)
+    : wazari(0)
     , shido(0)
-    , hansokuMake(0)
+    , ippon(false)
+    , directIppon(false)
+    , hansokuMake(false)
+    , directHansokuMake(false)
 {}
 
 void MatchStore::finish() {

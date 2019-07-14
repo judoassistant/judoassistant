@@ -1,62 +1,104 @@
 #include "core/rulesets/twenty_eighteen_ruleset.hpp"
 
-bool TwentyEighteenRuleset::canAddWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
+bool TwentyEighteenRuleset::canAwardIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto &score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
 
-    return (otherScore.ippon == 0 && score.ippon == 0);
+    return (!otherScore.ippon && !score.ippon);
 }
 
-void TwentyEighteenRuleset::addWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canAddWazari(match, playerIndex));
+void TwentyEighteenRuleset::awardIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canAwardIppon(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
-    score.wazari = (score.wazari + 1) % 2;
-    score.ippon = (score.wazari == 0);
+    score.ippon = true;
+    score.directIppon = true;
 
     updateStatus(match, masterTime);
 }
 
-// bool TwentyEighteenRuleset::canSubtractWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-//     const auto & score = match.getScore(playerIndex);
-//     return (score.ippon > 0 || score.wazari > 0);
-// }
+bool TwentyEighteenRuleset::canCancelIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto &score = match.getScore(playerIndex);
+    return score.directIppon;
+}
 
-// void TwentyEighteenRuleset::subtractWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-//     assert(canSubtractWazari(match, playerIndex));
+void TwentyEighteenRuleset::cancelIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canCancelIppon(match, playerIndex));
 
-//     auto & score = match.getScore(playerIndex);
-//     score.wazari = (score.wazari + 1) % 2;
-//     score.ippon = 0;
-// }
+    auto & score = match.getScore(playerIndex);
+    score.directIppon = false;
+    if (score.wazari < 2)
+        score.ippon = false;
 
-bool TwentyEighteenRuleset::canAddShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    updateStatus(match, masterTime);
+}
+
+bool TwentyEighteenRuleset::canAwardWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto &score = match.getScore(playerIndex);
+    const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+
+    return (!otherScore.ippon && !score.ippon);
+}
+
+void TwentyEighteenRuleset::awardWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canAwardWazari(match, playerIndex));
+
+    auto & score = match.getScore(playerIndex);
+    score.wazari += 1;
+    if (score.wazari == 2)
+        score.ippon = true;
+
+    updateStatus(match, masterTime);
+}
+
+bool TwentyEighteenRuleset::canCancelWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
-    return (score.hansokuMake == 0);
+    return score.wazari > 0;
 }
 
-void TwentyEighteenRuleset::addShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canAddShido(match, playerIndex));
+void TwentyEighteenRuleset::cancelWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canCancelWazari(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
-    score.shido = (score.shido + 1) % 3;
-    score.hansokuMake = (score.shido == 0);
+    score.wazari -= 1;
+    if (score.ippon && !score.directIppon)
+        score.ippon = false;
 
     updateStatus(match, masterTime);
 }
 
-// bool TwentyEighteenRuleset::canSubtractShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-//     const auto & score = match.getScore(playerIndex);
-//     return (score.hansokuMake == 1 || score.shido > 0);
-// }
+bool TwentyEighteenRuleset::canAwardShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto &score = match.getScore(playerIndex);
+    const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+    return !score.hansokuMake && !otherScore.hansokuMake;
+}
 
-// void TwentyEighteenRuleset::subtractShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-//     assert(canSubtractShido(match, playerIndex));
+void TwentyEighteenRuleset::awardShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canAwardShido(match, playerIndex));
 
-//     auto & score = match.getScore(playerIndex);
-//     score.shido = (score.shido + 2) % 3;
-//     score.hansokuMake = 0;
-// }
+    auto & score = match.getScore(playerIndex);
+    score.shido += 1;
+    if (score.shido == 3)
+        score.hansokuMake = true;
+
+    updateStatus(match, masterTime);
+}
+
+bool TwentyEighteenRuleset::canCancelShido(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return score.shido > 0;
+}
+
+void TwentyEighteenRuleset::cancelShido(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canCancelShido(match, playerIndex));
+
+    auto & score = match.getScore(playerIndex);
+    score.shido -= 1;
+    if (score.hansokuMake && !score.directHansokuMake)
+        score.hansokuMake = false;
+
+    updateStatus(match, masterTime);
+}
 
 bool TwentyEighteenRuleset::isFinished(const MatchStore &match, std::chrono::milliseconds masterTime) const {
     if (match.isBye())
@@ -149,32 +191,38 @@ std::chrono::milliseconds TwentyEighteenRuleset::getExpectedTime() const {
     return std::chrono::minutes(6);
 }
 
-bool TwentyEighteenRuleset::canAddHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-    const auto & score = match.getScore(playerIndex);
+bool TwentyEighteenRuleset::canAwardHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto &score = match.getScore(playerIndex);
     const auto &otherScore = match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
-    return (score.hansokuMake == 0 && otherScore.hansokuMake == 0);
+    return !score.directHansokuMake && !otherScore.hansokuMake; // We can overwrite a non-direct hansoku. However not if the other player has (possibly indirect) hansoku already
 }
 
-void TwentyEighteenRuleset::addHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-    assert(canAddHansokuMake(match, playerIndex));
+void TwentyEighteenRuleset::awardHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canAwardHansokuMake(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
-    score.hansokuMake = 1;
+    score.hansokuMake = true;
+    score.directHansokuMake = true;
 
     updateStatus(match, masterTime);
 }
 
-// bool TwentyEighteenRuleset::canSubtractHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
-//     const auto & score = match.getScore(playerIndex);
-//     return (score.hansokuMake == 1);
-// }
+bool TwentyEighteenRuleset::canCancelHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
+    const auto & score = match.getScore(playerIndex);
+    return score.directHansokuMake;
+}
 
-// void TwentyEighteenRuleset::subtractHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
-//     assert(canSubtractHansokuMake(match, playerIndex));
+void TwentyEighteenRuleset::cancelHansokuMake(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
+    assert(canCancelHansokuMake(match, playerIndex));
 
-//     auto & score = match.getScore(playerIndex);
-//     score.hansokuMake = 0;
-// }
+    auto & score = match.getScore(playerIndex);
+    score.directHansokuMake = false;
+
+    if (score.shido < 3)
+        score.hansokuMake = false;
+
+    updateStatus(match, masterTime);
+}
 
 std::chrono::milliseconds TwentyEighteenRuleset::getOsaekomiIpponTime() const {
     return std::chrono::seconds(20);

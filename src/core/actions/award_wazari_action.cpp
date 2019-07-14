@@ -39,11 +39,11 @@ void AwardWazariAction::redoImpl(TournamentStore & tournament) {
         return;
 
     const auto &ruleset = category.getRuleset();
-    if (!ruleset.canAddWazari(match, mPlayerIndex))
+    if (!ruleset.canAwardWazari(match, mPlayerIndex))
         return;
 
     save(match);
-    ruleset.addWazari(match, mPlayerIndex, mMasterTime);
+    ruleset.awardWazari(match, mPlayerIndex, mMasterTime);
 
     if (mOsaekomi)
         match.setOsaekomiWazari(true);
