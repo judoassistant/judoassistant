@@ -406,22 +406,33 @@ void ScoreOperatorWindow::updateNextButton() {
             enabled = false;
     }
 
-    if (enabled && mCurrentMatch.has_value()) {
-        if (tournament.containsCategory(mCurrentMatch->first)) {
-            const auto &category = tournament.getCategory(mCurrentMatch->first);
-            if (category.containsMatch(mCurrentMatch->second)) {
-                const auto &match = category.getMatch(mCurrentMatch->second);
-                if (match.getStatus() != MatchStatus::FINISHED)
-                    enabled = false;
-            }
-        }
-    }
-
     mNextButton->setEnabled(enabled);
 }
 
 void ScoreOperatorWindow::goNextMatch() {
-    if (!mNextButton->isEnabled()) return;
+    // Check if next match is valid
+    if (!mNextMatch.has_value())
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &nextMatch = tournament.getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+    if (!nextMatch.getWhitePlayer() || !nextMatch.getBluePlayer())
+        return;
+
+    // Check if current match is finished
+    if (mCurrentMatch.has_value()) {
+        if (tournament.containsCategory(mCurrentMatch->first)) {
+            const auto &category = tournament.getCategory(mCurrentMatch->first);
+            if (category.containsMatch(mCurrentMatch->second)) {
+                const auto &match = category.getMatch(mCurrentMatch->second);
+                if (match.getStatus() != MatchStatus::FINISHED) {
+                    auto reply = QMessageBox::question(this, tr("Go to next match?"), tr("Are you sure you would like to go to the next match? The current match is not finished."), QMessageBox::Yes | QMessageBox::Cancel);
+                    if (reply == QMessageBox::Cancel)
+                        return;
+                }
+            }
+        }
+    }
 
     mCurrentMatch = mNextMatch;
     mScoreOperatorWidget->setMatch(mCurrentMatch);
