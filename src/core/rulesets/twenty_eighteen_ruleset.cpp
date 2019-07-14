@@ -27,8 +27,7 @@ void TwentyEighteenRuleset::cancelIppon(MatchStore &match, MatchStore::PlayerInd
 
     auto & score = match.getScore(playerIndex);
     score.directIppon = false;
-    if (score.wazari < 2)
-        score.ippon = false;
+    score.ippon = false;
 
     updateStatus(match, masterTime);
 }
@@ -45,24 +44,31 @@ void TwentyEighteenRuleset::awardWazari(MatchStore &match, MatchStore::PlayerInd
 
     auto & score = match.getScore(playerIndex);
     score.wazari += 1;
-    if (score.wazari == 2)
+    if (score.wazari == 2) {
         score.ippon = true;
+        score.wazari = 0;
+    }
 
     updateStatus(match, masterTime);
 }
 
 bool TwentyEighteenRuleset::canCancelWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {
     const auto & score = match.getScore(playerIndex);
-    return score.wazari > 0;
+    return score.wazari > 0 || (score.ippon && !score.directIppon);
 }
 
 void TwentyEighteenRuleset::cancelWazari(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const {
     assert(canCancelWazari(match, playerIndex));
 
     auto & score = match.getScore(playerIndex);
-    score.wazari -= 1;
-    if (score.ippon && !score.directIppon)
+
+    if (score.wazari == 1) {
+        score.wazari = 0;
+    }
+    else if (score.ippon) {
+        score.wazari = 1;
         score.ippon = false;
+    }
 
     updateStatus(match, masterTime);
 }

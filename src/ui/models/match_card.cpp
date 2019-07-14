@@ -28,7 +28,7 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
         font.setPixelSize((insideHeight/3)/3);
         painter->setFont(font);
 
-        auto text = playerFields.lastName.toUpper() + " " + playerFields.firstName.front().toUpper() + ".";
+        auto text = playerFields.lastName.toUpper() + "," + playerFields.firstName.toUpper();
         painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, text);
         painter->restore();
     }
