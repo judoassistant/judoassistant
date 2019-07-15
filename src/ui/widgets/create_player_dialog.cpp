@@ -16,6 +16,8 @@ CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *par
     , mStoreManager(storeManager)
 {
     mFirstNameContent = new QLineEdit;
+    mFirstNameContent->setMinimumWidth(300);
+
     mLastNameContent = new QLineEdit;
 
     mAgeContent = new QLineEdit;

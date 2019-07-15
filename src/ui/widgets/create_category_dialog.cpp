@@ -22,6 +22,7 @@ CreateCategoryDialog::CreateCategoryDialog(StoreManager & storeManager, const st
     , mPlayerIds(playerIds)
 {
     mNameContent = new QLineEdit;
+    mNameContent->setMinimumWidth(300);
 
     mRulesetContent = new QComboBox;
     for (const auto & ruleset : Ruleset::getRulesets()) {

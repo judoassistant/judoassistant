@@ -16,6 +16,7 @@ AutoAddCategoryDialog::AutoAddCategoryDialog(StoreManager & storeManager, const 
     , mPlayerIds(playerIds)
 {
     mBaseNameContent = new QLineEdit;
+    mBaseNameContent->setMinimumWidth(300);
 
     mMaxDifferenceContent = new QDoubleSpinBox;
     mMaxDifferenceContent->setRange(0.0, 100.0);
