@@ -15,6 +15,7 @@ function generate_icon {
 }
 
 generate_icon "account-plus.svg" "player-add.svg"
-generate_icon "account-remove.svg" "player-erase.svg"
 generate_icon "account-multiple-plus.svg" "category-add.svg"
-generate_icon "account-multiple-minus.svg" "category-erase.svg"
+generate_icon "filter.svg" "filter.svg"
+generate_icon "eye-off.svg" "hide.svg"
+

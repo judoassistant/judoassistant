@@ -27,24 +27,13 @@ PlayersWidget::PlayersWidget(StoreManager &storeManager)
 
     {
         QToolBar *toolBar = new QToolBar(tr("Players toolbar"), this);
+        toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-        QAction *createAction = new QAction(QIcon("icons/player-add.svg"), tr("Create a new player"));
-        createAction->setStatusTip(tr("Create a new player"));
-        toolBar->addAction(createAction);
-
+        QAction *createAction = toolBar->addAction(QIcon("icons/player-add.svg"), tr("Create player"));
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
-        // mEraseAction = new QAction(QIcon("icons/player-erase.svg"), tr("Erase the selected players"));
-        // mEraseAction->setStatusTip(tr("Erase the selected players"));
-        // mEraseAction->setEnabled(false);
-        // toolBar->addAction(mEraseAction, tr("Erase players"));
-        // connect(mEraseAction, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
-
-        // mAutoAddCategoriesAction = new QAction(QIcon("icons/category-add.svg"), tr("Automatically create categories for the selected players.."));
-        // mAutoAddCategoriesAction->setStatusTip(tr("Automatically create categories for the selected players.."));
-        // mAutoAddCategoriesAction->setEnabled(false);
-        // toolBar->addAction(mAutoAddCategoriesAction);
-        // connect(mAutoAddCategoriesAction, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
+        QAction *hideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide field"));
+        QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
 
         layout->addWidget(toolBar);
     }

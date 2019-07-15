@@ -23,17 +23,10 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
 
     {
         QToolBar *toolBar = new QToolBar(tr("Categories toolbar"), this);
+        toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-        QAction *categoryCreateAction = new QAction(QIcon("icons/category-add.svg"), tr("New category"));
-        categoryCreateAction->setStatusTip(tr("Create a new category"));
-        toolBar->addAction(categoryCreateAction);
-        connect(categoryCreateAction, &QAction::triggered, this, &CategoriesWidget::showCategoryCreateDialog);
-
-        // mEraseAction = new QAction(QIcon("icons/category-erase.svg"), tr("Erase the selected categories"));
-        // mEraseAction->setStatusTip(tr("Erase the selected categories"));
-        // mEraseAction->setEnabled(false);
-        // toolBar->addAction(mEraseAction);
-        // connect(mEraseAction, &QAction::triggered, this, &CategoriesWidget::eraseSelectedCategories);
+        QAction *createAction = toolBar->addAction(QIcon("icons/category-add.svg"), tr("Create category"));
+        connect(createAction, &QAction::triggered, this, &CategoriesWidget::showCategoryCreateDialog);
 
         layout->addWidget(toolBar);
     }

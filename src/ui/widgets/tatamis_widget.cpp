@@ -24,7 +24,7 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     {
-        QToolBar *toolBar = new QToolBar(tr("Tatamis toolbar"), this);
+        // QToolBar *toolBar = new QToolBar(tr("Tatamis toolbar"), this);
 
         // QAction *createAction = new QAction(QIcon("player-add.svg"), tr("Automaticly add categories to tatamis"));
         // createAction->setStatusTip(tr("Automaticly add categories to tatamis"));
@@ -38,7 +38,7 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
         // toolBar->addAction(mEraseAction);
         // connect(mEraseAction, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
 
-        layout->addWidget(toolBar);
+        // layout->addWidget(toolBar);
     }
 
     QWidget *mainSplitWidget = new QWidget(this);
