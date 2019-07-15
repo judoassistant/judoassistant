@@ -59,11 +59,25 @@ public:
     void hideAll();
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
     std::optional<CategoryId> getCategory() const;
+    void showU12(bool checked);
+    void showU15(bool checked);
+    void showU18(bool checked);
+    void showU21(bool checked);
+    void showSenior(bool checked);
+    void showMale(bool checked);
+    void showFemale(bool checked);
 
 private:
     StoreManager & mStoreManager;
     PlayersModel *mModel;
     std::optional<CategoryId> mCategoryId;
     bool mHidden;
+    bool mShowU12;
+    bool mShowU15;
+    bool mShowU18;
+    bool mShowU21;
+    bool mShowSenior;
+    bool mShowMale;
+    bool mShowFemale;
 };
 

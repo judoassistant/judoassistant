@@ -49,7 +49,7 @@ HubWindow::HubWindow() {
     sidebar->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
     sidebar->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
     sidebar->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    sidebar->setCurrentIndex(0);
+    sidebar->setCurrentIndex(1);
 
     setCentralWidget(sidebar);
 

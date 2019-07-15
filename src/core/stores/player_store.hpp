@@ -24,6 +24,7 @@ public:
     PlayerCountry(const PlayerCountry &other) = default;
     PlayerCountry(const std::string &str);
     PlayerCountry(int value);
+    PlayerCountry(Enum value) : mValue(value) {}
 
     std::string toString() const;
     std::string countryCode() const; // Returns the 3-letter IOC country code
@@ -44,8 +45,6 @@ public:
     }
 
 private:
-    PlayerCountry(Enum value) : mValue(value) {}
-
     Enum mValue;
 };
 
@@ -77,6 +76,7 @@ public:
     PlayerRank(const PlayerRank &other) = default;
     PlayerRank(const std::string &str);
     PlayerRank(int value);
+    PlayerRank(Enum value) : mValue(value) {}
 
     std::string toString() const;
     int toInt() const;
@@ -94,30 +94,27 @@ public:
     void serialize(Archive& ar, const unsigned int version) {
         ar(mValue);
     }
+
 private:
-    PlayerRank(Enum value) : mValue(value) {}
-
     Enum mValue;
-};
-
-enum class Sex {
-    MALE, FEMALE
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerRank &rank);
 
 class PlayerSex {
 public:
-    static const size_t SIZE = 2;
     enum Enum {
         MALE,
         FEMALE,
     };
+    static const size_t SIZE = 2;
 
     PlayerSex() {}
     PlayerSex(const PlayerSex &other) = default;
     PlayerSex(int value);
     PlayerSex(const std::string &str);
+    PlayerSex(Enum value) : mValue(value) {}
+
 
     std::string toString() const;
     int toInt() const;
@@ -135,9 +132,8 @@ public:
     void serialize(Archive& ar, const unsigned int version) {
         ar(mValue);
     }
-private:
-    PlayerSex(Enum value) : mValue(value) {}
 
+private:
     Enum mValue;
 };
 
@@ -168,6 +164,7 @@ public:
 
     static float max();
     static float min();
+
 private:
     float mValue;
 };
@@ -199,6 +196,7 @@ public:
 
     static int max();
     static int min();
+
 private:
     int mValue;
 };
@@ -260,6 +258,7 @@ public:
     void addMatch(CategoryId categoryId, MatchId matchId);
     void eraseMatch(CategoryId categoryId, MatchId matchId);
     bool containsMatch(CategoryId categoryId, MatchId matchId) const;
+
 private:
     PlayerId mId;
     PlayerFields mFields;

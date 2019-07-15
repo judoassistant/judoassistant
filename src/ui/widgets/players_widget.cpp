@@ -40,8 +40,9 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         connect(mHideAction, &QAction::triggered, this, &PlayersWidget::showHideMenu);
         updateHideActionText();
 
-        // QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
-        // connect(filterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
+        mFilterAction = toolBar->addAction(QIcon(QString(DATA_DIR) + "/icons/filter.svg"), tr("Filter"));
+        connect(mFilterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
+        updateFilterActionText();
 
         layout->addWidget(toolBar);
     }
@@ -71,6 +72,14 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         mTableView->setColumnHidden(6, !settings.value("players/showClub", true).toBool());
         mTableView->setColumnHidden(7, !settings.value("players/showCountry", true).toBool());
         mTableView->setColumnHidden(8, !settings.value("players/showCategories", true).toBool());
+
+        mModel->showU12(settings.value("players/showU12", true).toBool());
+        mModel->showU15(settings.value("players/showU15", true).toBool());
+        mModel->showU18(settings.value("players/showU18", true).toBool());
+        mModel->showU21(settings.value("players/showU21", true).toBool());
+        mModel->showSenior(settings.value("players/showSenior", true).toBool());
+        mModel->showMale(settings.value("players/showMale", true).toBool());
+        mModel->showFemale(settings.value("players/showFemale", true).toBool());
 
         connect(mTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PlayersWidget::selectionChanged);
         connect(mTableView, &QTableView::customContextMenuRequested, this, &PlayersWidget::showContextMenu);
@@ -225,7 +234,50 @@ void PlayersWidget::showCategoryCreateDialog() {
 }
 
 void PlayersWidget::showFilterMenu() {
+    QSettings& settings = mStoreManager.getSettings();
 
+    QMenu menu;
+    QAction *u12Action = menu.addAction(tr("Show U12"));
+    u12Action->setCheckable(true);
+    u12Action->setChecked(settings.value("players/showU12", true).toBool());
+    connect(u12Action, &QAction::toggled, [&, this](bool checked) { mModel->showU12(checked); settings.setValue("players/showU12", checked); updateFilterActionText(); });
+
+    QAction *u15Action = menu.addAction(tr("Show U15"));
+    u15Action->setCheckable(true);
+    u15Action->setChecked(settings.value("players/showU15", true).toBool());
+    connect(u15Action, &QAction::toggled, [&, this](bool checked) { mModel->showU15(checked); settings.setValue("players/showU15", checked); updateFilterActionText(); });
+
+    QAction *u18Action = menu.addAction(tr("Show U18"));
+    u18Action->setCheckable(true);
+    u18Action->setChecked(settings.value("players/showU18", true).toBool());
+    connect(u18Action, &QAction::toggled, [&, this](bool checked) { mModel->showU18(checked); settings.setValue("players/showU18", checked); updateFilterActionText(); });
+
+    QAction *u21Action = menu.addAction(tr("Show U21"));
+    u21Action->setCheckable(true);
+    u21Action->setChecked(settings.value("players/showU21", true).toBool());
+    connect(u21Action, &QAction::toggled, [&, this](bool checked) { mModel->showU21(checked); settings.setValue("players/showU21", checked); updateFilterActionText(); });
+
+    QAction *seniorAction = menu.addAction(tr("Show Senior"));
+    seniorAction->setCheckable(true);
+    seniorAction->setChecked(settings.value("players/showSenior", true).toBool());
+    connect(seniorAction, &QAction::toggled, [&, this](bool checked) { mModel->showSenior(checked); settings.setValue("players/showSenior", checked); updateFilterActionText(); });
+
+    QAction *maleAction = menu.addAction(tr("Show Male"));
+    maleAction->setCheckable(true);
+    maleAction->setChecked(settings.value("players/showMale", true).toBool());
+    connect(maleAction, &QAction::toggled, [&, this](bool checked) { mModel->showMale(checked); settings.setValue("players/showMale", checked); updateFilterActionText(); });
+
+    QAction *femaleAction = menu.addAction(tr("Show Female"));
+    femaleAction->setCheckable(true);
+    femaleAction->setChecked(settings.value("players/showFemale", true).toBool());
+    connect(femaleAction, &QAction::toggled, [&, this](bool checked) { mModel->showFemale(checked); settings.setValue("players/showFemale", checked); updateFilterActionText(); });
+
+    // QAction *fourth = menu.addAction(tr("Male"));
+    // fourth->setCheckable(true);
+    // QAction *fifth = menu.addAction(tr("Female"));
+    // fifth->setCheckable(true);
+
+    menu.exec(QCursor::pos() - QPoint(4, 4));
 }
 
 void PlayersWidget::showHideMenu() {
@@ -308,5 +360,22 @@ void PlayersWidget::updateHideActionText() {
         mHideAction->setText(tr("Hide Fields"));
     else
         mHideAction->setText(tr("%1 Hidden Field(s)", "", count).arg(count));
+}
+
+void PlayersWidget::updateFilterActionText() {
+    const QSettings& settings = mStoreManager.getSettings();
+    unsigned int count = 0;
+    count += !settings.value("players/showU12", true).toBool();
+    count += !settings.value("players/showU15", true).toBool();
+    count += !settings.value("players/showU18", true).toBool();
+    count += !settings.value("players/showU21", true).toBool();
+    count += !settings.value("players/showSenior", true).toBool();
+    count += !settings.value("players/showMale", true).toBool();
+    count += !settings.value("players/showFemale", true).toBool();
+
+    if (count == 0)
+        mFilterAction->setText(tr("Filter"));
+    else
+        mFilterAction->setText(tr("%1 Filter(s)", "", count).arg(count));
 }
 

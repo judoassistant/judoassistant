@@ -230,6 +230,13 @@ PlayersProxyModel::PlayersProxyModel(StoreManager &storeManager, QObject *parent
     : QSortFilterProxyModel(parent)
     , mStoreManager(storeManager)
     , mHidden(false)
+    , mShowU12(true)
+    , mShowU15(true)
+    , mShowU18(true)
+    , mShowU21(true)
+    , mShowSenior(true)
+    , mShowMale(true)
+    , mShowFemale(true)
 {
     mModel = new PlayersModel(storeManager, this);
 
@@ -255,12 +262,45 @@ void PlayersProxyModel::setCategory(std::optional<CategoryId> categoryId) {
 bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
     if (mHidden)
         return false;
-    if (!mCategoryId)
-        return true;
 
     auto playerId = mModel->getPlayer(sourceRow);
     const auto &player = mStoreManager.getTournament().getPlayer(playerId);
-    return player.containsCategory(*mCategoryId);
+
+    if (mCategoryId) {
+        return player.containsCategory(*mCategoryId);
+    }
+
+    if (player.getAge().has_value()) {
+        const int age = player.getAge()->toInt();
+
+        if (!mShowU12 && age < 12)
+            return false;
+
+        if (!mShowU15 && 12 <= age && age < 15)
+            return false;
+
+        if (!mShowU18 && 15 <= age && age < 18)
+            return false;
+
+        if (!mShowU21 && 18 <= age && age < 21)
+            return false;
+
+        if (!mShowSenior && 21 <= age)
+            return false;
+    }
+
+    if (player.getSex().has_value()) {
+        const PlayerSex sex = *(player.getSex());
+
+        if (!mShowMale && sex == PlayerSex::MALE)
+            return false;
+
+        if (!mShowFemale && sex == PlayerSex::FEMALE)
+            return false;
+    }
+
+    return true;
+
 }
 
 bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
@@ -279,3 +319,37 @@ std::optional<CategoryId> PlayersProxyModel::getCategory() const {
     return mCategoryId;
 }
 
+void PlayersProxyModel::showU12(bool checked) {
+    mShowU12 = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::showU15(bool checked) {
+    mShowU15 = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::showU18(bool checked) {
+    mShowU18 = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::showU21(bool checked) {
+    mShowU21 = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::showSenior(bool checked) {
+    mShowSenior = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::showMale(bool checked) {
+    mShowMale = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::showFemale(bool checked) {
+    mShowFemale = checked;
+    invalidateFilter();
+}

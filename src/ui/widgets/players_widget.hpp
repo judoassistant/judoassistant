@@ -29,6 +29,7 @@ protected:
     void showHideMenu();
     void toggleColumn(const QString &key, int column, bool checked);
     void updateHideActionText();
+    void updateFilterActionText();
 
 private:
     MasterStoreManager &mStoreManager;
@@ -36,5 +37,6 @@ private:
     PlayersProxyModel *mModel;
     EditPlayerWidget *mEditPlayerWidget;
     QAction *mHideAction;
+    QAction *mFilterAction;
 };
 
