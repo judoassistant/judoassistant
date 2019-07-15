@@ -18,7 +18,7 @@ MatchesWidget::MatchesWidget(StoreManager &storeManager, QWidget *parent)
     connect(&mStoreManager, &StoreManager::tournamentReset, this, &MatchesWidget::endTournamentReset);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    mFixedScrollArea = new FixedScrollArea(300, this);
+    mFixedScrollArea = new FixedScrollArea(400, this);
     mainLayout->addWidget(mFixedScrollArea);
 
     setLayout(mainLayout);

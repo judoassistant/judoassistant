@@ -32,8 +32,8 @@ private:
     void setMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds masterTime);
 
 private:
-    static const int WIDTH_HINT = 250;
-    static const int HEIGHT_HINT = 120;
+    static const int WIDTH_HINT = 350;
+    static const int HEIGHT_HINT = 160;
 
     void paintPlayer(MatchCardPlayerFields playerFields, QPainter *painter, const QPalette &palette, QFont &font, int insideWidth, int insideHeight, int columnTwoOffset, int columnThreeOffset, int padding) const;
 

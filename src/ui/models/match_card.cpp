@@ -21,34 +21,41 @@ void MatchCard::paintPlayer(MatchCardPlayerFields playerFields, QPainter *painte
     }
 
     { // Draw Name Text
-        QRect rect(columnTwoOffset, padding, columnThreeOffset-columnTwoOffset, insideHeight/3 - padding*2);
+        QRect rect(columnTwoOffset, padding, columnThreeOffset-columnTwoOffset, insideHeight/5 - padding*2);
 
         painter->save();
         painter->setPen(palette.color(QPalette::Text));
-        font.setPixelSize((insideHeight/3)/3);
-        painter->setFont(font);
 
         auto text = playerFields.lastName.toUpper() + "," + playerFields.firstName.toUpper();
         painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, text);
         painter->restore();
     }
 
-    if (mStatus != MatchStatus::NOT_STARTED) { // Draw Score
-        int columnOffset = (insideHeight/3)/2;
-
-        QRect ipponRect(columnThreeOffset, padding, insideWidth-columnThreeOffset, insideHeight/3 - padding*2);
-        QRect wazariRect(columnThreeOffset + columnOffset, padding, insideWidth-columnThreeOffset, insideHeight/3 - padding*2);
-
-        int penaltyHeight = (insideHeight/3)/3;
-        int penaltyWidth = penaltyHeight*2/3;
-
-        QRect firstPenaltyRect(columnThreeOffset + columnOffset*2, (insideHeight/3)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
-        QRect secondPenaltyRect(columnThreeOffset + columnOffset*2 + penaltyWidth+3, (insideHeight/3)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
+    { // Draw Club Text
+        QRect rect(columnTwoOffset, padding + insideHeight/5, columnThreeOffset-columnTwoOffset, insideHeight/5 - padding*2);
 
         painter->save();
         painter->setPen(palette.color(QPalette::Text));
-        font.setPixelSize((insideHeight/3)/3);
-        painter->setFont(font);
+
+        auto text = QString("(%1)").arg(playerFields.club);
+        painter->drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, text);
+        painter->restore();
+    }
+
+    if (mStatus != MatchStatus::NOT_STARTED) { // Draw Score
+        int columnOffset = (insideHeight/5)/2;
+
+        QRect ipponRect(columnThreeOffset, padding, insideWidth-columnThreeOffset, insideHeight/5 - padding*2);
+        QRect wazariRect(columnThreeOffset + columnOffset, padding, insideWidth-columnThreeOffset, insideHeight/5 - padding*2);
+
+        int penaltyHeight = (insideHeight/5)/3;
+        int penaltyWidth = penaltyHeight*2/3;
+
+        QRect firstPenaltyRect(columnThreeOffset + columnOffset*2, (insideHeight/5)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
+        QRect secondPenaltyRect(columnThreeOffset + columnOffset*2 + penaltyWidth+3, (insideHeight/5)/2-penaltyHeight/2, penaltyWidth, penaltyHeight);
+
+        painter->save();
+        painter->setPen(palette.color(QPalette::Text));
 
         if (playerFields.score.ippon != 0)
             painter->drawText(ipponRect, Qt::AlignVCenter | Qt::AlignLeft, QString::number(playerFields.score.ippon));
@@ -83,11 +90,13 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
     int insideWidth = rect.width() - padding*2 - lineWidth*2;
 
     QFont font("Noto Sans");
+    font.setPixelSize((insideHeight/5)/2);
+    painter->setFont(font);
 
     painter->translate(rect.x()+padding, rect.y()+padding);
 
-    int columnTwoOffset = (insideHeight/3);
-    int columnThreeOffset = insideWidth - (insideHeight/3)*2;
+    int columnTwoOffset = (insideHeight/5);
+    int columnThreeOffset = insideWidth - (insideHeight/5)*2;
 
     // Draw bounding rect
     QPen pen;
@@ -99,7 +108,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
     // Draw header rect
     {
-        int headerHeight = insideHeight - (insideHeight/3)*2;
+        int headerHeight = insideHeight - (insideHeight/5)*4;
 
         // painter->setPen(Qt::NoPen);
         // painter->setBrush(palette.color(QPalette::Base));
@@ -108,8 +117,6 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
         painter->save();
         painter->translate(lineWidth, lineWidth);
 
-        font.setPixelSize(headerHeight/3);
-        painter->setFont(font);
 
         if (mTatami) { // Draw tatami number
             QRect rect(padding, padding, headerHeight-padding*2, headerHeight-padding*2);
@@ -175,7 +182,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
     // Draw white player rect
     painter->save();
-    painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3)*2);
+    painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/5)*4);
     // painter->setPen(Qt::NoPen);
     // painter->setBrush(palette.color(QPalette::Base));
     // painter->drawRect(0, 0, insideWidth, insideHeight/3);
@@ -189,7 +196,7 @@ void MatchCard::paint(QPainter *painter, const QRect &rect, const QPalette &pale
 
     // Draw blue player rect
     painter->save();
-    painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/3));
+    painter->translate(lineWidth, lineWidth+insideHeight-(insideHeight/5)*2);
     // painter->setPen(Qt::NoPen);
     // painter->setBrush(palette.color(QPalette::AlternateBase));
     // painter->drawRect(0, 0, insideWidth, insideHeight/3);
