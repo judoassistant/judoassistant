@@ -28,11 +28,13 @@ protected:
     void showFilterMenu();
     void showHideMenu();
     void toggleColumn(const QString &key, int column, bool checked);
+    void updateHideActionText();
 
 private:
     MasterStoreManager &mStoreManager;
     QTableView *mTableView;
     PlayersProxyModel *mModel;
     EditPlayerWidget *mEditPlayerWidget;
+    QAction *mHideAction;
 };
 

@@ -36,8 +36,9 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         QAction *createAction = toolBar->addAction(QIcon("icons/player-add.svg"), tr("Create Player"));
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
-        QAction *hideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide Field"));
-        connect(hideAction, &QAction::triggered, this, &PlayersWidget::showHideMenu);
+        mHideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide Fields"));
+        connect(mHideAction, &QAction::triggered, this, &PlayersWidget::showHideMenu);
+        updateHideActionText();
 
         QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
         connect(filterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
@@ -287,5 +288,25 @@ void PlayersWidget::toggleColumn(const QString &key, int column, bool checked) {
     QSettings& settings = mStoreManager.getSettings();
     mTableView->setColumnHidden(column, !checked);
     settings.setValue(key, checked);
+    updateHideActionText();
+}
+
+void PlayersWidget::updateHideActionText() {
+    const QSettings& settings = mStoreManager.getSettings();
+    unsigned int count = 0;
+    count += !settings.value("players/showFirstName", true).toBool();
+    count += !settings.value("players/showLastName", true).toBool();
+    count += !settings.value("players/showSex", true).toBool();
+    count += !settings.value("players/showAge", true).toBool();
+    count += !settings.value("players/showWeight", true).toBool();
+    count += !settings.value("players/showRank", true).toBool();
+    count += !settings.value("players/showClub", true).toBool();
+    count += !settings.value("players/showCountry", true).toBool();
+    count += !settings.value("players/showCategories", true).toBool();
+
+    if (count == 0)
+        mHideAction->setText(tr("Hide Fields"));
+    else
+        mHideAction->setText(tr("%1 Hidden Field(s)", "", count).arg(count));
 }
 
