@@ -6,18 +6,19 @@
 #include <QMenu>
 #include <QSettings>
 
+#include "core/actions/add_players_to_category_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_players_action.hpp"
 #include "core/actions/erase_players_from_all_categories_action.hpp"
 #include "core/actions/erase_players_from_category_action.hpp"
-#include "core/actions/draw_categories_action.hpp"
-#include "core/actions/add_players_to_category_action.hpp"
 #include "core/stores/category_store.hpp"
+#include "ui/misc/category_name_comparator.hpp"
 #include "ui/models/players_model.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/auto_add_category_dialog.hpp"
-#include "ui/widgets/create_player_dialog.hpp"
 #include "ui/widgets/create_category_dialog.hpp"
+#include "ui/widgets/create_player_dialog.hpp"
 #include "ui/widgets/edit_player_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 
@@ -123,12 +124,16 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
     if (playerIds.empty())
         return;
 
-    std::unordered_set<CategoryId, CategoryId::Hasher> playerCategoryIds; // TODO: Sort this alphabetically
+    std::unordered_set<CategoryId, CategoryId::Hasher> playerCategoryIds;
     for (PlayerId playerId : playerIds) {
         const PlayerStore &player = tournament.getPlayer(playerId);
         for (CategoryId categoryId : player.getCategories())
             playerCategoryIds.insert(categoryId);
     }
+
+    // sort ids by name
+    std::vector sortedPlayerCategoryIds(playerCategoryIds.begin(), playerCategoryIds.end());
+    std::sort(sortedPlayerCategoryIds.begin(), sortedPlayerCategoryIds.end(), CategoryNameComparator(tournament));
 
     QMenu menu;
     {
@@ -149,7 +154,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
         QMenu *submenu = menu.addMenu(tr("Erase selected players from category"));
         submenu->setEnabled(!playerCategoryIds.empty());
 
-        for (CategoryId categoryId : playerCategoryIds) {
+        for (CategoryId categoryId : sortedPlayerCategoryIds) {
             const CategoryStore & category = tournament.getCategory(categoryId);
             QAction *action = submenu->addAction(QString::fromStdString(category.getName()));
             connect(action, &QAction::triggered, [&, categoryId](){eraseSelectedPlayersFromCategory(categoryId);});
@@ -159,9 +164,15 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
         QMenu *submenu = menu.addMenu(tr("Add selected players to category"));
         submenu->setEnabled(!tournament.getCategories().empty());
 
-        for (const auto & it : tournament.getCategories()) {
-            QAction *action = submenu->addAction(QString::fromStdString(it.second->getName()));
-            CategoryId categoryId = it.first;
+        std::vector<CategoryId> sortedCategoryIds;
+        for (const auto & it : tournament.getCategories())
+            sortedCategoryIds.push_back(it.first);
+
+        std::sort(sortedCategoryIds.begin(), sortedCategoryIds.end(), CategoryNameComparator(tournament));
+
+        for (const CategoryId &categoryId : sortedCategoryIds) {
+            const CategoryStore &category = tournament.getCategory(categoryId);
+            QAction *action = submenu->addAction(QString::fromStdString(category.getName()));
             connect(action, &QAction::triggered, [&, categoryId](){addSelectedPlayersToCategory(categoryId);});
         }
     }
