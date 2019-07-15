@@ -24,6 +24,8 @@
 PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
     : mStoreManager(storeManager)
 {
+    const QSettings& settings = mStoreManager.getSettings();
+
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     {
@@ -57,6 +59,16 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         mTableView->setSortingEnabled(true);
         mTableView->sortByColumn(1, Qt::AscendingOrder);
         mTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+        mTableView->setColumnHidden(0, !settings.value("players/showFirstName", true).toBool());
+        mTableView->setColumnHidden(1, !settings.value("players/showLastName", true).toBool());
+        mTableView->setColumnHidden(2, !settings.value("players/showSex", true).toBool());
+        mTableView->setColumnHidden(3, !settings.value("players/showAge", true).toBool());
+        mTableView->setColumnHidden(4, !settings.value("players/showWeight", true).toBool());
+        mTableView->setColumnHidden(5, !settings.value("players/showRank", true).toBool());
+        mTableView->setColumnHidden(6, !settings.value("players/showClub", true).toBool());
+        mTableView->setColumnHidden(7, !settings.value("players/showCountry", true).toBool());
+        mTableView->setColumnHidden(8, !settings.value("players/showCategories", true).toBool());
 
         connect(mTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PlayersWidget::selectionChanged);
         connect(mTableView, &QTableView::customContextMenuRequested, this, &PlayersWidget::showContextMenu);
@@ -211,43 +223,58 @@ void PlayersWidget::showHideMenu() {
     QAction *firstNameAction = menu.addAction(tr("First Name"));
     firstNameAction->setCheckable(true);
     firstNameAction->setChecked(settings.value("players/showFirstName", true).toBool());
+    connect(firstNameAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showFirstName", 0, checked); });
 
     QAction *lastNameAction = menu.addAction(tr("Last Name"));
     lastNameAction->setCheckable(true);
     lastNameAction->setChecked(settings.value("players/showLastName", true).toBool());
+    connect(lastNameAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showLastName", 1, checked); });
 
     QAction *sexAction = menu.addAction(tr("Sex"));
     sexAction->setCheckable(true);
     sexAction->setChecked(settings.value("players/showSex", true).toBool());
+    connect(sexAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showSex", 2, checked); });
 
     QAction *ageAction = menu.addAction(tr("Age"));
     ageAction->setCheckable(true);
     ageAction->setChecked(settings.value("players/showAge", true).toBool());
+    connect(ageAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showAge", 3, checked); });
 
     QAction *weightAction = menu.addAction(tr("Weight"));
     weightAction->setCheckable(true);
     weightAction->setChecked(settings.value("players/showWeight", true).toBool());
+    connect(weightAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showWeight", 4, checked); });
 
     QAction *rankAction = menu.addAction(tr("Rank"));
     rankAction->setCheckable(true);
     rankAction->setChecked(settings.value("players/showRank", true).toBool());
+    connect(rankAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showRank", 5, checked); });
 
     QAction *clubAction = menu.addAction(tr("Club"));
     clubAction->setCheckable(true);
     clubAction->setChecked(settings.value("players/showClub", true).toBool());
+    connect(clubAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showClub", 6, checked); });
 
     QAction *countryAction = menu.addAction(tr("Country"));
     countryAction->setCheckable(true);
     countryAction->setChecked(settings.value("players/showCountry", true).toBool());
+    connect(countryAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showCountry", 7, checked); });
 
     QAction *categoriesAction = menu.addAction(tr("Categories"));
     categoriesAction->setCheckable(true);
     categoriesAction->setChecked(settings.value("players/showCategories", true).toBool());
+    connect(categoriesAction, &QAction::toggled, [this](bool checked) { toggleColumn("players/showCategories", 8, checked); });
 
     {
         // QAction *action = menu.addAction(tr("Create a new player"));
         // connect(action, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
     }
     menu.exec(QCursor::pos());
+}
+
+void PlayersWidget::toggleColumn(const QString &key, int column, bool checked) {
+    QSettings& settings = mStoreManager.getSettings();
+    mTableView->setColumnHidden(column, !checked);
+    settings.setValue(key, checked);
 }
 

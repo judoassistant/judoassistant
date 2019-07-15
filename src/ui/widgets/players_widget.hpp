@@ -14,7 +14,8 @@ class PlayersWidget : public QWidget {
     Q_OBJECT
 public:
     PlayersWidget(MasterStoreManager &storeManager);
-public slots:
+
+protected:
     void showPlayerCreateDialog();
     void showAutoAddCategoriesWidget();
     void showCategoryCreateDialog();
@@ -26,6 +27,8 @@ public slots:
     void showContextMenu(const QPoint &pos);
     void showFilterMenu();
     void showHideMenu();
+    void toggleColumn(const QString &key, int column, bool checked);
+
 private:
     MasterStoreManager &mStoreManager;
     QTableView *mTableView;
