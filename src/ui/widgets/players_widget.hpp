@@ -26,8 +26,6 @@ public slots:
     void showContextMenu(const QPoint &pos);
 private:
     StoreManager &mStoreManager;
-    QAction *mEraseAction;
-    QAction *mAutoAddCategoriesAction;
     QTableView *mTableView;
     PlayersProxyModel *mModel;
     EditPlayerWidget *mEditPlayerWidget;

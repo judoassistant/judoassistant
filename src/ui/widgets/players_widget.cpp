@@ -169,9 +169,6 @@ void PlayersWidget::eraseSelectedPlayers() {
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
     auto playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
 
-    mEraseAction->setEnabled(!playerIds.empty());
-    mAutoAddCategoriesAction->setEnabled(!playerIds.empty());
-
     mEditPlayerWidget->setPlayers(std::move(playerIds));
 }
 

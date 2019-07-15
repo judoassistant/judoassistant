@@ -25,7 +25,6 @@ private:
     void showContextMenu(const QPoint &pos);
 
     StoreManager &mStoreManager;
-    QAction *mEraseAction;
     QTableView *mTableView;
     CategoriesProxyModel *mModel;
     EditCategoryWidget *mEditCategoryWidget;

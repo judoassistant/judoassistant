@@ -105,8 +105,6 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
     auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
     std::optional<CategoryId> categoryId = (categoryIds.size() == 1 ? std::make_optional<CategoryId>(categoryIds.front()) : std::nullopt);
 
-    mEraseAction->setEnabled(!categoryIds.empty());
-
     mEditCategoryWidget->setCategories(categoryIds);
     mEditCategoryPlayersWidget->setCategory(categoryId);
     mCategoryMatchesModel->setCategory(categoryId);
