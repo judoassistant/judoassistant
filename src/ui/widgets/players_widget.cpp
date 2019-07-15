@@ -34,17 +34,17 @@ PlayersWidget::PlayersWidget(StoreManager &storeManager)
 
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
-        mEraseAction = new QAction(QIcon("icons/player-erase.svg"), tr("Erase the selected players"));
-        mEraseAction->setStatusTip(tr("Erase the selected players"));
-        mEraseAction->setEnabled(false);
-        toolBar->addAction(mEraseAction);
-        connect(mEraseAction, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
+        // mEraseAction = new QAction(QIcon("icons/player-erase.svg"), tr("Erase the selected players"));
+        // mEraseAction->setStatusTip(tr("Erase the selected players"));
+        // mEraseAction->setEnabled(false);
+        // toolBar->addAction(mEraseAction, tr("Erase players"));
+        // connect(mEraseAction, &QAction::triggered, this, &PlayersWidget::eraseSelectedPlayers);
 
-        mAutoAddCategoriesAction = new QAction(QIcon("icons/category-add.svg"), tr("Automatically create categories for the selected players.."));
-        mAutoAddCategoriesAction->setStatusTip(tr("Automatically create categories for the selected players.."));
-        mAutoAddCategoriesAction->setEnabled(false);
-        toolBar->addAction(mAutoAddCategoriesAction);
-        connect(mAutoAddCategoriesAction, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
+        // mAutoAddCategoriesAction = new QAction(QIcon("icons/category-add.svg"), tr("Automatically create categories for the selected players.."));
+        // mAutoAddCategoriesAction->setStatusTip(tr("Automatically create categories for the selected players.."));
+        // mAutoAddCategoriesAction->setEnabled(false);
+        // toolBar->addAction(mAutoAddCategoriesAction);
+        // connect(mAutoAddCategoriesAction, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
 
         layout->addWidget(toolBar);
     }
