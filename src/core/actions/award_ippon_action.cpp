@@ -40,6 +40,11 @@ void AwardIpponAction::redoImpl(TournamentStore & tournament) {
         return;
 
     save(match);
+
+
+    if (match.isOsaekomiWazari() && ruleset.canCancelWazari(match, mPlayerIndex)) // Cancel the osaekomi wazari if possible
+        ruleset.cancelWazari(match, mPlayerIndex, mMasterTime);
+
     ruleset.awardIppon(match, mPlayerIndex, mMasterTime);
     auto type = (mOsaekomi ? MatchEventType::IPPON_OSAEKOMI : MatchEventType::IPPON);
     match.pushEvent({type, mPlayerIndex, match.currentDuration(mMasterTime)});
