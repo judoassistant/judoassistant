@@ -19,6 +19,7 @@ struct DrawSystemPreference {
 };
 
 enum class ScoreboardStylePreference { NATIONAL, INTERNATIONAL };
+enum class MatchCardStylePreference { NATIONAL };
 
 class PreferencesStore {
 public:
@@ -37,8 +38,12 @@ public:
     ScoreboardStylePreference getScoreboardStyle() const;
     void setScoreboardStyle(ScoreboardStylePreference style);
 
+    MatchCardStylePreference getMatchCardStyle() const;
+    void setMatchCardStyle(MatchCardStylePreference style);
+
 private:
     std::vector<DrawSystemPreference> mPreferredDrawSystems;
     ScoreboardStylePreference mScoreboardStyle;
+    MatchCardStylePreference mMatchCardStyle;
 };
 

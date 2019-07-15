@@ -15,6 +15,7 @@ PreferencesStore::PreferencesStore() {
     mPreferredDrawSystems.emplace_back(3, DrawSystemIdentifier::POOL);
     mPreferredDrawSystems.emplace_back(6, DrawSystemIdentifier::DOUBLE_POOL);
     mScoreboardStyle = ScoreboardStylePreference::NATIONAL;
+    mMatchCardStyle = MatchCardStylePreference::NATIONAL;
 }
 
 const std::vector<DrawSystemPreference>& PreferencesStore::getPreferredDrawSystems() const {
@@ -43,5 +44,13 @@ ScoreboardStylePreference PreferencesStore::getScoreboardStyle() const {
 
 void PreferencesStore::setScoreboardStyle(ScoreboardStylePreference style) {
     mScoreboardStyle = style;
+}
+
+MatchCardStylePreference PreferencesStore::getMatchCardStyle() const {
+    return mMatchCardStyle;
+}
+
+void PreferencesStore::setMatchCardStyle(MatchCardStylePreference style) {
+    mMatchCardStyle = style;
 }
 

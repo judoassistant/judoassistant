@@ -5,7 +5,7 @@
 #include <QListWidget>
 
 #include "ui/widgets/general_tournament_preferences_widget.hpp"
-#include "ui/widgets/scoreboard_preferences_widget.hpp"
+#include "ui/widgets/display_preferences_widget.hpp"
 #include "ui/widgets/preferred_draw_systems_widget.hpp"
 #include "ui/widgets/tournament_preferences_dialog.hpp"
 
@@ -31,11 +31,11 @@ TournamentPreferencesDialog::TournamentPreferencesDialog(StoreManager & storeMan
         listWidget->addItem(tr("Draw Systems"));
         stackedWidget->addWidget(widget);
     }
-    // Add draw systems page
+    // Add display preferences page systems page
     {
-        QWidget *widget = new ScoreboardPreferencesWidget(mStoreManager);
+        QWidget *widget = new DisplayPreferencesWidget(mStoreManager);
 
-        listWidget->addItem(tr("Scoreboard"));
+        listWidget->addItem(tr("Display"));
         stackedWidget->addWidget(widget);
     }
 
