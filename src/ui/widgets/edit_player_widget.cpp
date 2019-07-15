@@ -109,8 +109,8 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     connect(mSexContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editSex();});
 
     QFormLayout *formLayout = new QFormLayout;
-    formLayout->addRow(tr("First name"), mFirstNameContent);
-    formLayout->addRow(tr("Last name"), mLastNameContent);
+    formLayout->addRow(tr("First Name"), mFirstNameContent);
+    formLayout->addRow(tr("Last Name"), mLastNameContent);
     formLayout->addRow(tr("Sex"), mSexContent);
     formLayout->addRow(tr("Age"), mAgeContent);
     formLayout->addRow(tr("Weight"), mWeightContent);

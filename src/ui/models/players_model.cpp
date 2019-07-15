@@ -73,9 +73,9 @@ QVariant PlayersModel::headerData(int section, Qt::Orientation orientation, int 
         if (orientation == Qt::Horizontal) {
             switch (section) {
                 case 0:
-                    return QString(tr("First name"));
+                    return QString(tr("First Name"));
                 case 1:
-                    return QString(tr("Last name"));
+                    return QString(tr("Last Name"));
                 case 2:
                     return QString(tr("Sex"));
                 case 3:

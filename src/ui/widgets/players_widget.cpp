@@ -29,10 +29,10 @@ PlayersWidget::PlayersWidget(StoreManager &storeManager)
         QToolBar *toolBar = new QToolBar(tr("Players toolbar"), this);
         toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-        QAction *createAction = toolBar->addAction(QIcon("icons/player-add.svg"), tr("Create player"));
+        QAction *createAction = toolBar->addAction(QIcon("icons/player-add.svg"), tr("Create Player"));
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
-        QAction *hideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide field"));
+        QAction *hideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide Field"));
         QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
 
         layout->addWidget(toolBar);
