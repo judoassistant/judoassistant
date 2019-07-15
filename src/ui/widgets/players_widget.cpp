@@ -174,7 +174,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
         connect(action, &QAction::triggered, this, &PlayersWidget::showAutoAddCategoriesWidget);
     }
 
-    menu.exec(mTableView->mapToGlobal(pos), 0);
+    menu.exec(QCursor::pos() - QPoint(4, 4));
 }
 
 void PlayersWidget::eraseSelectedPlayers() {
@@ -269,7 +269,7 @@ void PlayersWidget::showHideMenu() {
         // QAction *action = menu.addAction(tr("Create a new player"));
         // connect(action, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
     }
-    menu.exec(QCursor::pos());
+    menu.exec(QCursor::pos() - QPoint(4, 4));
 }
 
 void PlayersWidget::toggleColumn(const QString &key, int column, bool checked) {
