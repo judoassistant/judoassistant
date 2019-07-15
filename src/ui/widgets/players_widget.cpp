@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QMenu>
+#include <QSettings>
 
 #include "core/actions/erase_players_action.hpp"
 #include "core/actions/erase_players_from_all_categories_action.hpp"
@@ -12,7 +13,7 @@
 #include "core/actions/add_players_to_category_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/models/players_model.hpp"
-#include "ui/store_managers/store_manager.hpp"
+#include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/auto_add_category_dialog.hpp"
 #include "ui/widgets/create_player_dialog.hpp"
@@ -20,7 +21,7 @@
 #include "ui/widgets/edit_player_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 
-PlayersWidget::PlayersWidget(StoreManager &storeManager)
+PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
     : mStoreManager(storeManager)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -204,33 +205,44 @@ void PlayersWidget::showFilterMenu() {
 }
 
 void PlayersWidget::showHideMenu() {
+    const QSettings& settings = mStoreManager.getSettings();
+
     QMenu menu;
     QAction *firstNameAction = menu.addAction(tr("First Name"));
     firstNameAction->setCheckable(true);
+    firstNameAction->setChecked(settings.value("players/showFirstName", true).toBool());
 
     QAction *lastNameAction = menu.addAction(tr("Last Name"));
     lastNameAction->setCheckable(true);
+    lastNameAction->setChecked(settings.value("players/showLastName", true).toBool());
 
     QAction *sexAction = menu.addAction(tr("Sex"));
     sexAction->setCheckable(true);
+    sexAction->setChecked(settings.value("players/showSex", true).toBool());
 
     QAction *ageAction = menu.addAction(tr("Age"));
     ageAction->setCheckable(true);
+    ageAction->setChecked(settings.value("players/showAge", true).toBool());
 
     QAction *weightAction = menu.addAction(tr("Weight"));
     weightAction->setCheckable(true);
+    weightAction->setChecked(settings.value("players/showWeight", true).toBool());
 
     QAction *rankAction = menu.addAction(tr("Rank"));
     rankAction->setCheckable(true);
+    rankAction->setChecked(settings.value("players/showRank", true).toBool());
 
     QAction *clubAction = menu.addAction(tr("Club"));
     clubAction->setCheckable(true);
+    clubAction->setChecked(settings.value("players/showClub", true).toBool());
 
     QAction *countryAction = menu.addAction(tr("Country"));
     countryAction->setCheckable(true);
+    countryAction->setChecked(settings.value("players/showCountry", true).toBool());
 
     QAction *categoriesAction = menu.addAction(tr("Categories"));
     categoriesAction->setCheckable(true);
+    categoriesAction->setChecked(settings.value("players/showCategories", true).toBool());
 
     {
         // QAction *action = menu.addAction(tr("Create a new player"));

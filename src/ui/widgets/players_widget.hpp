@@ -6,14 +6,14 @@
 #include "core/core.hpp"
 #include "core/id.hpp"
 
-class StoreManager;
+class MasterStoreManager;
 class EditPlayerWidget;
 class PlayersProxyModel;
 
 class PlayersWidget : public QWidget {
     Q_OBJECT
 public:
-    PlayersWidget(StoreManager &storeManager);
+    PlayersWidget(MasterStoreManager &storeManager);
 public slots:
     void showPlayerCreateDialog();
     void showAutoAddCategoriesWidget();
@@ -27,7 +27,7 @@ public slots:
     void showFilterMenu();
     void showHideMenu();
 private:
-    StoreManager &mStoreManager;
+    MasterStoreManager &mStoreManager;
     QTableView *mTableView;
     PlayersProxyModel *mModel;
     EditPlayerWidget *mEditPlayerWidget;
