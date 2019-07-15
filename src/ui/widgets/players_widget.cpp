@@ -33,7 +33,10 @@ PlayersWidget::PlayersWidget(StoreManager &storeManager)
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
         QAction *hideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide Field"));
+        connect(hideAction, &QAction::triggered, this, &PlayersWidget::showHideMenu);
+
         QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
+        connect(filterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
 
         layout->addWidget(toolBar);
     }
@@ -195,3 +198,44 @@ void PlayersWidget::showCategoryCreateDialog() {
 
     dialog.exec();
 }
+
+void PlayersWidget::showFilterMenu() {
+
+}
+
+void PlayersWidget::showHideMenu() {
+    QMenu menu;
+    QAction *firstNameAction = menu.addAction(tr("First Name"));
+    firstNameAction->setCheckable(true);
+
+    QAction *lastNameAction = menu.addAction(tr("Last Name"));
+    lastNameAction->setCheckable(true);
+
+    QAction *sexAction = menu.addAction(tr("Sex"));
+    sexAction->setCheckable(true);
+
+    QAction *ageAction = menu.addAction(tr("Age"));
+    ageAction->setCheckable(true);
+
+    QAction *weightAction = menu.addAction(tr("Weight"));
+    weightAction->setCheckable(true);
+
+    QAction *rankAction = menu.addAction(tr("Rank"));
+    rankAction->setCheckable(true);
+
+    QAction *clubAction = menu.addAction(tr("Club"));
+    clubAction->setCheckable(true);
+
+    QAction *countryAction = menu.addAction(tr("Country"));
+    countryAction->setCheckable(true);
+
+    QAction *categoriesAction = menu.addAction(tr("Categories"));
+    categoriesAction->setCheckable(true);
+
+    {
+        // QAction *action = menu.addAction(tr("Create a new player"));
+        // connect(action, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
+    }
+    menu.exec(QCursor::pos());
+}
+

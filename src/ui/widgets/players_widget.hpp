@@ -24,6 +24,8 @@ public slots:
     void addSelectedPlayersToCategory(CategoryId categoryId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void showContextMenu(const QPoint &pos);
+    void showFilterMenu();
+    void showHideMenu();
 private:
     StoreManager &mStoreManager;
     QTableView *mTableView;
