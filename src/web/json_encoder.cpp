@@ -685,16 +685,24 @@ rapidjson::Value JsonEncoder::encodeMatchEvent(const MatchEvent &event, rapidjso
     // encode type
     if (event.type == MatchEventType::IPPON)
         res.AddMember("type", encodeString("IPPON", allocator), allocator);
-    else if (event.type == MatchEventType::IPPON_OSAEKOMI)
-        res.AddMember("type", encodeString("IPPON_OSAEKOMI", allocator), allocator);
     else if (event.type == MatchEventType::WAZARI)
         res.AddMember("type", encodeString("WAZARI", allocator), allocator);
-    else if (event.type == MatchEventType::WAZARI_OSAEKOMI)
-        res.AddMember("type", encodeString("WAZARI_OSAEKOMI", allocator), allocator);
     else if (event.type == MatchEventType::SHIDO)
         res.AddMember("type", encodeString("SHIDO", allocator), allocator);
-    else
+    else if (event.type == MatchEventType::HANSOKU_MAKE)
         res.AddMember("type", encodeString("HANSOKU_MAKE", allocator), allocator);
+    else if (event.type == MatchEventType::IPPON_OSAEKOMI)
+        res.AddMember("type", encodeString("IPPON_OSAEKOMI", allocator), allocator);
+    else if (event.type == MatchEventType::WAZARI_OSAEKOMI)
+        res.AddMember("type", encodeString("WAZARI_OSAEKOMI", allocator), allocator);
+    else if (event.type == MatchEventType::CANCEL_IPPON)
+        res.AddMember("type", encodeString("CANCEL_IPPON", allocator), allocator);
+    else if (event.type == MatchEventType::CANCEL_WAZARI)
+        res.AddMember("type", encodeString("CANCEL_WAZARI", allocator), allocator);
+    else if (event.type == MatchEventType::CANCEL_SHIDO)
+        res.AddMember("type", encodeString("CANCEL_SHIDO", allocator), allocator);
+    else
+        res.AddMember("type", encodeString("CANCEL_HANSOKU_MAKE", allocator), allocator);
 
     res.AddMember("playerIndex", encodeString(event.playerIndex == MatchStore::PlayerIndex::WHITE ? "WHITE" : "BLUE", allocator), allocator);
     res.AddMember("duration", encodeDuration(event.duration, allocator), allocator);
