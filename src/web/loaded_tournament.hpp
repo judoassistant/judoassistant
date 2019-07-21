@@ -39,6 +39,7 @@ public:
 
     void subscribeCategory(std::shared_ptr<WebParticipant> participant, CategoryId category);
     void subscribePlayer(std::shared_ptr<WebParticipant> participant, PlayerId player);
+    void subscribeTatami(std::shared_ptr<WebParticipant> participant, unsigned int index);
 
     void addParticipant(std::shared_ptr<WebParticipant> participant);
     void eraseParticipant(std::shared_ptr<WebParticipant> participant);
@@ -62,6 +63,7 @@ private:
     std::unordered_set<std::shared_ptr<WebParticipant>> mWebParticipants;
     std::unordered_map<std::shared_ptr<WebParticipant>, PlayerId> mPlayerSubscriptions;
     std::unordered_map<std::shared_ptr<WebParticipant>, CategoryId> mCategorySubscriptions;
+    std::unordered_map<std::shared_ptr<WebParticipant>, unsigned int> mTatamiSubscriptions;
     std::weak_ptr<TCPParticipant> mOwner;
 
     bool mFileInUse;

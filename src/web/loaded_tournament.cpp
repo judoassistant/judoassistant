@@ -337,6 +337,7 @@ void LoadedTournament::eraseParticipant(std::shared_ptr<WebParticipant> particip
         mWebParticipants.erase(participant);
         mPlayerSubscriptions.erase(participant);
         mCategorySubscriptions.erase(participant);
+        mTatamiSubscriptions.erase(participant);
     });
 }
 
@@ -344,6 +345,7 @@ void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> partici
     boost::asio::dispatch(mStrand, [this, participant, category](){
         mCategorySubscriptions[participant] = category;
         mPlayerSubscriptions.erase(participant);
+        mTatamiSubscriptions.erase(participant);
         JsonEncoder encoder;
         std::unique_ptr<JsonBuffer> message;
         if (mTournament->containsCategory(category))
@@ -359,12 +361,29 @@ void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participa
     boost::asio::dispatch(mStrand, [this, participant, player](){
         mPlayerSubscriptions[participant] = player;
         mCategorySubscriptions.erase(participant);
+        mTatamiSubscriptions.erase(participant);
         JsonEncoder encoder;
         std::unique_ptr<JsonBuffer> message;
         if (mTournament->containsPlayer(player))
             message = encoder.encodePlayerSubscriptionMessage(*mTournament, mTournament->getPlayer(player), mClockDiff);
         else
             message = encoder.encodePlayerSubscriptionFailMessage();
+
+        participant->deliver(std::move(message));
+    });
+}
+
+void LoadedTournament::subscribeTatami(std::shared_ptr<WebParticipant> participant, unsigned int index) {
+    boost::asio::dispatch(mStrand, [this, participant, index]() {
+        mTatamiSubscriptions[participant] = index;
+        mPlayerSubscriptions.erase(participant)
+        mCategorySubscriptions.erase(participant);
+        JsonEncoder encoder;
+        std::unique_ptr<JsonBuffer> message;
+        if (index < mTournament->getTatamis().tatamiCount())
+            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, mTournament->getTatamis().getTatami(index), mClockDiff);
+        else
+            message = encoder.encodeTatamiSubscriptionFailMessage();
 
         participant->deliver(std::move(message));
     });
@@ -383,10 +402,15 @@ void LoadedTournament::deliverChanges() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
-        if (!encoder.hasTournamentChanges(*mTournament, category, player))
+        std::optional<unsigned int> tatami;
+        auto tatamiIt = mTatamiSubscriptions.find(participant);
+        if (tatamiIt != mTatamiSubscriptions.end())
+            tatami = tatamiIt->second;
+
+        if (!encoder.hasTournamentChanges(*mTournament, category, player, tatami))
             continue;
 
-        auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, mClockDiff);
+        auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, tatami, mClockDiff);
         participant->deliver(std::move(buffer));
     }
 
@@ -406,7 +430,12 @@ void LoadedTournament::deliverSync() {
         if (playerIt != mPlayerSubscriptions.end())
             player = playerIt->second;
 
-        auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, mClockDiff, true);
+        std::optional<unsigned int> tatami;
+        auto tatamiIt = mTatamiSubscriptions.find(participant);
+        if (tatamiIt != mTatamiSubscriptions.end())
+            tatami = tatamiIt->second;
+
+        auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, tatami, mClockDiff, true);
         participant->deliver(std::move(buffer));
     }
 

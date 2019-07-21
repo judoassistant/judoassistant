@@ -26,16 +26,19 @@ private:
 
 class JsonEncoder {
 public:
-    std::unique_ptr<JsonBuffer> encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff, bool shouldCache);
+    std::unique_ptr<JsonBuffer> encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff, bool shouldCache);
     std::unique_ptr<JsonBuffer> encodeTournamentSubscriptionFailMessage();
-    std::unique_ptr<JsonBuffer> encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff);
-    bool hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer);
+    std::unique_ptr<JsonBuffer> encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff);
+    bool hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami);
 
     std::unique_ptr<JsonBuffer> encodeCategorySubscriptionMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff);
     std::unique_ptr<JsonBuffer> encodeCategorySubscriptionFailMessage();
 
     std::unique_ptr<JsonBuffer> encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff);
     std::unique_ptr<JsonBuffer> encodePlayerSubscriptionFailMessage();
+
+    std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, const TatamiStore &tatami, std::chrono::milliseconds clockDiff);
+    std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionFailMessage();
 
 private:
     rapidjson::Value encodeMeta(const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);

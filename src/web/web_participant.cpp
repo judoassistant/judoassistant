@@ -91,6 +91,12 @@ bool WebParticipant::parseMessage(const std::string &message) {
         return subscribePlayer(parts[1]);
     }
 
+    if (parts[0] == "subscribeTatami") {
+        if (parts.size() != 2)
+            return false;
+        return subscribeTatami(parts[1]);
+    }
+
     if (parts[0] == "listTournaments") {
         if (parts.size() != 1)
             return false;
@@ -171,6 +177,19 @@ bool WebParticipant::subscribeCategory(const std::string &str) {
             return false;
         CategoryId id(str);
         mTournament->subscribeCategory(shared_from_this(), id);
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    return true;
+}
+
+bool WebParticipant::subscribeTatami(const std::string &str) {
+    log_debug().field("id", str).msg("Subscribing to tatami");
+    try {
+        unsigned int index = std::stoul(str);
+        mTournament->subscribeTatami(shared_from_this(), index);
     }
     catch (const std::exception &e) {
         return false;
