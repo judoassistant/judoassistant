@@ -10,6 +10,7 @@ WebTatamiModel::WebTatamiModel(const TournamentStore &tournament, TatamiLocation
     : mTournament(tournament)
     , mTatami(tatami)
     , mResetting(true)
+    , mMatchesChanged(true)
     , mChanged(true)
 {
     flush();
@@ -81,6 +82,8 @@ void WebTatamiModel::changeTatamis(const TournamentStore &tournament, const std:
     for (const auto &location : locations) {
         if (mTatami != location.sequentialGroup.concurrentGroup.tatami) continue;
 
+        mChanged = true;
+
         auto handle = location.sequentialGroup.concurrentGroup.handle;
         if (mLoadedGroups.find(handle.id) != mLoadedGroups.end()) {
             mResetting = true;
@@ -98,6 +101,7 @@ void WebTatamiModel::clearChanges() {
     assert(!mResetting);
 
     mInsertedMatches.clear();
+    mMatchesChanged = false;
     mChanged = false;
 }
 
@@ -112,7 +116,7 @@ void WebTatamiModel::reset() {
 
     mResetting = false;
 
-    mChanged = true;
+    mMatchesChanged = true;
 }
 
 void WebTatamiModel::loadBlocks() {
@@ -167,7 +171,7 @@ void WebTatamiModel::flush() {
             auto combinedId = std::make_pair(std::get<0>(*jt), std::get<1>(*jt));
             mMatches.insert(it, combinedId);
             mInsertedMatches.push_back(combinedId);
-            mChanged = true;
+            mMatchesChanged = true;
             ++i;
             ++jt;
             continue;
@@ -177,7 +181,7 @@ void WebTatamiModel::flush() {
             auto next = std::next(it);
             mMatches.erase(it);
             it = next;
-            mChanged = true;
+            mMatchesChanged = true;
             continue;
         }
 
@@ -194,10 +198,15 @@ void WebTatamiModel::flush() {
             auto next = std::next(it);
             mMatches.erase(it);
             it = next;
-            mChanged = true;
+            mMatchesChanged = true;
             continue;
         }
     }
+}
+
+bool WebTatamiModel::matchesChanged() const {
+    assert(!mResetting);
+    return mMatchesChanged;
 }
 
 bool WebTatamiModel::changed() const {

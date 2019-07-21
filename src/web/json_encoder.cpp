@@ -21,7 +21,7 @@ rapidjson::StringBuffer& JsonBuffer::getStringBuffer() {
     return mStringBuffer;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff, bool shouldCache) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff, bool shouldCache) {
     rapidjson::Document document;
     auto &allocator = document.GetAllocator();
 
@@ -77,6 +77,13 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
         document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, tournament.getCategory(*subscribedCategory), allocator), allocator);
     else
         document.AddMember("subscribedCategory", rapidjson::Value(), allocator);
+
+    // subscribed tatami field
+    const auto &tatamis = tournament.getTatamis();
+    if (subscribedTatami.has_value() && *subscribedTatami < tournament.getTatamis().tatamiCount())
+        document.AddMember("subscribedTatami", encodeSubscribedTatami(tournament, tatamis.at(tatamis.getHandle(*subscribedTatami)), allocator), allocator);
+    else
+        document.AddMember("subscribedTatami", rapidjson::Value(), allocator);
 
 
     // Identify matches
@@ -169,13 +176,30 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     return buffer;
 }
 
-bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, const TatamiStore &tatami, std::chrono::milliseconds clockDiff) {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("tatamiSubscription", allocator), allocator);
+
+    // subscribed category field
+    document.AddMember("subscribedTatami", encodeSubscribedTatami(tournament, tatami, allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return buffer;
+}
+
+bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami) {
     // check tournament
     if (tournament.tournamentChanged())
         return true;
 
     for (const auto &tatamiModel : tournament.getWebTatamiModels()) {
-        if (tatamiModel.changed())
+        if (tatamiModel.matchesChanged())
             return true;
     }
 
@@ -216,6 +240,10 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
                 return true;
         }
     }
+    else if (subscribedTatami.has_value() && *subscribedTatami < tournament.getTatamis().tatamiCount()) {
+        if (tournament.getWebTatamiModel(*subscribedTatami).changed())
+            return true;
+    }
 
     // check tatami matches
     auto tatamiCount = tournament.getTatamis().tatamiCount();
@@ -232,7 +260,7 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
     return false;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::chrono::milliseconds clockDiff) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     auto &allocator = document.GetAllocator();
 
@@ -297,7 +325,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         for (size_t i = 0; i < tatamiCount; ++i) {
             const auto &model = tournament.getWebTatamiModel(i);
 
-            if (model.changed())
+            if (model.matchesChanged())
                 tatamis.PushBack(encodeTatami(i, model, allocator), allocator);
         }
 
@@ -335,6 +363,13 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
             shouldEncode |= (tournament.getPlayerMatchResets().find(*subscribedPlayer) != tournament.getPlayerMatchResets().end());
             if (shouldEncode)
                 document.AddMember("subscribedPlayer", encodeSubscribedPlayer(tournament.getPlayer(*subscribedPlayer), allocator), allocator);
+        }
+    }
+    else if (subscribedTatami.has_value()) {
+        const auto &tatamis = tournament.getTatamis();
+        if  (*subscribedTatami < tatamis.tatamiCount()) {
+            if (tournament.getWebTatamiModel(*subscribedTatami).changed())
+                document.AddMember("subscribedTatami", encodeSubscribedTatami(tournament, tatamis.at(tatamis.getHandle(*subscribedTatami)), allocator), allocator);
         }
     }
 
@@ -607,6 +642,20 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionFailMessage()
     auto &allocator = document.GetAllocator();
 
     document.AddMember("messageType", encodeString("categorySubscriptionFail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return buffer;
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("tatamiSubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());

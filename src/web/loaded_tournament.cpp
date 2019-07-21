@@ -325,7 +325,7 @@ std::weak_ptr<TCPParticipant> LoadedTournament::getOwner() {
 void LoadedTournament::addParticipant(std::shared_ptr<WebParticipant> participant) {
     boost::asio::dispatch(mStrand, [this, participant](){
         JsonEncoder encoder;
-        auto message = encoder.encodeTournamentSubscriptionMessage(*mTournament, std::nullopt, std::nullopt, mClockDiff, false);
+        auto message = encoder.encodeTournamentSubscriptionMessage(*mTournament, std::nullopt, std::nullopt, std::nullopt, mClockDiff, false);
         participant->deliver(std::move(message));
 
         mWebParticipants.insert(std::move(participant));
@@ -376,12 +376,13 @@ void LoadedTournament::subscribePlayer(std::shared_ptr<WebParticipant> participa
 void LoadedTournament::subscribeTatami(std::shared_ptr<WebParticipant> participant, unsigned int index) {
     boost::asio::dispatch(mStrand, [this, participant, index]() {
         mTatamiSubscriptions[participant] = index;
-        mPlayerSubscriptions.erase(participant)
+        mPlayerSubscriptions.erase(participant);
         mCategorySubscriptions.erase(participant);
         JsonEncoder encoder;
         std::unique_ptr<JsonBuffer> message;
+        const auto &tatamis = mTournament->getTatamis();
         if (index < mTournament->getTatamis().tatamiCount())
-            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, mTournament->getTatamis().getTatami(index), mClockDiff);
+            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, tatamis.at(tatamis.getHandle(index)), mClockDiff);
         else
             message = encoder.encodeTatamiSubscriptionFailMessage();
 

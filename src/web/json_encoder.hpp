@@ -12,6 +12,7 @@ class WebTournamentStore;
 class CategoryStore;
 class PlayerStore;
 class WebTatamiModel;
+class TatamiStore;
 
 class JsonBuffer {
 public:
@@ -50,6 +51,7 @@ private:
     rapidjson::Value encodeSubscribedCategory(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator);
 
     rapidjson::Value encodeTatami(size_t index, const WebTatamiModel &model, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeSubscribedTatami(const WebTournamentStore &tournament, const TatamiStore &tatami, rapidjson::Document::AllocatorType &allocator);
 
     rapidjson::Value encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator, bool shouldCache);
     rapidjson::Value encodeCategoryResults(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator);

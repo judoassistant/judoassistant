@@ -17,6 +17,7 @@ public:
     WebTatamiModel(const TournamentStore &tournament, TatamiLocation tatami);
     const std::list<std::pair<CategoryId, MatchId>>& getMatches() const;
     const std::list<std::pair<CategoryId, MatchId>>& getInsertedMatches() const;
+    bool matchesChanged() const;
     bool changed() const;
 
     void changeMatches(const TournamentStore &tournament, CategoryId categoryId, const std::vector<MatchId> &matchIds);
@@ -40,6 +41,7 @@ private:
     std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedLoadedMatches; // Unfinished (and loaded) matches and loading time
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedLoadedMatchesSet;
 
+    bool mMatchesChanged;
     bool mChanged;
     std::list<std::pair<CategoryId, MatchId>> mMatches;
     std::list<std::pair<CategoryId, MatchId>> mInsertedMatches;
