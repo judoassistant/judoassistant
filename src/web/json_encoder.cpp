@@ -81,7 +81,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     // subscribed tatami field
     const auto &tatamis = tournament.getTatamis();
     if (subscribedTatami.has_value() && *subscribedTatami < tournament.getTatamis().tatamiCount())
-        document.AddMember("subscribedTatami", encodeSubscribedTatami(tournament, tatamis.at(tatamis.getHandle(*subscribedTatami)), allocator), allocator);
+        document.AddMember("subscribedTatami", encodeSubscribedTatami(tatamis.at(*subscribedTatami), allocator), allocator);
     else
         document.AddMember("subscribedTatami", rapidjson::Value(), allocator);
 
@@ -184,7 +184,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionMessage(const W
     document.AddMember("messageType", encodeString("tatamiSubscription", allocator), allocator);
 
     // subscribed category field
-    document.AddMember("subscribedTatami", encodeSubscribedTatami(tournament, tatami, allocator), allocator);
+    document.AddMember("subscribedTatami", encodeSubscribedTatami(tatami, allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -369,7 +369,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         const auto &tatamis = tournament.getTatamis();
         if  (*subscribedTatami < tatamis.tatamiCount()) {
             if (tournament.getWebTatamiModel(*subscribedTatami).changed())
-                document.AddMember("subscribedTatami", encodeSubscribedTatami(tournament, tatamis.at(tatamis.getHandle(*subscribedTatami)), allocator), allocator);
+                document.AddMember("subscribedTatami", encodeSubscribedTatami(tatamis.at(*subscribedTatami), allocator), allocator);
         }
     }
 
@@ -774,4 +774,48 @@ rapidjson::Value JsonEncoder::encodeCategoryResults(const TournamentStore &tourn
     }
 
     return res;
+}
+
+rapidjson::Value JsonEncoder::encodeSubscribedTatami(const TatamiStore &tatami, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res;
+    res.SetObject();
+
+    rapidjson::Value concurrentGroups(rapidjson::kArrayType);
+    for (size_t i = 0; i < tatami.groupCount(); ++i) {
+        const auto &concurrentGroup = tatami.at(i);
+
+        rapidjson::Value sequentialGroups(rapidjson::kArrayType);
+
+        for (size_t j = 0; j < concurrentGroup.groupCount(); ++j) {
+            const auto &sequentialGroup = concurrentGroup.at(j);
+
+            rapidjson::Value blocks(rapidjson::kArrayType);
+
+            for (size_t k = 0; k < sequentialGroup.blockCount(); ++k) {
+                auto p = sequentialGroup.at(k);
+                rapidjson::Value block;
+                block.SetObject();
+                block.AddMember("categoryId", p.first.getValue(), allocator);
+                block.AddMember("type", encodeMatchType(p.second, allocator), allocator);
+
+                blocks.PushBack(block, allocator);
+            }
+
+            sequentialGroups.PushBack(blocks, allocator);
+        }
+
+        concurrentGroups.PushBack(sequentialGroups, allocator);
+    }
+
+    res.AddMember("blocks", concurrentGroups, allocator);
+
+    return res;
+}
+
+rapidjson::Value JsonEncoder::encodeMatchType(MatchType matchType, rapidjson::Document::AllocatorType &allocator) {
+    // encode type
+    if (matchType == MatchType::FINAL)
+        return encodeString("FINAL", allocator);
+    else
+        return encodeString("ELIMINATION", allocator);
 }
