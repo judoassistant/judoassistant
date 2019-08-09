@@ -40,8 +40,8 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         connect(mHideAction, &QAction::triggered, this, &PlayersWidget::showHideMenu);
         updateHideActionText();
 
-        QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
-        connect(filterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
+        // QAction *filterAction = toolBar->addAction(QIcon("icons/filter.svg"), tr("Filter"));
+        // connect(filterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
 
         layout->addWidget(toolBar);
     }
