@@ -80,8 +80,8 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
 
     // subscribed tatami field
     const auto &tatamis = tournament.getTatamis();
-    if (subscribedTatami.has_value() && *subscribedTatami < tournament.getTatamis().tatamiCount())
-        document.AddMember("subscribedTatami", encodeSubscribedTatami(tatamis.at(*subscribedTatami), allocator), allocator);
+    if (subscribedTatami.has_value() && *subscribedTatami < tatamis.tatamiCount())
+        document.AddMember("subscribedTatami", encodeSubscribedTatami(*subscribedTatami, tatamis.at(*subscribedTatami), allocator), allocator);
     else
         document.AddMember("subscribedTatami", rapidjson::Value(), allocator);
 
@@ -176,7 +176,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     return buffer;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, const TatamiStore &tatami, std::chrono::milliseconds clockDiff) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, size_t index, const TatamiStore &tatami, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
@@ -184,7 +184,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionMessage(const W
     document.AddMember("messageType", encodeString("tatamiSubscription", allocator), allocator);
 
     // subscribed category field
-    document.AddMember("subscribedTatami", encodeSubscribedTatami(tatami, allocator), allocator);
+    document.AddMember("subscribedTatami", encodeSubscribedTatami(index, tatami, allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -369,7 +369,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
         const auto &tatamis = tournament.getTatamis();
         if  (*subscribedTatami < tatamis.tatamiCount()) {
             if (tournament.getWebTatamiModel(*subscribedTatami).changed())
-                document.AddMember("subscribedTatami", encodeSubscribedTatami(tatamis.at(*subscribedTatami), allocator), allocator);
+                document.AddMember("subscribedTatami", encodeSubscribedTatami(*subscribedTatami, tatamis.at(*subscribedTatami), allocator), allocator);
         }
     }
 
@@ -776,9 +776,11 @@ rapidjson::Value JsonEncoder::encodeCategoryResults(const TournamentStore &tourn
     return res;
 }
 
-rapidjson::Value JsonEncoder::encodeSubscribedTatami(const TatamiStore &tatami, rapidjson::Document::AllocatorType &allocator) {
+rapidjson::Value JsonEncoder::encodeSubscribedTatami(size_t index, const TatamiStore &tatami, rapidjson::Document::AllocatorType &allocator) {
     rapidjson::Value res;
     res.SetObject();
+
+    res.AddMember("index", index, allocator);
 
     rapidjson::Value concurrentGroups(rapidjson::kArrayType);
     for (size_t i = 0; i < tatami.groupCount(); ++i) {

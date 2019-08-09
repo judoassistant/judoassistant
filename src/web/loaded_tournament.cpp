@@ -382,7 +382,7 @@ void LoadedTournament::subscribeTatami(std::shared_ptr<WebParticipant> participa
         std::unique_ptr<JsonBuffer> message;
         const auto &tatamis = mTournament->getTatamis();
         if (index < mTournament->getTatamis().tatamiCount())
-            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, tatamis.at(tatamis.getHandle(index)), mClockDiff);
+            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, index, tatamis.at(tatamis.getHandle(index)), mClockDiff);
         else
             message = encoder.encodeTatamiSubscriptionFailMessage();
 
