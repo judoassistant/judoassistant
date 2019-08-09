@@ -38,7 +38,7 @@ public:
     std::unique_ptr<JsonBuffer> encodePlayerSubscriptionMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff);
     std::unique_ptr<JsonBuffer> encodePlayerSubscriptionFailMessage();
 
-    std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, size_t index, const TatamiStore &tatami, std::chrono::milliseconds clockDiff);
+    std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff);
     std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionFailMessage();
 
 private:
@@ -51,7 +51,7 @@ private:
     rapidjson::Value encodeSubscribedCategory(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator);
 
     rapidjson::Value encodeTatami(size_t index, const WebTatamiModel &model, rapidjson::Document::AllocatorType &allocator);
-    rapidjson::Value encodeSubscribedTatami(size_t index, const TatamiStore &tatami, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeSubscribedTatami(size_t index, const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);
 
     rapidjson::Value encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator, bool shouldCache);
     rapidjson::Value encodeCategoryResults(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator);
@@ -64,6 +64,7 @@ private:
     rapidjson::Value encodeTime(const std::chrono::milliseconds &time, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeOsaekomi(const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& osaekomi, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeMatchType(MatchType matchType, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeBlockStatus(const CategoryStore &category, MatchType matchType, rapidjson::Document::AllocatorType &allocator);
 
     std::optional<rapidjson::Document> mCachedSubscriptionObject;
     std::optional<rapidjson::Document> mCachedChangesObject;

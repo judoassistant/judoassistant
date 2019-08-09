@@ -351,7 +351,7 @@ void LoadedTournament::subscribeCategory(std::shared_ptr<WebParticipant> partici
         if (mTournament->containsCategory(category))
             message = encoder.encodeCategorySubscriptionMessage(*mTournament, mTournament->getCategory(category), mClockDiff);
         else
-            message = encoder.encodePlayerSubscriptionFailMessage();
+            message = encoder.encodeCategorySubscriptionFailMessage();
 
         participant->deliver(std::move(message));
     });
@@ -380,9 +380,8 @@ void LoadedTournament::subscribeTatami(std::shared_ptr<WebParticipant> participa
         mCategorySubscriptions.erase(participant);
         JsonEncoder encoder;
         std::unique_ptr<JsonBuffer> message;
-        const auto &tatamis = mTournament->getTatamis();
         if (index < mTournament->getTatamis().tatamiCount())
-            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, index, tatamis.at(tatamis.getHandle(index)), mClockDiff);
+            message = encoder.encodeTatamiSubscriptionMessage(*mTournament, index, mClockDiff);
         else
             message = encoder.encodeTatamiSubscriptionFailMessage();
 
