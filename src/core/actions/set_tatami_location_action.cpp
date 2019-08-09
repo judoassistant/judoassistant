@@ -16,19 +16,22 @@ void SetTatamiLocationAction::redoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mBlock.first)) // does the category exist?
         return;
 
-    auto &tatamis = tournament.getTatamis();
-    if (mLocation && !tatamis.containsTatami(mLocation->getTatamiHandle())) // Does the tatami exist?
-        return;
-
     auto &category = tournament.getCategory(mBlock.first);
-    if (mBlock.second == MatchType::FINAL && !category.getDrawSystem().hasFinalBlock()) // Does the block type exist?
-        return;
+    auto &tatamis = tournament.getTatamis();
 
-    const auto &tatami = tatamis.at(mLocation->getTatamiHandle());
-    if (tatami.containsGroup(mLocation->getConcurrentGroupHandle())) { // Are we below the MAX_GROUP_COUNT for the concurrent group destination
-        const auto &concurrentGroup = tatami.at(mLocation->getConcurrentGroupHandle());
-        if (!concurrentGroup.containsGroup(mLocation->getSequentialGroupHandle()) && concurrentGroup.groupCount() == ConcurrentBlockGroup::MAX_GROUP_COUNT)
+    if (mLocation.has_value()) { // Perform sanity checks
+        if (!tatamis.containsTatami(mLocation->getTatamiHandle())) // Does the tatami exist?
             return;
+
+        if (mBlock.second == MatchType::FINAL && !category.getDrawSystem().hasFinalBlock()) // Are we moving a non-existing final block onto a tatami?
+            return;
+
+        const auto &tatami = tatamis.at(mLocation->getTatamiHandle());
+        if (tatami.containsGroup(mLocation->getConcurrentGroupHandle())) { // Are we below the MAX_GROUP_COUNT for the concurrent group destination
+            const auto &concurrentGroup = tatami.at(mLocation->getConcurrentGroupHandle());
+            if (!concurrentGroup.containsGroup(mLocation->getSequentialGroupHandle()) && concurrentGroup.groupCount() == ConcurrentBlockGroup::MAX_GROUP_COUNT)
+                return;
+        }
     }
 
     mOldLocation = category.getLocation(mBlock.second);
