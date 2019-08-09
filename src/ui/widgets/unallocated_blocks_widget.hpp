@@ -35,7 +35,7 @@ public:
 
     UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent = 0);
 
-public slots:
+protected slots:
     void endAddCategories(std::vector<CategoryId> categoryIds);
     void beginEraseCategories(std::vector<CategoryId> categoryIds);
     void changeCategories(std::vector<CategoryId> categoryIds);
