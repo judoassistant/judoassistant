@@ -3,10 +3,11 @@
 #include "core/actions/action.hpp"
 #include "core/draw_systems/draw_system_identifier.hpp"
 
-class TournamentStore;
 class CategoryId;
 class DrawCategoriesAction;
 class DrawSystem;
+class SetTatamiLocationAction;
+class TournamentStore;
 
 class ChangeCategoriesDrawSystemAction : public Action {
 public:
@@ -33,6 +34,7 @@ private:
     std::vector<CategoryId> mChangedCategories;
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
     std::unique_ptr<DrawCategoriesAction> mDrawAction;
+    std::vector<std::unique_ptr<SetTatamiLocationAction>> mLocationActions;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesDrawSystemAction)

@@ -10,6 +10,7 @@
 #include "core/actions/draw_categories_action.hpp"
 #include "core/actions/reset_matches_action.hpp"
 #include "core/actions/set_categories_draw_disabled.hpp"
+#include "core/actions/set_tatami_location_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
