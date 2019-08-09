@@ -68,6 +68,10 @@ void UnallocatedBlocksWidget::changeCategories(std::vector<CategoryId> categoryI
             else
                 shouldShift |= eraseBlock(category, MatchType::FINAL);
         }
+        else {
+            // If the final block was removed
+            shouldShift |= eraseBlock(category, MatchType::FINAL);
+        }
     }
 
     if (shouldShift)
