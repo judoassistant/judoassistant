@@ -1,3 +1,5 @@
+#include <set>
+
 #include "core/actions/add_players_to_category_action.hpp"
 #include "core/actions/auto_add_categories_action.hpp"
 #include "core/actions/draw_categories_action.hpp"

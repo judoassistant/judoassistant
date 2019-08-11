@@ -2,17 +2,20 @@ sudo: false
 os:
   - linux
 dist: bionic
+compiler: clang
 addons:
     apt:
+        sources:
+          - sourceline: 'ppa:mhier/libboost-latest'
         packages:
           - ninja-build
           - meson
           - liblz4-dev
-          - libboost-system-dev
-          - libboost-filesystem-dev
-          - libboost-program-options-dev
-          - libpqxx-dev
           - libbotan-2-dev
+          - libcereal-dev
+          - rapidjson-dev
+          - libpqxx-dev
+          - libboost1.70-dev
 language:
   - cpp
 notifications:
@@ -20,6 +23,5 @@ notifications:
 script:
   - $CC --version
   - $CXX --version
-  - meson -Dui=false build
-  - cd build
-  - ninja
+  - meson -Dui=false build && cd build && ninja -k 0
+

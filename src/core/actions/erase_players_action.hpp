@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stack>
+
 #include "core/core.hpp"
 #include "core/actions/action.hpp"
 #include "core/stores/player_store.hpp"

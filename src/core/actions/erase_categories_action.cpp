@@ -1,3 +1,5 @@
+#include <set>
+
 #include "core/actions/erase_categories_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"

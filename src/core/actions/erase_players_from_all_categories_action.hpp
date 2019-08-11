@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stack>
+
 #include "core/actions/action.hpp"
 
 class TournamentStore;

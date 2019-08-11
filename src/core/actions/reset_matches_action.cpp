@@ -132,7 +132,7 @@ void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
     }
 
     if (!categoryDrawUpdates.empty())
-        tournament.resetCategoryResults(std::vector(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
+        tournament.resetCategoryResults(std::vector<CategoryId>(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
 
     // Notify of match changed
     // TODO tournament.changeMatches(mCategoryId, mChangedMatches);
@@ -207,6 +207,6 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
 
     // Notify results
     if (!categoryDrawUpdates.empty())
-        tournament.resetCategoryResults(std::vector(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
+        tournament.resetCategoryResults(std::vector<CategoryId>(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
 }
 

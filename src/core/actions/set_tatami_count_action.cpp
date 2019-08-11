@@ -61,7 +61,7 @@ void SetTatamiCountAction::redoImpl(TournamentStore & tournament) {
             mErasedTatamis.push_back(std::make_pair(location, std::move(tatami)));
         }
         tournament.endEraseTatamis(locations);
-        tournament.changeCategories(std::vector(categories.begin(), categories.end()));
+        tournament.changeCategories(std::vector<CategoryId>(categories.begin(), categories.end()));
     }
 }
 
@@ -114,7 +114,7 @@ void SetTatamiCountAction::undoImpl(TournamentStore & tournament) {
             tatamis[pair.first.handle] = std::move(pair.second);
         mErasedTatamis.clear();
         tournament.endAddTatamis(locations);
-        tournament.changeCategories(std::vector(categories.begin(), categories.end()));
+        tournament.changeCategories(std::vector<CategoryId>(categories.begin(), categories.end()));
     }
 }
 

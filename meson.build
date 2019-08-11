@@ -35,7 +35,7 @@ conf_data.set('VERSION_PATCH', '0')
 conf_data.set('DEBUG', get_option('buildtype') == 'debug')
 
 # Copy license
-configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
+# configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
 
 # Find all sources and headers
 include_dirs = include_directories(['.', 'src'])
@@ -77,9 +77,9 @@ endif
 ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep])
 
 # Copy icons
-if get_option('ui')
-    configure_file(input : 'icons/LICENSE', output: 'icon-license.txt', copy: true)
-endif
+# if get_option('ui')
+#     configure_file(input : 'icons/LICENSE', output: 'icon-license.txt', copy: true)
+# endif
 
 # Executables
 hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep])
