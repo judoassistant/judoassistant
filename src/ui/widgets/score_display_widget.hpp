@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stack>
 #include <QFont>
 #include <QTimer>
 #include <QWidget>

@@ -106,7 +106,7 @@ void InternationalScoreboardPainter::paintIntroductionPlayer(QPainter &painter, 
     QRect nameRect(columnOne, PADDING, rect.width() - PADDING - columnOne, rect.height() - 2 * PADDING);
     font.setPixelSize(rect.height()/4);
     painter.setFont(font);
-    QString nameText = QString::fromStdString(player.getLastName()) + QString(" ") + QString::fromStdString(player.getFirstName()).front() + QString(".");
+    QString nameText = QString::fromStdString(player.getLastName()) + QString(" ") + QString::fromStdString(player.getFirstName()).at(0) + QString(".");
     painter.drawText(nameRect, (playerIndex == MatchStore::PlayerIndex::WHITE ? Qt::AlignTop : Qt::AlignBottom) | Qt::AlignLeft, nameText);
 
     painter.restore();
@@ -211,7 +211,7 @@ void InternationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const 
 
     font.setPixelSize(nameHeight*4/5);
     painter.setFont(font);
-    QString nameText = QString::fromStdString(player.getLastName()) + QString(" ") + QString::fromStdString(player.getFirstName()).front() + QString(".");
+    QString nameText = QString::fromStdString(player.getLastName()) + QString(" ") + QString::fromStdString(player.getFirstName()).at(0) + QString(".");
     painter.drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
 
     // Score

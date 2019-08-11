@@ -37,8 +37,8 @@ protected:
     void tournamentAboutToBeReset();
     void playerCategoriesChanged(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
     void playerCategoriesChanged(const std::vector<PlayerId> &playerIds);
-    void categoriesAboutToBeErased(const std::vector<CategoryId> &playerIds);
-    void categoriesErased(const std::vector<CategoryId> &playerIds);
+    void categoriesAboutToBeErased(const std::vector<CategoryId> &categoryIds);
+    void categoriesErased(const std::vector<CategoryId> &categoryIds);
 
 private:
     std::string listPlayerCategories(const PlayerStore &player) const;

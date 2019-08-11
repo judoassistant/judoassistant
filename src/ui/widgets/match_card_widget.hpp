@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stack>
 #include <QWidget>
 #include <QFont>
 
@@ -12,7 +13,7 @@ class MatchCardWidget : public QWidget {
     Q_OBJECT
 public:
     MatchCardWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 
     void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId);
     QSize sizeHint() const override;

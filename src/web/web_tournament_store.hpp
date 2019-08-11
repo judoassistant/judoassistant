@@ -57,7 +57,7 @@ public:
     void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
     void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
 
-    void resetCategoryResults(CategoryId categoryId);
+    void resetCategoryResults(const std::vector<CategoryId> &categoryId) override;
 
 
     void flushWebTatamiModels();

@@ -39,7 +39,7 @@ void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
     }
 
     for (auto playerId : mErasedPlayerIds)
-        mPlayers.push(std::move(tournament.erasePlayer(playerId)));
+        mPlayers.push(tournament.erasePlayer(playerId));
     tournament.endErasePlayers(mErasedPlayerIds);
 }
 

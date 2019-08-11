@@ -59,7 +59,7 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
                 tournament.getPlayer(*bluePlayer).eraseMatch(categoryId, match->getId());
         }
 
-        mOldMatches.push_back(std::move(category.clearMatches()));
+        mOldMatches.push_back(category.clearMatches());
         mOldDrawSystems.push_back(category.getDrawSystem().clone());
 
         std::array<CategoryStatus, 2> status;

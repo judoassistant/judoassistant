@@ -133,7 +133,7 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
     }
 
     // sort ids by name
-    std::vector sortedPlayerCategoryIds(playerCategoryIds.begin(), playerCategoryIds.end());
+    std::vector<CategoryId> sortedPlayerCategoryIds(playerCategoryIds.begin(), playerCategoryIds.end());
     std::sort(sortedPlayerCategoryIds.begin(), sortedPlayerCategoryIds.end(), CategoryNameComparator(tournament));
 
     QMenu menu;

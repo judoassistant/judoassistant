@@ -8,9 +8,9 @@
 
 enum class MatchType;
 class TournamentStore;
-class TatamiLocation;
-class ConcurrentGroupLocation;
-class SequentialGroupLocation;
+struct TatamiLocation;
+struct ConcurrentGroupLocation;
+struct SequentialGroupLocation;
 
 // TODO: Refactor to avoid public methods accepting PositionHandle
 class TatamiList {

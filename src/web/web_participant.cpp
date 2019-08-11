@@ -6,7 +6,6 @@
 
 #include "core/log.hpp"
 #include "core/network/network_connection.hpp"
-#include "web/database.hpp"
 #include "web/json_encoder.hpp"
 #include "web/loaded_tournament.hpp"
 #include "web/web_participant.hpp"
@@ -15,12 +14,11 @@
 // TODO: Try to see if message size can be limited in async_read
 // TODO: Send error messages on load failure, tournament not exists etc.
 
-WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
+WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server)
     : mContext(context)
-    , mStrand(context)
+    , mStrand(mContext)
     , mConnection(std::move(connection))
     , mServer(server)
-    , mDatabase(database)
 {
     mConnection->text(true);
 }

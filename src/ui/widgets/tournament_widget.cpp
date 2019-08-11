@@ -12,8 +12,6 @@
 #include "ui/widgets/tournament_widget.hpp"
 #include "ui/widgets/web_client_widget.hpp"
 
-constexpr size_t FIRST_COLUMN_WIDTH = 200;
-
 TournamentWidget::TournamentWidget(MasterStoreManager &storeManager)
     : mStoreManager(storeManager)
 {

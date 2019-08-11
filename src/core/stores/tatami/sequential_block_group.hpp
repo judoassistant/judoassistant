@@ -8,7 +8,7 @@
 
 enum class MatchType;
 class TournamentStore;
-class BlockLocation;
+struct BlockLocation;
 
 class SequentialBlockGroup {
 public:

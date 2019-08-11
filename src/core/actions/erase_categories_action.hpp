@@ -6,7 +6,7 @@
 #include "core/id.hpp"
 
 class TournamentStore;
-class BlockLocation;
+struct BlockLocation;
 enum class MatchType;
 
 class EraseCategoriesAction : public Action {

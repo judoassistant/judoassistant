@@ -8,8 +8,8 @@
 
 enum class MatchType;
 class TournamentStore;
-class ConcurrentGroupLocation;
-class SequentialGroupLocation;
+struct ConcurrentGroupLocation;
+struct SequentialGroupLocation;
 class MatchStore;
 
 // TODO: Add interface to delay matches

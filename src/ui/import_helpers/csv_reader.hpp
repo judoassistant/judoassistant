@@ -2,7 +2,8 @@
 
 #include <QString>
 #include <vector>
-#include <string>
+
+#include "core/core.hpp"
 
 class CSVReader {
 public:

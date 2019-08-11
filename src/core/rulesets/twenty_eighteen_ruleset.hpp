@@ -19,11 +19,11 @@ public:
     std::chrono::milliseconds getOsaekomiWazariTime() const override;
 
     // Ippon
-    bool canAwardIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
-    void awardIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
+    bool canAwardIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void awardIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
-    bool canCancelIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const;
-    void cancelIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const;
+    bool canCancelIppon(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;
+    void cancelIppon(MatchStore &match, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime) const override;
 
     // Wazari
     bool canAwardWazari(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const override;

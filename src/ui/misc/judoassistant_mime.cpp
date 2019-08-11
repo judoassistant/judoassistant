@@ -9,7 +9,6 @@ JudoassistantMime::JudoassistantMime()
 }
 
 void JudoassistantMime::setBlock(CategoryId categoryId, MatchType matchType) {
-    std::optional<std::pair<CategoryId, MatchType>> mBlock;
     QByteArray ba;
     ba.append(reinterpret_cast<char*>(&categoryId), sizeof(categoryId));
     ba.append(reinterpret_cast<char*>(&matchType), sizeof(matchType));

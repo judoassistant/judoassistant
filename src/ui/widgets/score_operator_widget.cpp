@@ -185,7 +185,6 @@ void ScoreOperatorWidget::durationClick(ScoreboardPainterParams &params) {
         mStoreManager.dispatch(std::make_unique<PauseMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));
     }
     else {
-        auto masterTime = mStoreManager.masterTime();
         if (!ruleset.canResume(params.match, params.masterTime))
             return;
         mStoreManager.dispatch(std::make_unique<ResumeMatchAction>(params.category.getId(), params.match.getId(), params.masterTime));

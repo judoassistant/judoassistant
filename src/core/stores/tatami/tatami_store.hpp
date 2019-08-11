@@ -7,7 +7,7 @@
 #include "core/stores/tatami/concurrent_block_group.hpp"
 
 class TournamentStore;
-class TatamiLocation;
+struct TatamiLocation;
 
 class TatamiStore {
 public:

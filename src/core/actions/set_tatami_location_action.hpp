@@ -6,7 +6,7 @@
 #include "core/stores/tatami/location.hpp"
 
 class TournamentStore;
-class BlockLocation;
+struct BlockLocation;
 
 class SetTatamiLocationAction : public Action {
 public:

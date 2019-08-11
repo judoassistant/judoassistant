@@ -223,7 +223,7 @@ void PlayersModel::categoriesAboutToBeErased(const std::vector<CategoryId> &cate
 }
 
 void PlayersModel::categoriesErased(const std::vector<CategoryId> &categoryIds) {
-    playerCategoriesChanged(std::vector(mAffectedPlayers.begin(), mAffectedPlayers.end()));
+    playerCategoriesChanged(std::vector<PlayerId>(mAffectedPlayers.begin(), mAffectedPlayers.end()));
 }
 
 PlayersProxyModel::PlayersProxyModel(StoreManager &storeManager, QObject *parent)

@@ -34,7 +34,7 @@ void NetworkConnection::asyncJoin(JoinHandler handler) {
         auto handshakeMessage = std::make_shared<NetworkMessage>();
         handshakeMessage->encodeHandshake();
 
-        asyncWrite(*handshakeMessage, [this, handshakeMessage, handler](boost::system::error_code ec) {
+        asyncWrite(*handshakeMessage, [handshakeMessage, handler](boost::system::error_code ec) {
             if (ec) {
                 handler(ec);
                 return;
@@ -58,7 +58,7 @@ void NetworkConnection::asyncAccept(AcceptHandler handler) {
 
         auto responseMessage = std::make_shared<NetworkMessage>();
 
-        asyncRead(*responseMessage, [this, responseMessage, handler](boost::system::error_code ec) {
+        asyncRead(*responseMessage, [responseMessage, handler](boost::system::error_code ec) {
             if (ec) {
                 handler(ec);
                 return;
@@ -107,7 +107,7 @@ void NetworkConnection::writeBody(NetworkMessage &message, WriteHandler handler)
         return;
     }
 
-    mSocket->asyncWrite(message.bodyBuffer(), [this, handler](boost::system::error_code ec, size_t length) {
+    mSocket->asyncWrite(message.bodyBuffer(), [handler](boost::system::error_code ec, size_t length) {
         handler(ec);
     });
 }
@@ -129,7 +129,7 @@ void NetworkConnection::readHeader(NetworkMessage &message, ReadHandler handler)
 }
 
 void NetworkConnection::readBody(NetworkMessage &message, ReadHandler handler) {
-    mSocket->asyncRead(message.bodyBuffer(), [this, handler](boost::system::error_code ec, size_t length) {
+    mSocket->asyncRead(message.bodyBuffer(), [handler](boost::system::error_code ec, size_t length) {
         handler(ec);
     });
 }

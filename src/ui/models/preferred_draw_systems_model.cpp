@@ -85,8 +85,8 @@ QVariant PreferredDrawSystemsModel::headerData(int section, Qt::Orientation orie
 
 bool PreferredDrawSystemsModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (role == Qt::EditRole) {
-        if (!checkIndex(index))
-            return false;
+        // if (!QAbstractItemModel::checkIndex(index))
+        //     return false;
 
         if (index.column() == 0) {
             std::size_t limit = value.toInt();

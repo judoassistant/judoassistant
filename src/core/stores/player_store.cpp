@@ -321,11 +321,11 @@ std::ostream & operator<<(std::ostream &out, const PlayerAge &age) {
     return out << age.toString();
 }
 
-PlayerRank::PlayerRank(int value)
-    : mValue(static_cast<Enum>(value))
-{
-    if (mValue < 0 || mValue >= SIZE)
+PlayerRank::PlayerRank(int value) {
+    if (value < 0 || value >= SIZE)
         throw std::invalid_argument(std::to_string(value));
+
+    mValue = static_cast<Enum>(value);
 }
 
 PlayerCountry::PlayerCountry(int value)

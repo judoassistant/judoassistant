@@ -5,7 +5,6 @@
 #include <boost/beast/websocket.hpp>
 #include <queue>
 
-class Database;
 class WebServer;
 class LoadedTournament;
 class NetworkConnection;
@@ -13,7 +12,7 @@ class JsonBuffer;
 
 class WebParticipant : public std::enable_shared_from_this<WebParticipant> {
 public:
-    WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database);
+    WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server);
 
     void quit();
     void listen();
@@ -38,7 +37,6 @@ private:
     boost::beast::multi_buffer mBuffer;
 
     WebServer &mServer;
-    Database &mDatabase;
 
     std::shared_ptr<LoadedTournament> mTournament;
     std::queue<std::shared_ptr<JsonBuffer>> mWriteQueue;

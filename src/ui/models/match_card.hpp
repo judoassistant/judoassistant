@@ -42,7 +42,6 @@ private:
     std::optional<size_t> mTatami;
     QString mCategory;
     MatchStatus mStatus;
-    bool mIsStopped;
     bool mBye;
     bool mGoldenScore;
     std::chrono::seconds mTime;

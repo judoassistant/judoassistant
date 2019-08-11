@@ -81,7 +81,7 @@ QWidget* DrawSystemPreferenceDelegate::createEditor(QWidget *parent, const QStyl
 
         editor = spinBox;
     }
-    else if (index.column() == 1) {
+    else { // (index.column() == 1) {
         QComboBox *comboBox = new QComboBox(parent);
         for (const auto &drawSystem : DrawSystem::getDrawSystems())
             comboBox->addItem(QString::fromStdString(drawSystem->getName()), QVariant::fromValue(drawSystem->getIdentifier()));

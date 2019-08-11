@@ -302,7 +302,7 @@ const std::vector<WebTatamiModel>& WebTournamentStore::getWebTatamiModels() cons
     return mTatamiModels;
 }
 
-void WebTournamentStore::resetCategoryResults(CategoryId categoryId) {
-    mCategoryResultsResets.insert(categoryId);
+void WebTournamentStore::resetCategoryResults(const std::vector<CategoryId> &categoryIds) {
+    mCategoryResultsResets.insert(categoryIds.begin(), categoryIds.end());
 }
 
