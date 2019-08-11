@@ -1,0 +1,26 @@
+sudo: false
+
+os:
+  - linux
+
+addons:
+    apt:
+        packages:
+          - ninja-build
+          - meson
+          - liblz4-dev
+          - libboost-system-dev
+          - libboost-filesystem-dev
+          - libboost-program-options-dev
+          - libpqxx-dev
+          - libbotan-2-dev
+
+language:
+  - cpp
+
+script:
+  - $CC --version
+  - $CXX --version
+  - meson -Dui=false build
+  - cd build
+  - ninja
