@@ -1,8 +1,7 @@
 sudo: false
-
 os:
   - linux
-
+dist: bionic
 addons:
     apt:
         packages:
@@ -14,10 +13,10 @@ addons:
           - libboost-program-options-dev
           - libpqxx-dev
           - libbotan-2-dev
-
 language:
   - cpp
-
+notifications:
+  email: false
 script:
   - $CC --version
   - $CXX --version
