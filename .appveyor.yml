@@ -13,6 +13,8 @@ install:
   - cmd: set PATH=%cd%;C:\ninja-build;%PYTHON_ROOT%;%PYTHON_ROOT%\Scripts;%PATH%
   # Install meson
   - cmd: pip install meson
+  # Setup Boost
+  - cmd: set BOOST_ROOT=C:\Libraries\boost_1_67_0
   # Set up the build environment
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %arch%
 build_script:
