@@ -2,15 +2,27 @@ project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_libr
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
-zstd_dep = dependency('libzstd') # Compression library for networking and save-files
 thread_dep = dependency('threads')
+
+cxx = meson.get_compiler('cpp')
+
+zstd_dep = dependency('libzstd', required: false) # Compression library for networking and save-files
+if not zstd_dep.found() and get_option('zstd_dir') != ''
+    zstd_dep = cxx.find_library('libzstd_static', dirs: get_option('zstd_dir') + '/static', static: true)
+endif
 
 # UI dependencies
 if get_option('ui')
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
-    crypto_dep = dependency('libssl') # SSL library
-    ssl_dep = dependency('libcrypto') # Crypto library for SSL
+    ssl_dep = dependency('libssl', required: false) # SSL library
+    if not ssl_dep.found() and get_option('openssl_dir') != ''
+        ssl_dep = cxx.find_library('libssl', dirs: get_option('openssl_dir') + '/lib', static: true)
+    endif
+    crypto_dep = dependency('libcrypto', required: false) # Crypto library for SSL
+    if not crypto_dep.found()
+        crypto_dep = cxx.find_library('libcrypto', dirs: get_option('openssl_dir') + '/lib', static: true)
+    endif
 else
     qt5 = disabler()
     qt5_dep = disabler()

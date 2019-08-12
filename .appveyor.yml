@@ -4,19 +4,31 @@ environment:
       - arch: x64
         compiler: msvc2017
 install:
+  # Install lz4
+  - ps: Invoke-WebRequest "https://github.com/lz4/lz4/releases/download/v1.9.1/lz4_v1_9_1_win64.zip" -OutFile "C:\lz4.zip"
+  - ps: Expand-Archive "C:\lz4.zip" -DestinationPath "C:\Libraries\lz4_1_9_1"
+  # Install cereal
+  - ps: Invoke-WebRequest "https://github.com/USCiLab/cereal/archive/v1.2.2.zip" -OutFile "C:\cereal.zip"
+  - ps: Expand-Archive "C:\cereal.zip" -DestinationPath "C:\Libraries\cereal_1_2_2"
   # Download ninja
   - cinst ninja
   # Set paths to dependencies
   - cmd: set PYTHON_ROOT=C:\python37-x64
+  # Set-up qt5
+  - cmd: set QT_ROOT=C:\Qt\5.11\%compiler%_64
   # Add neccessary paths to PATH variable
-  - cmd: set PATH=%cd%;C:\ninja-build;%PYTHON_ROOT%;%PYTHON_ROOT%\Scripts;%PATH%
+  - cmd: set PATH=%cd%;C:\ninja-build;%PYTHON_ROOT%;%PYTHON_ROOT%\Scripts;%QT_ROOT%\bin;%PATH%
   # Install meson
-  - cmd: pip install meson lz4
+  - cmd: pip install meson
   # Setup Boost
   - cmd: set BOOST_ROOT=C:\Libraries\boost_1_67_0
   # Set up the build environment
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %arch%
+  - cd c:\tools\vcpkg
+  - vcpkg integrate install
+  - cd %APPVEYOR_BUILD_FOLDER%
+
 build_script:
   - cmd: echo Building on %arch% with %compiler%
-  - cmd: meson --backend=ninja builddir
+  - cmd: meson -Dweb=false -Dlz4_dir="C:\Libraries\lz4_1_9_1" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal_1_2_2" --backend=ninja builddir
   - cmd: ninja -C builddir

@@ -1,3 +1,6 @@
-option('ui', type : 'boolean', value : true)
-option('web', type : 'boolean', value : true)
+option('ui', type : 'boolean', value : true, description: 'Flag indicating whether the UI applications should the compiled')
+option('web', type : 'boolean', value : true, description: 'Flag indicating whether the web server should the compiled')
+option('zstd_dir', type: 'string', description: 'Path to ZStandard library (used on Windows)')
+option('openssl_dir', type: 'string', description: 'Path to OpenSSL library (used on Windows)')
+option('cereal_dir', type: 'string', description: 'Path to Cereal library (used on Windows)')
 
