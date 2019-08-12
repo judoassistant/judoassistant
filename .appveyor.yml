@@ -5,8 +5,7 @@ environment:
         compiler: msvc2017
 install:
   # Download ninja
-  - cmd: mkdir C:\ninja-build
-  - ps: (new-object net.webclient).DownloadFile('https://github.com/mesonbuild/cidata/raw/master/ninja.exe', 'C:\ninja-build\ninja.exe')
+  - cinst ninja
   # Set paths to dependencies
   - cmd: set PYTHON_ROOT=C:\python37-x64
   # Add neccessary paths to PATH variable
