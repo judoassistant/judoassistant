@@ -9,7 +9,8 @@ install:
   - ps: Expand-Archive "C:\lz4.zip" -DestinationPath "C:\Libraries\lz4_1_9_1"
   # Install cereal
   - ps: Invoke-WebRequest "https://github.com/USCiLab/cereal/archive/v1.2.2.zip" -OutFile "C:\cereal.zip"
-  - ps: Expand-Archive "C:\cereal.zip" -DestinationPath "C:\Libraries\cereal_1_2_2"
+  - ps: Expand-Archive "C:\cereal.zip" -DestinationPath "C:\Libraries"
+  # - tree /f
   # Download ninja
   - cinst ninja
   # Set paths to dependencies
@@ -30,5 +31,5 @@ install:
 
 build_script:
   - cmd: echo Building on %arch% with %compiler%
-  - cmd: meson -Dweb=false -Dlz4_dir="C:\Libraries\lz4_1_9_1" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal_1_2_2" --backend=ninja builddir
+  - cmd: meson -Dweb=false -Dlz4_dir="C:\Libraries\lz4_1_9_1" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" --backend=ninja builddir
   - cmd: ninja -C builddir

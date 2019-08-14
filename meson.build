@@ -50,7 +50,21 @@ conf_data.set('DEBUG', get_option('buildtype') == 'debug')
 # configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
 
 # Find all sources and headers
-include_dirs = include_directories(['.', 'src'])
+include_array = ['.', 'src']
+
+if get_option('zstd_dir') != ''
+    include_array += [get_option('zstd_dir') + '\include']
+endif
+
+if get_option('openssl_dir') != ''
+    include_array += [get_option('openssl_dir') + '\include']
+endif
+
+if get_option('cereal_dir') != ''
+    include_array += [get_option('cereal_dir') + '\include']
+endif
+
+include_dirs = include_directories(include_array)
 
 core_sources = []
 ui_sources = []
