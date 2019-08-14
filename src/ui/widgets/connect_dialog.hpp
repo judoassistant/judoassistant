@@ -1,11 +1,12 @@
 #pragma once
 
-#include "core/core.hpp"
-
+#include <optional>
 #include <QDialog>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QCheckBox>
+
+#include "core/core.hpp"
 
 class ClientStoreManager;
 

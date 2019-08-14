@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <cereal/cereal.hpp>
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/memory.hpp>

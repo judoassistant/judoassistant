@@ -222,7 +222,7 @@ void InternationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const 
 
     const auto &score = params.match.getScore(playerIndex);
     const auto &otherScore = params.match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
-    if (score.hansokuMake == 0 && (score.ippon > 0 || otherScore.hansokuMake == 1))
+    if (!score.hansokuMake && (score.ippon || otherScore.hansokuMake))
         painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, "IPPON");
     else
         painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, QString::number(score.wazari));
@@ -233,7 +233,7 @@ void InternationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const 
     QRect firstPenaltyRect(columnThree, scoreOffset+(scoreHeight-penaltyHeight)/2, penaltyWidth, penaltyHeight);
     QRect secondPenaltyRect(columnThree + PADDING + penaltyWidth, scoreOffset+(scoreHeight-penaltyHeight)/2, penaltyWidth, penaltyHeight);
 
-    if (score.hansokuMake > 0) {
+    if (score.hansokuMake) {
         painter.setPen(COLOR_SCOREBOARD_BLACK);
         painter.setBrush(COLOR_SCOREBOARD_HANSOKU);
         painter.drawRect(firstPenaltyRect);

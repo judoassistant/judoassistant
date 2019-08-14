@@ -1,10 +1,15 @@
 project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_library=static'], license: 'MIT')
 
+cxx = meson.get_compiler('cpp')
+if cxx.get_id()=='msvc'
+    add_project_arguments('/bigobj', language: 'cpp')
+    add_project_arguments('-D_WIN32_WINNT=0x0601', language: 'cpp')
+endif
+
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 thread_dep = dependency('threads')
 
-cxx = meson.get_compiler('cpp')
 
 zstd_dep = dependency('libzstd', required: false) # Compression library for networking and save-files
 if not zstd_dep.found() and get_option('zstd_dir') != ''
@@ -14,7 +19,7 @@ endif
 # UI dependencies
 if get_option('ui')
     qt5 = import('qt5')
-    qt5_dep = dependency('qt5', modules: ['Core', 'Widgets'])
+    qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
     ssl_dep = dependency('libssl', required: false) # SSL library
     if not ssl_dep.found() and get_option('openssl_dir') != ''
         ssl_dep = cxx.find_library('libssl', dirs: get_option('openssl_dir') + '/lib', static: true)
@@ -62,6 +67,11 @@ endif
 
 if get_option('cereal_dir') != ''
     include_array += [get_option('cereal_dir') + '\include']
+endif
+
+# Setting BOOST_INCLUDEDIR in the environment does not seem to work
+if get_option('boost_dir') != ''
+    include_array += [get_option('boost_dir')]
 endif
 
 include_dirs = include_directories(include_array)
@@ -116,4 +126,5 @@ web_exe = executable('judoassistant-web', web_sources, include_directories: incl
 # Run targets
 run_target('icons', command : 'scripts/compile_icons.sh')
 run_target('flags', command : 'scripts/compile_flags.sh')
+
 

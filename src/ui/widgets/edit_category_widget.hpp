@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <stack>
 #include <unordered_set>
 #include <QWidget>

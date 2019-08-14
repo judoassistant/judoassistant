@@ -10,26 +10,29 @@ install:
   # Install cereal
   - ps: Invoke-WebRequest "https://github.com/USCiLab/cereal/archive/v1.2.2.zip" -OutFile "C:\cereal.zip"
   - ps: Expand-Archive "C:\cereal.zip" -DestinationPath "C:\Libraries"
-  # - tree /f
+  # Debug
+  # - cd C:\Qt\5.13.0\%compiler%_64\include\QtWidgets
+  # - cd C:\Libraries\boost_1_69_0\boost\asio
+  # - dir
   # Download ninja
-  - cinst ninja
+  - cmd: cinst ninja
   # Set paths to dependencies
   - cmd: set PYTHON_ROOT=C:\python37-x64
   # Set-up qt5
-  - cmd: set QT_ROOT=C:\Qt\5.11\%compiler%_64
+  - cmd: set QT_ROOT=C:\Qt\5.13.0\%compiler%_64
   # Add neccessary paths to PATH variable
   - cmd: set PATH=%cd%;C:\ninja-build;%PYTHON_ROOT%;%PYTHON_ROOT%\Scripts;%QT_ROOT%\bin;%PATH%
   # Install meson
   - cmd: pip install meson
   # Setup Boost
-  - cmd: set BOOST_ROOT=C:\Libraries\boost_1_67_0
+  - cmd: set BOOST_ROOT=C:\Libraries\boost_1_69_0
   # Set up the build environment
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %arch%
-  - cd c:\tools\vcpkg
-  - vcpkg integrate install
-  - cd %APPVEYOR_BUILD_FOLDER%
+  # - cd c:\tools\vcpkg
+  # - vcpkg integrate install
+  # - cd %APPVEYOR_BUILD_FOLDER%
 
 build_script:
   - cmd: echo Building on %arch% with %compiler%
-  - cmd: meson -Dweb=false -Dlz4_dir="C:\Libraries\lz4_1_9_1" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" --backend=ninja builddir
-  - cmd: ninja -C builddir
+  - cmd: meson -Dweb=false -Dlz4_dir="C:\Libraries\lz4_1_9_1" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" -Dboost_dir="C:\Libraries\boost_1_69_0" --backend=ninja builddir
+  - cmd: ninja -C builddir -k20

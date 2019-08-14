@@ -167,7 +167,7 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
     }
 
     // Penalties
-    if (score.hansokuMake > 0) {
+    if (score.hansokuMake) {
         painter.setPen(COLOR_SCOREBOARD_BLACK);
         painter.setBrush(COLOR_SCOREBOARD_HANSOKU);
 

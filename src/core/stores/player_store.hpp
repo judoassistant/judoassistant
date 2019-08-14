@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <cstdint>
+#include <optional>
+#include <string>
 #include <unordered_set>
 
 #include "core/core.hpp"

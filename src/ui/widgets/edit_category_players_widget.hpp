@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <QWidget>
 #include <QTableView>
 

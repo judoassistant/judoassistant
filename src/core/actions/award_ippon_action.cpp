@@ -1,3 +1,4 @@
+#include <optional>
 #include "core/actions/award_ippon_action.hpp"
 #include "core/stores/tournament_store.hpp"
 #include "core/stores/category_store.hpp"

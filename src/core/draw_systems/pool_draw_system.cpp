@@ -141,7 +141,7 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::ge
         sortedRanks.push_back(pair.second);
     std::sort(sortedRanks.begin(), sortedRanks.end());
 
-    for (size_t i = 0; i < sortedRanks.size(); ++i)
+    for (unsigned int i = 0; i < sortedRanks.size(); ++i)
         results.emplace_back(sortedRanks[i].playerId, i+1);
     return results;
 }
