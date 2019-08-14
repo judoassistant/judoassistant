@@ -1,9 +1,10 @@
+#include <sstream>
+#include <zstd.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
-#include <lz4.h>
-#include <sstream>
 
 #include "core/constants/actions.hpp"
+#include "core/constants/compression.hpp"
 #include "core/log.hpp"
 #include "core/serializables.hpp"
 #include "web/loaded_tournament.hpp"
@@ -177,9 +178,9 @@ void LoadedTournament::load(LoadCallback callback) {
             return;
         }
 
-        auto returnCode = LZ4_decompress_safe(compressed.get(), uncompressed.data(), compressedSize, uncompressedSize);
+        const size_t returnCode = ZSTD_decompress(uncompressed.data(), uncompressedSize, compressed.get(), compressedSize);
 
-        if (returnCode <= 0) {
+        if (ZSTD_isError(returnCode)) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
             mFileInUse = false;
             return;
@@ -238,12 +239,12 @@ void LoadedTournament::save(SaveCallback callback) {
         boost::asio::dispatch(mContext, [this, uncompressed, callback]() {
             // Compress string
             const int uncompressedSize = static_cast<int>(uncompressed->size());
-            const int compressBound = LZ4_compressBound(uncompressedSize);
+            const size_t compressBound = ZSTD_compressBound(uncompressedSize);
 
             auto compressed = std::make_unique<char[]>(compressBound);
-            const int compressedSize = LZ4_compress_default(uncompressed->data(), compressed.get(), uncompressedSize, compressBound);
+            const size_t compressedSize = ZSTD_compress(compressed.get(), compressBound, uncompressed->data(), uncompressedSize, COMPRESSION_LEVEL);
 
-            if (compressedSize <= 0) {
+            if (ZSTD_isError(compressedSize)) {
                 log_error().msg("Failed compressing tournament for disk");
                 boost::asio::dispatch(mContext, std::bind(callback, false));
                 mFileInUse = false;

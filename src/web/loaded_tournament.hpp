@@ -45,7 +45,7 @@ public:
     void eraseParticipant(std::shared_ptr<WebParticipant> participant);
 
 private:
-    static constexpr unsigned int FILE_HEADER_SIZE = 9;
+    static constexpr unsigned int FILE_HEADER_SIZE = 13;
 
     void deliverChanges();
     void deliverSync();

@@ -1,14 +1,17 @@
-#include <lz4.h>
+#include <zstd.h>
 
+#include "core/constants/compression.hpp"
 #include "core/log.hpp"
 #include "core/network/network_message.hpp"
 #include "core/serializables.hpp"
 #include "core/version.hpp"
 #include "core/web/web_types.hpp"
 
+constexpr size_t HEADER_LENGTH = 21; // cereal::PortableBinaryOutputArchive uses 1 + 8 + 4 + 8 bytes for the header
+
 // Perfect forwards args to cereal archive and compresses the result
 template <typename... Args>
-std::tuple<std::string, int> serializeAndCompress(Args&&... args) {
+std::tuple<std::string, size_t> serializeAndCompress(Args&&... args) {
     std::string uncompressed;
 
     {
@@ -18,17 +21,17 @@ std::tuple<std::string, int> serializeAndCompress(Args&&... args) {
         uncompressed = stream.str();
     }
 
-    const int uncompressedSize = static_cast<int>(uncompressed.size());
-    const int compressBound = LZ4_compressBound(uncompressedSize);
+    const size_t uncompressedSize = uncompressed.size();
+    const size_t compressBound = ZSTD_compressBound(uncompressedSize);
 
     std::string compressed;
     compressed.resize(compressBound);
 
-    const int compressedSize = LZ4_compress_default(uncompressed.data(), compressed.data(), uncompressed.size(), compressBound);
+    const size_t compressedSize = ZSTD_compress(compressed.data(), compressBound, uncompressed.data(), uncompressedSize, COMPRESSION_LEVEL);
 
-    if (compressedSize <= 0) {
-        log_error().field("return_value", compressedSize).msg("LZ4 compress failed");
-        throw std::runtime_error("LZ4 compress failed");
+    if (ZSTD_isError(compressedSize)) {
+        log_error().field("return_value", compressedSize).msg("ZSTD compress failed");
+        throw std::runtime_error("ZSTD compress failed");
     }
 
     compressed.resize(compressedSize);
@@ -38,14 +41,14 @@ std::tuple<std::string, int> serializeAndCompress(Args&&... args) {
 
 // Forwards args to cereal archive and decompress the result
 template <typename... Args>
-bool deserializeAndCompress(int uncompressedSize, const std::string &compressed, Args&&... args) {
+bool deserializeAndCompress(size_t uncompressedSize, const std::string &compressed, Args&&... args) {
     std::string uncompressed;
     uncompressed.resize(uncompressedSize);
 
-    auto returnCode = LZ4_decompress_safe(compressed.data(), uncompressed.data(), compressed.size(), uncompressedSize);
+    const size_t returnCode = ZSTD_decompress(uncompressed.data(), uncompressedSize, compressed.data(), compressed.size());
 
-    if (returnCode <= 0) {
-        log_error().field("return_value", returnCode).msg("LZ4 decompress failed");
+    if (ZSTD_isError(returnCode)) {
+        log_error().field("return_value", returnCode).msg("ZSTD decompress failed");
         return false;
     }
 

@@ -2,7 +2,7 @@ project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_libr
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
-lz4_dep = dependency('liblz4') # Compression library for networking and save-files
+zstd_dep = dependency('libzstd') # Compression library for networking and save-files
 thread_dep = dependency('threads')
 
 # UI dependencies
@@ -58,7 +58,7 @@ web_sources = []
 subdir('src')
 
 # Compile static libraries
-core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [lz4_dep])
+core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep])
 
 # Qt5 compilations
 if get_option('ui')
@@ -82,7 +82,7 @@ if get_option('ui')
 endif
 
 # Executables
-hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, lz4_dep, ssl_dep, crypto_dep])
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep])
 score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
 kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
 web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep])

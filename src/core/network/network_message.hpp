@@ -18,8 +18,6 @@ class Action;
 
 class NetworkMessage {
 public:
-    static const size_t HEADER_LENGTH = 17; // cereal::PortableBinaryOutputArchive uses 1 + 8 + 4 + 4 bytes for the header
-
     enum class Type {
         HANDSHAKE, // The message contains the initial connection handshake
         SYNC, // The message contains the entire serialized tournament
@@ -108,7 +106,7 @@ private:
     void encodeHeader();
 
     Type mType;
-    int mUncompressedSize;
+    size_t mUncompressedSize;
     std::string mHeader;
     std::string mBody;
 };

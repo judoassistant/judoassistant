@@ -1,16 +1,17 @@
 #include <fstream>
 
 #include <boost/system/system_error.hpp>
-#include <lz4.h>
+#include <zstd.h>
 #include <QSettings>
 
+#include "core/constants/compression.hpp"
 #include "core/log.hpp"
-#include "ui/network/network_server.hpp"
 #include "core/serializables.hpp"
+#include "ui/network/network_server.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 
-constexpr size_t FILE_HEADER_SIZE = 9;
+constexpr size_t FILE_HEADER_SIZE = 17;
 
 MasterStoreManager::MasterStoreManager()
     : StoreManager()
@@ -56,7 +57,7 @@ bool MasterStoreManager::read(const QString &path) {
     if (!file.is_open())
         return false;
 
-    int compressedSize, uncompressedSize;
+    size_t compressedSize, uncompressedSize;
     std::string header;
     header.resize(FILE_HEADER_SIZE);
     try {
@@ -83,10 +84,10 @@ bool MasterStoreManager::read(const QString &path) {
         return false;
     }
 
-    auto returnCode = LZ4_decompress_safe(compressed.get(), uncompressed.data(), compressedSize, uncompressedSize);
+    const size_t returnCode = ZSTD_decompress(uncompressed.data(), uncompressedSize, compressed.get(), compressedSize);
 
-    if (returnCode <= 0) {
-        log_error().field("return_value", returnCode).msg("LZ4 decompress failed");
+    if (ZSTD_isError(returnCode)) {
+        log_error().field("return_value", returnCode).msg("ZSTD decompress failed");
         return false;
     }
 
@@ -140,14 +141,14 @@ bool MasterStoreManager::write(const QString &path) {
     }
 
     // Compress string
-    const int uncompressedSize = static_cast<int>(uncompressed.size());
-    const int compressBound = LZ4_compressBound(uncompressedSize);
+    const size_t uncompressedSize = uncompressed.size();
+    const size_t compressBound = ZSTD_compressBound(uncompressedSize);
 
     auto compressed = std::make_unique<char[]>(compressBound);
-    const int compressedSize = LZ4_compress_default(uncompressed.data(), compressed.get(), uncompressed.size(), compressBound);
+    const size_t compressedSize = ZSTD_compress(compressed.get(), compressBound, uncompressed.data(), uncompressed.size(), COMPRESSION_LEVEL);
 
-    if (compressedSize <= 0) {
-        log_error().field("return_value", compressedSize).msg("LZ4 compress failed");
+    if (ZSTD_isError(compressedSize)) {
+        log_error().field("return_value", compressedSize).msg("ZSTD compress failed");
         return false;
     }
 
