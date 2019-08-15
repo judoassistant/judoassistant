@@ -1,6 +1,6 @@
 environment:
     matrix:
-      - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu1804
         arch: x64
         compiler: clang
       - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
