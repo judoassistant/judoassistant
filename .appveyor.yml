@@ -5,15 +5,15 @@ environment:
         compiler: msvc2017
 install:
   # Install lz4
-  - ps: Invoke-WebRequest "https://github.com/lz4/lz4/releases/download/v1.9.1/lz4_v1_9_1_win64.zip" -OutFile "C:\lz4.zip"
-  - ps: Expand-Archive "C:\lz4.zip" -DestinationPath "C:\Libraries\lz4_1_9_1"
+  - ps: Invoke-WebRequest "https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-v1.4.2-win64.zip" -OutFile "C:\zstd.zip"
+  - ps: Expand-Archive "C:\zstd.zip" -DestinationPath "C:\Libraries"
   # Install cereal
   - ps: Invoke-WebRequest "https://github.com/USCiLab/cereal/archive/v1.2.2.zip" -OutFile "C:\cereal.zip"
   - ps: Expand-Archive "C:\cereal.zip" -DestinationPath "C:\Libraries"
   # Debug
-  # - cd C:\Qt\5.13.0\%compiler%_64\include\QtWidgets
-  # - cd C:\Libraries\boost_1_69_0\boost\asio
-  # - dir
+  - cd C:\Libraries\zstd-v1.4.2-win64
+  - tree /f
+  - cd %APPVEYOR_BUILD_FOLDER%
   # Download ninja
   - cmd: cinst ninja
   # Set paths to dependencies
@@ -30,9 +30,8 @@ install:
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %arch%
   # - cd c:\tools\vcpkg
   # - vcpkg integrate install
-  # - cd %APPVEYOR_BUILD_FOLDER%
 
 build_script:
   - cmd: echo Building on %arch% with %compiler%
-  - cmd: meson -Dweb=false -Dlz4_dir="C:\Libraries\lz4_1_9_1" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" -Dboost_dir="C:\Libraries\boost_1_69_0" --backend=ninja builddir
-  - cmd: ninja -C builddir -k20
+  - cmd: meson -Dweb=false -Dzstd_dir="C:\Libraries\zstd-v1.4.2-win64" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" -Dboost_dir="C:\Libraries\boost_1_69_0" --backend=ninja builddir
+  - cmd: ninja -C builddir -k5

@@ -10,23 +10,23 @@ endif
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 thread_dep = dependency('threads')
 
-
-zstd_dep = dependency('libzstd', required: false) # Compression library for networking and save-files
-if not zstd_dep.found() and get_option('zstd_dir') != ''
-    zstd_dep = cxx.find_library('libzstd_static', dirs: get_option('zstd_dir') + '/static', static: true)
+if get_option('zstd_dir') == ''
+    zstd_dep = dependency('libzstd') # Compression library for networking and save-files
+else
+    zstd_dep = cxx.find_library('libzstd', dirs: get_option('zstd_dir') + '/dll')
 endif
 
 # UI dependencies
 if get_option('ui')
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
-    ssl_dep = dependency('libssl', required: false) # SSL library
-    if not ssl_dep.found() and get_option('openssl_dir') != ''
-        ssl_dep = cxx.find_library('libssl', dirs: get_option('openssl_dir') + '/lib', static: true)
-    endif
-    crypto_dep = dependency('libcrypto', required: false) # Crypto library for SSL
-    if not crypto_dep.found()
-        crypto_dep = cxx.find_library('libcrypto', dirs: get_option('openssl_dir') + '/lib', static: true)
+
+    if get_option('openssl_dir') == ''
+        ssl_dep = dependency('libssl') # SSL library
+        crypto_dep = dependency('libcrypto') # Crypto library for SSL
+    else
+        ssl_dep = cxx.find_library('libssl', dirs: get_option('openssl_dir') + '/lib')
+        crypto_dep = cxx.find_library('libcrypto', dirs: get_option('openssl_dir') + '/lib')
     endif
 else
     qt5 = disabler()
@@ -93,7 +93,7 @@ web_sources = []
 
 subdir('src')
 
-# Compile static libraries
+# Compile core library
 core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep])
 
 # Qt5 compilations
@@ -109,7 +109,7 @@ else
     hub_moc_files = disabler()
 endif
 
-# Compile static libraries
+# Compile ui library
 ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep])
 
 # Copy icons
