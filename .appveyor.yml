@@ -10,7 +10,7 @@ install:
   # Ubuntu: Install dependencies
   - sh: sudo add-apt-repository ppa:mhier/libboost-latest
   - sh: sudo apt-get update
-  - sh: sudo apt-get install -y ninja-build meson libzstd-dev libbotan-2-dev libcereal-dev rapidjson-dev libpqxx-dev libboost1.70-dev qtbase5-dev qt5-default
+  - sh: sudo apt-get install -y -f ninja-build meson libzstd-dev libbotan-2-dev libcereal-dev rapidjson-dev libpqxx-dev libboost1.70-dev qtbase5-dev qt5-default
   # Windows: Install lz4
   - ps: if ($isWindows) { Invoke-WebRequest "https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-v1.4.2-win64.zip" -OutFile "C:\zstd.zip" }
   - ps: if ($isWindows) { Expand-Archive "C:\zstd.zip" -DestinationPath "C:\Libraries" }
