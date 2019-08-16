@@ -8,6 +8,9 @@ class WarningWidget : public QWidget {
 public:
     WarningWidget(const QString &warning, QWidget *parent = nullptr);
 
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
 private:
     const QString mWarning;
 };

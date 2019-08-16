@@ -9,6 +9,9 @@ static const QColor COLOR_UI_SHIDO("#EBCB8B");
 static const QColor COLOR_UI_PAUSED("#EBCB8B");
 static const QColor COLOR_UI_UNPAUSED("#A3BE8C");
 
+static const QColor COLOR_UI_WARNING_BACKGROUND("#fff5f7");
+static const QColor COLOR_UI_WARNING_FOREGROUND("#cd0930");
+
 static const QColor COLOR_UI_BLOCK_STARTED("#050244"); // Dark Blue
 static const QColor COLOR_UI_BLOCK_FINISHED("#440209"); // Dark Red
 

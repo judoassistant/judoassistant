@@ -22,7 +22,7 @@ KioskWindow::KioskWindow()
     QWidget *centralWidget = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
 
-    mWarningWidget = new WarningWidget(tr("Not connected"));
+    mWarningWidget = new WarningWidget(tr("This display is not connected. The information shown may not be up to date!"));
     layout->addWidget(mWarningWidget);
 
     auto *matches = new MatchesWidget(mStoreManager);
