@@ -14,14 +14,19 @@ be available at [judoassistant.com](https://judoassistant.com/).
 
 Compilation
 -----------
-In order to compile the full JudoAssistant software suite you will need to have
+In order to compile the JudoAssistant software suite you will need to have
 the following dependencies installed on your system:
 * qt5
 * boost
-* lz4
-* pqxx
-* botan
+* zstd
 * cereal
-* rapidjson
 * meson
+* ninja
+
+The applications are then compiled using `meson` and `ninja`:
+```bash
+cd <sourcecode_directory>
+meson builddir -Dweb=false
+ninja -C builddir
+```
 
