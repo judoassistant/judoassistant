@@ -33,7 +33,7 @@ install:
 build_script:
   # Windows
   - cmd: meson -Dweb=false -Dzstd_dir="C:\Libraries\zstd-v1.4.2-win64" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" -Dboost_dir="C:\Libraries\boost_1_69_0" --backend=ninja build
-  - cmd: ninja -C build -k5
+  - cmd: ninja -C build
   # Ubuntu
   - sh: meson build -Dweb=false
-  - sh: ninja -C build -k5
+  - sh: ninja -C build
