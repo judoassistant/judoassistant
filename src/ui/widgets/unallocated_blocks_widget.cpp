@@ -1,10 +1,10 @@
 #include <algorithm>
-#include <QGraphicsSceneDragDropEvent>
 #include <QApplication>
-#include <QDrag>
-#include <QBitmap>
-#include <QPen>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
 
+#include "core/actions/set_tatami_location_action.hpp"
+#include "core/log.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/misc/judoassistant_mime.hpp"
 #include "ui/store_managers/store_manager.hpp"
@@ -198,5 +198,22 @@ bool UnallocatedBlocksWidget::eraseBlock(CategoryId id, MatchType type) {
 
 bool UnallocatedBlocksWidget::eraseBlock(const CategoryStore &category, MatchType type) {
     return eraseBlock(category.getId(), type);
+}
+
+void UnallocatedBlocksWidget::dragMoveEvent(QDragMoveEvent *event) {
+    event->setAccepted(event->mimeData()->hasFormat("application/judoassistant-block"));
+}
+
+void UnallocatedBlocksWidget::dropEvent(QDropEvent *event) {
+    const auto * mime = dynamic_cast<const JudoassistantMime*>(event->mimeData());
+    auto block = mime->block();
+
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &category = tournament.getCategory(block.first);
+
+    if (!category.getLocation(block.second).has_value())
+        return; // Unallocated block. No need to move
+
+    mStoreManager.dispatch(std::make_unique<SetTatamiLocationAction>(block, std::nullopt));
 }
 

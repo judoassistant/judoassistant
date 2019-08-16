@@ -35,6 +35,9 @@ public:
 
     UnallocatedBlocksWidget(StoreManager & storeManager, QWidget *parent = 0);
 
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
 protected slots:
     void endAddCategories(std::vector<CategoryId> categoryIds);
     void beginEraseCategories(std::vector<CategoryId> categoryIds);
