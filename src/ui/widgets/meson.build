@@ -3,6 +3,7 @@ subdir('scoreboard_painters')
 
 hub_sources += ['src/ui/widgets/auto_add_category_dialog.cpp']
 hub_sources += ['src/ui/widgets/categories_widget.cpp']
+hub_sources += ['src/ui/widgets/category_matches_widget.cpp']
 hub_sources += ['src/ui/widgets/configure_dialog.cpp']
 hub_sources += ['src/ui/widgets/create_category_dialog.cpp']
 hub_sources += ['src/ui/widgets/create_player_dialog.cpp']
@@ -28,6 +29,7 @@ hub_sources += ['src/ui/widgets/web_connection_preferences_widget.cpp']
 
 hub_moc_headers += ['src/ui/widgets/auto_add_category_dialog.hpp']
 hub_moc_headers += ['src/ui/widgets/categories_widget.hpp']
+hub_moc_headers += ['src/ui/widgets/category_matches_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/configure_dialog.hpp']
 hub_moc_headers += ['src/ui/widgets/create_category_dialog.hpp']
 hub_moc_headers += ['src/ui/widgets/create_player_dialog.hpp']

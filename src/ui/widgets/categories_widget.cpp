@@ -12,6 +12,8 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/categories_widget.hpp"
+#include "ui/widgets/category_matches_widget.hpp"
+#include "ui/widgets/category_matches_widget.hpp"
 #include "ui/widgets/create_category_dialog.hpp"
 #include "ui/widgets/edit_category_players_widget.hpp"
 #include "ui/widgets/edit_category_widget.hpp"
@@ -62,11 +64,8 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
         tabWidget->addTab(mEditCategoryPlayersWidget, tr("Players"));
 
         {
-            auto *matchesList = new QListView(this);
-            mCategoryMatchesModel = new CategoryMatchesModel(mStoreManager, this);
-            matchesList->setItemDelegate(new MatchCardDelegate(this));
-            matchesList->setModel(mCategoryMatchesModel);
-            tabWidget->addTab(matchesList, tr("Matches"));
+            mCategoryMatchesWidget = new CategoryMatchesWidget(mStoreManager, this);
+            tabWidget->addTab(mCategoryMatchesWidget, tr("Matches"));
         }
 
         {
@@ -107,7 +106,7 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
 
     mEditCategoryWidget->setCategories(categoryIds);
     mEditCategoryPlayersWidget->setCategory(categoryId);
-    mCategoryMatchesModel->setCategory(categoryId);
+    mCategoryMatchesWidget->setCategory(categoryId);
     mResultsModel->setCategory(categoryId);
 }
 

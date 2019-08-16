@@ -12,6 +12,7 @@ class StoreManager;
 class EditCategoryWidget;
 class EditCategoryPlayersWidget;
 class CategoriesProxyModel;
+class CategoryMatchesWidget;
 
 class CategoriesWidget : public QWidget {
     Q_OBJECT
@@ -29,7 +30,7 @@ private:
     CategoriesProxyModel *mModel;
     EditCategoryWidget *mEditCategoryWidget;
     EditCategoryPlayersWidget *mEditCategoryPlayersWidget;
-    CategoryMatchesModel *mCategoryMatchesModel;
     ResultsModel *mResultsModel;
+    CategoryMatchesWidget *mCategoryMatchesWidget;
 };
 
