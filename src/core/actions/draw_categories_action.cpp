@@ -160,11 +160,11 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
         for (std::unique_ptr<MatchStore> & match : mOldMatches.back()) {
             std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayer && tournament.containsPlayer(*whitePlayer))
-                tournament.getPlayer(*whitePlayer).eraseMatch(categoryId, match->getId());
+                tournament.getPlayer(*whitePlayer).addMatch(categoryId, match->getId());
 
             std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
             if (bluePlayer && tournament.containsPlayer(*bluePlayer))
-                tournament.getPlayer(*bluePlayer).eraseMatch(categoryId, match->getId());
+                tournament.getPlayer(*bluePlayer).addMatch(categoryId, match->getId());
 
             category.pushMatch(std::move(match));
         }
