@@ -48,7 +48,7 @@ SavePreferencesWidget::SavePreferencesWidget(MasterStoreManager &storeManager, Q
         mBackupAmountContent->setEnabled(backup);
         mBackupAmountContent->setMinimum(1);
         mBackupAmountContent->setMaximum(60);
-        mBackupAmountContent->setValue(settings.value("saving/backupAmount", 5).toInt());
+        mBackupAmountContent->setValue(settings.value("saving/backupAmount", 2).toInt());
         layout->addRow(new QLabel(tr("Number of saves to keep")), mBackupAmountContent);
         connect(mBackupAmountContent, QOverload<int>::of(&QSpinBox::valueChanged), this, &SavePreferencesWidget::setBackupAmount);
     }

@@ -285,7 +285,12 @@ void HubWindow::openReportIssue() {
 }
 
 void HubWindow::writeTournament() {
-    if (!mStoreManager.write(mFileName))
+    QSettings& settings = mStoreManager.getSettings();
+    unsigned int backupAmount = 0;
+    if (settings.value("saving/backup", false).toBool())
+        backupAmount = settings.value("saving/backupAmount", 2).toInt();
+
+    if (!mStoreManager.write(mFileName, backupAmount))
         QMessageBox::warning(this, tr("Unable to write file"), tr("Unable to save to the selected tournament file."));
     else
         statusBar()->showMessage(tr("Saved tournament to file"));
@@ -410,7 +415,12 @@ void HubWindow::autosaveTimerHit() {
     if (mFileName.isEmpty())
         return;
 
-    if (!mStoreManager.write(mFileName))
+    QSettings& settings = mStoreManager.getSettings();
+    unsigned int backupAmount = 0;
+    if (settings.value("saving/backup", false).toBool())
+        backupAmount = settings.value("saving/backupAmount", 2).toInt();
+
+    if (!mStoreManager.write(mFileName, backupAmount))
         QMessageBox::warning(this, tr("Unable to autosave"), tr("JudoAssistant was unable to auto-save to the opened tournament file."));
     else
         statusBar()->showMessage(tr("Auto-saved tournament to file"));
