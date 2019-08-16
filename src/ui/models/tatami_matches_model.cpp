@@ -400,12 +400,10 @@ void TatamiMatchesModel::changeTatamis(const std::vector<BlockLocation> &locatio
     }
 
     if (shouldReset) {
-        log_debug().field("tatami", mTatami).msg("Resetting tatami matches");
         beginResetMatches();
         endResetMatches();
     }
     else if (shouldLoad) {
-        log_debug().field("tatami", mTatami).msg("Loading tatami matches");
         loadBlocks();
     }
 }

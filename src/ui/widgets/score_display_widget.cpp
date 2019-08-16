@@ -192,7 +192,6 @@ void ScoreDisplayWidget::loadPainter() {
     if (mScoreboardPainter != nullptr && mScoreboardStyle == style)
         return;
 
-    log_debug().msg("Loading painter");
     mScoreboardStyle = style;
     if (style == ScoreboardStylePreference::INTERNATIONAL)
         mScoreboardPainter = std::make_unique<InternationalScoreboardPainter>();
