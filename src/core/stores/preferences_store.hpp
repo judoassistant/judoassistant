@@ -27,7 +27,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPreferredDrawSystems, mScoreboardStyle);
+        ar(mPreferredDrawSystems, mScoreboardStyle, mMatchCardStyle);
     }
 
     const std::vector<DrawSystemPreference>& getPreferredDrawSystems() const;

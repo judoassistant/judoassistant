@@ -18,9 +18,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("versionMajor", mVersionMajor));
-        ar(cereal::make_nvp("versionMinor", mVersionMinor));
-        ar(cereal::make_nvp("versionPatch", mVersionPatch));
+        ar(mVersionMajor, mVersionMinor, mVersionPatch);
     }
 
 private:

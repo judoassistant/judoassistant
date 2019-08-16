@@ -217,14 +217,7 @@ struct PlayerFields {
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        ar(cereal::make_nvp("firstName", firstName));
-        ar(cereal::make_nvp("lastName", lastName));
-        ar(cereal::make_nvp("age", age));
-        ar(cereal::make_nvp("rank", rank));
-        ar(cereal::make_nvp("club", club));
-        ar(cereal::make_nvp("weight", weight));
-        ar(cereal::make_nvp("country", country));
-        ar(cereal::make_nvp("sex", sex));
+        ar(firstName, lastName, age, rank, club, weight, country, sex);
     }
 };
 
@@ -236,10 +229,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        ar(cereal::make_nvp("id", mId));
-        ar(cereal::make_nvp("categories", mCategories));
-        ar(cereal::make_nvp("matches", mMatches));
-        ar(cereal::make_nvp("fields", mFields));
+        ar(mId, mCategories, mMatches, mFields);
     }
 
     const std::string & getFirstName() const;

@@ -16,8 +16,7 @@ struct PositionHandle {
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("id", id));
-        ar(cereal::make_nvp("index", index));
+        ar(id, index);
     }
 
     bool operator==(const PositionHandle &other) const {
@@ -122,8 +121,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(cereal::make_nvp("ids", mIds));
-        ar(cereal::make_nvp("elements", mElements));
+        ar(mIds, mElements);
     }
 
 private:

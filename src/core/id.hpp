@@ -175,8 +175,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mClientId);
-        ar(mActionId);
+        ar(mClientId, mActionId);
     }
 
     std::string toString() const;
