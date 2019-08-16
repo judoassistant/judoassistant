@@ -21,6 +21,7 @@ public:
 public slots:
     void showCategoryCreateDialog();
     void eraseSelectedCategories();
+    void drawSelectedCategories();
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 private:
     void showContextMenu(const QPoint &pos);

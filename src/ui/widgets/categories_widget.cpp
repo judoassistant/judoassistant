@@ -6,6 +6,7 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 
+#include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_categories_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/models/categories_model.hpp"
@@ -14,8 +15,8 @@
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/category_matches_widget.hpp"
 #include "ui/widgets/category_matches_widget.hpp"
-#include "ui/widgets/create_category_dialog.hpp"
 #include "ui/widgets/category_players_widget.hpp"
+#include "ui/widgets/create_category_dialog.hpp"
 #include "ui/widgets/edit_category_widget.hpp"
 
 CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
@@ -100,6 +101,11 @@ void CategoriesWidget::eraseSelectedCategories() {
     mStoreManager.dispatch(std::make_unique<EraseCategoriesAction>(std::move(categoryIds)));
 }
 
+void CategoriesWidget::drawSelectedCategories() {
+    auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
+    mStoreManager.dispatch(std::make_unique<DrawCategoriesAction>(std::move(categoryIds)));
+}
+
 void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
     auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
     std::optional<CategoryId> categoryId = (categoryIds.size() == 1 ? std::make_optional<CategoryId>(categoryIds.front()) : std::nullopt);
@@ -125,6 +131,10 @@ void CategoriesWidget::showContextMenu(const QPoint &pos) {
     {
         QAction *action = menu.addAction(tr("Erase selected categories"));
         connect(action, &QAction::triggered, this, &CategoriesWidget::eraseSelectedCategories);
+    }
+    {
+        QAction *action = menu.addAction(tr("Re-draw selected categories"));
+        connect(action, &QAction::triggered, this, &CategoriesWidget::drawSelectedCategories);
     }
     // menu->addSeparator();
     // {
