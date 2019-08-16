@@ -71,9 +71,11 @@ ui_sources += ['src/ui/widgets/client_window.cpp']
 ui_sources += ['src/ui/widgets/connect_dialog.cpp']
 ui_sources += ['src/ui/widgets/fixed_scroll_area.cpp']
 ui_sources += ['src/ui/widgets/matches_widget.cpp']
+ui_sources += ['src/ui/widgets/warning_widget.cpp']
 
 ui_moc_headers += ['src/ui/widgets/client_window.hpp']
 ui_moc_headers += ['src/ui/widgets/connect_dialog.hpp']
 ui_moc_headers += ['src/ui/widgets/fixed_scroll_area.hpp']
 ui_moc_headers += ['src/ui/widgets/matches_widget.hpp']
+ui_moc_headers += ['src/ui/widgets/warning_widget.hpp']
 

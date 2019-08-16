@@ -15,19 +15,25 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/kiosk_window.hpp"
 #include "ui/widgets/matches_widget.hpp"
+#include "ui/widgets/warning_widget.hpp"
 
 KioskWindow::KioskWindow()
 {
+    QWidget *centralWidget = new QWidget;
+    QVBoxLayout *layout = new QVBoxLayout(centralWidget);
+
+    mWarningWidget = new WarningWidget(tr("Not connected"));
+    layout->addWidget(mWarningWidget);
+
+    auto *matches = new MatchesWidget(mStoreManager);
+
+    layout->addWidget(matches);
+
     createTournamentMenu();
-    createEditMenu();
-    createViewMenu();
     createPreferencesMenu();
     createHelpMenu();
 
-    auto *matches = new MatchesWidget(mStoreManager, this);
-
-    setCentralWidget(matches);
-
+    setCentralWidget(centralWidget);
     setWindowTitle(tr("JudoAssistant Kiosk"));
 }
 
@@ -50,54 +56,50 @@ void KioskWindow::createTournamentMenu() {
     connect(&mStoreManager.getNetworkClient(), &NetworkClient::stateChanged, this, &KioskWindow::changeNetworkClientState);
 }
 
-void KioskWindow::createEditMenu() {
-    // QMenu *menu = menuBar()->addMenu(tr("Edit"));
-}
-
-void KioskWindow::createViewMenu() {
-    // QMenu *menu = menuBar()->addMenu(tr("View"));
-}
-
 void KioskWindow::createPreferencesMenu() {
-    QMenu *menu = menuBar()->addMenu(tr("Preferences"));
-    {
-        QMenu *submenu = menu->addMenu("Language");
-        QAction *englishAction = new QAction(tr("English"), this);
-        submenu->addAction(englishAction);
-    }
-    {
-        {
-            DarkPalette palette;
-            QApplication::setPalette(palette);
-            setPalette(palette);
-        }
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+    setPalette(palette);
 
-        QMenu *submenu = menu->addMenu("Color Scheme");
-        auto *actionGroup = new QActionGroup(this);
+    // QMenu *menu = menuBar()->addMenu(tr("Preferences"));
+    // // {
+    // //     QMenu *submenu = menu->addMenu("Language");
+    // //     QAction *englishAction = new QAction(tr("English"), this);
+    // //     submenu->addAction(englishAction);
+    // // }
+    // {
+    //     {
+    //         DarkPalette palette;
+    //         QApplication::setPalette(palette);
+    //         setPalette(palette);
+    //     }
 
-        QAction *darkAction = new QAction(tr("Dark"), this);
-        darkAction->setCheckable(true);
-        darkAction->setChecked(true);
-        actionGroup->addAction(darkAction);
+    //     QMenu *submenu = menu->addMenu("Color Scheme");
+    //     auto *actionGroup = new QActionGroup(this);
 
-        connect(darkAction, &QAction::triggered, [this]() {
-            DarkPalette palette;
-            setPalette(palette);
-        });
+    //     QAction *darkAction = new QAction(tr("Dark"), this);
+    //     darkAction->setCheckable(true);
+    //     darkAction->setChecked(true);
+    //     actionGroup->addAction(darkAction);
 
-        QAction *lightAction = new QAction(tr("Light"), this);
-        lightAction->setCheckable(true);
-        actionGroup->addAction(lightAction);
+    //     connect(darkAction, &QAction::triggered, [this]() {
+    //         DarkPalette palette;
+    //         setPalette(palette);
+    //     });
 
-        connect(lightAction, &QAction::triggered, [this]() {
-            auto palette = this->style()->standardPalette();
-            QApplication::setPalette(palette);
-            setPalette(palette);
-        });
+    //     QAction *lightAction = new QAction(tr("Light"), this);
+    //     lightAction->setCheckable(true);
+    //     actionGroup->addAction(lightAction);
 
-        submenu->addAction(darkAction);
-        submenu->addAction(lightAction);
-    }
+    //     connect(lightAction, &QAction::triggered, [this]() {
+    //         auto palette = this->style()->standardPalette();
+    //         QApplication::setPalette(palette);
+    //         setPalette(palette);
+    //     });
+
+    //     submenu->addAction(darkAction);
+    //     submenu->addAction(lightAction);
+    // }
 }
 
 void KioskWindow::createHelpMenu() {
@@ -164,5 +166,7 @@ void KioskWindow::silentConnect(QString host, int port) {
 void KioskWindow::changeNetworkClientState(NetworkClientState state) {
     mConnectAction->setEnabled(state == NetworkClientState::NOT_CONNECTED);
     mDisconnectAction->setEnabled(state == NetworkClientState::CONNECTED);
+
+    mWarningWidget->setVisible(state != NetworkClientState::CONNECTED);
 }
 

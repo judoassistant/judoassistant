@@ -1,19 +1,11 @@
 #pragma once
 
-#include <stack>
-
-#include <QActionGroup>
-#include <QMetaObject>
-#include <QPushButton>
-#include <QTableView>
-
 #include "core/core.hpp"
-#include "core/stores/tatami/location.hpp"
 #include "ui/constants/network.hpp"
 #include "ui/widgets/client_window.hpp"
-#include "ui/widgets/match_card_widget.hpp"
-#include "ui/widgets/score_display_widget.hpp"
-#include "ui/widgets/score_display_window.hpp"
+#include "ui/widgets/warning_widget.hpp"
+
+class WarningWidget;
 
 class KioskWindow : public ClientWindow {
     Q_OBJECT
@@ -32,8 +24,6 @@ private:
 
     void createStatusBar();
     void createTournamentMenu();
-    void createEditMenu();
-    void createViewMenu();
     void createPreferencesMenu();
     void createHelpMenu();
 
@@ -41,5 +31,6 @@ private:
 
     QAction *mConnectAction;
     QAction *mDisconnectAction;
+    WarningWidget *mWarningWidget;
 };
 
