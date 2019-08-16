@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QUrl>
@@ -55,6 +56,15 @@ HubWindow::HubWindow() {
     setWindowTitle(tr("JudoAssistant"));
 
     connect(&mStoreManager.getNetworkServer(), &NetworkServer::startFailed, this, &HubWindow::showServerStartFailure);
+    connect(&mAutosaveTimer, &QTimer::timeout, this, &HubWindow::autosaveTimerHit);
+
+    const QSettings& settings = mStoreManager.getSettings();
+    bool autosave = settings.value("saving/autosave", true).toBool();
+
+    if (autosave) {
+        mAutosaveFrequency = std::chrono::minutes(settings.value("saving/autosaveFrequency", 5).toInt());
+        mAutosaveTimer.start(*mAutosaveFrequency);
+    }
 }
 
 void HubWindow::startServer() {
@@ -276,7 +286,7 @@ void HubWindow::openReportIssue() {
 
 void HubWindow::writeTournament() {
     if (!mStoreManager.write(mFileName))
-        QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        QMessageBox::warning(this, tr("Unable to write file"), tr("Unable to save to the selected tournament file."));
     else
         statusBar()->showMessage(tr("Saved tournament to file"));
 }
@@ -380,5 +390,29 @@ void HubWindow::showJudoAssistantPreferences() {
     JudoassistantPreferencesDialog dialog(mStoreManager);
 
     dialog.exec();
+
+    // Update autosave frequency if changed after closing dialog
+    const QSettings& settings = mStoreManager.getSettings();
+    bool autosave = settings.value("saving/autosave", true).toBool();
+
+    std::optional<std::chrono::seconds> autosaveFrequency;
+    if (autosave)
+        autosaveFrequency = std::chrono::minutes(settings.value("saving/autosaveFrequency", 5).toInt());
+
+    if (autosaveFrequency != mAutosaveFrequency) {
+        log_debug().field("freq", settings.value("saving/autosaveFrequency", 5).toInt()).msg("New frequency");
+        mAutosaveFrequency = autosaveFrequency;
+        mAutosaveTimer.start(*mAutosaveFrequency);
+    }
+}
+
+void HubWindow::autosaveTimerHit() {
+    if (mFileName.isEmpty())
+        return;
+
+    if (!mStoreManager.write(mFileName))
+        QMessageBox::warning(this, tr("Unable to autosave"), tr("JudoAssistant was unable to auto-save to the opened tournament file."));
+    else
+        statusBar()->showMessage(tr("Auto-saved tournament to file"));
 }
 
