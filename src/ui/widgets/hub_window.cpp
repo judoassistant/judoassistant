@@ -415,6 +415,9 @@ void HubWindow::autosaveTimerHit() {
     if (mFileName.isEmpty())
         return;
 
+    if (!mStoreManager.isDirty())
+        return;
+
     QSettings& settings = mStoreManager.getSettings();
     unsigned int backupAmount = 0;
     if (settings.value("saving/backup", false).toBool())
