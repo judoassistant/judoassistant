@@ -54,7 +54,6 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     const auto &match = category.getMatch(mCombinedId->second);
 
     if (!match.getWhitePlayer() || !match.getBluePlayer()) {
-        log_warning().msg("The current match does not have 2 players");
         mScoreboardPainter->paintEmpty(painter, rect);
         return;
     }
