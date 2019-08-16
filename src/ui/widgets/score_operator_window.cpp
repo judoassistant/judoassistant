@@ -18,6 +18,7 @@
 #include "ui/misc/dark_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/score_operator_window.hpp"
+#include "ui/widgets/warning_widget.hpp"
 
 ScoreOperatorWindow::ScoreOperatorWindow()
     : mDisplayWindow(mStoreManager)
@@ -25,12 +26,9 @@ ScoreOperatorWindow::ScoreOperatorWindow()
     QWidget *centralWidget = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
 
-    createStatusBar();
-    createTournamentMenu();
-    createEditMenu();
-    createPreferencesMenu();
-    createHelpMenu();
+    mWarningWidget = new WarningWidget(tr("Lost connection to the hub. Please reconnect as soon as possible!"));
 
+    layout->addWidget(mWarningWidget);
     layout->addWidget(createScoreboardSection(), 1); // stretch=1 such that all remaining space is filled by this widget
     layout->addWidget(createLowerSection());
     setCentralWidget(centralWidget);
@@ -42,6 +40,13 @@ ScoreOperatorWindow::ScoreOperatorWindow()
 
     findNextMatch();
     disableControlButtons();
+
+    createStatusBar();
+    createTournamentMenu();
+    createEditMenu();
+    createPreferencesMenu();
+    createHelpMenu();
+
 }
 
 void ScoreOperatorWindow::createStatusBar() {
@@ -455,6 +460,7 @@ void ScoreOperatorWindow::updateControlButtons() {
 void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
     mConnectAction->setEnabled(state == NetworkClientState::NOT_CONNECTED);
     mDisconnectAction->setEnabled(state == NetworkClientState::CONNECTED);
+    mWarningWidget->setVisible(state != NetworkClientState::CONNECTED);
 }
 
 void ScoreOperatorWindow::show() {

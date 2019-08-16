@@ -14,6 +14,8 @@
 #include "ui/widgets/score_operator_widget.hpp"
 #include "ui/widgets/score_display_window.hpp"
 
+class WarningWidget;
+
 class ScoreOperatorWindow : public ClientWindow {
     Q_OBJECT
 public:
@@ -82,6 +84,7 @@ private:
 
     QPushButton *mNextButton;
     QPushButton *mResetButton;
+    WarningWidget *mWarningWidget;
 
     ScoreDisplayWindow mDisplayWindow;
 };
