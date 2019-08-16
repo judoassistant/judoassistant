@@ -7,6 +7,7 @@
 
 #include "ui/widgets/judoassistant_preferences_dialog.hpp"
 #include "ui/widgets/web_connection_preferences_widget.hpp"
+#include "ui/widgets/save_preferences_widget.hpp"
 
 JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(MasterStoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
@@ -16,7 +17,15 @@ JudoassistantPreferencesDialog::JudoassistantPreferencesDialog(MasterStoreManage
     QListWidget *listWidget = new QListWidget;
     listWidget->setMaximumWidth(150);
 
-    // Add general page
+    // Add save preferences
+    {
+        QWidget *widget = new SavePreferencesWidget(storeManager);
+
+        listWidget->addItem(tr("Tournament File Saving"));
+        stackedWidget->addWidget(widget);
+    }
+
+    // Add web connection page
     {
         QWidget *widget = new WebConnectionPreferencesWidget(storeManager);
 

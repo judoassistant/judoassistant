@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QTimer>
 
 #include "core/core.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -29,6 +30,7 @@ private slots:
     void showTournamentPreferences();
     void showJudoAssistantPreferences();
     void showServerStartFailure();
+    void autosaveTimerHit();
 
 private:
     void createStatusBar();
@@ -41,5 +43,8 @@ private:
     void writeTournament();
     MasterStoreManager mStoreManager;
     QString mFileName;
+
+    QTimer mAutosaveTimer;
+    std::optional<std::chrono::seconds> mAutosaveFrequency;
 };
 

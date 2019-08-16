@@ -24,7 +24,7 @@ public:
     bool isDirty() const;
 
     bool read(const QString &path);
-    bool write(const QString &path);
+    bool write(const QString &path, unsigned int backupCount);
     void resetTournament();
 
     NetworkServer& getNetworkServer();
@@ -44,6 +44,7 @@ public:
 private:
     void changeNetworkServerState(NetworkServerState state);
     void changeWebClientState(WebClientState state);
+    bool moveBackup(const std::string &base, unsigned int n, const std::string &extension, unsigned int backupCount);
 
     WebClientState mWebClientState;
     WebClient mWebClient;

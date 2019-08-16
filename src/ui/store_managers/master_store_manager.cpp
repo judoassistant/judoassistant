@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include <boost/system/system_error.hpp>
+#include <boost/filesystem.hpp>
 #include <zstd.h>
 #include <QSettings>
 
@@ -110,7 +111,6 @@ bool MasterStoreManager::read(const QString &path) {
 }
 
 void MasterStoreManager::resetTournament() {
-    log_debug().msg("Resetting tournament");
     auto tournament = std::make_unique<QTournamentStore>();
     tournament->setId(TournamentId::generate());
     auto &tatamis = getTournament().getTatamis();
@@ -120,9 +120,15 @@ void MasterStoreManager::resetTournament() {
     mDirty = false;
 }
 
-bool MasterStoreManager::write(const QString &path) {
+bool MasterStoreManager::write(const QString &path, unsigned int backupCount) {
+    const std::string pathStr = path.toStdString();
+    // Move old backups
+    const std::string extension = boost::filesystem::extension(pathStr);
+    const std::string base = pathStr.substr(0, pathStr.size() - extension.size());
+    moveBackup(base, 0, extension, backupCount);
+
     // Open file
-    std::ofstream file(path.toStdString(), std::ios::out | std::ios::binary | std::ios::trunc);
+    std::ofstream file(pathStr, std::ios::out | std::ios::binary | std::ios::trunc);
 
     if (!file.is_open())
         return false;
@@ -248,5 +254,33 @@ QSettings& MasterStoreManager::getSettings() {
 
 const QSettings& MasterStoreManager::getSettings() const {
     return *mSettings;
+}
+
+bool MasterStoreManager::moveBackup(const std::string &base, unsigned int n, const std::string &extension, unsigned int backupCount) {
+    if (n == backupCount)
+        return true;
+
+    std::string name;
+
+    if (n == 0)
+        name = base + extension;
+    else
+        name = base + "_backup-" + std::to_string(n) + extension;
+
+    if (!boost::filesystem::exists(name))
+        return true;
+
+    const std::string newName = base + "_backup-" + std::to_string(n+1) + extension;
+
+    moveBackup(base, n+1, extension, backupCount);
+
+    try {
+        boost::filesystem::rename(name, newName);
+    }
+    catch (const std::exception &e) {
+        return false;
+    }
+
+    return true;
 }
 
