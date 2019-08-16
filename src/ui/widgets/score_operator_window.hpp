@@ -5,7 +5,6 @@
 #include <QActionGroup>
 #include <QMetaObject>
 #include <QPushButton>
-#include <QTableView>
 
 #include "core/core.hpp"
 #include "core/stores/tatami/location.hpp"
@@ -60,7 +59,6 @@ private:
     void createStatusBar();
     void createTournamentMenu();
     void createEditMenu();
-    void createViewMenu();
     void createPreferencesMenu();
     void createHelpMenu();
 
@@ -84,7 +82,6 @@ private:
 
     QPushButton *mNextButton;
     QPushButton *mResetButton;
-
 
     ScoreDisplayWindow mDisplayWindow;
 };

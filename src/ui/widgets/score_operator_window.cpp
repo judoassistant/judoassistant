@@ -28,7 +28,6 @@ ScoreOperatorWindow::ScoreOperatorWindow()
     createStatusBar();
     createTournamentMenu();
     createEditMenu();
-    createViewMenu();
     createPreferencesMenu();
     createHelpMenu();
 
@@ -125,51 +124,51 @@ void ScoreOperatorWindow::populateTatamiMenu() {
     }
 }
 
-void ScoreOperatorWindow::createViewMenu() {
-    // QMenu *menu = menuBar()->addMenu(tr("View"));
-}
-
 void ScoreOperatorWindow::createPreferencesMenu() {
-    // TODO: Consider refactoring this into super class
-    QMenu *menu = menuBar()->addMenu(tr("Preferences"));
-    {
-        QMenu *submenu = menu->addMenu("Language");
-        QAction *englishAction = new QAction(tr("English"), this);
-        submenu->addAction(englishAction);
-    }
-    {
-        {
-            DarkPalette palette;
-            QApplication::setPalette(palette);
-            setPalette(palette);
-        }
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+    setPalette(palette);
 
-        QMenu *submenu = menu->addMenu("Color Scheme");
-        auto *actionGroup = new QActionGroup(this);
+    // // TODO: Consider refactoring this into super class
+    // QMenu *menu = menuBar()->addMenu(tr("Preferences"));
+    // {
+    //     QMenu *submenu = menu->addMenu("Language");
+    //     QAction *englishAction = new QAction(tr("English"), this);
+    //     submenu->addAction(englishAction);
+    // }
+    // {
+    //     {
+    //         DarkPalette palette;
+    //         QApplication::setPalette(palette);
+    //         setPalette(palette);
+    //     }
 
-        QAction *darkAction = new QAction(tr("Dark"), this);
-        darkAction->setCheckable(true);
-        darkAction->setChecked(true);
-        actionGroup->addAction(darkAction);
+    //     QMenu *submenu = menu->addMenu("Color Scheme");
+    //     auto *actionGroup = new QActionGroup(this);
 
-        connect(darkAction, &QAction::triggered, [this]() {
-            DarkPalette palette;
-            setPalette(palette);
-        });
+    //     QAction *darkAction = new QAction(tr("Dark"), this);
+    //     darkAction->setCheckable(true);
+    //     darkAction->setChecked(true);
+    //     actionGroup->addAction(darkAction);
 
-        QAction *lightAction = new QAction(tr("Light"), this);
-        lightAction->setCheckable(true);
-        actionGroup->addAction(lightAction);
+    //     connect(darkAction, &QAction::triggered, [this]() {
+    //         DarkPalette palette;
+    //         setPalette(palette);
+    //     });
 
-        connect(lightAction, &QAction::triggered, [this]() {
-            auto palette = this->style()->standardPalette();
-            QApplication::setPalette(palette);
-            setPalette(palette);
-        });
+    //     QAction *lightAction = new QAction(tr("Light"), this);
+    //     lightAction->setCheckable(true);
+    //     actionGroup->addAction(lightAction);
 
-        submenu->addAction(darkAction);
-        submenu->addAction(lightAction);
-    }
+    //     connect(lightAction, &QAction::triggered, [this]() {
+    //         auto palette = this->style()->standardPalette();
+    //         QApplication::setPalette(palette);
+    //         setPalette(palette);
+    //     });
+
+    //     submenu->addAction(darkAction);
+    //     submenu->addAction(lightAction);
+    // }
 }
 
 void ScoreOperatorWindow::createHelpMenu() {
