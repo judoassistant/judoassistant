@@ -8,11 +8,11 @@
 #include "ui/models/results_model.hpp"
 #include "ui/delegates/match_card_delegate.hpp"
 
-class StoreManager;
-class EditCategoryWidget;
-class EditCategoryPlayersWidget;
 class CategoriesProxyModel;
 class CategoryMatchesWidget;
+class CategoryPlayersWidget;
+class EditCategoryWidget;
+class StoreManager;
 
 class CategoriesWidget : public QWidget {
     Q_OBJECT
@@ -29,7 +29,7 @@ private:
     QTableView *mTableView;
     CategoriesProxyModel *mModel;
     EditCategoryWidget *mEditCategoryWidget;
-    EditCategoryPlayersWidget *mEditCategoryPlayersWidget;
+    CategoryPlayersWidget *mCategoryPlayersWidget;
     ResultsModel *mResultsModel;
     CategoryMatchesWidget *mCategoryMatchesWidget;
 };

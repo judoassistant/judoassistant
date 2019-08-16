@@ -15,7 +15,7 @@
 #include "ui/widgets/category_matches_widget.hpp"
 #include "ui/widgets/category_matches_widget.hpp"
 #include "ui/widgets/create_category_dialog.hpp"
-#include "ui/widgets/edit_category_players_widget.hpp"
+#include "ui/widgets/category_players_widget.hpp"
 #include "ui/widgets/edit_category_widget.hpp"
 
 CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
@@ -60,8 +60,8 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
         mEditCategoryWidget = new EditCategoryWidget(storeManager, splitter);
         tabWidget->addTab(mEditCategoryWidget, tr("General"));
 
-        mEditCategoryPlayersWidget = new EditCategoryPlayersWidget(mStoreManager, this);
-        tabWidget->addTab(mEditCategoryPlayersWidget, tr("Players"));
+        mCategoryPlayersWidget = new CategoryPlayersWidget(mStoreManager, this);
+        tabWidget->addTab(mCategoryPlayersWidget, tr("Players"));
 
         {
             mCategoryMatchesWidget = new CategoryMatchesWidget(mStoreManager, this);
@@ -105,7 +105,7 @@ void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QI
     std::optional<CategoryId> categoryId = (categoryIds.size() == 1 ? std::make_optional<CategoryId>(categoryIds.front()) : std::nullopt);
 
     mEditCategoryWidget->setCategories(categoryIds);
-    mEditCategoryPlayersWidget->setCategory(categoryId);
+    mCategoryPlayersWidget->setCategory(categoryId);
     mCategoryMatchesWidget->setCategory(categoryId);
     mResultsModel->setCategory(categoryId);
 }

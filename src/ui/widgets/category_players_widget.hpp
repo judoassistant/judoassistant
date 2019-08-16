@@ -10,17 +10,18 @@
 class StoreManager;
 class PlayersProxyModel;
 
-class EditCategoryPlayersWidget : public QWidget {
+class CategoryPlayersWidget : public QTableView {
     Q_OBJECT
 public:
-    EditCategoryPlayersWidget (StoreManager & storeManager, QWidget *parent);
+    CategoryPlayersWidget(StoreManager & storeManager, QWidget *parent = nullptr);
     void setCategory(std::optional<CategoryId> categoryId);
 
-protected slots:
+protected:
     void tournamentAboutToBeReset();
+    void showContextMenu(const QPoint &pos);
+    void eraseSelectedPlayersFromCategory();
 
 private:
     StoreManager &mStoreManager;
-    QTableView *mTableView;
     PlayersProxyModel *mModel;
 };

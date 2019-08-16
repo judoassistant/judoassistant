@@ -58,6 +58,7 @@ public:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
     void hideAll();
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
+    std::optional<CategoryId> getCategory() const;
 
 private:
     StoreManager & mStoreManager;

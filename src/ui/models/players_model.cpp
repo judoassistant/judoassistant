@@ -275,3 +275,7 @@ bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &rig
     return QSortFilterProxyModel::lessThan(left, right);
 }
 
+std::optional<CategoryId> PlayersProxyModel::getCategory() const {
+    return mCategoryId;
+}
+
