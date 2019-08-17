@@ -13,6 +13,7 @@ conf_data.set_quoted('SYSCONF_DIR', get_option('prefix') / get_option('sysconfdi
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 thread_dep = dependency('threads')
 
+cxx = meson.get_compiler('cpp')
 if get_option('zstd_dir') == ''
     zstd_dep = dependency('libzstd') # Compression library for networking and save-files
 else
@@ -48,7 +49,6 @@ else
 endif
 
 # Set-up visual studio args
-cxx = meson.get_compiler('cpp')
 if cxx.get_id()=='msvc'
     add_project_arguments('/bigobj', language: 'cpp')
     add_project_arguments('-D_WIN32_WINNT=0x0601', language: 'cpp')
