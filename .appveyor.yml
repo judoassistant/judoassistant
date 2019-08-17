@@ -1,11 +1,11 @@
 environment:
     matrix:
-      - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu1804
-        arch: x64
-        compiler: clang
       - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
         arch: x64
         compiler: msvc2017
+      - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu1804
+        arch: x64
+        compiler: clang
 install:
   # Ubuntu: Install dependencies
   - sh: sudo add-apt-repository ppa:mhier/libboost-latest
@@ -32,8 +32,10 @@ install:
 
 build_script:
   # Windows
-  - cmd: meson -Dweb=false -Dzstd_dir="C:\Libraries\zstd-v1.4.2-win64" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" -Dboost_dir="C:\Libraries\boost_1_69_0" --backend=ninja build
-  - cmd: ninja -C build
+  - cmd: meson -Dbuildtype=release -Dweb=false -Dzstd_dir="C:\Libraries\zstd-v1.4.2-win64" -Dopenssl_dir="C:\OpenSSL-v111-Win64" -Dcereal_dir="C:\Libraries\cereal-1.2.2" -Dboost_dir="C:\Libraries\boost_1_69_0" --backend=ninja build
+  - cmd: cd build
+  - cmd: meson configure
+  - cmd: ninja
   # Ubuntu
-  - sh: meson build -Dweb=false
+  - sh: meson -Dbuildtype=release -Dweb=false build
   - sh: ninja -C build
