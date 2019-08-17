@@ -26,12 +26,12 @@ CSVReader::CSVReader(const QString &path) {
 }
 
 char CSVReader::guessDelimiter(const std::string &line) const {
-    char del;
+    char del = ',';
     size_t delCount = 0;
 
     for (char a : listDelimiters()) {
         size_t count = std::count(line.begin(), line.end(), a);
-        if (count > delCount) {
+        if (count >= delCount) {
             del = a;
             delCount = count;
         }
