@@ -1,10 +1,12 @@
 project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_library=static'], license: 'MIT')
 
-cxx = meson.get_compiler('cpp')
-if cxx.get_id()=='msvc'
-    add_project_arguments('/bigobj', language: 'cpp')
-    add_project_arguments('-D_WIN32_WINNT=0x0601', language: 'cpp')
-endif
+# Setup configuration data
+conf_data = configuration_data()
+conf_data.set('VERSION_MAJOR', '0')
+conf_data.set('VERSION_MINOR', '1')
+conf_data.set('VERSION_PATCH', '0')
+conf_data.set('DEBUG', get_option('buildtype') == 'debug')
+conf_data.set('DATA_DIR', get_option('prefix') / get_option('datadir') / 'judoassistant')
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
@@ -44,15 +46,12 @@ else
     botan_dep = disabler()
 endif
 
-# Setup configuration files
-conf_data = configuration_data()
-conf_data.set('VERSION_MAJOR', '0')
-conf_data.set('VERSION_MINOR', '1')
-conf_data.set('VERSION_PATCH', '0')
-conf_data.set('DEBUG', get_option('buildtype') == 'debug')
-
-# Copy license
-# configure_file(input : 'LICENSE', output: 'judoassistant-license.txt', copy: true)
+# Set-up visual studio args
+cxx = meson.get_compiler('cpp')
+if cxx.get_id()=='msvc'
+    add_project_arguments('/bigobj', language: 'cpp')
+    add_project_arguments('-D_WIN32_WINNT=0x0601', language: 'cpp')
+endif
 
 # Find all sources and headers
 include_array = ['.', 'src']
@@ -118,13 +117,19 @@ ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_di
 # endif
 
 # Executables
-hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep])
-score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
-kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep])
-web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep])
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep], install: true)
+score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep], install: true)
+kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep], install: true)
+web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep], install: true)
 
-# Run targets
-run_target('icons', command : 'scripts/compile_icons.sh')
-run_target('flags', command : 'scripts/compile_flags.sh')
+# Icons
+install_data('icons/icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+install_data('icons/icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+install_data('icons/icons/svg/filter.svg', rename: 'filter.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+install_data('icons/icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
 
+# Flags
+install_data('flags/flags/4x3/dk.svg', rename: 'den.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+install_data('flags/flags/4x3/gb.svg', rename: 'gbr.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+install_data('flags/flags/4x3/fr.svg', rename: 'fra.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
 

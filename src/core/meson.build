@@ -11,4 +11,5 @@ subdir('rulesets')
 subdir('stores')
 
 configure_file(input : 'version.hpp.in', output: 'version.hpp', configuration: conf_data)
+configure_file(input : 'core.hpp.in', output: 'core.hpp', configuration: conf_data)
 
