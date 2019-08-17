@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=JudoAssistant Kiosk
+Comment=Judo Tournament Software Suite - Kiosk Application
+Exec=judoassistant-kiosk %f
+Terminal=false
+Type=Application
+Icon=terminal
+Categories=Application;Other;

@@ -26,12 +26,13 @@ int main(int argc, char *argv[]) {
         Config configuration;
         std::string configFile;
 
+        std::string defaultConfigPath = std::string(SYSCONF_DIR) + "/config.cfg";
         // Declare a group of options that will be allowed only on command line
         po::options_description generic("Generic options");
         generic.add_options()
             ("version,v", "print version string")
             ("help", "produce help message")
-            ("config,c", po::value<std::string>(&configFile)->default_value("config.cfg"), "name of a file of a configuration.")
+            ("config,c", po::value<std::string>(&configFile)->default_value(defaultConfigPath), "name of a file of a configuration.")
             ;
 
         // Declare a group of options that will be allowed both on command line

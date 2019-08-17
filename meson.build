@@ -7,6 +7,7 @@ conf_data.set('VERSION_MINOR', '1')
 conf_data.set('VERSION_PATCH', '0')
 conf_data.set('DEBUG', get_option('buildtype') == 'debug')
 conf_data.set_quoted('DATA_DIR', get_option('prefix') / get_option('datadir') / 'judoassistant')
+conf_data.set_quoted('SYSCONF_DIR', get_option('prefix') / get_option('sysconfdir') / 'judoassistant')
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
@@ -122,14 +123,26 @@ score_exe = executable('judoassistant-score', score_sources, score_moc_files, in
 kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep], install: true)
 web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep], install: true)
 
-# Icons
-install_data('icons/icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
-install_data('icons/icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
-install_data('icons/icons/svg/filter.svg', rename: 'filter.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
-install_data('icons/icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+# Install data
+if get_option('ui')
+    # Icons
+    install_data('icons/icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+    install_data('icons/icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+    install_data('icons/icons/svg/filter.svg', rename: 'filter.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+    install_data('icons/icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
 
-# Flags
-install_data('flags/flags/4x3/dk.svg', rename: 'den.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
-install_data('flags/flags/4x3/gb.svg', rename: 'gbr.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
-install_data('flags/flags/4x3/fr.svg', rename: 'fra.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+    # Flags
+    install_data('flags/flags/4x3/dk.svg', rename: 'den.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+    install_data('flags/flags/4x3/gb.svg', rename: 'gbr.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+    install_data('flags/flags/4x3/fr.svg', rename: 'fra.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+
+    # Desktop Entries
+    install_data('data/judoassistant.desktop', install_dir: get_option('datadir') / 'applications')
+    install_data('data/judoassistant-score.desktop', install_dir: get_option('datadir') / 'applications')
+    install_data('data/judoassistant-kiosk.desktop', install_dir: get_option('datadir') / 'applications')
+endif
+
+if get_option('web')
+    install_data('data/example-server-config.cfg', rename: 'config.cfg', install_dir: get_option('sysconfdir') / 'judoassistant')
+endif
 

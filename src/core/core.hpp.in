@@ -9,3 +9,4 @@
 
 #mesondefine DEBUG
 #mesondefine DATA_DIR
+#mesondefine SYSCONF_DIR
