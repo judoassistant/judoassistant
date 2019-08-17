@@ -1,3 +1,5 @@
+#include <set>
+
 #include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_players_from_all_categories_action.hpp"
 #include "core/actions/erase_players_from_category_action.hpp"
