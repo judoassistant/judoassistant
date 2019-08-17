@@ -72,6 +72,7 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
         if (!category.isDrawDisabled()) {
             // Init the category using the draw system
             std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
+            std::sort(playerIds.begin(), playerIds.end()); // Required to ensure consistent ordering
             std::vector<std::unique_ptr<AddMatchAction>> addMatchActions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
 
             for (auto &actionPtr : addMatchActions) {

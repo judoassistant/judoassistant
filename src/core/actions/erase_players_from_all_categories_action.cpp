@@ -23,7 +23,7 @@ std::unique_ptr<Action> ErasePlayersFromAllCategoriesAction::freshClone() const 
 
 void ErasePlayersFromAllCategoriesAction::redoImpl(TournamentStore & tournament) {
     std::vector<PlayerId> playerIds;
-    std::unordered_set<CategoryId> categoryIds;
+    std::set<CategoryId> categoryIds;
 
     for (auto playerId : mPlayerIds) {
         if (!tournament.containsPlayer(playerId)) continue;

@@ -20,7 +20,7 @@ std::unique_ptr<Action> ErasePlayersAction::freshClone() const {
 }
 
 void ErasePlayersAction::redoImpl(TournamentStore & tournament) {
-    std::unordered_set<CategoryId> categoryIds;
+    std::set<CategoryId> categoryIds;
 
     for (auto playerId : mPlayerIds) {
         if (!tournament.containsPlayer(playerId)) continue;
