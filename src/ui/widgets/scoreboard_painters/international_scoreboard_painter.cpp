@@ -341,7 +341,7 @@ void FlagImage::update(std::optional<PlayerCountry> country) {
     }
 
     QString countryCode = QString::fromStdString(country->countryCode());
-    QString filename = QString("flags/%1.svg").arg(countryCode.toLower());
+    QString filename = QString(DATA_DIR) + QString("/flags/%1.svg").arg(countryCode.toLower());
     this->image = QImage(filename);
 }
 

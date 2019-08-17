@@ -6,7 +6,7 @@ conf_data.set('VERSION_MAJOR', '0')
 conf_data.set('VERSION_MINOR', '1')
 conf_data.set('VERSION_PATCH', '0')
 conf_data.set('DEBUG', get_option('buildtype') == 'debug')
-conf_data.set('DATA_DIR', get_option('prefix') / get_option('datadir') / 'judoassistant')
+conf_data.set_quoted('DATA_DIR', get_option('prefix') / get_option('datadir') / 'judoassistant')
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
