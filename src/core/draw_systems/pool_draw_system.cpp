@@ -5,6 +5,10 @@
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
 
+PoolDrawSystem::PoolDrawSystem(bool composited)
+        : mComposited(composited)
+{}
+
 std::unique_ptr<DrawSystem> PoolDrawSystem::clone() const {
     return std::make_unique<PoolDrawSystem>(*this);
 }
@@ -37,7 +41,8 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const 
         for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
             size_t j = shiftedIds.size() - i - 1;
             if (!shiftedIds[i] || !shiftedIds[j]) continue;
-            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, "Pool", false, shiftedIds[i], shiftedIds[j]);
+            std::string matchTitle = (mComposited ? "Elimination" : "Pool");
+            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, matchTitle, false, shiftedIds[i], shiftedIds[j]);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }

@@ -5,7 +5,7 @@
 
 class PoolDrawSystem : public DrawSystem {
 public:
-    PoolDrawSystem() {}
+    PoolDrawSystem(bool composited = false);
     PoolDrawSystem(const PoolDrawSystem &) = default;
     virtual ~PoolDrawSystem() {};
 
@@ -20,12 +20,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mMatches, mPlayers);
+        ar(mMatches, mPlayers, mComposited);
     }
 
 private:
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;
+    bool mComposited;
 };
 
 CEREAL_REGISTER_TYPE(PoolDrawSystem)

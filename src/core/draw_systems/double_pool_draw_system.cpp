@@ -48,10 +48,10 @@ std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(
     std::vector<PlayerId> firstPoolPlayers(mPlayers.begin(), middle);
     std::vector<PlayerId> secondPoolPlayers(middle, mPlayers.end());
 
-    mFirstPool = std::make_unique<PoolDrawSystem>();
+    mFirstPool = std::make_unique<PoolDrawSystem>(true);
     auto firstPoolActions = mFirstPool->initCategory(tournament, category, firstPoolPlayers, seedDist(randomEng));
 
-    mSecondPool = std::make_unique<PoolDrawSystem>();
+    mSecondPool = std::make_unique<PoolDrawSystem>(true);
     auto secondPoolActions = mSecondPool->initCategory(tournament, category, secondPoolPlayers, seedDist(randomEng));
 
     // Merge the list of actions
