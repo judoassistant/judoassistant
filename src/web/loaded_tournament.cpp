@@ -11,6 +11,8 @@
 #include "web/web_participant.hpp"
 #include "web/json_encoder.hpp"
 
+static constexpr size_t FILE_HEADER_SIZE = 17;
+
 // TODO: Use newer style boost::asio::post in all code
 LoadedTournament::LoadedTournament(const std::string &webName, const boost::filesystem::path &dataDirectory, boost::asio::io_context &context, Database &database)
     : mContext(context)
@@ -142,12 +144,13 @@ void LoadedTournament::load(LoadCallback callback) {
         std::ifstream file(mFileLocation.string(), std::ios::in | std::ios::binary);
 
         if (!file.is_open()) {
+            log_error().msg("Failed opening tournament save file");
             boost::asio::dispatch(mContext, std::bind(callback, false));
             mFileInUse = false;
             return;
         }
 
-        int compressedSize, uncompressedSize;
+        size_t compressedSize, uncompressedSize;
         std::string header;
         header.resize(FILE_HEADER_SIZE);
         try {
@@ -159,6 +162,7 @@ void LoadedTournament::load(LoadCallback callback) {
         }
         catch (const std::exception &e) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
+            log_error().msg("Failed reading tournament save-file header");
             mFileInUse = false;
             return;
         }
@@ -174,6 +178,7 @@ void LoadedTournament::load(LoadCallback callback) {
         }
         catch (const std::exception &e) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
+            log_error().msg("Failed reading tournament save-file contents");
             mFileInUse = false;
             return;
         }
@@ -183,6 +188,7 @@ void LoadedTournament::load(LoadCallback callback) {
         if (ZSTD_isError(returnCode)) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
             mFileInUse = false;
+            log_error().msg("Failed decompressing tournament save-file contents");
             return;
         }
 
@@ -195,6 +201,7 @@ void LoadedTournament::load(LoadCallback callback) {
         catch(const std::exception &e) {
             boost::asio::dispatch(mContext, std::bind(callback, false));
             mFileInUse = false;
+            log_error().msg("Failed deserialization of tournament save-file contents");
             return;
         }
 
@@ -217,8 +224,6 @@ void LoadedTournament::save(SaveCallback callback) {
             return;
         }
 
-        log_debug().msg("Saving tournament");
-
         mFileInUse = true;
 
         auto uncompressed = std::make_shared<std::string>();
@@ -230,7 +235,7 @@ void LoadedTournament::save(SaveCallback callback) {
             *uncompressed = stream.str();
         }
         catch(const std::exception &e) {
-            log_error().msg("Failed serializing of tournament");
+            log_error().msg("Failed serialization of tournament save-file contents");
             boost::asio::dispatch(mContext, std::bind(callback, false));
             mFileInUse = false;
             return;
@@ -238,14 +243,14 @@ void LoadedTournament::save(SaveCallback callback) {
 
         boost::asio::dispatch(mContext, [this, uncompressed, callback]() {
             // Compress string
-            const int uncompressedSize = static_cast<int>(uncompressed->size());
+            const size_t uncompressedSize = uncompressed->size();
             const size_t compressBound = ZSTD_compressBound(uncompressedSize);
 
             auto compressed = std::make_unique<char[]>(compressBound);
             const size_t compressedSize = ZSTD_compress(compressed.get(), compressBound, uncompressed->data(), uncompressedSize, COMPRESSION_LEVEL);
 
             if (ZSTD_isError(compressedSize)) {
-                log_error().msg("Failed compressing tournament for disk");
+                log_error().msg("Failed compressing tournament for save-file");
                 boost::asio::dispatch(mContext, std::bind(callback, false));
                 mFileInUse = false;
                 return;
@@ -260,6 +265,7 @@ void LoadedTournament::save(SaveCallback callback) {
                 header = stream.str();
             }
             catch(const std::exception &e) {
+                log_error().msg("Failed serialization of tournament save-file header");
                 boost::asio::dispatch(mContext, std::bind(callback, false));
                 mFileInUse = false;
                 return;
@@ -271,6 +277,7 @@ void LoadedTournament::save(SaveCallback callback) {
             std::ofstream file(mFileLocation.string(), std::ios::out | std::ios::binary | std::ios::trunc);
 
             if (!file.is_open()) {
+                log_error().msg("Failed opening tournament save-file");
                 boost::asio::dispatch(mContext, std::bind(callback, false));
                 mFileInUse = false;
                 return;
@@ -282,6 +289,7 @@ void LoadedTournament::save(SaveCallback callback) {
                 file.close();
             }
             catch(const std::exception &e) {
+                log_error().msg("Failed writing tournament binary data to save-file");
                 boost::asio::dispatch(mContext, std::bind(callback, false));
                 mFileInUse = false;
                 return;
@@ -292,7 +300,7 @@ void LoadedTournament::save(SaveCallback callback) {
                 mSynchronizationTime = std::chrono::system_clock::now();
                 mDatabase.asyncSetSaveTime(mWebName, mSynchronizationTime, [this](bool success) {
                     if (!success)
-                        log_warning().field("webName", mWebName).msg("Failed updating database save_time column");
+                        log_error().field("webName", mWebName).msg("Failed updating database save_time column");
                 });
                 boost::asio::dispatch(mContext, std::bind(callback, true));
             });
@@ -305,7 +313,7 @@ void LoadedTournament::saveIfNeccesary() {
         if (mModificationTime > mSynchronizationTime) {
             save([this](bool success) {
                 if (!success)
-                    log_warning().field("webName", mWebName).msg("Failed saving tournament");
+                    log_error().field("webName", mWebName).msg("Failed saving tournament");
             });
         }
     });
