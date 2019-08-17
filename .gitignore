@@ -1,4 +1,5 @@
 build
+build-release
 __pycache__
 alembic.ini
 
