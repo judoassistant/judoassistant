@@ -72,7 +72,7 @@ web_sources = []
 subdir('src')
 
 # Compile core library
-core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep, cereal_dep, boost_dep])
+core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep, cereal_dep, boost_dep, crypto_dep, ssl_dep])
 
 # Qt5 compilations
 if get_option('ui')
