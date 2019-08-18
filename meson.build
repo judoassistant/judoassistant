@@ -13,25 +13,17 @@ conf_data.set_quoted('SYSCONF_DIR', get_option('prefix') / get_option('sysconfdi
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 thread_dep = dependency('threads')
 
-cxx = meson.get_compiler('cpp')
-if get_option('zstd_dir') == ''
-    zstd_dep = dependency('libzstd') # Compression library for networking and save-files
-else
-    zstd_dep = cxx.find_library('libzstd', dirs: get_option('zstd_dir') + '/dll')
-endif
+cereal_dep = dependency('cereal', fallback: ['cereal', 'cereal_dep'])
+
+zstd_dep = dependency('libzstd') # Compression library for networking and save-files
 
 # UI dependencies
 if get_option('ui')
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
 
-    if get_option('openssl_dir') == ''
-        ssl_dep = dependency('libssl') # SSL library
-        crypto_dep = dependency('libcrypto') # Crypto library for SSL
-    else
-        ssl_dep = cxx.find_library('libssl', dirs: get_option('openssl_dir') + '/lib')
-        crypto_dep = cxx.find_library('libcrypto', dirs: get_option('openssl_dir') + '/lib')
-    endif
+    ssl_dep = dependency('libssl') # SSL library
+    crypto_dep = dependency('libcrypto') # Crypto library for SSL
 else
     qt5 = disabler()
     qt5_dep = disabler()
@@ -49,32 +41,33 @@ else
 endif
 
 # Set-up visual studio args
+cxx = meson.get_compiler('cpp')
 if cxx.get_id()=='msvc'
     add_project_arguments('/bigobj', language: 'cpp')
     add_project_arguments('-D_WIN32_WINNT=0x0601', language: 'cpp')
 endif
 
 # Find all sources and headers
-include_array = ['.', 'src']
+# include_array = ['.', 'src']
 
-if get_option('zstd_dir') != ''
-    include_array += [get_option('zstd_dir') + '\include']
-endif
+# if get_option('zstd_dir') != ''
+#     include_array += [get_option('zstd_dir') + '\include']
+# endif
 
-if get_option('openssl_dir') != ''
-    include_array += [get_option('openssl_dir') + '\include']
-endif
+# if get_option('openssl_dir') != ''
+#     include_array += [get_option('openssl_dir') + '\include']
+# endif
 
-if get_option('cereal_dir') != ''
-    include_array += [get_option('cereal_dir') + '\include']
-endif
+# if get_option('cereal_dir') != ''
+#     include_array += [get_option('cereal_dir') + '\include']
+# endif
 
 # Setting BOOST_INCLUDEDIR in the environment does not seem to work
-if get_option('boost_dir') != ''
-    include_array += [get_option('boost_dir')]
-endif
+# if get_option('boost_dir') != ''
+#     include_array += [get_option('boost_dir')]
+# endif
 
-include_dirs = include_directories(include_array)
+include_dirs = include_directories(['.', 'src'])
 
 core_sources = []
 ui_sources = []
@@ -94,7 +87,7 @@ web_sources = []
 subdir('src')
 
 # Compile core library
-core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep])
+core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep, cereal_dep, boost_dep])
 
 # Qt5 compilations
 if get_option('ui')
@@ -110,7 +103,7 @@ else
 endif
 
 # Compile ui library
-ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep])
+ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep, cereal_dep])
 
 # Copy icons
 # if get_option('ui')
@@ -118,10 +111,10 @@ ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_di
 # endif
 
 # Executables
-hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep], install: true)
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep, cereal_dep], install: true)
 score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep], install: true)
 kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep], install: true)
-web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep], install: true)
+web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep, cereal_dep], install: true)
 
 # Install data
 if get_option('ui')
