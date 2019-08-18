@@ -1,7 +1,5 @@
 JudoAssistant
 =============
-[![Build status](https://ci.appveyor.com/api/projects/status/hi862gr87iyd2x0q/branch/master?svg=true)](https://ci.appveyor.com/project/svendcs/judoassistant/branch/master)
-
 JudoAssistant is free and open source software for running judo tournaments.
 The software is currently in the pre-alpha stage and no official releases are
 available.

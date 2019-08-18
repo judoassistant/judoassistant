@@ -1,20 +1,25 @@
-project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_library=static'], license: 'MIT')
+project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_library=static'], version: '0.1.0', license: 'MIT')
+
+# JudoAssistant Version
+judoassistant_version = meson.project_version()
+version_array = judoassistant_version.split('.')
+version_major = version_array[0].to_int()
+version_minor = version_array[1].to_int()
+version_patch = version_array[2].to_int()
 
 # Setup configuration data
 conf_data = configuration_data()
-conf_data.set('VERSION_MAJOR', '0')
-conf_data.set('VERSION_MINOR', '1')
-conf_data.set('VERSION_PATCH', '0')
+conf_data.set('VERSION_MAJOR', version_major)
+conf_data.set('VERSION_MINOR', version_minor)
+conf_data.set('VERSION_PATCH', version_patch)
 conf_data.set('DEBUG', get_option('buildtype') == 'debug')
-conf_data.set_quoted('DATA_DIR', get_option('prefix') / get_option('datadir') / 'judoassistant')
-conf_data.set_quoted('SYSCONF_DIR', get_option('prefix') / get_option('sysconfdir') / 'judoassistant')
+conf_data.set_quoted('DATA_DIR', join_paths(get_option('prefix'), get_option('datadir'), meson.project_name()))
+conf_data.set_quoted('SYSCONF_DIR', join_paths(get_option('prefix'), get_option('sysconfdir'), meson.project_name()))
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 thread_dep = dependency('threads')
-
 cereal_dep = dependency('cereal', fallback: ['cereal', 'cereal_dep'])
-
 zstd_dep = dependency('libzstd') # Compression library for networking and save-files
 
 # UI dependencies
@@ -46,26 +51,6 @@ if cxx.get_id()=='msvc'
     add_project_arguments('/bigobj', language: 'cpp')
     add_project_arguments('-D_WIN32_WINNT=0x0601', language: 'cpp')
 endif
-
-# Find all sources and headers
-# include_array = ['.', 'src']
-
-# if get_option('zstd_dir') != ''
-#     include_array += [get_option('zstd_dir') + '\include']
-# endif
-
-# if get_option('openssl_dir') != ''
-#     include_array += [get_option('openssl_dir') + '\include']
-# endif
-
-# if get_option('cereal_dir') != ''
-#     include_array += [get_option('cereal_dir') + '\include']
-# endif
-
-# Setting BOOST_INCLUDEDIR in the environment does not seem to work
-# if get_option('boost_dir') != ''
-#     include_array += [get_option('boost_dir')]
-# endif
 
 include_dirs = include_directories(['.', 'src'])
 
@@ -119,23 +104,23 @@ web_exe = executable('judoassistant-web', web_sources, include_directories: incl
 # Install data
 if get_option('ui')
     # Icons
-    install_data('icons/icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
-    install_data('icons/icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
-    install_data('icons/icons/svg/filter.svg', rename: 'filter.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
-    install_data('icons/icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: get_option('datadir') / 'judoassistant/icons')
+    install_data('icons/icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/icons/svg/filter.svg', rename: 'filter.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
 
     # Flags
-    install_data('flags/flags/4x3/dk.svg', rename: 'den.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
-    install_data('flags/flags/4x3/gb.svg', rename: 'gbr.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
-    install_data('flags/flags/4x3/fr.svg', rename: 'fra.svg', install_dir: get_option('datadir') / 'judoassistant/flags')
+    install_data('flags/flags/4x3/dk.svg', rename: 'den.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'flags'))
+    install_data('flags/flags/4x3/gb.svg', rename: 'gbr.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'flags'))
+    install_data('flags/flags/4x3/fr.svg', rename: 'fra.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'flags'))
 
     # Desktop Entries
-    install_data('data/judoassistant.desktop', install_dir: get_option('datadir') / 'applications')
-    install_data('data/judoassistant-score.desktop', install_dir: get_option('datadir') / 'applications')
-    install_data('data/judoassistant-kiosk.desktop', install_dir: get_option('datadir') / 'applications')
+    install_data('data/judoassistant.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+    install_data('data/judoassistant-score.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+    install_data('data/judoassistant-kiosk.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
 endif
 
 if get_option('web')
-    install_data('data/example-server-config.cfg', rename: 'config.cfg', install_dir: get_option('sysconfdir') / 'judoassistant')
+    install_data('data/example-server-config.cfg', rename: 'config.cfg', install_dir: join_paths(get_option('sysconfdir'), 'judoassistant'))
 endif
 
