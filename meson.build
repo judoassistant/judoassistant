@@ -24,19 +24,22 @@ else
 endif
 
 # Core dependencies
-boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
 thread_dep = dependency('threads')
 cereal_dep = dependency('cereal', fallback: ['cereal', 'cereal_dep'])
 zstd_dep = dependency('libzstd') # Compression library for networking and save-files
+boost_core_dep = dependency('boost') # Used for ASIO
 
 # UI dependencies
 if get_option('ui')
+    boost_ui_dep = dependency('boost', modules: ['filesystem']) # Used for handling file paths
+
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
 
     ssl_dep = dependency('libssl') # SSL library
     crypto_dep = dependency('libcrypto') # Crypto library for SSL
 else
+    boost_ui_dep = disabler()
     qt5 = disabler()
     qt5_dep = disabler()
     crypto_dep = disabler()
@@ -47,9 +50,11 @@ endif
 if get_option('web')
     pqxx_dep = dependency('libpqxx') # PostgreSQL library
     botan_dep = dependency('botan-2') # Crypto library used for blowfish hashing
+    boost_web_dep = dependency('boost', modules: ['filesystem', 'program_options']) # Used for ASIO, file paths and program options
 else
     pqxx_dep = disabler()
     botan_dep = disabler()
+    boost_web_dep = disabler()
 endif
 
 # Set-up visual studio args
@@ -79,7 +84,7 @@ web_sources = []
 subdir('src')
 
 # Compile core library
-core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep, cereal_dep, boost_dep, crypto_dep, ssl_dep])
+core_lib = library('core', core_sources, include_directories: include_dirs, dependencies: [zstd_dep, cereal_dep, boost_core_dep, crypto_dep, ssl_dep])
 
 # Qt5 compilations
 if get_option('ui')
@@ -95,7 +100,7 @@ else
 endif
 
 # Compile ui library
-ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [qt5_dep, thread_dep, boost_dep, cereal_dep])
+ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_ui_dep, qt5_dep, thread_dep, cereal_dep])
 
 # Copy icons
 # if get_option('ui')
@@ -103,10 +108,10 @@ ui_lib = library('ui', ui_sources, ui_moc_files, include_directories: include_di
 # endif
 
 # Executables
-hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep, cereal_dep], install: true)
-score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, cereal_dep], install: true)
-kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_dep, thread_dep, cereal_dep], install: true)
-web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [boost_dep, thread_dep, pqxx_dep, botan_dep, cereal_dep], install: true)
+hub_exe = executable('judoassistant', hub_sources, hub_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_ui_dep, thread_dep, zstd_dep, ssl_dep, crypto_dep, cereal_dep], install: true)
+score_exe = executable('judoassistant-score', score_sources, score_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_ui_dep, thread_dep, cereal_dep], install: true)
+kiosk_exe = executable('judoassistant-kiosk', kiosk_sources, kiosk_moc_files, include_directories: include_dirs, link_with: [core_lib, ui_lib], dependencies: [qt5_dep, boost_ui_dep, thread_dep, cereal_dep], install: true)
+web_exe = executable('judoassistant-web', web_sources, include_directories: include_dirs, link_with: [core_lib], dependencies: [thread_dep, pqxx_dep, botan_dep, cereal_dep], install: true)
 
 # Install data
 if get_option('ui')
