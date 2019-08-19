@@ -5,14 +5,19 @@ AppName=JudoAssistant
 AppVersion=@VERSION@
 DefaultDirName={pf}\JudoAssistant
 DefaultGroupName=JudoAssistant
-UninstallDisplayIcon={app}\bin\judoassistant.exe
+UninstallDisplayIcon={app}\judoassistant.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=.
 
 [Files]
-Source: "myapp.exe"; DestDir: "{app}"
-Source: "SDL2.dll"; DestDir: "{app}"
+Source: "judoassistant.exe"; DestDir: "{app}"
+Source: "judoassistant-score.exe"; DestDir: "{app}"
+Source: "judoassistant-kiosk.exe"; DestDir: "{app}"
+Source: "share\*"; DestDir: "{app}\share"
+;Source: "SDL2.dll"; DestDir: "{app}"
 
-;[Icons]
-;Name: "{group}\My App"; Filename: "{app}\myapp.exe"
+[Icons]
+Name: "{group}\JudoAssistant"; Filename: "{app}\judoassistant.exe"
+Name: "{group}\JudoAssistant Score"; Filename: "{app}\judoassistant-score.exe"
+Name: "{group}\JudoAssistant Kiosk"; Filename: "{app}\judoassistant-kiosk.exe"
