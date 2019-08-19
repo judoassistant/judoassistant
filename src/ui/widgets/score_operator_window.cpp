@@ -23,6 +23,10 @@
 ScoreOperatorWindow::ScoreOperatorWindow()
     : mDisplayWindow(mStoreManager)
 {
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+    setPalette(palette);
+
     QWidget *centralWidget = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
 
@@ -130,10 +134,6 @@ void ScoreOperatorWindow::populateTatamiMenu() {
 }
 
 void ScoreOperatorWindow::createPreferencesMenu() {
-    DarkPalette palette;
-    QApplication::setPalette(palette);
-    setPalette(palette);
-
     // // TODO: Consider refactoring this into super class
     // QMenu *menu = menuBar()->addMenu(tr("Preferences"));
     // {
@@ -465,7 +465,7 @@ void ScoreOperatorWindow::changeNetworkClientState(NetworkClientState state) {
 
 void ScoreOperatorWindow::show() {
     ClientWindow::show();
-    // mDisplayWindow.show();
+    mDisplayWindow.show();
 }
 
 void ScoreOperatorWindow::resetButtonClick() {
