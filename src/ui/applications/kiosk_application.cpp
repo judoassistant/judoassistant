@@ -21,6 +21,8 @@ KioskApplication::KioskApplication(int &argc, char *argv[]) : QApplication(argc,
     parser.process(*this);
 
     mArgs = parser.positionalArguments();
+
+    setStyle(QStyleFactory::create("fusion"));
 }
 
 int KioskApplication::exec() {
