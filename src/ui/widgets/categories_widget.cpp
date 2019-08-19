@@ -28,7 +28,7 @@ CategoriesWidget::CategoriesWidget(StoreManager & storeManager)
         QToolBar *toolBar = new QToolBar(tr("Categories toolbar"), this);
         toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-        QAction *createAction = toolBar->addAction(QIcon("icons/category-add.svg"), tr("Create category"));
+        QAction *createAction = toolBar->addAction(QIcon(QString(DATA_DIR) + "/icons/category-add.svg"), tr("Create category"));
         connect(createAction, &QAction::triggered, this, &CategoriesWidget::showCategoryCreateDialog);
 
         layout->addWidget(toolBar);

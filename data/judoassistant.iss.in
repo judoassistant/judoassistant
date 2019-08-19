@@ -1,0 +1,34 @@
+; Innosetup file for JudoAssistant on Windows
+
+[Setup]
+AppName=JudoAssistant
+AppVersion=@VERSION@
+DefaultDirName={autopf}\JudoAssistant
+DefaultGroupName=JudoAssistant
+UninstallDisplayIcon={app}\judoassistant.exe
+Compression=lzma2
+SolidCompression=yes
+OutputDir=.
+OutputBaseFilename=judoassistant-windows-setup
+
+[Files]
+Source: "judoassistant.exe"; DestDir: "{app}"
+Source: "judoassistant-score.exe"; DestDir: "{app}"
+Source: "judoassistant-kiosk.exe"; DestDir: "{app}"
+Source: "share\judoassistant\flags\*"; DestDir: "{app}\share\judoassistant\flags"
+Source: "share\judoassistant\icons\*"; DestDir: "{app}\share\judoassistant\icons"
+Source: "boost_filesystem-vc142-mt-x64-1_70.dll"; DestDir: "{app}"
+Source: "libcrypto-1_1-x64.dll"; DestDir: "{app}"
+Source: "libssl-1_1-x64.dll"; DestDir: "{app}"
+Source: "libzstd.dll"; DestDir: "{app}"
+Source: "Qt5Core.dll"; DestDir: "{app}"
+Source: "Qt5Gui.dll"; DestDir: "{app}"
+Source: "Qt5Widgets.dll"; DestDir: "{app}"
+Source: "NotoSans-Bold.ttf"; DestDir: "{fonts}"; FontInstall: "Noto Sans Bold"; Flags: onlyifdoesntexist uninsneveruninstall
+Source: "NotoSans-Regular.ttf"; DestDir: "{fonts}"; FontInstall: "Noto Sans Regular"; Flags: onlyifdoesntexist uninsneveruninstall
+Source: "NotoSansMono-Bold.ttf"; DestDir: "{fonts}"; FontInstall: "Noto Sans Mono Regular"; Flags: onlyifdoesntexist uninsneveruninstall
+
+[Icons]
+Name: "{group}\JudoAssistant"; Filename: "{app}\judoassistant.exe"
+Name: "{group}\JudoAssistant Score"; Filename: "{app}\judoassistant-score.exe"
+Name: "{group}\JudoAssistant Kiosk"; Filename: "{app}\judoassistant-kiosk.exe"

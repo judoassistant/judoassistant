@@ -1,4 +1,7 @@
 build
+build-release
 __pycache__
 alembic.ini
+subprojects/packagecache
+subprojects/cereal-1.2.2
 

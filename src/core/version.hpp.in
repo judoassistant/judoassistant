@@ -6,7 +6,6 @@
 #mesondefine VERSION_MAJOR
 #mesondefine VERSION_MINOR
 #mesondefine VERSION_PATCH
-#mesondefine DEBUG
 
 class ApplicationVersion {
 public:

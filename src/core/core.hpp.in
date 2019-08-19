@@ -7,3 +7,6 @@
 
 #include "core/exception.hpp"
 
+#mesondefine DEBUG
+#mesondefine DATA_DIR
+#mesondefine SYSCONF_DIR

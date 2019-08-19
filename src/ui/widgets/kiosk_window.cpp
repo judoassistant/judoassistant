@@ -19,6 +19,10 @@
 
 KioskWindow::KioskWindow()
 {
+    DarkPalette palette;
+    QApplication::setPalette(palette);
+    setPalette(palette);
+
     QWidget *centralWidget = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
 
@@ -57,10 +61,6 @@ void KioskWindow::createTournamentMenu() {
 }
 
 void KioskWindow::createPreferencesMenu() {
-    DarkPalette palette;
-    QApplication::setPalette(palette);
-    setPalette(palette);
-
     // QMenu *menu = menuBar()->addMenu(tr("Preferences"));
     // // {
     // //     QMenu *submenu = menu->addMenu("Language");

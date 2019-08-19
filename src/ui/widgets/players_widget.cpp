@@ -33,10 +33,10 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         QToolBar *toolBar = new QToolBar(tr("Players toolbar"), this);
         toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-        QAction *createAction = toolBar->addAction(QIcon("icons/player-add.svg"), tr("Create Player"));
+        QAction *createAction = toolBar->addAction(QIcon(QString(DATA_DIR) + "/icons/player-add.svg"), tr("Create Player"));
         connect(createAction, &QAction::triggered, this, &PlayersWidget::showPlayerCreateDialog);
 
-        mHideAction = toolBar->addAction(QIcon("icons/hide.svg"), tr("Hide Fields"));
+        mHideAction = toolBar->addAction(QIcon(QString(DATA_DIR) + "/icons/hide.svg"), tr("Hide Fields"));
         connect(mHideAction, &QAction::triggered, this, &PlayersWidget::showHideMenu);
         updateHideActionText();
 

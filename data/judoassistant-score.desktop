@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=JudoAssistant Score
+Comment=Judo Tournament Software Suite - Scoreboard Application
+Exec=judoassistant-score %f
+Terminal=false
+Type=Application
+Icon=terminal
+Categories=Application;Other;
