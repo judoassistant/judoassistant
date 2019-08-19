@@ -9,12 +9,19 @@ version_patch = version_array[2].to_int()
 
 # Setup configuration data
 conf_data = configuration_data()
+conf_data.set('VERSION', judoassistant_version)
 conf_data.set('VERSION_MAJOR', version_major)
 conf_data.set('VERSION_MINOR', version_minor)
 conf_data.set('VERSION_PATCH', version_patch)
 conf_data.set('DEBUG', get_option('buildtype') == 'debug')
-conf_data.set_quoted('DATA_DIR', join_paths(get_option('prefix'), get_option('datadir'), meson.project_name()))
-conf_data.set_quoted('SYSCONF_DIR', join_paths(get_option('prefix'), get_option('sysconfdir'), meson.project_name()))
+
+if get_option('lookupmode') == 'absolute'
+    conf_data.set_quoted('DATA_DIR', join_paths(get_option('prefix'), get_option('datadir'), meson.project_name()))
+    conf_data.set_quoted('SYSCONF_DIR', join_paths(get_option('prefix'), get_option('sysconfdir'), meson.project_name()))
+else
+    conf_data.set_quoted('DATA_DIR', join_paths(get_option('datadir'), meson.project_name()))
+    conf_data.set_quoted('SYSCONF_DIR', join_paths(get_option('sysconfdir'), meson.project_name()))
+endif
 
 # Core dependencies
 boost_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO and on the web server
@@ -115,9 +122,17 @@ if get_option('ui')
     install_data('flags/flags/4x3/fr.svg', rename: 'fra.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'flags'))
 
     # Desktop Entries
-    install_data('data/judoassistant.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
-    install_data('data/judoassistant-score.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
-    install_data('data/judoassistant-kiosk.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+    if host_machine.system() == 'linux'
+        install_data('data/judoassistant.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+        install_data('data/judoassistant-score.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+        install_data('data/judoassistant-kiosk.desktop', install_dir: join_paths(get_option('datadir'), 'applications'))
+    endif
+
+    if host_machine.system() == 'windows'
+        configure_file(input : 'data/judoassistant.iss.in', output: 'judoassistant.iss', configuration: conf_data)
+        install_data(input : 'data/judoassistant.iss.in', output: 'judoassistant.iss', configuration: conf_data)
+
+    endif
 endif
 
 if get_option('web')

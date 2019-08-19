@@ -1,0 +1,18 @@
+; Innosetup file for JudoAssistant on Windows
+
+[Setup]
+AppName=JudoAssistant
+AppVersion=@VERSION@
+DefaultDirName={pf}\JudoAssistant
+DefaultGroupName=JudoAssistant
+UninstallDisplayIcon={app}\bin\judoassistant.exe
+Compression=lzma2
+SolidCompression=yes
+OutputDir=.
+
+[Files]
+Source: "myapp.exe"; DestDir: "{app}"
+Source: "SDL2.dll"; DestDir: "{app}"
+
+;[Icons]
+;Name: "{group}\My App"; Filename: "{app}\myapp.exe"
