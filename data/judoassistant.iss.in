@@ -3,18 +3,20 @@
 [Setup]
 AppName=JudoAssistant
 AppVersion=@VERSION@
-DefaultDirName={pf}\JudoAssistant
+DefaultDirName={autopf}\JudoAssistant
 DefaultGroupName=JudoAssistant
 UninstallDisplayIcon={app}\judoassistant.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=.
+OutputBaseFilename=judoassistant-windows-setup
 
 [Files]
 Source: "judoassistant.exe"; DestDir: "{app}"
 Source: "judoassistant-score.exe"; DestDir: "{app}"
 Source: "judoassistant-kiosk.exe"; DestDir: "{app}"
-Source: "share\*"; DestDir: "{app}\share"
+Source: "share\judoassistant\flags\*"; DestDir: "{app}\share\judoassistant\flags"
+Source: "share\judoassistant\icons\*"; DestDir: "{app}\share\judoassistant\icons"
 Source: "boost_filesystem-vc142-mt-x64-1_70.dll"; DestDir: "{app}"
 Source: "libcrypto-1_1-x64.dll"; DestDir: "{app}"
 Source: "libssl-1_1-x64.dll"; DestDir: "{app}"
