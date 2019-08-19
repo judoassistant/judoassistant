@@ -215,7 +215,7 @@ void EditCategoryWidget::updateDrawDisabled() {
     mDrawDisabledContent->setEnabled(true);
     TournamentStore &tournament = mStoreManager.getTournament();
 
-    bool disabled;
+    bool disabled = false;
     for (auto it = mCategoryIds.begin(); it != mCategoryIds.end(); ++it) {
         const auto &category = tournament.getCategory(*it);
         if (it == mCategoryIds.begin()) {
