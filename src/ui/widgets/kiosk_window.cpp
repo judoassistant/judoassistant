@@ -10,6 +10,7 @@
 #include <QSplitter>
 #include <QVBoxLayout>
 
+#include "core/version.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/misc/dark_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -156,7 +157,7 @@ void KioskWindow::quit() {
 }
 
 void KioskWindow::showAboutDialog() {
-    QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
+    QMessageBox::about(this, tr("JudoAssistant - About"), tr("JudoAssistant - Version %1").arg(QString::fromStdString(ApplicationVersion::current().toString())));
 }
 
 void KioskWindow::silentConnect(QString host, int port) {

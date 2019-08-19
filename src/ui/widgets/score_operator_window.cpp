@@ -14,6 +14,7 @@
 #include "core/log.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
+#include "core/version.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/misc/dark_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
@@ -230,7 +231,7 @@ void ScoreOperatorWindow::quit() {
 }
 
 void ScoreOperatorWindow::showAboutDialog() {
-    QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
+    QMessageBox::about(this, tr("JudoAssistant - About"), tr("JudoAssistant - Version %1").arg(QString::fromStdString(ApplicationVersion::current().toString())));
 }
 
 QWidget* ScoreOperatorWindow::createLowerSection() {

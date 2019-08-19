@@ -15,6 +15,7 @@
 
 #include "core/exception.hpp"
 #include "core/log.hpp"
+#include "core/version.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/constants/network.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
@@ -364,7 +365,7 @@ void HubWindow::saveAsTournament() {
 }
 
 void HubWindow::showAboutDialog() {
-    QMessageBox::about(this, tr("JudoAssistant - About"), tr("TODO"));
+    QMessageBox::about(this, tr("JudoAssistant - About"), tr("JudoAssistant - Version %1").arg(QString::fromStdString(ApplicationVersion::current().toString())));
 }
 
 void HubWindow::openImportPlayers() {
