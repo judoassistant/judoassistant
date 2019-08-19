@@ -135,7 +135,7 @@ if get_option('ui')
     endif
 
     if host_machine.system() == 'windows'
-        configure_file(input : 'data/judoassistant.iss.in', output: 'judoassistant.iss', configuration: conf_data)
+        configure_file(input : 'data/judoassistant.iss.in', output: 'judoassistant.iss', configuration: conf_data, install: true, install_dir: '.')
     endif
 endif
 
