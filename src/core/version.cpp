@@ -11,7 +11,7 @@ ApplicationVersion ApplicationVersion::current() {
 }
 
 bool ApplicationVersion::isCompatible(const ApplicationVersion &other) const {
-    return mVersionMajor == other.mVersionMajor;
+    return mVersionMajor == other.mVersionMajor && mVersionMinor == other.mVersionMinor;
 }
 
 std::string ApplicationVersion::toString() const {
