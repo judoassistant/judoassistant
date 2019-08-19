@@ -21,6 +21,9 @@ shutil.copy(r'C:\Libraries\Qt\5.13.0\msvc2017_64\bin\Qt5Core.dll', pkgdir)
 shutil.copy(r'C:\Libraries\Qt\5.13.0\msvc2017_64\bin\Qt5Gui.dll', pkgdir)
 shutil.copy(r'C:\Libraries\Qt\5.13.0\msvc2017_64\bin\Qt5Widgets.dll', pkgdir)
 shutil.copy(r'C:\Libraries\zstd-v1.4.2-win64\dll\libzstd.dll', pkgdir)
+shutil.copy(r'C:\Windows\Fonts\NotoSans-Bold.ttf', pkgdir)
+shutil.copy(r'C:\Windows\Fonts\NotoSans-Regular.ttf', pkgdir)
+shutil.copy(r'C:\Windows\Fonts\NotoSansMono-Bold.ttf', pkgdir)
 
 # Run Inno Setup 6
 subprocess.check_call([r'C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'judoassistant.iss'], cwd=pkgdir)
