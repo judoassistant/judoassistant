@@ -21,11 +21,9 @@ LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
         QFormLayout *formLayout = new QFormLayout(group);
 
         mEmailContent = new QLineEdit;
-        mEmailContent->setText("svendcsvendsen@gmail.com");
 
         mPasswordContent = new QLineEdit;
         mPasswordContent->setEchoMode(QLineEdit::Password);
-        mPasswordContent->setText("password");
 
         formLayout->addRow(tr("Email"), mEmailContent);
         formLayout->addRow(tr("Password"), mPasswordContent);
