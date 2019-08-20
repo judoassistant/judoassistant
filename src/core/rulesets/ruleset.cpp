@@ -117,8 +117,8 @@ const std::vector<std::unique_ptr<const Ruleset>> & Ruleset::getRulesets() {
 
     if (rulesets.empty()) {
         rulesets.push_back(std::make_unique<TwentyEighteenRuleset>());
-        rulesets.push_back(std::make_unique<TwentyEighteenChildrenRuleset>());
-        rulesets.push_back(std::make_unique<TwentyEighteenVeteranRuleset>());
+        rulesets.push_back(std::make_unique<TwentyEighteenTwoMinuteRuleset>());
+        rulesets.push_back(std::make_unique<TwentyEighteenThreeMinuteRuleset>());
     }
 
     return rulesets;

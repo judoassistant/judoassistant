@@ -194,7 +194,7 @@ std::chrono::milliseconds TwentyEighteenRuleset::getNormalTime() const {
 }
 
 std::chrono::milliseconds TwentyEighteenRuleset::getExpectedTime() const {
-    return std::chrono::minutes(6);
+    return std::chrono::minutes(4);
 }
 
 bool TwentyEighteenRuleset::canAwardHansokuMake(const MatchStore &match, MatchStore::PlayerIndex playerIndex) const {

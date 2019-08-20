@@ -6,7 +6,7 @@
 #include "core/serialize.hpp"
 
 // The IJF children ruleset from January 2018
-class TwentyEighteenChildrenRuleset : public TwentyEighteenRuleset {
+class TwentyEighteenThreeMinuteRuleset : public TwentyEighteenRuleset {
 private:
 public:
     std::string getName() const override;
@@ -18,5 +18,5 @@ public:
     std::unique_ptr<Ruleset> clone() const override;
 };
 
-CEREAL_REGISTER_TYPE(TwentyEighteenChildrenRuleset)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(TwentyEighteenRuleset, TwentyEighteenChildrenRuleset)
+CEREAL_REGISTER_TYPE(TwentyEighteenThreeMinuteRuleset)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(TwentyEighteenRuleset, TwentyEighteenThreeMinuteRuleset)
