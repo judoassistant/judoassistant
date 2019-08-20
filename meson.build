@@ -47,7 +47,7 @@ endif
 if get_option('web')
     pqxx_dep = dependency('libpqxx') # PostgreSQL library
     botan_dep = dependency('botan-2') # Crypto library used for blowfish hashing
-    boost_web_dep = dependency('boost', modules: ['filesystem', 'program_options']) # Used for ASIO, file paths and program options
+    boost_web_dep = dependency('boost', modules: ['system', 'filesystem', 'program_options']) # Used for ASIO, file paths and program options
 else
     pqxx_dep = disabler()
     botan_dep = disabler()
