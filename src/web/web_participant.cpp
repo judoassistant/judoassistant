@@ -169,7 +169,6 @@ void WebParticipant::write() {
 }
 
 bool WebParticipant::subscribeCategory(const std::string &str) {
-    log_debug().field("id", str).msg("Subscribing to category");
     try {
         if (mTournament == nullptr)
             return false;
@@ -184,7 +183,6 @@ bool WebParticipant::subscribeCategory(const std::string &str) {
 }
 
 bool WebParticipant::subscribeTatami(const std::string &str) {
-    log_debug().field("id", str).msg("Subscribing to tatami");
     try {
         unsigned int index = std::stoul(str);
         mTournament->subscribeTatami(shared_from_this(), index);
@@ -197,7 +195,6 @@ bool WebParticipant::subscribeTatami(const std::string &str) {
 }
 
 bool WebParticipant::subscribePlayer(const std::string &str) {
-    log_debug().field("id", str).msg("Subscribing to player");
     try {
         if (mTournament == nullptr)
             return false;
