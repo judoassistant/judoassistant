@@ -28,6 +28,8 @@ thread_dep = dependency('threads')
 cereal_dep = dependency('cereal', fallback: ['cereal', 'cereal_dep'])
 zstd_dep = dependency('libzstd') # Compression library for networking and save-files
 boost_core_dep = dependency('boost') # Used for ASIO
+ssl_dep = dependency('libssl') # SSL library
+crypto_dep = dependency('libcrypto') # Crypto library for SSL
 
 # UI dependencies
 if get_option('ui')
@@ -35,15 +37,10 @@ if get_option('ui')
 
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
-
-    ssl_dep = dependency('libssl') # SSL library
-    crypto_dep = dependency('libcrypto') # Crypto library for SSL
 else
     boost_ui_dep = disabler()
     qt5 = disabler()
     qt5_dep = disabler()
-    crypto_dep = disabler()
-    ssl_dep = disabler()
 endif
 
 # Web server dependencies
