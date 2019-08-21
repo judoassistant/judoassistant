@@ -26,6 +26,7 @@
 #include "ui/widgets/tournament_preferences_dialog.hpp"
 #include "ui/widgets/judoassistant_preferences_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
+#include "ui/widgets/new_matches_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
 #include "ui/widgets/sidebar_widget.hpp"
 #include "ui/widgets/tatamis_widget.hpp"
@@ -49,7 +50,8 @@ HubWindow::HubWindow() {
     sidebar->addTab(new CategoriesWidget(mStoreManager), tr("Categories"));
     sidebar->addTab(new TatamisWidget(mStoreManager), tr("Tatamis"));
     sidebar->addTab(new MatchesWidget(mStoreManager), tr("Matches"));
-    sidebar->setCurrentIndex(0);
+    sidebar->addTab(new NewMatchesWidget(mStoreManager), tr("New Matches"));
+    sidebar->setCurrentIndex(5);
 
     setCentralWidget(sidebar);
 
