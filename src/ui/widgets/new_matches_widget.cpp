@@ -1,10 +1,12 @@
 #include <QHBoxLayout>
 #include <QGraphicsView>
 
+#include "core/stores/category_store.hpp"
+#include "core/stores/match_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
-#include "ui/widgets/new_matches_widget.hpp"
 #include "ui/widgets/graphics_items/tatami_text_graphics_item.hpp"
+#include "ui/widgets/new_matches_widget.hpp"
 
 MatchesGridGraphicsManager::MatchesGridGraphicsManager(QGraphicsScene *scene)
     : mScene(scene)
@@ -88,13 +90,116 @@ void NewMatchesWidget::endTatamiCountChange() {
         int y = MatchesGridGraphicsManager::VERTICAL_OFFSET;
         TatamiLocation location{tatamis.getHandle(i)};
 
-        MatchesGraphicsManager tatami(mStoreManager, mScene, location, x, y);
+        auto tatami = std::make_unique<MatchesGraphicsManager>(mStoreManager, mScene, location, x, y);
         mTatamis.push_back(std::move(tatami));
     }
 
     mGrid->updateGrid(tatamis.tatamiCount());
 }
 
-MatchesGraphicsManager::MatchesGraphicsManager(StoreManager &storeManager, QGraphicsScene *scene, TatamiLocation location, int x, int y) {
+MatchesGraphicsManager::MatchesGraphicsManager(StoreManager &storeManager, QGraphicsScene *scene, TatamiLocation location, int x, int y)
+    : mStoreManager(storeManager)
+    , mLocation(location)
+    , mX(x)
+    , mY(y)
+{
+    auto &tournament = mStoreManager.getTournament();
+    connect(&mTimer, &QTimer::timeout, this, &MatchesGraphicsManager::timerHit);
+    connect(&tournament, &QTournamentStore::matchesChanged, this, &MatchesGraphicsManager::changeMatches);
+    connect(&tournament, &QTournamentStore::tatamisChanged, this, &MatchesGraphicsManager::changeTatamis);
+    connect(&tournament, &QTournamentStore::playersChanged, this, &MatchesGraphicsManager::changePlayers);
+    connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &MatchesGraphicsManager::beginResetCategoryMatches);
 
+
+    mTimer.start(TIMER_INTERVAL);
+
+    beginResetMatches();
+    endResetMatches();
 }
+
+void MatchesGraphicsManager::beginResetMatches() {
+    mLoadedMatches.clear();
+    mLoadedGroups.clear();
+    mUnfinishedMatches.clear();
+    mUnfinishedMatchesSet.clear();
+    mUnfinishedMatchesPlayers.clear();
+    mUnfinishedMatchesPlayersInv.clear();
+    mUnpausedMatches.clear();
+}
+
+void MatchesGraphicsManager::endResetMatches() {
+    loadBlocks();
+}
+
+void MatchesGraphicsManager::loadBlocks() {
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &tatamis = tournament.getTatamis();
+    if (!tatamis.containsTatami(mLocation))
+        return;
+    const auto &tatami = tatamis.at(mLocation);
+
+    struct MatchInfo {
+        CategoryId categoryId;
+        MatchId matchId;
+        MatchStatus status;
+        std::optional<PlayerId> whitePlayer;
+        std::optional<PlayerId> bluePlayer;
+        bool osaekomi;
+        bool bye;
+    };
+
+    std::vector<MatchInfo> newMatches;
+    size_t newUnfinishedMatches = 0;
+
+    while (mUnfinishedMatches.size() + newUnfinishedMatches < ROW_CAP) {
+        if (mLoadedGroups.size() == tatami.groupCount())
+            break;
+
+        auto handle = tatami.getHandle(mLoadedGroups.size());
+        mLoadedGroups.insert(handle.id);
+        const auto &group = tatami.at(handle);
+
+        for (const auto &p : group.getMatches()) {
+            MatchInfo matchInfo;
+            auto &category = tournament.getCategory(p.first);
+            auto &match = category.getMatch(p.second);
+
+            matchInfo.categoryId = p.first;
+            matchInfo.matchId = p.second;
+            matchInfo.status =  match.getStatus();
+            matchInfo.whitePlayer = match.getWhitePlayer();
+            matchInfo.bluePlayer = match.getBluePlayer();
+            matchInfo.bye = match.isBye();
+            matchInfo.osaekomi = match.getOsaekomi().has_value();
+
+            if (!matchInfo.bye && matchInfo.status != MatchStatus::FINISHED)
+                ++newUnfinishedMatches;
+
+            newMatches.push_back(std::move(matchInfo));
+        }
+    }
+
+    if (!newMatches.empty()) {
+        for (const MatchInfo &matchInfo : newMatches) {
+            auto loadingTime = mLoadedMatches.size();
+            auto combinedId = std::make_pair(matchInfo.categoryId, matchInfo.matchId);
+            mLoadedMatches[combinedId] = loadingTime;
+
+            if (!matchInfo.bye && matchInfo.status != MatchStatus::FINISHED) {
+                mUnfinishedMatches.push_back(std::make_tuple(matchInfo.categoryId, matchInfo.matchId, loadingTime));
+                mUnfinishedMatchesSet.insert(combinedId);
+
+                if (matchInfo.status == MatchStatus::UNPAUSED || matchInfo.osaekomi)
+                    mUnpausedMatches.insert(combinedId);
+
+                mUnfinishedMatchesPlayersInv[combinedId] = {matchInfo.whitePlayer, matchInfo.bluePlayer};
+                if (matchInfo.whitePlayer)
+                    mUnfinishedMatchesPlayers[*matchInfo.whitePlayer].insert(combinedId);
+                if (matchInfo.bluePlayer)
+                    mUnfinishedMatchesPlayers[*matchInfo.bluePlayer].insert(combinedId);
+            }
+
+        }
+    }
+}
+
