@@ -225,6 +225,8 @@ bool JsonEncoder::hasTournamentChanges(const WebTournamentStore &tournament, std
     if (subscribedCategory.has_value() && tournament.containsCategory(*subscribedCategory)) {
         if (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end())
             return true;
+        if (tournament.getCategoryResultsResets().find(*subscribedCategory) != tournament.getCategoryResultsResets().end())
+            return true;
 
         for (const auto &match : tournament.getCategory(*subscribedCategory).getMatches()) {
             const auto &combinedId = match->getCombinedId();
@@ -349,6 +351,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
             shouldEncode |= (tournament.getChangedCategories().find(*subscribedCategory) != tournament.getChangedCategories().end());
             shouldEncode |= (tournament.getAddedCategories().find(*subscribedCategory) != tournament.getAddedCategories().end());
             shouldEncode |= (tournament.getCategoryMatchResets().find(*subscribedCategory) != tournament.getCategoryMatchResets().end());
+            shouldEncode |= (tournament.getCategoryResultsResets().find(*subscribedCategory) != tournament.getCategoryResultsResets().end());
             if (shouldEncode)
                 document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, tournament.getCategory(*subscribedCategory), allocator), allocator);
         }

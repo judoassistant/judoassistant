@@ -20,6 +20,7 @@ void WebTournamentStore::clearChanges() {
     mAddedCategories.clear();
     mErasedCategories.clear();
     mCategoryMatchResets.clear();
+    mCategoryResultsResets.clear();
 
     mChangedMatches.clear();
 
@@ -127,10 +128,12 @@ void WebTournamentStore::endAddCategories(const std::vector<CategoryId> &categor
             mErasedCategories.erase(categoryId);
             mChangedCategories.insert(categoryId);
             mCategoryResultsResets.insert(categoryId);
+            mCategoryMatchResets.insert(categoryId);
         }
         else {
             mAddedCategories.insert(categoryId);
             mCategoryResultsResets.insert(categoryId);
+            mCategoryMatchResets.insert(categoryId);
         }
 
         for (auto playerId : getCategory(categoryId).getPlayers())
@@ -306,3 +309,6 @@ void WebTournamentStore::resetCategoryResults(const std::vector<CategoryId> &cat
     mCategoryResultsResets.insert(categoryIds.begin(), categoryIds.end());
 }
 
+const std::unordered_set<CategoryId>& WebTournamentStore::getCategoryResultsResets() const {
+    return mCategoryResultsResets;
+}

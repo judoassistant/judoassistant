@@ -19,6 +19,7 @@ public:
     const std::unordered_set<CategoryId>& getAddedCategories() const;
     const std::unordered_set<CategoryId>& getErasedCategories() const;
     const std::unordered_set<CategoryId>& getCategoryMatchResets() const;
+    const std::unordered_set<CategoryId>& getCategoryResultsResets() const;
 
     const std::unordered_set<std::pair<CategoryId, MatchId>>& getChangedMatches() const;
 
