@@ -8,6 +8,7 @@
 #include "core/id.hpp"
 #include "core/stores/tatami/location.hpp"
 #include "core/stores/match_store.hpp"
+#include "ui/widgets/graphics_items/match_graphics_item.hpp"
 
 class StoreManager;
 class QGraphicsScene;
@@ -45,7 +46,8 @@ protected:
 
     void beginResetMatches();
     void endResetMatches();
-    void loadBlocks();
+    void loadBlocks(bool forceReloadItems = false);
+    void reloadItems();
 
 private:
     StoreManager &mStoreManager;
@@ -53,6 +55,7 @@ private:
     int mX;
     int mY;
 
+    bool mResettingMatches;
     QTimer mTimer;
     std::unordered_map<std::pair<CategoryId,MatchId>, size_t> mLoadedMatches; // Matches loaded and loading time
     std::unordered_set<PositionId> mLoadedGroups; // Blocks loaded
@@ -63,6 +66,9 @@ private:
     std::unordered_map<PlayerId, std::unordered_set<std::pair<CategoryId, MatchId>>> mUnfinishedMatchesPlayers;
     std::unordered_map<std::pair<CategoryId, MatchId>, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnpausedMatches;
+
+    std::vector<MatchGraphicsItem*> mItems;
+    std::unordered_map<std::pair<CategoryId, MatchId>, std::vector<MatchGraphicsItem*>::iterator> mItemMap;
 };
 
 class NewMatchesWidget : public QWidget {

@@ -102,6 +102,7 @@ MatchesGraphicsManager::MatchesGraphicsManager(StoreManager &storeManager, QGrap
     , mLocation(location)
     , mX(x)
     , mY(y)
+    , mResettingMatches(false)
 {
     auto &tournament = mStoreManager.getTournament();
     connect(&mTimer, &QTimer::timeout, this, &MatchesGraphicsManager::timerHit);
@@ -118,6 +119,10 @@ MatchesGraphicsManager::MatchesGraphicsManager(StoreManager &storeManager, QGrap
 }
 
 void MatchesGraphicsManager::beginResetMatches() {
+    if (mResettingMatches)
+        return;
+
+    mResettingMatches = true;
     mLoadedMatches.clear();
     mLoadedGroups.clear();
     mUnfinishedMatches.clear();
@@ -129,9 +134,10 @@ void MatchesGraphicsManager::beginResetMatches() {
 
 void MatchesGraphicsManager::endResetMatches() {
     loadBlocks();
+    mResettingMatches = false;
 }
 
-void MatchesGraphicsManager::loadBlocks() {
+void MatchesGraphicsManager::loadBlocks(bool forceReloadItems) {
     const auto &tournament = mStoreManager.getTournament();
     const auto &tatamis = tournament.getTatamis();
     if (!tatamis.containsTatami(mLocation))
@@ -150,6 +156,10 @@ void MatchesGraphicsManager::loadBlocks() {
 
     std::vector<MatchInfo> newMatches;
     size_t newUnfinishedMatches = 0;
+
+    bool shouldReloadItems = forceReloadItems;
+    if (mUnfinishedMatches.size() < ROW_CAP && newUnfinishedMatches > 0)
+        shouldReloadItems = true;
 
     while (mUnfinishedMatches.size() + newUnfinishedMatches < ROW_CAP) {
         if (mLoadedGroups.size() == tatami.groupCount())
@@ -201,5 +211,237 @@ void MatchesGraphicsManager::loadBlocks() {
 
         }
     }
+
+    if (shouldReloadItems)
+        reloadItems();
 }
 
+void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
+    bool didRemoveRows = false;
+    bool shouldReloadItems = false;
+
+    for (auto matchId : matchIds) {
+        auto combinedId = std::make_pair(categoryId, matchId);
+        auto it = mLoadedMatches.find(combinedId);
+        if (it == mLoadedMatches.end())
+            continue;
+
+        const auto &category = mStoreManager.getTournament().getCategory(categoryId);
+        const auto &match = category.getMatch(matchId);
+
+        bool wasFinished = (mUnfinishedMatchesSet.find(combinedId) == mUnfinishedMatchesSet.end());
+        bool isFinished = (match.isBye() || match.getStatus() == MatchStatus::FINISHED);
+
+        if (match.getStatus() == MatchStatus::UNPAUSED || match.getOsaekomi().has_value())
+            mUnpausedMatches.insert(combinedId);
+        else
+            mUnpausedMatches.erase(combinedId);
+
+        if (!isFinished && !wasFinished) {
+            // May need to update players
+            auto it = mUnfinishedMatchesPlayersInv.find(combinedId);
+            assert(it != mUnfinishedMatchesPlayersInv.end());
+            auto prevWhitePlayer = it->second.first;
+            auto prevBluePlayer = it->second.second;
+
+            if (match.getWhitePlayer() != prevWhitePlayer) {
+                if (prevWhitePlayer) {
+                    auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                    assert(it1 != mUnfinishedMatchesPlayers.end());
+                    auto &set = it1->second;
+                    set.erase(combinedId);
+
+                    if (set.empty())
+                        mUnfinishedMatchesPlayers.erase(it1);
+                }
+
+                if (match.getWhitePlayer()) {
+                    mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(combinedId);
+                }
+            }
+
+            if (match.getBluePlayer() != prevBluePlayer) {
+                if (prevBluePlayer) {
+                    auto it1 = mUnfinishedMatchesPlayers.find(*prevBluePlayer);
+                    assert(it1 != mUnfinishedMatchesPlayers.end());
+                    auto &set = it1->second;
+                    set.erase(combinedId);
+
+                    if (set.empty())
+                        mUnfinishedMatchesPlayers.erase(it1);
+                }
+
+                if (match.getBluePlayer()) {
+                    mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(combinedId);
+                }
+            }
+
+            if (match.getWhitePlayer() != prevWhitePlayer || match.getBluePlayer() != prevBluePlayer) {
+                mUnfinishedMatchesPlayersInv[combinedId] = {match.getWhitePlayer(), match.getBluePlayer()};
+            }
+        }
+        else if (isFinished && !wasFinished) {
+            size_t row = 0;
+            for (const auto & p : mUnfinishedMatches) {
+                if (std::get<0>(p) == categoryId && std::get<1>(p) == matchId)
+                    break;
+                ++row;
+            }
+
+            mUnfinishedMatches.erase(mUnfinishedMatches.begin() + row);
+            mUnfinishedMatchesSet.erase(combinedId);
+
+            auto it = mUnfinishedMatchesPlayersInv.find(combinedId);
+            auto prevWhitePlayer = it->second.first;
+            if (prevWhitePlayer) {
+                auto it1 = mUnfinishedMatchesPlayers.find(*prevWhitePlayer);
+                assert(it1 != mUnfinishedMatchesPlayers.end());
+                auto & set = it1->second;
+                set.erase(combinedId);
+
+                if (set.empty())
+                    mUnfinishedMatchesPlayers.erase(it1);
+            }
+
+            auto prevBluePlayer = it->second.second;
+            if (prevBluePlayer) {
+                auto it1 = mUnfinishedMatchesPlayers.find(*prevBluePlayer);
+                assert(it1 != mUnfinishedMatchesPlayers.end());
+                auto & set = it1->second;
+                set.erase(combinedId);
+
+                if (set.empty())
+                    mUnfinishedMatchesPlayers.erase(it1);
+            }
+            mUnfinishedMatchesPlayersInv.erase(it);
+
+            if (row < ROW_CAP)
+                shouldReloadItems = true;
+        }
+        else if (!isFinished && wasFinished) {
+            auto loadingTime = it->second;
+
+            // Find the first position with a higher loading time (lower bound)
+            auto pos = mUnfinishedMatches.begin();
+            int row = 0;
+            while (pos != mUnfinishedMatches.end() && std::get<2>(*pos) < loadingTime) {
+                ++pos;
+                ++row;
+            }
+
+            mUnfinishedMatches.insert(pos, std::make_tuple(categoryId, matchId, loadingTime));
+            mUnfinishedMatchesSet.insert(combinedId);
+
+            if (match.getWhitePlayer())
+                mUnfinishedMatchesPlayers[*(match.getWhitePlayer())].insert(combinedId);
+            if (match.getBluePlayer())
+                mUnfinishedMatchesPlayers[*(match.getBluePlayer())].insert(combinedId);
+            mUnfinishedMatchesPlayersInv[combinedId] = {match.getWhitePlayer(), match.getBluePlayer()};
+
+            if (row < ROW_CAP)
+                shouldReloadItems = true;
+        }
+    }
+
+    if (didRemoveRows)
+        loadBlocks(true);
+    else if (shouldReloadItems)
+        reloadItems();
+    else {
+        for (auto matchId : matchIds) {
+            auto it = mItemMap.find(std::make_pair(categoryId, matchId));
+            if (it != mItemMap.end()) {
+                MatchGraphicsItem *item = *(it->second);
+                item->update();
+            }
+        }
+    }
+}
+
+void MatchesGraphicsManager::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
+    if (mResettingMatches)
+        return;
+
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &tatamis = tournament.getTatamis();
+    if (!tatamis.containsTatami(mLocation))
+        return;
+    const auto &tatami = tatamis.at(mLocation);
+
+    bool shouldReset = false;
+    bool shouldLoad = false;
+
+    for (BlockLocation location : locations) {
+        if (mLocation != location.sequentialGroup.concurrentGroup.tatami) continue;
+
+        auto handle = location.sequentialGroup.concurrentGroup.handle;
+        if (mLoadedGroups.find(handle.id) != mLoadedGroups.end()) {
+            shouldReset = true;
+            break;
+        }
+
+        if (tatami.containsGroup(handle)) {
+            if (tatami.getIndex(handle) < mLoadedGroups.size()) {
+                shouldReset = true;
+                break;
+            }
+
+            if (mUnfinishedMatches.size() < ROW_CAP) {
+                shouldLoad = true;
+            }
+        }
+    }
+
+    if (shouldReset) {
+        beginResetMatches();
+        endResetMatches();
+    }
+    else if (shouldLoad) {
+        loadBlocks();
+    }
+}
+
+void MatchesGraphicsManager::changePlayers(const std::vector<PlayerId> &playerIds) {
+    std::unordered_set<int> changedRows;
+
+    for (auto playerId : playerIds) {
+        auto it = mUnfinishedMatchesPlayers.find(playerId);
+        if (it != mUnfinishedMatchesPlayers.end()) {
+            for (auto combinedId : it->second) {
+                auto it = mItemMap.find(combinedId);
+                if (it != mItemMap.end()) {
+                    MatchGraphicsItem *item = *(it->second);
+                    item->update();
+                }
+            }
+        }
+    }
+}
+
+void MatchesGraphicsManager::beginResetCategoryMatches(const std::vector<CategoryId> &categoryIds) {
+    const auto &tournament = mStoreManager.getTournament();
+
+    for (auto categoryId : categoryIds) {
+        const auto &category = tournament.getCategory(categoryId);
+        for (const auto &match : category.getMatches()) {
+            if (mLoadedMatches.find({categoryId, match->getId()}) != mLoadedMatches.end()) {
+                beginResetMatches(); // Let the tatamiChanged call endResetMatches()
+                return;
+            }
+        }
+    }
+}
+
+void MatchesGraphicsManager::timerHit() {
+    for (auto combinedId : mUnpausedMatches) {
+        auto it = mItemMap.find(combinedId);
+        if (it != mItemMap.end()) {
+            MatchGraphicsItem *item = *(it->second);
+            item->update();
+        }
+    }
+}
+
+void MatchesGraphicsManager::reloadItems() {
+
+}
