@@ -117,12 +117,13 @@ void WebClientWidget::updateButton() {
     if (state == WebClientState::NOT_CONNECTED) {
         mSetupButton->setEnabled(true);
 
-        if (!mToken.has_value())
-            mSetupButton->setText("Login");
-        else if (webName.empty())
-            mSetupButton->setText("Configure");
-        else
-            mSetupButton->setText("Connect");
+        mSetupButton->setText("Login");
+        // if (!mToken.has_value())
+        //     mSetupButton->setText("Login");
+        // else if (webName.empty())
+        //     mSetupButton->setText("Configure");
+        // else
+        //     mSetupButton->setText("Connect");
         return;
     }
 
