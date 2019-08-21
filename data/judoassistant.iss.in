@@ -9,7 +9,7 @@ UninstallDisplayIcon={app}\judoassistant.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=.
-OutputBaseFilename=judoassistant-windows-setup
+OutputBaseFilename=judoassistant-@VERSION@-windows
 
 [Files]
 Source: "judoassistant.exe"; DestDir: "{app}"
