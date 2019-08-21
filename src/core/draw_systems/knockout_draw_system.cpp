@@ -3,6 +3,7 @@
 #include "core/draw_systems/knockout_draw_system.hpp"
 #include "core/log.hpp"
 #include "core/rulesets/ruleset.hpp"
+#include "core/shuffle.hpp"
 #include "core/stores/category_store.hpp"
 
 std::unique_ptr<DrawSystem> KnockoutDrawSystem::clone() const {
@@ -41,8 +42,8 @@ std::vector<std::unique_ptr<AddMatchAction>> KnockoutDrawSystem::initCategory(co
     if (mPlayers.size() <= 1)
         return actions;
 
-    std::default_random_engine randomEngine(seed);
-    std::shuffle(mPlayers.begin(), mPlayers.end(), randomEngine);
+    std::mt19937 randomEngine(seed);
+    shuffle(mPlayers.begin(), mPlayers.end(), randomEngine);
 
     // Size of round 1
     size_t nodeCount = 1;

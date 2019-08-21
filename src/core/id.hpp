@@ -13,23 +13,21 @@ class TournamentStore;
 template <typename CRTP>
 class Id {
 public:
-    typedef unsigned int InternalType;
+    typedef uint32_t InternalType;
 
     class Generator {
     public:
         Generator() {}
         Generator(InternalType seed)
             : mEng(seed)
-            , mDist(std::numeric_limits<InternalType>::min(), std::numeric_limits<InternalType>::max())
         {}
 
         CRTP operator()() {
-            return CRTP(static_cast<InternalType>(mDist(mEng)));
+            return CRTP(mEng());
         }
 
     private:
-        std::default_random_engine mEng;
-        std::uniform_int_distribution<InternalType> mDist;
+        std::mt19937 mEng;
     };
 
     struct Hasher {

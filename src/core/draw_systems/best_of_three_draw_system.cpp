@@ -25,10 +25,9 @@ std::vector<std::unique_ptr<AddMatchAction>> BestOfThreeDrawSystem::initCategory
     if (mPlayers.size() != 2)
         return actions;
 
-    std::default_random_engine randomEng(seed);
-    std::uniform_int_distribution dist(0, 1);
+    std::mt19937 randomEng(seed);
 
-    size_t whitePlayer = dist(randomEng);
+    size_t whitePlayer = (randomEng() % 2); // random bit
     size_t bluePlayer = 1 - whitePlayer;
 
     // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament

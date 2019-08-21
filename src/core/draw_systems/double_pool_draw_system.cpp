@@ -5,6 +5,7 @@
 #include "core/draw_systems/double_pool_draw_system.hpp"
 #include "core/misc/merge_queue_element.hpp"
 #include "core/rulesets/ruleset.hpp"
+#include "core/shuffle.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
@@ -39,20 +40,18 @@ std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(
     if (mPlayers.size() < 4)
         return actions;
 
-    std::default_random_engine randomEng(seed);
-    std::shuffle(mPlayers.begin(), mPlayers.end(), randomEng);
-
-    std::uniform_int_distribution<unsigned int> seedDist;
+    std::mt19937 randomEng(seed);
+    shuffle(mPlayers.begin(), mPlayers.end(), randomEng);
 
     auto middle = std::next(mPlayers.begin(), mPlayers.size() / 2);
     std::vector<PlayerId> firstPoolPlayers(mPlayers.begin(), middle);
     std::vector<PlayerId> secondPoolPlayers(middle, mPlayers.end());
 
     mFirstPool = std::make_unique<PoolDrawSystem>(true);
-    auto firstPoolActions = mFirstPool->initCategory(tournament, category, firstPoolPlayers, seedDist(randomEng));
+    auto firstPoolActions = mFirstPool->initCategory(tournament, category, firstPoolPlayers, randomEng());
 
     mSecondPool = std::make_unique<PoolDrawSystem>(true);
-    auto secondPoolActions = mSecondPool->initCategory(tournament, category, secondPoolPlayers, seedDist(randomEng));
+    auto secondPoolActions = mSecondPool->initCategory(tournament, category, secondPoolPlayers, randomEng());
 
     // Merge the list of actions
     std::priority_queue<MergeQueueElement> queue;

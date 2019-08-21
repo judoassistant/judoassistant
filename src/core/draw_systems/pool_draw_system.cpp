@@ -4,6 +4,8 @@
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/log.hpp"
+#include "core/shuffle.hpp"
 
 PoolDrawSystem::PoolDrawSystem(bool composited)
         : mComposited(composited)
@@ -27,8 +29,8 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const 
     if (mPlayers.size() <= 1)
         return actions;
 
-    std::default_random_engine random_eng(seed);
-    std::shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
+    std::mt19937 random_eng(seed);
+    shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
 
     // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
     std::vector<std::optional<PlayerId>> shiftedIds;
