@@ -1,5 +1,6 @@
 #include <QGridLayout>
 #include <QLabel>
+#include <QMessageBox>
 
 #include "core/log.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -11,6 +12,7 @@
 WebClientWidget::WebClientWidget(MasterStoreManager &storeManager, QWidget *parent)
     : QGroupBox(tr("Live Web Results"), parent)
     , mStoreManager(storeManager)
+    , mCurrentState(storeManager.getWebClientState())
 {
     addWidgets();
 
@@ -107,7 +109,13 @@ void WebClientWidget::buttonClick() {
 }
 
 void WebClientWidget::changeWebClientState(WebClientState state) {
+    auto previousState = mCurrentState;
+    mCurrentState = state;
+
     updateButton();
+
+    if (state == WebClientState::NOT_CONNECTED && previousState == WebClientState::CONFIGURED)
+        QMessageBox::information(this, tr("Disconnected from web server"), tr("JudoAssistant was disconnected from the web server."));
 }
 
 void WebClientWidget::updateButton() {

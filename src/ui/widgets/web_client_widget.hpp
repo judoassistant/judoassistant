@@ -35,5 +35,6 @@ private:
 
     QPushButton *mSetupButton;
     QLineEdit *mWebNameContent;
+    WebClientState mCurrentState;
 };
 
