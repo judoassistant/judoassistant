@@ -21,8 +21,8 @@ void MatchesGridGraphicsManager::updateGrid(unsigned int tatamiCount) {
     mItems.clear();
 
     for (unsigned int i = 0; i < tatamiCount; ++i) {
-        auto item = new TatamiTextGraphicsItem(i);
-        item->setPos(HORIZONTAL_OFFSET + i * GRID_WIDTH, 0);
+        auto item = new TatamiTextGraphicsItem(i, MatchesGridGraphicsManager::GRID_WIDTH, MatchesGridGraphicsManager::VERTICAL_OFFSET);
+        item->setPos(MatchesGridGraphicsManager::HORIZONTAL_OFFSET + i * MatchesGridGraphicsManager::GRID_WIDTH, 0);
         mScene->addItem(item);
         mItems.push_back(item);
     }

@@ -177,7 +177,7 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     pen.setColor(palette.color(QPalette::ButtonText));
 
     for (int i = 0; i < mTatamiCount; ++i) {
-        auto item = new TatamiTextGraphicsItem(i);
+        auto item = new TatamiTextGraphicsItem(i, GRID_WIDTH, VERTICAL_OFFSET);
         item->setPos(HORIZONTAL_OFFSET + i * GRID_WIDTH, 0);
         mScene->addItem(item);
         mItems.push_back(item);

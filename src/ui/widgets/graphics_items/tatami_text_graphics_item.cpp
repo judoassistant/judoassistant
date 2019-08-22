@@ -4,12 +4,14 @@
 #include "ui/widgets/tatamis_widget.hpp"
 #include "ui/widgets/colors.hpp"
 
-TatamiTextGraphicsItem::TatamiTextGraphicsItem(int index)
+TatamiTextGraphicsItem::TatamiTextGraphicsItem(int index, int width, int height)
     : mIndex(index)
+    , mWidth(width)
+    , mHeight(height)
 {}
 
 QRectF TatamiTextGraphicsItem::boundingRect() const {
-    return QRectF(0, 0, GridGraphicsManager::GRID_WIDTH, GridGraphicsManager::VERTICAL_OFFSET);
+    return QRectF(0, 0, mWidth, mHeight);
 }
 
 void TatamiTextGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
