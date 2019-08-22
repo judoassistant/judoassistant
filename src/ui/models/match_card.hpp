@@ -17,6 +17,8 @@ struct MatchCardPlayerFields {
     MatchStore::Score score;
 };
 
+class QPainter;
+
 class MatchCard {
 public:
     MatchCard() = default;

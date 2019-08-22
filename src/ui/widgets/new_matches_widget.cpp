@@ -90,18 +90,20 @@ void NewMatchesWidget::endTatamiCountChange() {
         int y = MatchesGridGraphicsManager::VERTICAL_OFFSET;
         TatamiLocation location{tatamis.getHandle(i)};
 
-        auto tatami = std::make_unique<MatchesGraphicsManager>(mStoreManager, mScene, location, x, y);
+        auto tatami = std::make_unique<MatchesGraphicsManager>(mStoreManager, palette(), mScene, location, x, y);
         mTatamis.push_back(std::move(tatami));
     }
 
     mGrid->updateGrid(tatamis.tatamiCount());
 }
 
-MatchesGraphicsManager::MatchesGraphicsManager(StoreManager &storeManager, QGraphicsScene *scene, TatamiLocation location, int x, int y)
+MatchesGraphicsManager::MatchesGraphicsManager(StoreManager &storeManager, const QPalette &palette, QGraphicsScene *scene, TatamiLocation location, int x, int y)
     : mStoreManager(storeManager)
+    , mPalette(palette)
     , mLocation(location)
     , mX(x)
     , mY(y)
+    , mScene(scene)
     , mResettingMatches(false)
 {
     auto &tournament = mStoreManager.getTournament();
@@ -157,10 +159,6 @@ void MatchesGraphicsManager::loadBlocks(bool forceReloadItems) {
     std::vector<MatchInfo> newMatches;
     size_t newUnfinishedMatches = 0;
 
-    bool shouldReloadItems = forceReloadItems;
-    if (mUnfinishedMatches.size() < ROW_CAP && newUnfinishedMatches > 0)
-        shouldReloadItems = true;
-
     while (mUnfinishedMatches.size() + newUnfinishedMatches < ROW_CAP) {
         if (mLoadedGroups.size() == tatami.groupCount())
             break;
@@ -188,6 +186,11 @@ void MatchesGraphicsManager::loadBlocks(bool forceReloadItems) {
             newMatches.push_back(std::move(matchInfo));
         }
     }
+
+    bool shouldReloadItems = forceReloadItems;
+
+    if (mUnfinishedMatches.size() < ROW_CAP && newUnfinishedMatches > 0)
+        shouldReloadItems = true;
 
     if (!newMatches.empty()) {
         for (const MatchInfo &matchInfo : newMatches) {
@@ -443,5 +446,28 @@ void MatchesGraphicsManager::timerHit() {
 }
 
 void MatchesGraphicsManager::reloadItems() {
+    for (auto item : mItems) {
+        mScene->removeItem(item);
+        delete item;
+    }
 
+    mItems.clear();
+    mItemMap.clear();
+
+    int x = mX;
+    int y = mY;
+
+    for (size_t i = 0; i < mUnfinishedMatches.size() && i < ROW_CAP; ++i) {
+        auto e = mUnfinishedMatches[i];
+        CategoryId categoryId = std::get<0>(e);
+        MatchId matchId = std::get<1>(e);
+
+        QRect rect(x + MatchesGridGraphicsManager::PADDING, y, MatchesGridGraphicsManager::GRID_WIDTH - MatchesGridGraphicsManager::PADDING * 2, MatchesGridGraphicsManager::GRID_HEIGHT - MatchesGridGraphicsManager::PADDING);
+        auto item = new MatchGraphicsItem(mStoreManager, mPalette, categoryId, matchId, rect);
+        mScene->addItem(item);
+        mItems.push_back(item);
+        mItemMap[std::make_pair(categoryId, matchId)] = std::prev(mItems.end());
+        y += MatchesGridGraphicsManager::GRID_HEIGHT;
+    }
 }
+

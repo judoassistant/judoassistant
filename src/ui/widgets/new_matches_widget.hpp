@@ -9,6 +9,7 @@
 #include "core/stores/tatami/location.hpp"
 #include "core/stores/match_store.hpp"
 #include "ui/widgets/graphics_items/match_graphics_item.hpp"
+#include "ui/models/match_card.hpp"
 
 class StoreManager;
 class QGraphicsScene;
@@ -18,7 +19,9 @@ class MatchesGridGraphicsManager {
 public:
     static constexpr int HORIZONTAL_OFFSET = 10;
     static constexpr int VERTICAL_OFFSET = 80;
-    static constexpr int GRID_WIDTH = 300;
+    static constexpr int PADDING = 10;
+    static constexpr int GRID_HEIGHT = 160 + PADDING;
+    static constexpr int GRID_WIDTH = 350 + PADDING * 2;
 
     MatchesGridGraphicsManager(QGraphicsScene *scene);
     void updateGrid(unsigned int tatamiCount);
@@ -33,9 +36,9 @@ class MatchesGraphicsManager : public QObject {
     Q_OBJECT
 public:
     static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
-    static constexpr auto ROW_CAP = 10;
+    static constexpr auto ROW_CAP = 5;
 
-    MatchesGraphicsManager(StoreManager &storeManager, QGraphicsScene *scene, TatamiLocation location, int x, int y);
+    MatchesGraphicsManager(StoreManager &storeManager, const QPalette &palette, QGraphicsScene *scene, TatamiLocation location, int x, int y);
 
 protected:
     void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds);
@@ -51,9 +54,11 @@ protected:
 
 private:
     StoreManager &mStoreManager;
+    const QPalette &mPalette;
     TatamiLocation mLocation;
     int mX;
     int mY;
+    QGraphicsScene *mScene;
 
     bool mResettingMatches;
     QTimer mTimer;
