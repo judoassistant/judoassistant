@@ -30,12 +30,12 @@ std::string PlayerRank::toString() const {
         case KYU_6: return "6th kyu";
         case KYU_5: return "5th kyu";
         case KYU_4: return "4th kyu";
-        case KYU_3: return "3th kyu";
+        case KYU_3: return "3rd kyu";
         case KYU_2: return "2nd kyu";
         case KYU_1: return "1st kyu";
         case DAN_1: return "1st dan";
         case DAN_2: return "2nd dan";
-        case DAN_3: return "3th dan";
+        case DAN_3: return "3rd dan";
         case DAN_4: return "4th dan";
         case DAN_5: return "5th dan";
         case DAN_6: return "6th dan";
