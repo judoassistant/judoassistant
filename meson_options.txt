@@ -1,4 +1,4 @@
 option('ui', type : 'boolean', value : true, description: 'Flag indicating whether the UI applications should the compiled')
-option('web', type : 'boolean', value : true, description: 'Flag indicating whether the web server should the compiled')
+option('web', type : 'boolean', value : false, description: 'Flag indicating whether the web server should the compiled')
 option('lookupmode', type : 'combo', choices : ['absolute', 'relative'], value : 'absolute', description: 'Choice indicating how the executable should locate data files')
 

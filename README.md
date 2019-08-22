@@ -24,7 +24,7 @@ the following dependencies installed on your system:
 The applications are then compiled using `meson` and `ninja`:
 ```bash
 cd <sourcecode_directory>
-meson builddir -Dweb=false
+meson builddir
 ninja -C builddir
 ```
 
