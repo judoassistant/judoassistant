@@ -36,7 +36,7 @@ class MatchesGraphicsManager : public QObject {
     Q_OBJECT
 public:
     static constexpr auto TIMER_INTERVAL = std::chrono::milliseconds(1000);
-    static constexpr auto ROW_CAP = 5;
+    static constexpr auto ROW_CAP = 10;
 
     MatchesGraphicsManager(StoreManager &storeManager, const QPalette &palette, QGraphicsScene *scene, TatamiLocation location, int x, int y);
 

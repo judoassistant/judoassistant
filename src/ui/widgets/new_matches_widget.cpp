@@ -47,9 +47,9 @@ NewMatchesWidget::NewMatchesWidget(StoreManager &storeManager)
     view->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
     view->setRenderHint(QPainter::Antialiasing, false);
     view->setMinimumSize(300, 300);
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     // view->setMaximumWidth(UnallocatedBlockItem::WIDTH + PADDING*2 + 16);
-    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setDragMode(QGraphicsView::ScrollHandDrag);
     // mFixedScrollArea = new FixedScrollArea(300, mainSplitWidget);
 
