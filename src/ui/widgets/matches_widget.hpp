@@ -76,10 +76,10 @@ private:
     std::unordered_map<std::pair<CategoryId, MatchId>, std::vector<MatchGraphicsItem*>::iterator> mItemMap;
 };
 
-class NewMatchesWidget : public QWidget {
+class MatchesWidget : public QWidget {
     Q_OBJECT
 public:
-    NewMatchesWidget(StoreManager &storeManager);
+    MatchesWidget(StoreManager &storeManager);
 
 private:
     void beginTournamentReset();

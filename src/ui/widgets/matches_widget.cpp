@@ -6,7 +6,7 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/graphics_items/tatami_text_graphics_item.hpp"
-#include "ui/widgets/new_matches_widget.hpp"
+#include "ui/widgets/matches_widget.hpp"
 
 MatchesGridGraphicsManager::MatchesGridGraphicsManager(QGraphicsScene *scene)
     : mScene(scene)
@@ -28,11 +28,11 @@ void MatchesGridGraphicsManager::updateGrid(unsigned int tatamiCount) {
     }
 }
 
-NewMatchesWidget::NewMatchesWidget(StoreManager &storeManager)
+MatchesWidget::MatchesWidget(StoreManager &storeManager)
     : mStoreManager(storeManager)
 {
-    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &NewMatchesWidget::beginTournamentReset);
-    connect(&mStoreManager, &StoreManager::tournamentReset, this, &NewMatchesWidget::endTournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentAboutToBeReset, this, &MatchesWidget::beginTournamentReset);
+    connect(&mStoreManager, &StoreManager::tournamentReset, this, &MatchesWidget::endTournamentReset);
 
     mScene = new QGraphicsScene(this);
     mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -57,7 +57,7 @@ NewMatchesWidget::NewMatchesWidget(StoreManager &storeManager)
     layout->addWidget(view);
 }
 
-void NewMatchesWidget::beginTournamentReset() {
+void MatchesWidget::beginTournamentReset() {
     while (!mConnections.empty()) {
         disconnect(mConnections.top());
         mConnections.pop();
@@ -66,23 +66,23 @@ void NewMatchesWidget::beginTournamentReset() {
     beginTatamiCountChange();
 }
 
-void NewMatchesWidget::endTournamentReset() {
+void MatchesWidget::endTournamentReset() {
     auto &tournament = mStoreManager.getTournament();
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &NewMatchesWidget::beginTatamiCountChange));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &NewMatchesWidget::endTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &MatchesWidget::beginTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &MatchesWidget::endTatamiCountChange));
 
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &NewMatchesWidget::beginTatamiCountChange));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &NewMatchesWidget::endTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &MatchesWidget::beginTatamiCountChange));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &MatchesWidget::endTatamiCountChange));
 
     endTatamiCountChange();
 }
 
-void NewMatchesWidget::beginTatamiCountChange() {
+void MatchesWidget::beginTatamiCountChange() {
     mTatamis.clear();
 }
 
-void NewMatchesWidget::endTatamiCountChange() {
+void MatchesWidget::endTatamiCountChange() {
     TatamiList &tatamis = mStoreManager.getTournament().getTatamis();
 
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
