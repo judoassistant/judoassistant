@@ -15,7 +15,7 @@
 #include "ui/misc/dark_palette.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/kiosk_window.hpp"
-#include "ui/widgets/matches_widget.hpp"
+#include "ui/widgets/new_matches_widget.hpp"
 #include "ui/widgets/warning_widget.hpp"
 
 KioskWindow::KioskWindow()
@@ -30,7 +30,7 @@ KioskWindow::KioskWindow()
     mWarningWidget = new WarningWidget(tr("This display is not connected. The information shown may not be up to date!"));
     layout->addWidget(mWarningWidget);
 
-    auto *matches = new MatchesWidget(mStoreManager);
+    auto *matches = new NewMatchesWidget(mStoreManager);
 
     layout->addWidget(matches);
 
