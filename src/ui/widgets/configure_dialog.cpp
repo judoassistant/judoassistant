@@ -22,7 +22,7 @@ ConfigureDialog::ConfigureDialog(MasterStoreManager &storeManager, QWidget *pare
         QFormLayout *formLayout = new QFormLayout(group);
 
         mWebNameContent = new QLineEdit;
-        mWebNameContent->setText("bjergkobing");
+        // mWebNameContent->setText("bjergkobing");
 
         formLayout->addRow(tr("Web Name"), mWebNameContent);
 
