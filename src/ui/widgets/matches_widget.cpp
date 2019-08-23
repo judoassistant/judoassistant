@@ -462,7 +462,7 @@ void MatchesGraphicsManager::reloadItems() {
         CategoryId categoryId = std::get<0>(e);
         MatchId matchId = std::get<1>(e);
 
-        QRect rect(x + MatchesGridGraphicsManager::PADDING, y, MatchesGridGraphicsManager::GRID_WIDTH - MatchesGridGraphicsManager::PADDING * 2, MatchesGridGraphicsManager::GRID_HEIGHT - MatchesGridGraphicsManager::PADDING);
+        QRect rect(x + MatchesGridGraphicsManager::HORIZONTAL_PADDING, y, MatchesGridGraphicsManager::GRID_WIDTH - MatchesGridGraphicsManager::HORIZONTAL_PADDING * 2, MatchesGridGraphicsManager::GRID_HEIGHT - MatchesGridGraphicsManager::BOTTOM_PADDING);
         auto item = new MatchGraphicsItem(mStoreManager, mPalette, categoryId, matchId, rect);
         mScene->addItem(item);
         mItems.push_back(item);

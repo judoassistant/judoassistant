@@ -19,9 +19,10 @@ class MatchesGridGraphicsManager {
 public:
     static constexpr int HORIZONTAL_OFFSET = 10;
     static constexpr int VERTICAL_OFFSET = 80;
-    static constexpr int PADDING = 10;
-    static constexpr int GRID_HEIGHT = 160 + PADDING;
-    static constexpr int GRID_WIDTH = 350 + PADDING * 2;
+    static constexpr int BOTTOM_PADDING = 10;
+    static constexpr int HORIZONTAL_PADDING = 25;
+    static constexpr int GRID_HEIGHT = 160 + BOTTOM_PADDING;
+    static constexpr int GRID_WIDTH = 350 + HORIZONTAL_PADDING * 2;
 
     MatchesGridGraphicsManager(QGraphicsScene *scene);
     void updateGrid(unsigned int tatamiCount);
