@@ -135,7 +135,7 @@ void MatchesGraphicsManager::beginResetMatches() {
 }
 
 void MatchesGraphicsManager::endResetMatches() {
-    loadBlocks();
+    loadBlocks(true);
     mResettingMatches = false;
 }
 
@@ -362,9 +362,6 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
 }
 
 void MatchesGraphicsManager::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
-    if (mResettingMatches)
-        return;
-
     const auto &tournament = mStoreManager.getTournament();
     const auto &tatamis = tournament.getTatamis();
     if (!tatamis.containsTatami(mLocation))
@@ -376,6 +373,11 @@ void MatchesGraphicsManager::changeTatamis(const std::vector<BlockLocation> &loc
 
     for (BlockLocation location : locations) {
         if (mLocation != location.sequentialGroup.concurrentGroup.tatami) continue;
+
+        if (mResettingMatches) {
+            shouldReset = true;
+            break;
+        }
 
         auto handle = location.sequentialGroup.concurrentGroup.handle;
         if (mLoadedGroups.find(handle.id) != mLoadedGroups.end()) {
