@@ -115,3 +115,39 @@ std::ostream & operator<<(std::ostream & o, ClientActionId id) {
     return o << std::hex << "(" << id.getClientId().getValue() << "; " << id.getActionId().getValue() << ")" << std::dec;
 }
 
+CombinedId::CombinedId() {
+
+}
+
+CombinedId::CombinedId(CategoryId categoryId, MatchId matchId)
+    : mCategoryId(categoryId)
+    , mMatchId(matchId)
+{
+}
+
+bool CombinedId::operator==(const CombinedId &other) const {
+    return mCategoryId == other.mCategoryId && mMatchId == other.mMatchId;
+}
+
+bool CombinedId::operator!=(const CombinedId &other) const {
+    return mCategoryId != other.mCategoryId || mMatchId != other.mMatchId;
+}
+
+bool CombinedId::operator<(const CombinedId &other) const {
+    if (mCategoryId != other.mCategoryId)
+        return mCategoryId < other.mCategoryId;
+    return mMatchId < other.mMatchId;
+}
+
+std::string CombinedId::toString() const {
+    return mCategoryId.toString() + ";" + mMatchId.toString();
+}
+
+CategoryId CombinedId::getCategoryId() const {
+    return mCategoryId;
+}
+
+MatchId CombinedId::getMatchId() const {
+    return mMatchId;
+}
+

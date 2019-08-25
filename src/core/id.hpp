@@ -188,6 +188,30 @@ private:
 
 std::ostream & operator<<(std::ostream & o, ClientActionId id);
 
+class CombinedId {
+public:
+    CombinedId();
+    CombinedId(CategoryId categoryId, MatchId matchId);
+
+    bool operator==(const CombinedId &other) const;
+    bool operator!=(const CombinedId &other) const;
+    bool operator<(const CombinedId &other) const;
+
+    template<typename Archive>
+    void serialize(Archive& ar, uint32_t const version) {
+        ar(mCategoryId, mMatchId);
+    }
+
+    std::string toString() const;
+
+    CategoryId getCategoryId() const;
+    MatchId getMatchId() const;
+
+private:
+    CategoryId mCategoryId;
+    MatchId mMatchId;
+};
+
 namespace std {
     template<>
     class hash<MatchId> : public Id<MatchId>::Hasher {};
@@ -216,6 +240,16 @@ namespace std {
             size_t seed = 0;
             hash_combine(seed, id.getClientId());
             hash_combine(seed, id.getActionId());
+            return seed;
+        }
+    };
+
+    template<>
+    struct hash<CombinedId> {
+        size_t operator()(const CombinedId &id) const {
+            size_t seed = 0;
+            hash_combine(seed, id.getCategoryId());
+            hash_combine(seed, id.getMatchId());
             return seed;
         }
     };
