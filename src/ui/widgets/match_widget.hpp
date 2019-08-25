@@ -4,15 +4,14 @@
 #include <QWidget>
 #include <QFont>
 
-#include "ui/models/match_card.hpp"
 #include "ui/store_managers/store_manager.hpp"
 
 class QPainter;
 
-class MatchCardWidget : public QWidget {
+class MatchWidget : public QWidget {
     Q_OBJECT
 public:
-    MatchCardWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
+    MatchWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
     void paintEvent(QPaintEvent *event) override;
 
     void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId);
@@ -29,6 +28,5 @@ private:
     std::stack<QMetaObject::Connection> mConnections;
 
     std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
-    MatchCard mMatchCard;
 };
 

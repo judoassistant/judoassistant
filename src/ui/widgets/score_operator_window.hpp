@@ -10,7 +10,7 @@
 #include "core/stores/tatami/location.hpp"
 #include "ui/constants/network.hpp"
 #include "ui/widgets/client_window.hpp"
-#include "ui/widgets/match_card_widget.hpp"
+#include "ui/widgets/match_widget.hpp"
 #include "ui/widgets/score_operator_widget.hpp"
 #include "ui/widgets/score_display_window.hpp"
 
@@ -71,7 +71,7 @@ private:
 
     QMenu *mTatamiMenu;
     QActionGroup *mTatamiActionGroup;
-    MatchCardWidget *mNextMatchWidget;
+    MatchWidget *mNextMatchWidget;
     ScoreOperatorWidget *mScoreOperatorWidget;
 
     QAction *mConnectAction;

@@ -258,7 +258,7 @@ QWidget* ScoreOperatorWindow::createLowerSection() {
     {
         QGroupBox *nextMatchBox = new QGroupBox("Next Match", res);
         QVBoxLayout *nextMatchLayout = new QVBoxLayout(nextMatchBox);
-        mNextMatchWidget = new MatchCardWidget(mStoreManager, nextMatchBox);
+        mNextMatchWidget = new MatchWidget(mStoreManager, nextMatchBox);
         nextMatchLayout->addWidget(mNextMatchWidget);
 
         layout->addWidget(nextMatchBox);

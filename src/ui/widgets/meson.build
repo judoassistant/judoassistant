@@ -55,11 +55,11 @@ hub_moc_headers += ['src/ui/widgets/unallocated_blocks_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/web_client_widget.hpp']
 hub_moc_headers += ['src/ui/widgets/web_connection_preferences_widget.hpp']
 
-score_sources += ['src/ui/widgets/match_card_widget.cpp']
+score_sources += ['src/ui/widgets/match_widget.cpp']
 score_sources += ['src/ui/widgets/score_display_window.cpp']
 score_sources += ['src/ui/widgets/score_operator_window.cpp']
 
-score_moc_headers += ['src/ui/widgets/match_card_widget.hpp']
+score_moc_headers += ['src/ui/widgets/match_widget.hpp']
 score_moc_headers += ['src/ui/widgets/score_display_window.hpp']
 score_moc_headers += ['src/ui/widgets/score_operator_window.hpp']
 
