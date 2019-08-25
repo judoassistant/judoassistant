@@ -6,7 +6,7 @@
 #include "core/core.hpp"
 #include "ui/models/category_matches_model.hpp"
 #include "ui/models/results_model.hpp"
-#include "ui/delegates/match_card_delegate.hpp"
+#include "ui/delegates/match_delegate.hpp"
 
 class CategoriesProxyModel;
 class CategoryMatchesWidget;

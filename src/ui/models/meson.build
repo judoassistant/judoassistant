@@ -1,6 +1,5 @@
 ui_sources += ['src/ui/models/categories_model.cpp']
 ui_sources += ['src/ui/models/category_matches_model.cpp']
-ui_sources += ['src/ui/models/match_card.cpp']
 ui_sources += ['src/ui/models/players_model.cpp']
 ui_sources += ['src/ui/models/preferred_draw_systems_model.cpp']
 ui_sources += ['src/ui/models/results_model.cpp']

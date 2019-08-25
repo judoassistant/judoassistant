@@ -3,7 +3,7 @@
 
 #include "core/actions/reset_matches_action.hpp"
 #include "core/log.hpp"
-#include "ui/delegates/match_card_delegate.hpp"
+#include "ui/delegates/match_delegate.hpp"
 #include "ui/models/category_matches_model.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/widgets/category_matches_widget.hpp"
@@ -14,7 +14,7 @@ CategoryMatchesWidget::CategoryMatchesWidget(StoreManager & storeManager, QWidge
     , mStoreManager(storeManager)
 {
     mModel = new CategoryMatchesModel(mStoreManager, this);
-    setItemDelegate(new MatchCardDelegate(this));
+    setItemDelegate(new MatchDelegate(mStoreManager, this));
     setModel(mModel);
     setContextMenuPolicy(Qt::CustomContextMenu);
     setSelectionMode(QAbstractItemView::SingleSelection);

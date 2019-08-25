@@ -4,8 +4,8 @@
 #include <QBrush>
 #include <QTimer>
 
+#include "ui/delegates/match_delegate.hpp"
 #include "ui/models/category_matches_model.hpp"
-#include "ui/models/match_card.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 
@@ -101,14 +101,10 @@ QVariant CategoryMatchesModel::data(const QModelIndex &index, int role) const {
 
     MatchId matchId = getMatch(index.row());
 
-    const auto &tournament = mStoreManager.getTournament();
-    const auto &category = tournament.getCategory(*mCategoryId);
-    const auto &match = category.getMatch(matchId);
-
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0:
-                return QVariant::fromValue(MatchCard(tournament, category, match, mStoreManager.masterTime()));
+                return QVariant::fromValue(CombinedId(*mCategoryId, matchId));
         }
     }
 
@@ -124,7 +120,7 @@ QVariant CategoryMatchesModel::headerData(int section, Qt::Orientation orientati
         if (orientation == Qt::Horizontal) {
             switch (section) {
                 case 0:
-                    return QString(tr("Match Card"));
+                    return QString(tr("Combined Id"));
             }
         }
     }
