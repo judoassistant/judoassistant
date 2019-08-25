@@ -352,10 +352,11 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
         reloadItems();
     else {
         for (auto matchId : matchIds) {
-            auto it = mItemMap.find(std::make_pair(categoryId, matchId));
-            if (it != mItemMap.end()) {
-                MatchGraphicsItem *item = *(it->second);
-                item->update();
+            auto it = mItems.find(std::make_pair(categoryId, matchId));
+            if (it != mItems.end()) {
+                MatchGraphicsItem *item = it->second;
+                auto rect = item->boundingRect();
+                item->update(rect);
             }
         }
     }
@@ -413,9 +414,9 @@ void MatchesGraphicsManager::changePlayers(const std::vector<PlayerId> &playerId
         auto it = mUnfinishedMatchesPlayers.find(playerId);
         if (it != mUnfinishedMatchesPlayers.end()) {
             for (auto combinedId : it->second) {
-                auto it = mItemMap.find(combinedId);
-                if (it != mItemMap.end()) {
-                    MatchGraphicsItem *item = *(it->second);
+                auto it = mItems.find(combinedId);
+                if (it != mItems.end()) {
+                    MatchGraphicsItem *item = it->second;
                     item->update();
                 }
             }
@@ -439,22 +440,22 @@ void MatchesGraphicsManager::beginResetCategoryMatches(const std::vector<Categor
 
 void MatchesGraphicsManager::timerHit() {
     for (auto combinedId : mUnpausedMatches) {
-        auto it = mItemMap.find(combinedId);
-        if (it != mItemMap.end()) {
-            MatchGraphicsItem *item = *(it->second);
+        auto it = mItems.find(combinedId);
+        if (it != mItems.end()) {
+            MatchGraphicsItem *item = it->second;
             item->update();
         }
     }
 }
 
 void MatchesGraphicsManager::reloadItems() {
-    for (auto item : mItems) {
+    for (auto &it : mItems) {
+        MatchGraphicsItem *item = it.second;
         mScene->removeItem(item);
         delete item;
     }
 
     mItems.clear();
-    mItemMap.clear();
 
     int x = mX;
     int y = mY;
@@ -465,10 +466,9 @@ void MatchesGraphicsManager::reloadItems() {
         MatchId matchId = std::get<1>(e);
 
         QRect rect(x + MatchesGridGraphicsManager::HORIZONTAL_PADDING, y, MatchesGridGraphicsManager::GRID_WIDTH - MatchesGridGraphicsManager::HORIZONTAL_PADDING * 2, MatchesGridGraphicsManager::GRID_HEIGHT - MatchesGridGraphicsManager::BOTTOM_PADDING);
-        auto item = new MatchGraphicsItem(mStoreManager, mPalette, categoryId, matchId, rect);
+        auto item = new MatchGraphicsItem(mStoreManager, categoryId, matchId, rect);
         mScene->addItem(item);
-        mItems.push_back(item);
-        mItemMap[std::make_pair(categoryId, matchId)] = std::prev(mItems.end());
+        mItems[std::make_pair(categoryId, matchId)] = item;
         y += MatchesGridGraphicsManager::GRID_HEIGHT;
     }
 }

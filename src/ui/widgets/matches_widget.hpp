@@ -9,7 +9,6 @@
 #include "core/stores/tatami/location.hpp"
 #include "core/stores/match_store.hpp"
 #include "ui/widgets/graphics_items/match_graphics_item.hpp"
-#include "ui/models/match_card.hpp"
 
 class StoreManager;
 class QGraphicsScene;
@@ -21,8 +20,8 @@ public:
     static constexpr int VERTICAL_OFFSET = 80;
     static constexpr int BOTTOM_PADDING = 10;
     static constexpr int HORIZONTAL_PADDING = 25;
-    static constexpr int GRID_HEIGHT = 160 + BOTTOM_PADDING;
-    static constexpr int GRID_WIDTH = 350 + HORIZONTAL_PADDING * 2;
+    static constexpr int GRID_HEIGHT = MatchGraphicsItem::HEIGHT_HINT + BOTTOM_PADDING;
+    static constexpr int GRID_WIDTH = MatchGraphicsItem::WIDTH_HINT + HORIZONTAL_PADDING * 2;
 
     MatchesGridGraphicsManager(QGraphicsScene *scene);
     void updateGrid(unsigned int tatamiCount);
@@ -73,8 +72,7 @@ private:
     std::unordered_map<std::pair<CategoryId, MatchId>, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
     std::unordered_set<std::pair<CategoryId, MatchId>> mUnpausedMatches;
 
-    std::vector<MatchGraphicsItem*> mItems;
-    std::unordered_map<std::pair<CategoryId, MatchId>, std::vector<MatchGraphicsItem*>::iterator> mItemMap;
+    std::unordered_map<std::pair<CategoryId, MatchId>, MatchGraphicsItem*> mItems;
 };
 
 class MatchesWidget : public QWidget {
