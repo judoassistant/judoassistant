@@ -118,7 +118,7 @@ void MatchGraphicsItem::paintPlayer(QPainter &painter, const QRect &rect, MatchS
     QRect nameRect(PADDING, 0, rect.width() - COLUMN_TWO_WIDTH, rect.height() / 2);
     QRect clubRect(PADDING, nameRect.height(), rect.width() - COLUMN_TWO_WIDTH, rect.height() - nameRect.height());
     QRect scoreRect(rect.width() - COLUMN_TWO_WIDTH, 0, COLUMN_TWO_WIDTH, rect.height());
-    QRect scoreTextRect(rect.width() - COLUMN_TWO_WIDTH, 0, COLUMN_TWO_WIDTH - PADDING, rect.height());
+    QRect scoreTextRect(rect.width() - COLUMN_TWO_WIDTH + PADDING, 0, COLUMN_TWO_WIDTH - 2 * PADDING, rect.height());
 
     int shidoHeight = rect.height() / 3;
     int shidoWidth = (2 * shidoHeight) / 3;
