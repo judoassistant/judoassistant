@@ -29,8 +29,15 @@ ScoreOperatorWidget::ScoreOperatorWidget(StoreManager &storeManager, QWidget *pa
     connect(&mPausingTimer, &QTimer::timeout, this, &ScoreOperatorWidget::pausingTimerHit);
     mPausingTimer.start(PAUSING_TIMER_INTERVAL);
 
-    auto *shortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
-    connect(shortcut, &QShortcut::activated, this, &ScoreOperatorWidget::durationShortcut);
+    // Shortcuts
+    auto *timerShortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
+    connect(timerShortcut, &QShortcut::activated, this, &ScoreOperatorWidget::durationShortcut);
+
+    auto *whiteOsaeokomiShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
+    connect(whiteOsaeokomiShortcut, &QShortcut::activated, this, &ScoreOperatorWidget::whiteOsaekomiShortcut);
+
+    auto *blueOsaekomiShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
+    connect(blueOsaekomiShortcut, &QShortcut::activated, this, &ScoreOperatorWidget::blueOsaekomiShortcut);
 }
 
 void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
@@ -298,6 +305,26 @@ void ScoreOperatorWidget::durationShortcut() {
     ScoreboardPainterParams params = *optParams;
 
     durationClick(params);
+}
+
+void ScoreOperatorWidget::whiteOsaekomiShortcut() {
+    auto optParams = getParams();
+    if (!optParams)
+        return;
+
+    ScoreboardPainterParams params = *optParams;
+
+    osaekomiClick(params, MatchStore::PlayerIndex::WHITE);
+}
+
+void ScoreOperatorWidget::blueOsaekomiShortcut() {
+    auto optParams = getParams();
+    if (!optParams)
+        return;
+
+    ScoreboardPainterParams params = *optParams;
+
+    osaekomiClick(params, MatchStore::PlayerIndex::BLUE);
 }
 
 void ScoreOperatorWidget::cancelIppon(ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {

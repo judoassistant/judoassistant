@@ -14,6 +14,8 @@ public:
     void pausingTimerHit();
 private:
     void durationShortcut();
+    void whiteOsaekomiShortcut();
+    void blueOsaekomiShortcut();
     std::optional<ScoreboardPainterParams> getParams();
 
     void durationClick(ScoreboardPainterParams &params);
