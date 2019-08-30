@@ -16,6 +16,9 @@ std::unique_ptr<Action> ChangeCategoriesRulesetAction::freshClone() const {
 }
 
 void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
+    std::unordered_set<BlockLocation> changedLocations;
+    std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
+
     auto ruleset = Ruleset::getRuleset(mRuleset);
 
     for (auto categoryId : mCategoryIds) {
@@ -25,6 +28,16 @@ void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
         if (category.getRuleset().getIdentifier() == mRuleset)
             continue;
         mChangedCategories.push_back(categoryId);
+
+        if (category.getLocation(MatchType::ELIMINATION)) {
+            changedLocations.insert(*category.getLocation(MatchType::ELIMINATION));
+            changedBlocks.emplace_back(categoryId, MatchType::ELIMINATION);
+        }
+
+        if (category.getLocation(MatchType::FINAL)) {
+            changedLocations.insert(*category.getLocation(MatchType::FINAL));
+            changedBlocks.emplace_back(categoryId, MatchType::FINAL);
+        }
     }
 
     for (auto categoryId : mChangedCategories) {
@@ -37,9 +50,17 @@ void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
     mResetAction->redo(tournament);
 
     tournament.changeCategories(mChangedCategories);
+
+    if (!changedLocations.empty()) {
+        std::vector<BlockLocation> locations(changedLocations.begin(), changedLocations.end());
+        tournament.changeTatamis(locations, changedBlocks);
+    }
 }
 
 void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
+    std::unordered_set<BlockLocation> changedLocations;
+    std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
+
     mResetAction->undo(tournament);
     mResetAction.reset();
 
@@ -50,10 +71,25 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
 
         category.setRuleset(std::move(mOldRulesets.back()));
         mOldRulesets.pop_back();
+
+        if (category.getLocation(MatchType::ELIMINATION)) {
+            changedLocations.insert(*category.getLocation(MatchType::ELIMINATION));
+            changedBlocks.emplace_back(categoryId, MatchType::ELIMINATION);
+        }
+
+        if (category.getLocation(MatchType::FINAL)) {
+            changedLocations.insert(*category.getLocation(MatchType::FINAL));
+            changedBlocks.emplace_back(categoryId, MatchType::FINAL);
+        }
     }
 
     tournament.changeCategories(mChangedCategories);
     mChangedCategories.clear();
+
+    if (!changedLocations.empty()) {
+        std::vector<BlockLocation> locations(changedLocations.begin(), changedLocations.end());
+        tournament.changeTatamis(locations, changedBlocks);
+    }
 }
 
 std::string ChangeCategoriesRulesetAction::getDescription() const {
