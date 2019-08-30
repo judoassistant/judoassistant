@@ -6,6 +6,7 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/graphics_items/match_graphics_item.hpp"
+#include "ui/widgets/colors.hpp"
 
 constexpr int PADDING = 10;
 constexpr int COLUMN_TWO_WIDTH = 100;
@@ -51,7 +52,7 @@ void MatchGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     paintPlayer(*painter, bluePlayerRect, MatchStore::PlayerIndex::BLUE, tournament, category, match);
 
     painter->setBrush(Qt::NoBrush);
-    painter->setPen(QColor("#2e3440"));
+    painter->setPen(COLOR_MATCH_BACKGROUND);
     painter->drawRect(QRect(0, 0, mRect.width(), mRect.height()));
 
     painter->restore();
@@ -63,7 +64,7 @@ void MatchGraphicsItem::paintHeader(QPainter &painter, const QRect &rect, const 
     QRect scoreTextRect(rect.width() - COLUMN_TWO_WIDTH + PADDING, 0, COLUMN_TWO_WIDTH - 2 * PADDING, rect.height());
 
     // Draw background
-    painter.setBrush(QColor("#2e3440"));
+    painter.setBrush(COLOR_MATCH_BACKGROUND);
     painter.setPen(Qt::NoPen);
     painter.drawRect(rect);
 
@@ -75,16 +76,16 @@ void MatchGraphicsItem::paintHeader(QPainter &painter, const QRect &rect, const 
     painter.setFont(font);
 
     painter.setBrush(Qt::NoBrush);
-    painter.setPen(QColor("#ffffff"));
+    painter.setPen(COLOR_MATCH_WHITE);
     painter.drawText(textRect, QString::fromStdString(category.getName()), Qt::AlignVCenter | Qt::AlignLeft);
 
     // Draw Time
     if (match.getStatus() != MatchStatus::NOT_STARTED) {
-        painter.setBrush(QColor("#3b4252"));
+        painter.setBrush(COLOR_MATCH_LIGHT_BACKGROUND);
         painter.setPen(Qt::NoPen);
         painter.drawRect(scoreRect);
 
-        painter.setPen(QColor("#ffffff"));
+        painter.setPen(COLOR_MATCH_WHITE);
         font.setPixelSize(LARGE_FONT_SIZE);
         painter.setFont(font);
 
@@ -107,7 +108,7 @@ void MatchGraphicsItem::paintHeader(QPainter &painter, const QRect &rect, const 
             if (match.isGoldenScore()) {
                 font.setPixelSize((70 * LARGE_FONT_SIZE) / 100);
                 painter.setFont(font);
-                painter.setPen(QColor("#ebcb8b"));
+                painter.setPen(QColor(COLOR_MATCH_GS_INDICATOR));
                 painter.drawText(scoreTextRect, QString("GS"), Qt::AlignVCenter | Qt::AlignLeft);
             }
         }
@@ -137,7 +138,7 @@ void MatchGraphicsItem::paintPlayer(QPainter &painter, const QRect &rect, MatchS
     secondShidoRect.translate(rect.topLeft());
 
     // Draw background
-    painter.setBrush(playerIndex == MatchStore::PlayerIndex::WHITE ? QColor("#ffffff") : QColor("#1f4fa6"));
+    painter.setBrush(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_MATCH_WHITE : COLOR_MATCH_BLUE);
     painter.setPen(Qt::NoPen);
     painter.drawRect(rect);
 
@@ -152,30 +153,30 @@ void MatchGraphicsItem::paintPlayer(QPainter &painter, const QRect &rect, MatchS
 
         // Draw Ippon
         if (!score.hansokuMake && (score.ippon || otherScore.hansokuMake)) {
-            painter.setBrush(QColor("#fcc949"));
+            painter.setBrush(COLOR_MATCH_GOLD_BACKGROUND );
             painter.drawRect(scoreRect);
 
             painter.setBrush(Qt::NoBrush);
-            painter.setPen(QColor("#ffffff"));
+            painter.setPen(COLOR_MATCH_BACKGROUND);
 
             painter.drawText(scoreTextRect, QString("IPPON"), Qt::AlignHCenter | Qt::AlignVCenter);
         }
         else { // Draw Wazari and Shido
-            painter.setBrush(QColor("#2e3440"));
+            painter.setBrush(COLOR_MATCH_BACKGROUND);
             painter.drawRect(scoreRect);
 
             painter.setBrush(Qt::NoBrush);
-            painter.setPen(QColor("#ffffff"));
+            painter.setPen(COLOR_MATCH_WHITE);
 
             painter.drawText(scoreTextRect, QString::number(score.wazari), Qt::AlignRight | Qt::AlignVCenter);
 
             painter.setPen(Qt::NoPen);
             if (score.hansokuMake) {
-                painter.setBrush(QColor("#af1911"));
+                painter.setBrush(COLOR_MATCH_HANSOKU);
                 painter.drawRect(firstShidoRect);
             }
             else {
-                painter.setBrush(QColor("#fced49"));
+                painter.setBrush(COLOR_MATCH_SHIDO);
                 if (score.shido >= 1)
                     painter.drawRect(firstShidoRect);
                 if (score.shido >= 2)
@@ -189,7 +190,7 @@ void MatchGraphicsItem::paintPlayer(QPainter &painter, const QRect &rect, MatchS
         const PlayerStore &player = tournament.getPlayer(*match.getPlayer(playerIndex));
 
         painter.setBrush(Qt::NoBrush);
-        painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? QColor("#363538") : QColor("#ffffff"));
+        painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_MATCH_DARK_FOREGROUND : COLOR_MATCH_WHITE);
 
         QFont font("Noto Sans");
         const int fontSize = (3 * nameRect.height()) / 5;
@@ -209,7 +210,7 @@ void MatchGraphicsItem::paintPlayer(QPainter &painter, const QRect &rect, MatchS
     }
 
     // Draw line
-    painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? QColor("#ebcb8b") : QColor("#504c4b"));
+    painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_MATCH_GOLD_BACKGROUND : COLOR_MATCH_LINE_COLOR);
     painter.drawLine(line);
 }
 
