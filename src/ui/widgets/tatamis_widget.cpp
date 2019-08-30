@@ -53,7 +53,6 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
         mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
         mGrid = new GridGraphicsManager(mScene, this);
-        mGrid->setMinSize(1300, 1080);
 
         QGraphicsView *view = new QGraphicsView(this);
 
@@ -65,7 +64,7 @@ TatamisWidget::TatamisWidget(StoreManager &storeManager)
         view->setMinimumSize(300, 300);
         // view->setMaximumWidth(UnallocatedBlockItem::WIDTH + PADDING*2 + 16);
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        // view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         view->setDragMode(QGraphicsView::ScrollHandDrag);
         // mFixedScrollArea = new FixedScrollArea(300, mainSplitWidget);
         mainSplit->addWidget(view);
@@ -127,31 +126,25 @@ void TatamisWidget::endTatamiCountChange() {
         mTatamis.emplace_back(std::move(tatami));
     }
 
-    mGrid->updateGrid(tatamis.tatamiCount(), minutes, 1900, 1000);
+    mGrid->updateGrid(tatamis.tatamiCount(), minutes);
 }
 
 GridGraphicsManager::GridGraphicsManager(QGraphicsScene *scene, QWidget *parent)
     : mParent(parent)
     , mScene(scene)
-    , mTatamiCount(0)
+    , mTatamiCount(1)
     , mMinutes(0)
-    , mMinWidth(0)
-    , mMinHeight(0)
 {}
 
 void GridGraphicsManager::setMinutes(int minutes) {
-    updateGrid(mTatamiCount, minutes, mMinWidth, mMinHeight);
+    updateGrid(mTatamiCount, minutes);
 }
 
 void GridGraphicsManager::setTatamiCount(int tatamiCount) {
-    updateGrid(tatamiCount, mMinutes, mMinWidth, mMinHeight);
+    updateGrid(tatamiCount, mMinutes);
 }
 
-void GridGraphicsManager::setMinSize(int minWidth, int minHeight) {
-    updateGrid(mTatamiCount, mMinutes, minWidth, minHeight);
-}
-
-void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth, int minHeight) {
+void GridGraphicsManager::updateGrid(int tatamiCount, int minutes) {
     for (auto item : mItems) {
         mScene->removeItem(item);
         delete item;
@@ -162,12 +155,10 @@ void GridGraphicsManager::updateGrid(int tatamiCount, int minutes, int minWidth,
     // TODO: Optimize
     mTatamiCount = tatamiCount;
     mMinutes = minutes;
-    mMinWidth = minWidth;
-    mMinHeight = minHeight;
 
-    int minuteBound = (mMinutes + GRID_RESOLUTION - 1) / GRID_RESOLUTION;
-    int height = std::max(minHeight, VERTICAL_OFFSET + GRID_HEIGHT * minuteBound);
-    int width = std::max(mTatamiCount * GRID_WIDTH + HORIZONTAL_OFFSET, mMinWidth);
+    int minuteBound = (std::max(mMinutes, MIN_MINUTES) + GRID_RESOLUTION - 1) / GRID_RESOLUTION;
+    int height = VERTICAL_OFFSET + GRID_HEIGHT * minuteBound;
+    int width = mTatamiCount * GRID_WIDTH + HORIZONTAL_OFFSET;
 
     QPalette palette = (mParent != nullptr ? mParent->palette() : QApplication::palette());
 

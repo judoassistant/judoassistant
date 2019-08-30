@@ -35,6 +35,6 @@ void GridLineGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
     painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignRight, QObject::tr("%1 min").arg(mMinutes));
 
     painter->setPen(palette.color(QPalette::AlternateBase));
-    painter->drawLine(GridGraphicsManager::HORIZONTAL_OFFSET, 0, mWidth - GridGraphicsManager::HORIZONTAL_OFFSET, 0);
+    painter->drawLine(GridGraphicsManager::HORIZONTAL_OFFSET, 0, mWidth, 0);
 }
 

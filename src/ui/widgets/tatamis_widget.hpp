@@ -28,12 +28,12 @@ public:
     static constexpr int VERTICAL_OFFSET = 80; // The amount of vertical space used for headers
     static constexpr int HORIZONTAL_OFFSET = 80; // The amount of vertical space used for ticks
     static constexpr int MARGIN = 4;
+    static constexpr int MIN_MINUTES = 60;
 
     void setMinutes(int minutes);
     void setTatamiCount(int tatamiCount);
-    void setMinSize(int width, int height);
 
-    void updateGrid(int tatamiCount, int minutes, int minWidth, int minHeight);
+    void updateGrid(int tatamiCount, int minutes);
 
 private:
     QWidget *mParent;
@@ -44,8 +44,6 @@ private:
 
     int mTatamiCount;
     int mMinutes;
-    int mMinWidth;
-    int mMinHeight;
 };
 
 class TatamiGraphicsManager {
