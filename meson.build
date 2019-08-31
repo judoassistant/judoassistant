@@ -33,7 +33,7 @@ crypto_dep = dependency('libcrypto') # Crypto library for SSL
 
 # UI dependencies
 if get_option('ui')
-    boost_ui_dep = dependency('boost', modules: ['filesystem']) # Used for handling file paths
+    boost_ui_dep = dependency('boost', modules: ['system', 'filesystem']) # Used for handling file paths
 
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
