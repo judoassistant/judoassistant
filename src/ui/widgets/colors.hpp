@@ -9,8 +9,8 @@ static const QColor COLOR_UI_WARNING_BACKGROUND("#fff5f7");
 static const QColor COLOR_UI_WARNING_FOREGROUND("#cd0930");
 
 // Colors used in tatami widget
-static const QColor COLOR_UI_BLOCK_STARTED("#050244"); // Dark Blue
-static const QColor COLOR_UI_BLOCK_FINISHED("#440209"); // Dark Red
+static const QColor COLOR_UI_BLOCK_STARTED("#a3be8c"); // Green
+static const QColor COLOR_UI_BLOCK_FINISHED("#bf616a"); // Orange
 
 // Colors used for scoreboard display
 static const QColor COLOR_SCOREBOARD_BLACK("#000000"); // Black
