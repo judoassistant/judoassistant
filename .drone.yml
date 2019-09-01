@@ -4,7 +4,12 @@ type: docker
 name: default
 
 steps:
-- name: build
-  image: golang
+- name: submodules
+  image: alpine/git
   commands:
-  - echo "Hej"
+  - git submodule update --init --recursive
+- name: build
+  image: svendcsvendsen/judoassistant-ubuntu
+  commands:
+  - meson --buildtype=release build-release
+  - ninja -j2 -C build-release
