@@ -18,26 +18,22 @@ steps:
 ---
 kind: pipeline
 type: docker
-name: ubuntu
+name: linux
 
 steps:
 - name: submodules
   image: alpine/git
   commands:
   - git submodule update --init --recursive
-- name: build
+- name: ubuntu
   image: svendcsvendsen/judoassistant-ubuntu
   commands:
-  - meson --buildtype=release build-release
-  - ninja -j2 -C build-release
----
-kind: pipeline
-type: docker
-name: ubuntu-web
-
-steps:
-- name: build
+  - meson --buildtype=release build-ubuntu
+  - ninja -j2 -C build-ubuntu
+  depends_on:
+  - submodules
+- name: ubuntu-web
   image: svendcsvendsen/judoassistant-ubuntu
   commands:
-  - meson --buildtype=release -Dui=false -Dweb=true build-release
-  - ninja -j2 -C build-release
+  - meson --buildtype=release -Dui=false -Dweb=true build-web
+  - ninja -j2 -C build-web
