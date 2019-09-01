@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: docker
-name: default
+name: ubuntu-ui
 
 steps:
 - name: submodules
@@ -12,4 +12,15 @@ steps:
   image: svendcsvendsen/judoassistant-ubuntu
   commands:
   - meson --buildtype=release build-release
+  - ninja -j2 -C build-release
+---
+kind: pipeline
+type: docker
+name: ubuntu-web
+
+steps:
+- name: build
+  image: svendcsvendsen/judoassistant-ubuntu
+  commands:
+  - meson --buildtype=release -Dui=false -Dweb=true build-release
   - ninja -j2 -C build-release
