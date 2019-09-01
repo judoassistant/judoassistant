@@ -1,7 +1,24 @@
 ---
 kind: pipeline
+type: exec
+name: windows
+
+platform:
+  os: windows
+  arch: amd64
+
+steps:
+- name: submodules
+  commands:
+  - git submodule update --init --recursive
+- name: build
+  commands:
+  - ./ci/build-windows.bat
+  - Exit $LastExitCode # Required to return correct code
+---
+kind: pipeline
 type: docker
-name: ubuntu-ui
+name: ubuntu
 
 steps:
 - name: submodules
