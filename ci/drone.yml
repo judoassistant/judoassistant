@@ -26,14 +26,14 @@ steps:
   commands:
   - git submodule update --init --recursive
 - name: ubuntu
-  image: svendcsvendsen/judoassistant-ubuntu
+  image: judoassistant/judoassistant-ui-dev
   commands:
   - meson --buildtype=release build-ubuntu
   - ninja -j2 -C build-ubuntu
   depends_on:
   - submodules
 - name: ubuntu-web
-  image: svendcsvendsen/judoassistant-ubuntu
+  image: judoassistant/judoassistant-web-dev
   commands:
   - meson --buildtype=release -Dui=false -Dweb=true build-web
   - ninja -j2 -C build-web
