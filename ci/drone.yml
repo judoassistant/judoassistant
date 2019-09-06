@@ -25,15 +25,35 @@ steps:
   image: alpine/git
   commands:
   - git submodule update --init --recursive
-- name: ubuntu
+- name: dockerfiles
+  image: alpine/git
+  commands:
+  - mkdir -p build
+  - git clone https://github.com/judoassistant/docker.git build-web/docker
+- name: ui-build
   image: judoassistant/judoassistant-ui-dev
   commands:
-  - meson --buildtype=release build-ubuntu
+  - meson --buildtype=release build-ubuntu --prefix=/usr
   - ninja -j2 -C build-ubuntu
   depends_on:
   - submodules
-- name: ubuntu-web
+- name: web-build
   image: judoassistant/judoassistant-web-dev
   commands:
-  - meson --buildtype=release -Dui=false -Dweb=true build-web
+  - meson --buildtype=release -Dui=false -Dweb=true build-web --prefix=/usr
   - ninja -j2 -C build-web
+- name: web-publish
+  image: plugins/docker
+  depends_on:
+  - dockerfiles
+  - web-build
+  settings:
+    repo: judoassistant/judoassistant-web
+    dockerfile: build-web/docker/web/Dockerfile
+    username:
+        from_secret: docker_username
+    password:
+        from_secret: docker_password
+    tags:
+    - latest
+    custom_dns: [10.83.252.10, 10.83.16.53, 10.88.1.95]
