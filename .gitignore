@@ -1,5 +1,5 @@
 build
-build-release
+build-*
 __pycache__
 alembic.ini
 subprojects/packagecache
