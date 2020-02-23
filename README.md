@@ -48,3 +48,16 @@ DESTDIR=$(pwd) ninja install
 After compilation and running the install command, the executables can be run
 from the `build` directory.
 
+Dev Web Backend Setup
+---------------------
+The JudoAssistant web server relies on a postgres backend and uses
+[Alembic](https://alembic.sqlalchemy.org/en/latest/) for database migrations.
+After configuring the postgresql server copy `alembic.ini.example` to
+`alembic.ini` and edit the login credentials.
+Afterwards run the command `alembic upgrade head` to migrate to the latest
+database schema.
+
+Before running the web server copy the file `data/example-server-config.cfg`
+into `build/config.cfg` and update the config variables appropriately.
+You can then finally run the web server using `./judoassistant-web -c config.cfg`.
+
