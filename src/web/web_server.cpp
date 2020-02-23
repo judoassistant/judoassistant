@@ -13,9 +13,6 @@
 
 using boost::asio::ip::tcp;
 
-// TODO: Perform stricter sanitation of user input
-// TODO: Add ssl support
-
 WebServer::WebServer(const Config &config)
     : mConfig(config)
     , mContext(config.workers)
