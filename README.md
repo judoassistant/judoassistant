@@ -28,7 +28,7 @@ After cloning the git repository the software is compiled and installed using th
 following series of commands.
 ```bash
 cd <sourcecode_directory>
-meson build --prefix=/usr --buildtype=release -Dweb=false
+meson build --prefix=/usr --buildtype=release
 ninja -C build
 ninja install -C build
 ```
@@ -39,7 +39,7 @@ The following commands are suggested for setting up a development environment
 on a unix system.
 ```bash
 cd <sourcecode_directory>
-meson build --prefix=/
+meson build --prefix=/ -Dweb=true
 ninja -C build
 DESTDIR=$(pwd) ninja install
 ```
