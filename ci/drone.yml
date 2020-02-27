@@ -15,6 +15,10 @@ steps:
   commands:
   - ./ci/build-windows.bat
   - Exit $LastExitCode # Required to return correct code
+- name: package
+  commands:
+  - ./ci/package-windows.bat
+  - Exit $LastExitCode # Required to return correct code
 ---
 kind: pipeline
 type: docker
