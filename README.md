@@ -41,9 +41,9 @@ The following commands are suggested for setting up a development environment
 on a unix system.
 ```bash
 cd <sourcecode_directory>
-meson build --prefix=/ -Dweb=true
+meson build --prefix="$(pwd)/build" -Dweb=true
 ninja -C build
-DESTDIR=$(pwd) ninja install
+ninja install
 ```
 After compilation and running the install command, the executables can be run
 from the `build` directory.
