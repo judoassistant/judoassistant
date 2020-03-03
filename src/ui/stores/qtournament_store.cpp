@@ -184,3 +184,7 @@ void QTournamentStore::changePreferences() {
     emit preferencesChanged();
 }
 
+QDate QTournamentStore::getQDate() const {
+    return QDate::fromString(QString::fromStdString(getDate()), "yyyy/MM/dd");
+}
+

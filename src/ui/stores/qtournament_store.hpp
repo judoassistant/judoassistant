@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QDate>
 
 #include "core/core.hpp"
 #include "core/id.hpp"
@@ -56,6 +57,7 @@ public:
     void resetCategoryResults(const std::vector<CategoryId> &categoryIds) override;
 
     void changePreferences() override;
+    QDate getQDate() const;
 
 signals:
     void tournamentChanged();

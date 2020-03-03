@@ -27,7 +27,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mName, mWebName, mLocation, mPlayers, mCategories, mTatamis, mPreferences);
+        ar(mId, mName, mWebName, mLocation, mDate, mPlayers, mCategories, mTatamis, mPreferences);
     }
 
     const std::string & getName() const;
@@ -35,6 +35,9 @@ public:
 
     const std::string & getLocation() const;
     void setLocation(const std::string &location);
+
+    const std::string & getDate() const; // date represented as yyyy/mm/dd
+    void setDate(const std::string &location); // date represented as yyyy/mm/dd
 
     const std::string & getWebName() const;
     void setWebName(const std::string & name);
@@ -103,6 +106,7 @@ private:
     std::string mName;
     std::string mWebName;
     std::string mLocation;
+    std::string mDate;
 
     std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> mPlayers;
     std::unordered_map<CategoryId, std::unique_ptr<CategoryStore>> mCategories;
