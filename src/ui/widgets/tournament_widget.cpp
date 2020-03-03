@@ -113,7 +113,7 @@ void TournamentWidget::updateTournamentDate(const QDate &date) {
     if (date == mStoreManager.getTournament().getQDate())
         return;
 
-    QString dateString = date.toString("yyyy/MM/dd");
+    QString dateString = date.toString("yyyy-MM-dd");
     mStoreManager.dispatch(std::make_unique<ChangeTournamentDateAction>(dateString.toStdString()));
 }
 
