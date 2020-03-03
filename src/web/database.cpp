@@ -284,3 +284,23 @@ void Database::getSaveStatus(const std::string &webName, SaveStatusGetCallback c
     }
 }
 
+void Database::asyncUpdateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::updateTournament, this, webName, name, location, date, callback));
+}
+
+void Database::updateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback) {
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("update tournaments set name=" + work.quote(name)
+                                    + ", location=" + work.quote(location)
+                                    + ", date=" + work.quote(date)
+                                    + " where web_name=" + work.quote(webName));
+        work.commit();
+
+        boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false));
+    }
+}
