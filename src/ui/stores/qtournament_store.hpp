@@ -58,6 +58,7 @@ public:
 
     void changePreferences() override;
     QDate getQDate() const;
+    void setQDate(const QDate &date);
 
 signals:
     void tournamentChanged();
