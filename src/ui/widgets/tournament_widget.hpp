@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QDateEdit>
 
 #include "core/core.hpp"
 
@@ -23,11 +24,15 @@ private:
     void tournamentReset();
     void tournamentChanged();
     void updateTournamentName();
+    void updateTournamentLocation();
+    void updateTournamentDate(const QDate &date);
     void updateTatamiCount(int count);
     void tatamiCountChanged();
 
     MasterStoreManager &mStoreManager;
     QLineEdit *mNameContent;
+    QLineEdit *mLocationContent;
+    QDateEdit *mDateContent;
     QComboBox *mLanguageContent;
     QSpinBox *mTatamiCountContent;
     std::stack<QMetaObject::Connection> mConnections;
