@@ -7,6 +7,7 @@
 
 #include "core/id.hpp"
 #include "core/log.hpp"
+#include "web/constants/database.hpp"
 #include "web/database.hpp"
 
 Database::Database(boost::asio::io_context &context, const std::string &config)
@@ -317,7 +318,7 @@ std::string Database::generateWebTokenExpiration() {
 
 bool Database::validateWebTokenExpiration(const std::string &expiration) {
     auto time = boost::posix_time::time_from_string(expiration);
-    auto max_time = boost::posix_time::second_clock::universal_time() + boost::gregorian::days(30);
+    auto max_time = boost::posix_time::second_clock::universal_time() + boost::gregorian::days(Constants::TOKEN_DURATION);
 
     return time <= max_time;
 }
