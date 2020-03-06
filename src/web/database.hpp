@@ -58,6 +58,7 @@ private:
     bool checkPassword(const std::string &email, const std::string &password);
     WebToken generateWebToken();
     std::string generateWebTokenExpiration();
+    bool validateWebTokenExpiration(const std::string &expiration);
 
 private:
     boost::asio::io_context &mContext;
