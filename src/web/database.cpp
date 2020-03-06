@@ -308,7 +308,32 @@ void Database::asyncListTournaments(ListTournamentsCallback callback) {
 }
 
 void Database::listTournaments(ListTournamentsCallback callback) {
+    auto max_time = boost::posix_time::second_clock::universal_time() + boost::gregorian::days(31);
+    std::string max_date = boost::gregorian::to_iso_extended_string(max_time.date());
+    std::vector<TournamentListing> tournaments;
 
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("select web_name, name, location, date FROM tournaments where date <= "
+                                + work.quote(max_date)
+                                + " order by date asc");
+        work.commit();
+
+        for (size_t i = 0; i < r.size(); ++i) {
+            TournamentListing listing;
+            listing.webName = r[i][0].as<std::string>();
+            listing.name = r[i][1].as<std::string>();
+            listing.location = r[i][2].as<std::string>();
+            listing.date = r[i][3].as<std::string>();
+            tournaments.push_back(listing);
+        }
+
+        boost::asio::dispatch(mContext, std::bind(callback, true, std::move(tournaments)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false, std::move(tournaments)));
+    }
 }
 
 std::string Database::generateWebTokenExpiration() {
