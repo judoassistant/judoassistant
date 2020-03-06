@@ -5,9 +5,10 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
+#include "web/database.hpp"
 #include "web/json_encoder.hpp"
-#include "web/web_tournament_store.hpp"
 #include "web/web_tatami_model.hpp"
+#include "web/web_tournament_store.hpp"
 
 JsonBuffer::JsonBuffer() {
 
@@ -842,5 +843,51 @@ rapidjson::Value JsonEncoder::encodeBlockStatus(const CategoryStore &category, M
         return encodeString("STARTED", allocator);
     else
         return encodeString("FINISHED", allocator);
+}
+
+rapidjson::Value JsonEncoder::encodeTournamentListing(const TournamentListing &tournament, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value res;
+    res.SetObject();
+
+    res.AddMember("name", encodeString(tournament.name, allocator), allocator);
+    res.AddMember("webName", encodeString(tournament.webName, allocator), allocator);
+    res.AddMember("location", encodeString(tournament.location, allocator), allocator);
+    res.AddMember("date", encodeString(tournament.date, allocator), allocator);
+
+    return res;
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingMessage(const std::vector<TournamentListing> &tournamentListings) {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("tournamentListing", allocator), allocator);
+
+    // tournaments
+    rapidjson::Value tournaments(rapidjson::kArrayType);
+    for (const auto &tournament : tournamentListings)
+        tournaments.PushBack(encodeTournamentListing(tournament, allocator), allocator);
+    document.AddMember("tournaments", tournaments, allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return buffer;
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingFailMessage() {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("messageType", encodeString("tournamentListingFail", allocator), allocator);
+
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return buffer;
 }
 

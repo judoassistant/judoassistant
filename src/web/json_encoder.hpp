@@ -8,11 +8,13 @@
 #include "core/id.hpp"
 #include "core/stores/match_store.hpp"
 
-class WebTournamentStore;
 class CategoryStore;
 class PlayerStore;
-class WebTatamiModel;
 class TatamiStore;
+class WebTatamiModel;
+class WebTournamentStore;
+
+struct TournamentListing;
 
 class JsonBuffer {
 public:
@@ -41,6 +43,9 @@ public:
     std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff);
     std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionFailMessage();
 
+    std::unique_ptr<JsonBuffer> encodeTournamentListingMessage(const std::vector<TournamentListing> &tournament);
+    std::unique_ptr<JsonBuffer> encodeTournamentListingFailMessage();
+
 private:
     rapidjson::Value encodeMeta(const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);
 
@@ -65,6 +70,7 @@ private:
     rapidjson::Value encodeOsaekomi(const std::optional<std::pair<MatchStore::PlayerIndex, std::chrono::milliseconds>>& osaekomi, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeMatchType(MatchType matchType, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeBlockStatus(const CategoryStore &category, MatchType matchType, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeTournamentListing(const TournamentListing &tournament, rapidjson::Document::AllocatorType &allocator);
 
     std::optional<rapidjson::Document> mCachedSubscriptionObject;
     std::optional<rapidjson::Document> mCachedChangesObject;

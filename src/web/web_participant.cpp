@@ -210,6 +210,19 @@ bool WebParticipant::subscribePlayer(const std::string &str) {
 }
 
 bool WebParticipant::listTournaments() {
+    auto self = shared_from_this();
+    mDatabase.asyncListTournaments(boost::asio::bind_executor(mStrand, [this, self](bool success, std::vector<TournamentListing> tournament) {
+        JsonEncoder encoder;
+
+        if (!success) {
+            deliver(encoder.encodeTournamentListingFailMessage());
+            return;
+        }
+
+        deliver(encoder.encodeTournamentListingMessage(tournament));
+    }));
+
+    return true;
     log_debug().msg("Listing tournaments");
     return true;
 }
