@@ -622,6 +622,8 @@ rapidjson::Value JsonEncoder::encodeMeta(const WebTournamentStore &tournament, r
     res.SetObject();
 
     res.AddMember("name", encodeString(tournament.getName(), allocator), allocator);
+    res.AddMember("location", encodeString(tournament.getLocation(), allocator), allocator);
+    res.AddMember("date", encodeString(tournament.getDate(), allocator), allocator);
     res.AddMember("webName", encodeString(tournament.getWebName(), allocator), allocator);
     res.AddMember("tatamiCount", tournament.getTatamis().tatamiCount(), allocator);
 
