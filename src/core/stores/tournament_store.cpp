@@ -24,6 +24,22 @@ void TournamentStore::setName(const std::string & name) {
     mName = name;
 }
 
+const std::string & TournamentStore::getLocation() const {
+    return mLocation;
+}
+
+void TournamentStore::setLocation(const std::string & location) {
+    mLocation = location;
+}
+
+const std::string & TournamentStore::getDate() const {
+    return mDate;
+}
+
+void TournamentStore::setDate(const std::string & date) {
+    mDate = date;
+}
+
 const std::unordered_map<PlayerId, std::unique_ptr<PlayerStore>> & TournamentStore::getPlayers() const {
     return mPlayers;
 }
@@ -109,6 +125,8 @@ TournamentStore::TournamentStore(const TournamentStore &other)
     : mId(other.mId)
     , mName(other.mName)
     , mWebName(other.mWebName)
+    , mLocation(other.mLocation)
+    , mDate(other.mDate)
     , mTatamis(other.mTatamis)
     , mPreferences(std::make_unique<PreferencesStore>(*other.mPreferences))
 {

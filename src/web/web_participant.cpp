@@ -14,11 +14,12 @@
 // TODO: Try to see if message size can be limited in async_read
 // TODO: Send error messages on load failure, tournament not exists etc.
 
-WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server)
+WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database)
     : mContext(context)
     , mStrand(mContext)
     , mConnection(std::move(connection))
     , mServer(server)
+    , mDatabase(database)
 {
     mConnection->text(true);
 }
@@ -209,6 +210,19 @@ bool WebParticipant::subscribePlayer(const std::string &str) {
 }
 
 bool WebParticipant::listTournaments() {
+    auto self = shared_from_this();
+    mDatabase.asyncListTournaments(boost::asio::bind_executor(mStrand, [this, self](bool success, std::vector<TournamentListing> tournament) {
+        JsonEncoder encoder;
+
+        if (!success) {
+            deliver(encoder.encodeTournamentListingFailMessage());
+            return;
+        }
+
+        deliver(encoder.encodeTournamentListingMessage(tournament));
+    }));
+
+    return true;
     log_debug().msg("Listing tournaments");
     return true;
 }

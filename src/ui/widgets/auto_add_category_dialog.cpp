@@ -27,7 +27,7 @@ AutoAddCategoryDialog::AutoAddCategoryDialog(StoreManager & storeManager, const 
     mMaxSizeContent->setMinimum(2);
     mMaxSizeContent->setMaximum(mPlayerIds.size());
     // mMaxSizeContent->setSpecialValueText(tr("Unlimited"));
-    mMaxSizeContent->setValue(mPlayerIds.size());
+    mMaxSizeContent->setValue(std::min<int>(mPlayerIds.size(), 8));
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("Base Name"), mBaseNameContent);

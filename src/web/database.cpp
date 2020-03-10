@@ -1,4 +1,5 @@
 #include <boost/asio/dispatch.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <botan-2/botan/bcrypt.h>
 #include <botan-2/botan/rng.h>
 #include <botan-2/botan/system_rng.h>
@@ -6,15 +7,14 @@
 
 #include "core/id.hpp"
 #include "core/log.hpp"
+#include "web/constants/database.hpp"
 #include "web/database.hpp"
 
 Database::Database(boost::asio::io_context &context, const std::string &config)
     : mContext(context)
     , mStrand(context)
     , mConnection(config)
-{
-
-}
+{}
 
 void Database::asyncRequestWebToken(const std::string &email, const std::string &password, WebTokenRequestCallback callback) {
     boost::asio::dispatch(mStrand, std::bind(&Database::requestWebToken, this, email, password, callback));
@@ -69,22 +69,24 @@ bool Database::checkPassword(const std::string &email, const std::string &passwo
 }
 
 void Database::validateWebToken(const std::string &email, const WebToken &token, WebTokenValidationCallback callback) {
-    std::string maxWebTokenExpiration = "2019-02-16 04:05:06";
-
     try {
         pqxx::work work(mConnection);
-        pqxx::result r = work.exec("select id FROM users where email = "
+        pqxx::result r = work.exec("select id, token_expiration FROM users where email = "
                                 + work.quote(email)
                                 + " and token = " + work.quote_raw(token.data(), token.size()));
         work.commit();
 
-        // TODO: Check web token expiration
         if (r.size() == 0) {
             boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::INVALID_TOKEN, std::nullopt));
         }
         else {
             int userId = r[0][0].as<int>();
-            boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL, userId));
+            std::string expiration = r[0][1].as<std::string>();
+
+            if (!validateWebTokenExpiration(expiration))
+                boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::EXPIRED_TOKEN, userId));
+            else
+                boost::asio::dispatch(mContext, std::bind(callback, WebTokenValidationResponse::SUCCESSFUL, userId));
         }
     }
     catch (const std::exception &e) {
@@ -100,11 +102,11 @@ void Database::registerUser(const std::string &email, const std::string &passwor
             return;
         }
 
-        auto token = generateWebToken();
-        auto tokenExpiration = generateWebTokenExpiration();
+        WebToken token = generateWebToken();
+        std::string tokenExpiration = generateWebTokenExpiration();
 
         auto &rng = Botan::system_rng();
-        auto passwordHash = Botan::generate_bcrypt(password, rng);
+        std::string passwordHash = Botan::generate_bcrypt(password, rng);
 
         pqxx::work work(mConnection);
         pqxx::result r = work.exec("insert into users (email, password_hash, token, token_expiration) values ("
@@ -156,10 +158,6 @@ WebToken Database::generateWebToken() {
     Botan::system_rng().randomize(res.data(), res.size());
 
     return res;
-}
-
-std::string Database::generateWebTokenExpiration() {
-    return "2019-02-17";
 }
 
 void Database::checkWebName(int userId, const TournamentId &id, const std::string &webName, WebNameCheckCallback callback) {
@@ -282,5 +280,71 @@ void Database::getSaveStatus(const std::string &webName, SaveStatusGetCallback c
         log_error().field("what", e.what()).msg("PQXX exception caught");
         boost::asio::dispatch(mContext, std::bind(callback, false));
     }
+}
+
+void Database::asyncUpdateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::updateTournament, this, webName, name, location, date, callback));
+}
+
+void Database::updateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback) {
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("update tournaments set name=" + work.quote(name)
+                                    + ", location=" + work.quote(location)
+                                    + ", date=" + work.quote(date)
+                                    + " where web_name=" + work.quote(webName));
+        work.commit();
+
+        boost::asio::dispatch(mContext, std::bind(callback, (r.affected_rows() > 0)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false));
+    }
+}
+
+void Database::asyncListTournaments(ListTournamentsCallback callback) {
+    boost::asio::dispatch(mStrand, std::bind(&Database::listTournaments, this, callback));
+}
+
+void Database::listTournaments(ListTournamentsCallback callback) {
+    auto max_time = boost::posix_time::second_clock::universal_time() + boost::gregorian::days(31);
+    std::string max_date = boost::gregorian::to_iso_extended_string(max_time.date());
+    std::vector<TournamentListing> tournaments;
+
+    try {
+        pqxx::work work(mConnection);
+        pqxx::result r = work.exec("select web_name, name, location, date FROM tournaments where date <= "
+                                + work.quote(max_date)
+                                + " order by date asc");
+        work.commit();
+
+        for (size_t i = 0; i < r.size(); ++i) {
+            TournamentListing listing;
+            listing.webName = r[i][0].as<std::string>();
+            listing.name = r[i][1].as<std::string>();
+            listing.location = r[i][2].as<std::string>();
+            listing.date = r[i][3].as<std::string>();
+            tournaments.push_back(listing);
+        }
+
+        boost::asio::dispatch(mContext, std::bind(callback, true, std::move(tournaments)));
+    }
+    catch (const std::exception &e) {
+        log_error().field("what", e.what()).msg("PQXX exception caught");
+        boost::asio::dispatch(mContext, std::bind(callback, false, std::move(tournaments)));
+    }
+}
+
+std::string Database::generateWebTokenExpiration() {
+    auto time = boost::posix_time::second_clock::universal_time();
+    return boost::posix_time::to_simple_string(time);
+}
+
+bool Database::validateWebTokenExpiration(const std::string &expiration) {
+    auto time = boost::posix_time::time_from_string(expiration);
+    auto max_time = boost::posix_time::second_clock::universal_time() + boost::gregorian::days(Constants::TOKEN_DURATION);
+
+    return time <= max_time;
 }
 

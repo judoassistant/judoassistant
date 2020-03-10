@@ -5,8 +5,10 @@
 #include <QString>
 #include <QVBoxLayout>
 
-#include "core/actions/set_tatami_count_action.hpp"
+#include "core/actions/change_tournament_date_action.hpp"
+#include "core/actions/change_tournament_location_action.hpp"
 #include "core/actions/change_tournament_name_action.hpp"
+#include "core/actions/set_tatami_count_action.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/tournament_widget.hpp"
@@ -39,12 +41,27 @@ QWidget* TournamentWidget::basicInformationSection() {
     layout->addWidget(new QLabel(tr("Tournament name")), 0, 0);
     layout->addWidget(mNameContent, 0, 1);
 
+    mLocationContent = new QLineEdit;
+    mLocationContent->setText(QString::fromStdString(mStoreManager.getTournament().getLocation()));
+    connect(mLocationContent, &QLineEdit::editingFinished, this, &TournamentWidget::updateTournamentLocation);
+    layout->addWidget(new QLabel(tr("Tournament location")), 1, 0);
+    layout->addWidget(mLocationContent, 1, 1);
+
+    // TODO: connect to backend
+    mDateContent = new QDateEdit;
+    mDateContent->setDisplayFormat("dd/MM/yyyy");
+    mDateContent->setDate(mStoreManager.getTournament().getQDate());
+    mDateContent->setMinimumDate(QDate::currentDate());
+    connect(mDateContent, &QDateEdit::dateChanged, this, &TournamentWidget::updateTournamentDate);
+    layout->addWidget(new QLabel(tr("Tournament date")), 2, 0);
+    layout->addWidget(mDateContent, 2, 1);
+
     mTatamiCountContent = new QSpinBox;
     mTatamiCountContent->setMinimum(1);
     mTatamiCountContent->setValue(mStoreManager.getTournament().getTatamis().tatamiCount());
     connect(mTatamiCountContent, QOverload<int>::of(&QSpinBox::valueChanged), this, &TournamentWidget::updateTatamiCount);
-    layout->addWidget(new QLabel(tr("Tatami Count")), 1, 0);
-    layout->addWidget(mTatamiCountContent, 1, 1);
+    layout->addWidget(new QLabel(tr("Tatami Count")), 3, 0);
+    layout->addWidget(mTatamiCountContent, 3, 1);
 
     return box;
 }
@@ -66,10 +83,21 @@ void TournamentWidget::tournamentReset() {
 
 void TournamentWidget::tournamentChanged() {
     mNameContent->setText(QString::fromStdString(mStoreManager.getTournament().getName()));
+    mLocationContent->setText(QString::fromStdString(mStoreManager.getTournament().getLocation()));
+    mDateContent->setDate(mStoreManager.getTournament().getQDate());
 }
 
 void TournamentWidget::tatamiCountChanged() {
     mTatamiCountContent->setValue(mStoreManager.getTournament().getTatamis().tatamiCount());
+}
+
+void TournamentWidget::updateTournamentLocation() {
+    std::string location = mLocationContent->text().toStdString();
+
+    if (location == mStoreManager.getTournament().getLocation())
+        return;
+
+    mStoreManager.dispatch(std::make_unique<ChangeTournamentLocationAction>(location));
 }
 
 void TournamentWidget::updateTournamentName() {
@@ -79,6 +107,14 @@ void TournamentWidget::updateTournamentName() {
         return;
 
     mStoreManager.dispatch(std::make_unique<ChangeTournamentNameAction>(name));
+}
+
+void TournamentWidget::updateTournamentDate(const QDate &date) {
+    if (date == mStoreManager.getTournament().getQDate())
+        return;
+
+    QString dateString = date.toString("yyyy-MM-dd");
+    mStoreManager.dispatch(std::make_unique<ChangeTournamentDateAction>(dateString.toStdString()));
 }
 
 void TournamentWidget::updateTatamiCount(int count) {

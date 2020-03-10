@@ -423,6 +423,13 @@ void LoadedTournament::deliverChanges() {
         participant->deliver(std::move(buffer));
     }
 
+    if (mTournament->tournamentChanged()) { // updates names, location etc of tournament
+        mDatabase.asyncUpdateTournament(mWebName, mTournament->getName(), mTournament->getLocation(), mTournament->getDate(), [this](bool success) {
+            if (!success)
+                log_error().field("webName", mWebName).msg("Failed updating database tournament info");
+        });
+    }
+
     mTournament->clearChanges();
 }
 
@@ -447,6 +454,11 @@ void LoadedTournament::deliverSync() {
         auto buffer = encoder.encodeTournamentSubscriptionMessage(*mTournament, category, player, tatami, mClockDiff, true);
         participant->deliver(std::move(buffer));
     }
+
+    mDatabase.asyncUpdateTournament(mWebName, mTournament->getName(), mTournament->getLocation(), mTournament->getDate(), [this](bool success) {
+        if (!success)
+            log_error().field("webName", mWebName).msg("Failed updating database tournament info");
+    });
 
     mTournament->clearChanges();
 }

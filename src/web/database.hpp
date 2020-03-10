@@ -8,6 +8,13 @@
 
 class TournamentId;
 
+struct TournamentListing {
+    std::string webName;
+    std::string name;
+    std::string location;
+    std::string date;
+};
+
 class Database {
 public:
     Database(boost::asio::io_context &context, const std::string &config);
@@ -35,6 +42,13 @@ public:
 
     typedef std::function<void(bool)> SaveStatusGetCallback;
     void asyncGetSaveStatus(const std::string &webName, SaveStatusGetCallback callback);
+
+    typedef std::function<void(bool)> UpdateTournamentCallback;
+    void asyncUpdateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback);
+
+    typedef std::function<void(bool, std::vector<TournamentListing>)> ListTournamentsCallback;
+    void asyncListTournaments(ListTournamentsCallback callback);
+
 private:
     void registerUser(const std::string &email, const std::string &password, UserRegistrationCallback callback);
 
@@ -49,10 +63,16 @@ private:
 
     void getSaveStatus(const std::string &webName, SaveStatusGetCallback callback);
 
+    void updateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback);
+
+    void listTournaments(ListTournamentsCallback callback);
+
     bool hasUser(const std::string &email);
     bool checkPassword(const std::string &email, const std::string &password);
     WebToken generateWebToken();
+
     std::string generateWebTokenExpiration();
+    bool validateWebTokenExpiration(const std::string &expiration);
 
 private:
     boost::asio::io_context &mContext;

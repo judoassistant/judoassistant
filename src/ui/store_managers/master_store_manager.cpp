@@ -21,9 +21,13 @@ MasterStoreManager::MasterStoreManager()
     , mNetworkServerState(NetworkServerState::STOPPED)
     , mDirty(false)
 {
+    // Create first tatami
     auto &tatamis = getTournament().getTatamis();
     auto location = tatamis.generateLocation(0);
     tatamis[location.handle];
+
+    // Set tournament date to today
+    getTournament().setQDate(QDate::currentDate());
 
     mNetworkServer = std::make_shared<NetworkServer>(getWorkerThread().getContext(), mWebClient);
     mWebClient.setNetworkServer(mNetworkServer);
