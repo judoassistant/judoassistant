@@ -35,6 +35,10 @@ public:
         return mValue == other.mValue;
     }
 
+    bool operator!=(const PlayerCountry &other) const {
+        return mValue != other.mValue;
+    }
+
     bool operator<(const PlayerCountry &other) const {
         return mValue < other.mValue;
     }
@@ -86,6 +90,10 @@ public:
         return mValue == other.mValue;
     }
 
+    bool operator!=(const PlayerRank &other) const {
+        return mValue != other.mValue;
+    }
+
     bool operator<(const PlayerRank &other) const {
         return mValue < other.mValue;
     }
@@ -124,6 +132,10 @@ public:
         return mValue == other.mValue;
     }
 
+    bool operator!=(const PlayerSex &other) const {
+        return mValue != other.mValue;
+    }
+
     bool operator<(const PlayerSex &other) const {
         return mValue < other.mValue;
     }
@@ -151,6 +163,10 @@ public:
 
     bool operator==(const PlayerWeight &other) const {
         return mValue == other.mValue;
+    }
+
+    bool operator!=(const PlayerWeight &other) const {
+        return mValue != other.mValue;
     }
 
     bool operator<(const PlayerWeight &other) const {
@@ -183,6 +199,10 @@ public:
 
     bool operator==(const PlayerAge &other) const {
         return mValue == other.mValue;
+    }
+
+    bool operator!=(const PlayerAge &other) const {
+        return mValue != other.mValue;
     }
 
     bool operator<(const PlayerAge &other) const {
