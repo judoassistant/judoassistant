@@ -149,7 +149,7 @@ private:
     Enum mValue;
 };
 
-std::ostream & operator<<(std::ostream &out, const PlayerSex &rank);
+std::ostream & operator<<(std::ostream &out, const PlayerSex &sex);
 
 class PlayerWeight {
 public:
