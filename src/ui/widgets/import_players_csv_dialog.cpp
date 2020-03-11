@@ -227,10 +227,10 @@ void ImportPlayersCSVDialog::setWeightColumn(int index) {
 }
 
 void ImportPlayersCSVDialog::setCountryColumn(int index) {
-    auto oldValue = mImporter.getSexColumn();
+    auto oldValue = mImporter.getCountryColumn();
     auto newValue = (index == 0 ? std::nullopt : std::make_optional(static_cast<size_t>(index - 1)));
 
-    mImporter.setSexColumn(newValue);
+    mImporter.setCountryColumn(newValue);
 
     if (oldValue)
         updatePreviewColumn(*oldValue);
