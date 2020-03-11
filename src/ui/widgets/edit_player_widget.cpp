@@ -152,10 +152,6 @@ void EditPlayerWidget::changePlayers(std::vector<PlayerId> ids) {
     if (!intersect)
         return;
 
-    mSexContent->blockSignals(true);
-    mRankContent->blockSignals(true);
-    mCountryContent->blockSignals(true);
-
     updateFirstName();
     updateLastName();
     updateAge();
@@ -164,17 +160,9 @@ void EditPlayerWidget::changePlayers(std::vector<PlayerId> ids) {
     updateWeight();
     updateCountry();
     updateSex();
-
-    mSexContent->blockSignals(false);
-    mRankContent->blockSignals(false);
-    mCountryContent->blockSignals(false);
 }
 
 void EditPlayerWidget::setPlayers(const std::vector<PlayerId> &playerIds) {
-    mSexContent->blockSignals(true);
-    mRankContent->blockSignals(true);
-    mCountryContent->blockSignals(true);
-
     mPlayerIds.clear();
     mPlayerIds.insert(playerIds.begin(), playerIds.end());
 
@@ -186,10 +174,6 @@ void EditPlayerWidget::setPlayers(const std::vector<PlayerId> &playerIds) {
     updateWeight();
     updateCountry();
     updateSex();
-
-    mSexContent->blockSignals(false);
-    mRankContent->blockSignals(false);
-    mCountryContent->blockSignals(false);
 }
 
 void EditPlayerWidget::editFirstName() {
@@ -422,26 +406,30 @@ void EditPlayerWidget::updateAge() {
 }
 
 void EditPlayerWidget::updateRank() {
+    mRankContent->blockSignals(true);
+
     if (mPlayerIds.empty()) {
         mRankContent->setCurrentIndex(0);
         mRankContent->setEnabled(false);
-        return;
-    }
-
-    int index = getRankIndex();
-    if (index == PlayerRank::SIZE + 1) { // multiple
-        if (mRankContent->count() == PlayerRank::SIZE + 1) {
-            mRankContent->addItem(MULTIPLE_TEXT);
-            mRankContent->setItemData(PlayerRank::SIZE + 1, QBrush(Qt::gray), Qt::ForegroundRole);
-        }
     }
     else {
-        if (mRankContent->count() != PlayerRank::SIZE + 1)
-            mRankContent->removeItem(mRankContent->count() - 1);
+        int index = getRankIndex();
+        if (index == PlayerRank::SIZE + 1) { // multiple
+            if (mRankContent->count() == PlayerRank::SIZE + 1) {
+                mRankContent->addItem(MULTIPLE_TEXT);
+                mRankContent->setItemData(PlayerRank::SIZE + 1, QBrush(Qt::gray), Qt::ForegroundRole);
+            }
+        }
+        else {
+            if (mRankContent->count() != PlayerRank::SIZE + 1)
+                mRankContent->removeItem(mRankContent->count() - 1);
+        }
+
+        mRankContent->setCurrentIndex(index);
+        mRankContent->setEnabled(true);
     }
 
-    mRankContent->setCurrentIndex(index);
-    mRankContent->setEnabled(true);
+    mRankContent->blockSignals(false);
 }
 
 std::optional<std::string> EditPlayerWidget::getClubString() {
@@ -503,49 +491,57 @@ void EditPlayerWidget::updateWeight() {
 }
 
 void EditPlayerWidget::updateCountry() {
+    mCountryContent->blockSignals(true);
+
     if (mPlayerIds.empty()) {
         mCountryContent->setCurrentIndex(0);
         mCountryContent->setEnabled(false);
-        return;
-    }
-
-    int index = getCountryIndex();
-    if (index == PlayerCountry::SIZE + 1) { // multiple
-        if (mCountryContent->count() == PlayerCountry::SIZE + 1) {
-            mCountryContent->addItem(MULTIPLE_TEXT);
-            mCountryContent->setItemData(PlayerCountry::SIZE + 1, QBrush(Qt::gray), Qt::ForegroundRole);
-        }
     }
     else {
-        if (mCountryContent->count() != PlayerCountry::SIZE + 1)
-            mCountryContent->removeItem(mCountryContent->count() - 1);
+        int index = getCountryIndex();
+        if (index == PlayerCountry::SIZE + 1) { // multiple
+            if (mCountryContent->count() == PlayerCountry::SIZE + 1) {
+                mCountryContent->addItem(MULTIPLE_TEXT);
+                mCountryContent->setItemData(PlayerCountry::SIZE + 1, QBrush(Qt::gray), Qt::ForegroundRole);
+            }
+        }
+        else {
+            if (mCountryContent->count() != PlayerCountry::SIZE + 1)
+                mCountryContent->removeItem(mCountryContent->count() - 1);
+        }
+
+        mCountryContent->setCurrentIndex(index);
+        mCountryContent->setEnabled(true);
     }
 
-    mCountryContent->setCurrentIndex(index);
-    mCountryContent->setEnabled(true);
+    mCountryContent->blockSignals(false);
 }
 
 void EditPlayerWidget::updateSex() {
+    mSexContent->blockSignals(true);
+
     if (mPlayerIds.empty()) {
         mSexContent->setCurrentIndex(0);
         mSexContent->setEnabled(false);
-        return;
-    }
-
-    int index = getSexIndex();
-    if (index == PlayerSex::SIZE + 1) { // multiple
-        if (mSexContent->count() == PlayerSex::SIZE + 1) {
-            mSexContent->addItem(MULTIPLE_TEXT);
-            mSexContent->setItemData(PlayerSex::SIZE + 1, QBrush(Qt::gray), Qt::ForegroundRole);
-        }
     }
     else {
-        if (mSexContent->count() != PlayerSex::SIZE + 1)
-            mSexContent->removeItem(mSexContent->count() - 1);
+        int index = getSexIndex();
+        if (index == PlayerSex::SIZE + 1) { // multiple
+            if (mSexContent->count() == PlayerSex::SIZE + 1) {
+                mSexContent->addItem(MULTIPLE_TEXT);
+                mSexContent->setItemData(PlayerSex::SIZE + 1, QBrush(Qt::gray), Qt::ForegroundRole);
+            }
+        }
+        else {
+            if (mSexContent->count() != PlayerSex::SIZE + 1)
+                mSexContent->removeItem(mSexContent->count() - 1);
+        }
+
+        mSexContent->setCurrentIndex(index);
+        mSexContent->setEnabled(true);
     }
 
-    mSexContent->setCurrentIndex(index);
-    mSexContent->setEnabled(true);
+    mSexContent->blockSignals(false);
 }
 
 std::optional<std::string> EditPlayerWidget::getFirstNameString() {
