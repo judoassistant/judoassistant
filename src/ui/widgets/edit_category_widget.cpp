@@ -172,15 +172,24 @@ void EditCategoryWidget::editDrawDisabled(int state) {
 }
 
 void EditCategoryWidget::editName() {
-    if (mCategoryIds.size() != 1)
+    if (mCategoryIds.empty())
         return;
 
-    TournamentStore &tournament = mStoreManager.getTournament();
-    CategoryStore &category = tournament.getCategory(*(mCategoryIds.begin()));
-
     std::string newValue = mNameContent->text().toStdString();
-    std::string oldValue = category.getName();
-    if (newValue == oldValue) return;
+
+    const TournamentStore &tournament = mStoreManager.getTournament();
+    bool changed = false;
+    for (auto categoryId : mCategoryIds) {
+        const CategoryStore &category = tournament.getCategory(categoryId);
+        std::string oldValue = category.getName();
+
+        if (oldValue != newValue) {
+            changed = true;
+            break;
+        }
+    }
+
+    if (!changed) return;
 
     mStoreManager.dispatch(std::make_unique<ChangeCategoriesNameAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), newValue));
 }
@@ -232,17 +241,23 @@ void EditCategoryWidget::updateDrawDisabled() {
 }
 
 void EditCategoryWidget::updateName() {
-    if (mCategoryIds.size() != 1) {
-        mNameContent->clear();
-        mNameContent->setEnabled(false);
+    mNameContent->clear();
+    mNameContent->setEnabled(!mCategoryIds.empty());
+
+    if (mCategoryIds.empty()) {
+        mNameContent->setPlaceholderText("");
         return;
     }
 
-    TournamentStore &tournament = mStoreManager.getTournament();
-    CategoryStore &category = tournament.getCategory(*(mCategoryIds.begin()));
+    auto nameString = getNameString();
 
-    mNameContent->setEnabled(true);
-    mNameContent->setText(QString::fromStdString(category.getName()));
+    if (!nameString.has_value()) {
+        mNameContent->setPlaceholderText(MULTIPLE_TEXT);
+        return;
+    }
+
+    mNameContent->setText(QString::fromStdString(*nameString));
+    mNameContent->setPlaceholderText("");
 }
 
 void EditCategoryWidget::updateRuleset() {
@@ -344,5 +359,21 @@ void EditCategoryWidget::updateMatchCount() {
     }
 
     mMatchCountContent->setText(QString::number(matchCount));
+}
+
+std::optional<std::string> EditCategoryWidget::getNameString() {
+    const TournamentStore &tournament = mStoreManager.getTournament();
+
+    std::optional<std::string> res;
+
+    for (auto categoryId : mCategoryIds) {
+        const CategoryStore &category = tournament.getCategory(categoryId);
+        if (!res.has_value())
+            res = category.getName();
+        else if (res != category.getName())
+            return std::nullopt;
+    }
+
+    return res;
 }
 

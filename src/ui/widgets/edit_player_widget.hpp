@@ -9,6 +9,7 @@
 
 #include "core/core.hpp"
 #include "core/id.hpp"
+#include "core/stores/player_store.hpp"
 
 class StoreManager;
 
@@ -44,6 +45,11 @@ private:
     void updateSex();
 
     int getSexIndex();
+    std::optional<std::string> getClubString();
+    std::optional<std::string> getFirstNameString();
+    std::optional<std::string> getLastNameString();
+    std::optional<std::optional<PlayerAge>> getAgeValue();
+    std::optional<std::optional<PlayerWeight>> getWeightValue();
     int getRankIndex();
     int getCountryIndex();
 

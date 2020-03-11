@@ -176,6 +176,10 @@ std::ostream & operator<<(std::ostream &out, const PlayerRank &rank) {
     return out << rank.toString();
 }
 
+std::ostream & operator<<(std::ostream &out, const PlayerSex &sex) {
+    return out << sex.toString();
+}
+
 std::string PlayerSex::toString() const {
     switch (mValue) {
         case MALE: return "Male";
