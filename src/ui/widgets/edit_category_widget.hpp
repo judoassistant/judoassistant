@@ -28,6 +28,7 @@ private:
 
     std::optional<DrawSystemIdentifier> getDrawSystemIdentifier();
     std::optional<RulesetIdentifier> getRulesetIdentifier();
+    std::optional<std::string> getNameString();
 
     void changeCategories(std::vector<CategoryId> ids);
     void updateName();
