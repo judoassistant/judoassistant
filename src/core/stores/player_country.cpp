@@ -1,11 +1,25 @@
+#include <cctype>
+
 #include "core/stores/player_country.hpp"
+
+std::string PlayerCountry::stringToLower(const std::string &str) {
+    std::string res;
+    for (unsigned char c : str) {
+        res += std::tolower(c);
+    }
+    return res;
+}
 
 PlayerCountry::PlayerCountry(const std::string &str) {
     for (int i = 0; i < static_cast<int>(SIZE); ++i) {
         auto country = PlayerCountry(i);
-        if (country.toString() == str) {
-            mValue = static_cast<Enum>(i);
-            return;
+
+        const std::string lower = stringToLower(str);
+        for (const std::string &repr : country.strings()) {
+            if (stringToLower(repr) == lower) {
+                mValue = static_cast<Enum>(i);
+                return;
+            }
         }
     }
 
@@ -22,7 +36,6 @@ PlayerCountry::PlayerCountry(int value)
 std::string PlayerCountry::toString() const {
     switch (mValue) {
         case DENMARK: return "Denmark";
-        case GREAT_BRITAIN: return "Great Britain";
         case FRANCE: return "France";
         default: return "";
     }
@@ -31,9 +44,16 @@ std::string PlayerCountry::toString() const {
 std::string PlayerCountry::countryCode() const {
     switch (mValue) {
         case DENMARK: return "DEN";
-        case GREAT_BRITAIN: return "GBR";
         case FRANCE: return "FRA";
         default: return "";
+    }
+}
+
+std::vector<std::string> PlayerCountry::strings() const {
+    switch (mValue) {
+        case DENMARK: return {"Denmark", "DEN", "DK", "Danmark"};
+        case FRANCE: return {"France", "FRA", "FR"};
+        default: return {};
     }
 }
 

@@ -32,6 +32,7 @@ public:
     PlayerRank(Enum value) : mValue(value) {}
 
     std::string toString() const;
+    std::vector<std::string> strings() const; // Returns a vector of all possible names for this rank
     int toInt() const;
     static std::vector<PlayerRank> values();
 
@@ -54,6 +55,7 @@ public:
 
 private:
     Enum mValue;
+    static std::string stringToLower(const std::string &str); // TODO: figure out how to properly handle unicode strings
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerRank &rank);

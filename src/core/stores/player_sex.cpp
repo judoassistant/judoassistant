@@ -10,9 +10,13 @@ PlayerSex::PlayerSex(int value)
 PlayerSex::PlayerSex(const std::string &str) {
     for (int i = 0; i < static_cast<int>(SIZE); ++i) {
         auto sex = PlayerSex(i);
-        if (sex.toString() == str) {
-            mValue = static_cast<Enum>(i);
-            return;
+
+        const std::string lower = stringToLower(str);
+        for (const std::string &repr : sex.strings()) {
+            if (stringToLower(repr) == lower) {
+                mValue = static_cast<Enum>(i);
+                return;
+            }
         }
     }
 
@@ -44,3 +48,18 @@ std::ostream & operator<<(std::ostream &out, const PlayerSex &sex) {
     return out << sex.toString();
 }
 
+std::string PlayerSex::stringToLower(const std::string &str) {
+    std::string res;
+    for (unsigned char c : str) {
+        res += std::tolower(c);
+    }
+    return res;
+}
+
+std::vector<std::string> PlayerSex::strings() const {
+    switch (mValue) {
+        case MALE: return {"male", "man", "m", "boy"};
+        case FEMALE: return {"female", "woman", "w", "f", "girl"};
+        default: return {};
+    }
+}

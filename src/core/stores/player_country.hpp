@@ -8,7 +8,6 @@ public:
     static const size_t SIZE = 3;
     enum Enum {
         DENMARK,
-        GREAT_BRITAIN,
         FRANCE,
     };
 
@@ -20,6 +19,7 @@ public:
 
     std::string toString() const;
     std::string countryCode() const; // Returns the 3-letter IOC country code
+    std::vector<std::string> strings() const; // Returns a vector of all possible names and codes for this country
     int toInt() const;
     static std::vector<PlayerCountry> values();
 
@@ -42,6 +42,7 @@ public:
 
 private:
     Enum mValue;
+    static std::string stringToLower(const std::string &str); // TODO: figure out how to properly handle unicode strings
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerCountry &country);

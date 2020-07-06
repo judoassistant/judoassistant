@@ -19,6 +19,7 @@ public:
 
 
     std::string toString() const;
+    std::vector<std::string> strings() const; // Returns a vector of all possible names for this sex
     int toInt() const;
     static std::vector<PlayerSex> values();
 
@@ -41,6 +42,7 @@ public:
 
 private:
     Enum mValue;
+    static std::string stringToLower(const std::string &str); // TODO: figure out how to properly handle unicode strings
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerSex &sex);
