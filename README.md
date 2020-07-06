@@ -43,7 +43,7 @@ on a unix system.
 cd <sourcecode_directory>
 meson build --prefix="$(pwd)/build" -Dweb=true
 ninja -C build
-ninja install
+ninja install -C build
 ```
 After compilation and running the install command, the executables can be run
 from the `build` directory.
