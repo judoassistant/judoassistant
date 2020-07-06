@@ -235,3 +235,12 @@ void PlayerTableImporter::import(StoreManager & storeManager) {
     storeManager.dispatch(std::make_unique<AddPlayersAction>(storeManager.getTournament(), std::move(fieldsList)));
 }
 
+void PlayerTableImporter::setDelimiter(char del) {
+    mReader->setDelimiter(del);
+
+    if (!mColumnsManuallySet) {
+        guessHasHeaderRow();
+        guessColumns();
+    }
+}
+

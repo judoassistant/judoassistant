@@ -147,9 +147,8 @@ void ImportPlayersCSVDialog::setHasHeaderRow(int state) {
 
 void ImportPlayersCSVDialog::setDelimiter(const QString &text) {
     char del = text.toStdString().front();
-    mReader->setDelimiter(del);
+    mImporter.setDelimiter(del);
 
-    mImporter.guessColumns();
     refillColumnBoxes();
     resetPreview();
 }

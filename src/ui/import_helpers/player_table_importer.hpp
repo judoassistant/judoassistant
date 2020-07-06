@@ -22,6 +22,7 @@ public:
     void setWeightColumn(std::optional<size_t> val);
     void setCountryColumn(std::optional<size_t> val);
     void setSexColumn(std::optional<size_t> val);
+    void setDelimiter(char del);
 
     std::optional<size_t> getFirstNameColumn() const;
     std::optional<size_t> getLastNameColumn() const;
