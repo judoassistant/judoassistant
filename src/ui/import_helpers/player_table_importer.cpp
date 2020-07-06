@@ -9,6 +9,7 @@
 
 PlayerTableImporter::PlayerTableImporter(CSVReader *reader)
     : mReader(reader)
+    , mColumnsManuallySet(false)
 {
     if (!reader->isOpen()) return;
 
@@ -21,7 +22,13 @@ bool PlayerTableImporter::hasHeaderRow() {
 }
 
 void PlayerTableImporter::setHasHeaderRow(bool val) {
+    if (mHasHeaderRow == val)
+        return;
+
     mHasHeaderRow = val;
+
+    if (!mColumnsManuallySet)
+        guessColumns();
 }
 
 void PlayerTableImporter::guessHasHeaderRow() {
@@ -41,30 +48,37 @@ void PlayerTableImporter::guessColumns() {
 
 void PlayerTableImporter::setFirstNameColumn(std::optional<size_t> val) {
     mFirstNameColumn = val;
+    mColumnsManuallySet = true;
 }
 
 void PlayerTableImporter::setLastNameColumn(std::optional<size_t> val) {
     mLastNameColumn = val;
+    mColumnsManuallySet = true;
 }
 
 void PlayerTableImporter::setAgeColumn(std::optional<size_t> val) {
     mAgeColumn = val;
+    mColumnsManuallySet = true;
 }
 
 void PlayerTableImporter::setRankColumn(std::optional<size_t> val) {
     mRankColumn = val;
+    mColumnsManuallySet = true;
 }
 
 void PlayerTableImporter::setClubColumn(std::optional<size_t> val) {
     mClubColumn = val;
+    mColumnsManuallySet = true;
 }
 
 void PlayerTableImporter::setWeightColumn(std::optional<size_t> val) {
     mWeightColumn = val;
+    mColumnsManuallySet = true;
 }
 
 void PlayerTableImporter::setCountryColumn(std::optional<size_t> val) {
     mCountryColumn = val;
+    mColumnsManuallySet = true;
 }
 
 std::optional<size_t> PlayerTableImporter::getFirstNameColumn() const {
@@ -101,6 +115,7 @@ std::optional<size_t> PlayerTableImporter::getSexColumn() const {
 
 void PlayerTableImporter::setSexColumn(std::optional<size_t> val) {
     mSexColumn = val;
+    mColumnsManuallySet = true;
 }
 
 bool PlayerTableImporter::isValid(size_t row, size_t column) const {
@@ -194,7 +209,7 @@ std::string PlayerTableImporter::getHeader(size_t column) const {
 void PlayerTableImporter::import(StoreManager & storeManager) {
     std::vector<PlayerFields> fieldsList;
 
-    size_t offset = (hasHeaderRow() ? 1 : 0);
+    size_t offset = hasHeaderRow();
     for (size_t row = offset; row < mReader->rowCount(); ++row) {
         PlayerFields fields;
 

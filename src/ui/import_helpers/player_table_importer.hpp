@@ -60,6 +60,7 @@ private:
 
     CSVReader *mReader;
     bool mHasHeaderRow;
+    bool mColumnsManuallySet;
 
     std::optional<size_t> mFirstNameColumn;
     std::optional<size_t> mLastNameColumn;
