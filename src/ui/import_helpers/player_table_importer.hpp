@@ -9,6 +9,8 @@ class StoreManager;
 
 class PlayerTableImporter {
 public:
+    static constexpr size_t HEADER_MATCH_ACTION = 2; // Guess that the first row is the header row if at least HEADER_MATCH_ACTION titles match
+
     PlayerTableImporter(CSVReader *reader);
 
     bool hasHeaderRow();
@@ -22,6 +24,7 @@ public:
     void setWeightColumn(std::optional<size_t> val);
     void setCountryColumn(std::optional<size_t> val);
     void setSexColumn(std::optional<size_t> val);
+    void setDelimiter(char del);
 
     std::optional<size_t> getFirstNameColumn() const;
     std::optional<size_t> getLastNameColumn() const;
@@ -58,8 +61,18 @@ private:
         return res;
     }
 
+    bool isFirstNameHeader(const QString &cell) const;
+    bool isLastNameHeader(const QString &cell) const;
+    bool isAgeHeader(const QString &cell) const;
+    bool isRankHeader(const QString &cell) const;
+    bool isClubHeader(const QString &cell) const;
+    bool isWeightHeader(const QString &cell) const;
+    bool isCountryHeader(const QString &cell) const;
+    bool isSexHeader(const QString &cell) const;
+
     CSVReader *mReader;
     bool mHasHeaderRow;
+    bool mColumnsManuallySet;
 
     std::optional<size_t> mFirstNameColumn;
     std::optional<size_t> mLastNameColumn;
