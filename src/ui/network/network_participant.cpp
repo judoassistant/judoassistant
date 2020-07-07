@@ -87,6 +87,9 @@ void NetworkParticipant::readMessage() {
         else if (mReadMessage->getType() == NetworkMessage::Type::UNDO_ACK) {
             log_warning().msg("Received UNDO_ACK from client");
         }
+        else if (mReadMessage->getType() == NetworkMessage::Type::UNDO) {
+            log_warning().msg("Received UNDO from client");
+        }
         else if (mReadMessage->getType() == NetworkMessage::Type::SYNC_ACK) {
             if (!isSyncing())
                 log_warning().msg("Received SYNC_ACK from non-syncing client");
@@ -95,9 +98,6 @@ void NetworkParticipant::readMessage() {
         }
         else if (!isSyncing() && mReadMessage->getType() == NetworkMessage::Type::ACTION) {
             mServer.deliverAction(std::move(mReadMessage), shared_from_this());
-        }
-        else if (!isSyncing() && mReadMessage->getType() == NetworkMessage::Type::UNDO) {
-            mServer.deliverUndo(std::move(mReadMessage), shared_from_this());
         }
 
         readMessage();
