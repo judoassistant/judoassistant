@@ -43,7 +43,6 @@ private:
     void join(std::shared_ptr<NetworkParticipant> participant);
     void leave(std::shared_ptr<NetworkParticipant> participant);
     void deliverAction(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> participant);
-    void deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> participant);
     void deliver(std::shared_ptr<NetworkMessage> message);
 
     const std::shared_ptr<TournamentStore> & getTournament() const;

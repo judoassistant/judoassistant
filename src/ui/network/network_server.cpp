@@ -190,34 +190,6 @@ void NetworkServer::deliverAction(std::shared_ptr<NetworkMessage> message, std::
     mWebClient.deliver(message);
 }
 
-void NetworkServer::deliverUndo(std::shared_ptr<NetworkMessage> message, std::shared_ptr<NetworkParticipant> sender) {
-    ClientActionId actionId;
-    message->decodeUndo(actionId);
-
-    auto it = mActionMap.find(actionId);
-    if (it != mActionMap.end()) {
-        mActionStack.erase(it->second);
-        mActionMap.erase(it);
-
-        emit undoReceived(actionId);
-
-        std::shared_ptr<NetworkMessage> sharedMessage = std::move(message);
-
-        for (auto & participant : mParticipants) {
-            if (participant == sender) {
-                auto ackMessage = std::make_unique<NetworkMessage>();
-                ackMessage->encodeUndoAck(actionId);
-                participant->deliver(std::move(ackMessage));
-                continue;
-            }
-
-            participant->deliver(sharedMessage);
-        }
-
-        mWebClient.deliver(sharedMessage);
-    }
-}
-
 void NetworkServer::deliver(std::shared_ptr<NetworkMessage> message) {
     for (auto & participant : mParticipants)
         participant->deliver(message);

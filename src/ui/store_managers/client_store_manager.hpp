@@ -17,6 +17,12 @@ public:
 
     std::chrono::milliseconds masterTime() const override;
 
+    bool canUndo() override;
+    void undo() override;
+    void undo(ClientActionId action) override;
+    bool canRedo() override;
+    void redo() override;
+
 protected:
     void loseConnection();
     void shutdownConnection();

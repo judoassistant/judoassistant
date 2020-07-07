@@ -85,3 +85,23 @@ void ClientStoreManager::synchronizeClock(std::chrono::milliseconds diff) {
     mClockDiff = diff;
 }
 
+bool ClientStoreManager::canUndo() {
+    return false;
+}
+
+bool ClientStoreManager::canRedo() {
+    return false;
+}
+
+void ClientStoreManager::undo() {
+    throw std::runtime_error("Attempted to call undo from ClientStoreManager");
+}
+
+void ClientStoreManager::undo(ClientActionId action) {
+    throw std::runtime_error("Attempted to call undo from ClientStoreManager");
+}
+
+void ClientStoreManager::redo() {
+    throw std::runtime_error("Attempted to call undo from ClientStoreManager");
+}
+
