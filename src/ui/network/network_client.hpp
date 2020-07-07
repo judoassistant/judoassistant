@@ -67,7 +67,6 @@ private:
     std::queue<std::unique_ptr<NetworkMessage>> mWriteQueue;
     SharedActionList mUnconfirmedActionList;
     std::unordered_map<ClientActionId, SharedActionList::iterator> mUnconfirmedActionMap;
-    std::unordered_set<ClientActionId> mUnconfirmedUndos;
 };
 
 Q_DECLARE_METATYPE(NetworkClientState)
