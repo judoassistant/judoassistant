@@ -15,7 +15,6 @@ namespace po = boost::program_options;
 std::unique_ptr<WebServer> server;
 
 void handleInterrupt(int signal){ // TODO: Handle platform agnostically
-    log_info().msg("Caught interrupt. Quitting");
     server->quit();
 }
 

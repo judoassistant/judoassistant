@@ -40,11 +40,11 @@ void WebServer::run() {
     }
 
     // Launch database
-    log_info().msg("Launching database");
+    log_debug().msg("Launching database");
     mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
 
     // Launch worker threads
-    log_info().field("threadCount", mConfig.workers).msg("Launching threads");
+    log_info().field("threadCount", mConfig.workers).msg("Launching worker threads");
     for (size_t i = 0; i < mConfig.workers; ++i) {
         mThreads.emplace_back(&WebServer::work, this);
     }
@@ -53,7 +53,7 @@ void WebServer::run() {
     // mDatabase->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
 
     work();
-    log_info().msg("Joining threads");
+    log_debug().msg("Joining threads...");
 
     for (std::thread &thread : mThreads)
         thread.join();
@@ -61,7 +61,7 @@ void WebServer::run() {
 
 void WebServer::quit() {
     mStrand.dispatch([this]() {
-        log_debug().msg("WebServer::quit");
+        log_debug().field("participants.size", mParticipants.size()).field("web_participants.size", mWebParticipants.size()).field("loaded_tournaments.size", mLoadedTournaments.size()).msg("Quitting...");
         for (auto & participant: mParticipants)
             participant->quit();
         for (auto & participant: mWebParticipants)

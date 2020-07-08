@@ -265,6 +265,7 @@ void TCPParticipant::asyncTournamentListen() {
         assert(mState == State::CLOCK_SYNCED);
 
         if (ec) {
+            log_debug().field("message", ec.message()).msg("Got error code in tournament listen");
             forceQuit();
             return;
         }
