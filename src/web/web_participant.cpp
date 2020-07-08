@@ -122,12 +122,12 @@ bool WebParticipant::subscribeTournament(const std::string &webName) {
 }
 
 void WebParticipant::quit() {
-    // Since WebParticipants are read-only there is not risk of data corruption
-    // when killing
+    // Since WebParticipants are read-only there is not risk of data corruption when killing
+    // Send close frame
 
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self]() {
-        forceQuit();
+    mConnection->async_close(boost::beast::websocket::close_code::service_restart, [this, self](boost::system::error_code ec) {
+        forceQuit(); // Clean-up using forceQuit method
     });
 }
 
@@ -137,7 +137,7 @@ void WebParticipant::forceQuit() {
         mTournament.reset();
     }
 
-    if (mConnection) // TODO: Call teardown instead of reset
+    if (mConnection)
         mConnection.reset();
     mServer.leave(shared_from_this());
 }
