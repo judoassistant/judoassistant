@@ -26,7 +26,7 @@ public:
         ACTION_ACK, // The message acknowledges an action
         UNDO, // The message undoes a previously sent action
         UNDO_ACK, // The message acknowledges an undo
-        QUIT, // The participant or server has quit
+        QUIT, // The participant or server has quit. Not used for web connection
         CLOCK_SYNC, // Message used for sending current master time
         CLOCK_SYNC_REQUEST, // Message used for requesting current time of master
 

@@ -302,11 +302,8 @@ void WebClient::enterConfigured() {
             return;
         }
 
-        if (responseMessage->getType() != NetworkMessage::Type::QUIT) {
-            log_error().msg("Received response message of wrong type. Failing");
-            killConnection();
-            return;
-        }
+        // The web server is not expected to send any messages
+        log_error().field("type", responseMessage->getType()).msg("Received unexpected message from web server. Failing");
 
         killConnection();
     });

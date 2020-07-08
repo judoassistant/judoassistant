@@ -30,11 +30,6 @@ void TCPParticipant::asyncAuth() {
             return;
         }
 
-        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
-            forceQuit();
-            return;
-        }
-
         if (mReadMessage->getType() == NetworkMessage::Type::REQUEST_WEB_TOKEN) {
             std::string email;
             std::string password;
@@ -100,11 +95,6 @@ void TCPParticipant::write() {
             return;
         }
 
-        if (mMessageQueue.front()->getType() == NetworkMessage::Type::QUIT) {
-            forceQuit();
-            return;
-        }
-
         mMessageQueue.pop();
         if (!mMessageQueue.empty())
             write();
@@ -130,11 +120,6 @@ void TCPParticipant::asyncTournamentRegister() {
     mConnection->asyncRead(*mReadMessage, [this, self](boost::system::error_code ec) {
         assert(mState == State::AUTHENTICATED);
         if (ec) {
-            forceQuit();
-            return;
-        }
-
-        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
             forceQuit();
             return;
         }
@@ -204,11 +189,6 @@ void TCPParticipant::asyncClockSync() {
 
     mConnection->asyncRead(*mReadMessage, [this, self, t1](boost::system::error_code ec) {
         auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
-            forceQuit();
-            return;
-        }
-
         if (mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
             forceQuit();
             return;
@@ -234,11 +214,6 @@ void TCPParticipant::asyncTournamentSync() {
         assert(mState == State::CLOCK_SYNCED);
 
         if (ec) {
-            forceQuit();
-            return;
-        }
-
-        if (mReadMessage->getType() == NetworkMessage::Type::QUIT) {
             forceQuit();
             return;
         }
@@ -295,11 +270,6 @@ void TCPParticipant::asyncTournamentListen() {
         }
 
         auto type = mReadMessage->getType();
-        if (type == NetworkMessage::Type::QUIT) {
-            forceQuit();
-            return;
-        }
-
         if (type == NetworkMessage::Type::UNDO) {
             ClientActionId actionId;
 
