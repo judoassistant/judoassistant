@@ -72,13 +72,15 @@ void WebServer::quit() {
 
         mTCPAcceptor.close();
         mWebAcceptor.close();
+        log_debug().msg("Closed sockets");
     });
 }
 
 void WebServer::tcpAccept() {
     mTCPAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Received error code in tcp async_accept");
+            if (ec.value() != boost::system::errc::operation_canceled)
+                log_error().field("message", ec.message()).msg("Received error code in tcp async_accept");
         }
         else {
             auto connection = std::make_shared<NetworkConnection>(std::make_unique<PlainSocket>(mContext, std::move(socket)));
@@ -101,7 +103,8 @@ void WebServer::tcpAccept() {
 void WebServer::webAccept() {
     mWebAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Received error code in web async_accept");
+            if (ec.value() != boost::system::errc::operation_canceled)
+                log_error().field("message", ec.message()).msg("Received error code in web async_accept");
         }
         else {
             auto connection = std::make_shared<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(std::move(socket));
