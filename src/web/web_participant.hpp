@@ -15,12 +15,13 @@ class WebParticipant : public std::enable_shared_from_this<WebParticipant> {
 public:
     WebParticipant(boost::asio::io_context &context, std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> connection, WebServer &server, Database &database);
 
-    void quit();
+    typedef std::function<void()> CloseCallback;
+    void asyncClose(CloseCallback callback);
     void listen();
     void deliver(std::shared_ptr<JsonBuffer> message);
 
 private:
-    void forceQuit();
+    void forceClose();
     bool parseMessage(const std::string &message);
     bool validateMessage(const std::string &message);
 
@@ -42,5 +43,6 @@ private:
 
     std::shared_ptr<LoadedTournament> mTournament;
     std::queue<std::shared_ptr<JsonBuffer>> mWriteQueue;
+    bool mClosePosted;
 };
 

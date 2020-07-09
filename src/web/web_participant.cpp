@@ -20,6 +20,7 @@ WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr
     , mConnection(std::move(connection))
     , mServer(server)
     , mDatabase(database)
+    , mClosePosted(false)
 {
     mConnection->text(true);
 }
@@ -27,14 +28,17 @@ WebParticipant::WebParticipant(boost::asio::io_context &context, std::shared_ptr
 void WebParticipant::listen() {
     auto self = shared_from_this();
     mConnection->async_read(mBuffer, boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+        if (mClosePosted)
+            return;
+
         if (ec) {
-            forceQuit();
+            forceClose();
             return;
         }
 
         if (!parseMessage(boost::beast::buffers_to_string(mBuffer.data()))) {
             log_warning().msg("Failed parsing web message");
-            // forceQuit();
+            // forceClose();
         }
 
         mBuffer.consume(bytes_transferred);
@@ -108,6 +112,9 @@ bool WebParticipant::parseMessage(const std::string &message) {
 bool WebParticipant::subscribeTournament(const std::string &webName) {
     auto self = shared_from_this();
     mServer.getTournament(webName, boost::asio::bind_executor(mStrand, [this, self](std::shared_ptr<LoadedTournament> tournament) {
+        if (mClosePosted)
+            return;
+
         if (tournament == nullptr) {
             JsonEncoder encoder;
             deliver(encoder.encodeTournamentSubscriptionFailMessage());
@@ -121,17 +128,19 @@ bool WebParticipant::subscribeTournament(const std::string &webName) {
     return true;
 }
 
-void WebParticipant::quit() {
-    // Since WebParticipants are read-only there is not risk of data corruption when killing
+void WebParticipant::asyncClose(CloseCallback callback) {
     // Send close frame
-
     auto self = shared_from_this();
-    mConnection->async_close(boost::beast::websocket::close_code::service_restart, [this, self](boost::system::error_code ec) {
-        forceQuit(); // Clean-up using forceQuit method
+    boost::asio::post(mStrand, [this, self, callback](){
+        mClosePosted = true;
+        mConnection->async_close(boost::beast::websocket::close_code::service_restart, [this, self, callback](boost::system::error_code ec) {
+            forceClose(); // Clean-up using forceClose method
+            callback();
+        });
     });
 }
 
-void WebParticipant::forceQuit() {
+void WebParticipant::forceClose() {
     if (mTournament != nullptr) {
         mTournament->eraseParticipant(shared_from_this());
         mTournament.reset();
@@ -145,6 +154,9 @@ void WebParticipant::forceQuit() {
 void WebParticipant::deliver(std::shared_ptr<JsonBuffer> message) {
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, message, self](){
+        if (mClosePosted)
+            return;
+
         bool writeInProgress = !mWriteQueue.empty();
         mWriteQueue.push(std::move(message));
 
@@ -157,8 +169,11 @@ void WebParticipant::write() {
     auto self = shared_from_this();
     const auto &message = mWriteQueue.front();
     mConnection->async_write(message->getBuffer(), boost::asio::bind_executor(mStrand, [this, self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+        if (mClosePosted)
+            return;
+
         if (ec) {
-            forceQuit();
+            forceClose();
             return;
         }
 
@@ -212,6 +227,9 @@ bool WebParticipant::subscribePlayer(const std::string &str) {
 bool WebParticipant::listTournaments() {
     auto self = shared_from_this();
     mDatabase.asyncListTournaments(boost::asio::bind_executor(mStrand, [this, self](bool success, std::vector<TournamentListing> tournament) {
+        if (mClosePosted)
+            return;
+
         JsonEncoder encoder;
 
         if (!success) {
