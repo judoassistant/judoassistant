@@ -24,7 +24,8 @@ public:
     TCPParticipant(const TCPParticipant &other) = delete;
     TCPParticipant(boost::asio::io_context &context, std::shared_ptr<NetworkConnection> connection, WebServer &server, Database &database);
 
-    void quit();
+    typedef std::function<void()> CloseCallback;
+    void asyncClose(CloseCallback callback);
     void asyncAuth();
 
 private:
@@ -33,9 +34,10 @@ private:
     void asyncTournamentSync();
     void asyncTournamentListen();
 
-    void forceQuit();
     void write();
     void deliver(std::shared_ptr<NetworkMessage> message);
+
+    void forceClose();
 
     boost::asio::io_context::strand mStrand;
     std::shared_ptr<NetworkConnection> mConnection;
@@ -48,5 +50,6 @@ private:
     std::string mWebName;
     std::shared_ptr<LoadedTournament> mTournament;
     std::chrono::milliseconds mClockDiff;
+    bool mClosePosted;
 };
 
