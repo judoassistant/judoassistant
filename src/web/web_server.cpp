@@ -128,14 +128,15 @@ void WebServer::webAccept() {
     mWebAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
             if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
-                log_error().field("message", ec.message()).msg("Received error code in web async_accept");
+                log_error().field("value", ec.value()).field("message", ec.message()).msg("Received error code in web async_accept");
         }
         else {
             auto connection = std::make_shared<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(std::move(socket));
 
             connection->async_accept(boost::asio::bind_executor(mStrand, [this, connection](boost::beast::error_code ec) {
                 if (ec) {
-                    log_error().field("message", ec.message()).msg("Received error code in websocket async accept");
+                    if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
+                        log_error().field("message", ec.message()).msg("Received error code in websocket async accept");
                     return;
                 }
 
