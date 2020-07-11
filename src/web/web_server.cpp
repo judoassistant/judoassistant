@@ -23,7 +23,6 @@ WebServer::WebServer(const Config &config)
     , mWebEndpoint(tcp::v4(), config.webPort)
     , mWebAcceptor(mContext, mWebEndpoint)
 {
-    log_debug().field("workers", config.workers).msg("Constructing web server");
     tcpAccept();
     webAccept();
 }
@@ -42,7 +41,6 @@ void WebServer::run() {
     }
 
     // Launch database
-    log_debug().msg("Launching database");
     mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
 
     // Launch worker threads
@@ -55,15 +53,12 @@ void WebServer::run() {
     // mDatabase->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
 
     work();
-    log_debug().msg("Joining threads...");
 
     for (std::thread &thread : mThreads)
         thread.join();
 }
 
 void WebServer::saveTournaments() {
-    log_debug().field("participants.size", mParticipants.size()).field("web_participants.size", mWebParticipants.size()).msg("Called save tournaments");
-
     if (!mParticipants.empty()) // Wait for all tcp participants to close
         return;
 
@@ -71,19 +66,15 @@ void WebServer::saveTournaments() {
         return;
 
     // Save and close all tournaments
-    log_debug().field("tournaments.size", mLoadedTournaments.size()).msg("Saving loaded tournaments...");
     for (auto & p : mLoadedTournaments)
         p.second->saveIfNeccesary();
 }
 
 void WebServer::closeWebParticipants() {
-    log_debug().field("participants.size", mParticipants.size()).msg("Called closeWebParticipants");
-
     if (!mParticipants.empty()) // Wait for all tcp participants to close
         return;
 
     // Close all web participants
-    log_debug().field("web_participants.size", mWebParticipants.size()).msg("Closing web participants...");
     if (!mWebParticipants.empty()) {
         for (auto & participant: mWebParticipants)
             participant->asyncClose(boost::asio::bind_executor(mStrand, boost::bind(&WebServer::saveTournaments, this)));
@@ -95,12 +86,8 @@ void WebServer::closeWebParticipants() {
 
 void WebServer::quit() {
     boost::asio::post(mStrand, [this]() {
-        log_debug().msg("Closing acceptors");
         mTCPAcceptor.close();
         mWebAcceptor.close();
-
-
-        log_debug().field("tcp_participants.size", mParticipants.size()).msg("Closing tcp participants...");
 
         // Close all TCP participants
         if (!mParticipants.empty()) {
@@ -108,11 +95,9 @@ void WebServer::quit() {
                 participant->asyncClose(boost::asio::bind_executor(mStrand, boost::bind(&WebServer::closeWebParticipants, this)));
         }
         else {
-            log_debug().msg("Posting closeWebParticipants");
             boost::asio::dispatch(mStrand, boost::bind(&WebServer::closeWebParticipants, this));
         }
     });
-    log_debug().msg("Finished calling quit");
 }
 
 void WebServer::tcpAccept() {
@@ -154,7 +139,6 @@ void WebServer::webAccept() {
                     return;
                 }
 
-                log_debug().msg("Accepted WebSocket connection");
                 auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
                 participant->listen();
                 mWebParticipants.insert(std::move(participant));
@@ -169,7 +153,6 @@ void WebServer::webAccept() {
 void WebServer::leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback callback) {
     boost::asio::post(mStrand, [this, participant, callback]() {
         mParticipants.erase(participant);
-        log_debug().msg("Dispatching leave callback");
         boost::asio::post(mContext, callback);
     });
 }
@@ -177,7 +160,6 @@ void WebServer::leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback
 void WebServer::leave(std::shared_ptr<WebParticipant> participant, LeaveCallback callback) {
     boost::asio::post(mStrand, [this, participant, callback]() {
         mWebParticipants.erase(participant);
-        log_debug().msg("Dispatching leave callback");
         boost::asio::post(mContext, callback);
     });
 }

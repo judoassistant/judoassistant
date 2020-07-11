@@ -313,7 +313,6 @@ void TCPParticipant::asyncTournamentListen() {
             return;
 
         if (ec) {
-            log_debug().field("message", ec.message()).msg("Got error code in tournament listen");
             close();
             return;
         }
@@ -392,7 +391,6 @@ void TCPParticipant::asyncTournamentListen() {
 void TCPParticipant::asyncClose(CloseCallback callback) {
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, callback]() {
-        log_debug().msg("TCP async close posted");
         mClosePosted = true;
         if (mTournament != nullptr)
             mTournament->clearOwner();

@@ -248,7 +248,5 @@ bool WebParticipant::listTournaments() {
     }));
 
     return true;
-    log_debug().msg("Listing tournaments");
-    return true;
 }
 
