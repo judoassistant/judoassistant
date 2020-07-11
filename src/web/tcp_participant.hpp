@@ -37,7 +37,7 @@ private:
     void write();
     void deliver(std::shared_ptr<NetworkMessage> message);
 
-    void forceClose();
+    void close();
 
     boost::asio::io_context::strand mStrand;
     std::shared_ptr<NetworkConnection> mConnection;

@@ -30,7 +30,7 @@ void TCPParticipant::asyncAuth() {
             return;
 
         if (ec) {
-            forceClose();
+            close();
             return;
         }
 
@@ -39,7 +39,7 @@ void TCPParticipant::asyncAuth() {
             std::string password;
             if (!mReadMessage->decodeRequestWebToken(email, password)) {
                 log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
-                forceClose();
+                close();
                 return;
             }
 
@@ -68,7 +68,7 @@ void TCPParticipant::asyncAuth() {
             WebToken token;
             if (!mReadMessage->decodeValidateWebToken(email, token)) {
                 log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
-                forceClose();
+                close();
                 return;
             }
 
@@ -106,7 +106,7 @@ void TCPParticipant::write() {
 
         if (ec) {
             log_warning().field("message", ec.message()).msg("Encountered error when writing message. Kicking client");
-            forceClose();
+            close();
             return;
         }
 
@@ -142,7 +142,7 @@ void TCPParticipant::asyncTournamentRegister() {
             return;
 
         if (ec) {
-            forceClose();
+            close();
             return;
         }
 
@@ -150,7 +150,7 @@ void TCPParticipant::asyncTournamentRegister() {
             TournamentId id;
             std::string webName;
             if (!mReadMessage->decodeRegisterWebName(id, webName)) {
-                forceClose();
+                close();
                 return;
             }
 
@@ -178,7 +178,7 @@ void TCPParticipant::asyncTournamentRegister() {
             TournamentId id;
             std::string webName;
             if (!mReadMessage->decodeCheckWebName(id, webName)) {
-                forceClose();
+                close();
                 return;
             }
 
@@ -223,13 +223,13 @@ void TCPParticipant::asyncClockSync() {
 
         auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         if (mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
-            forceClose();
+            close();
             return;
         }
 
         std::chrono::milliseconds p1;
         if (!mReadMessage->decodeClockSync(p1)) {
-            forceClose();
+            close();
             return;
         }
 
@@ -250,12 +250,12 @@ void TCPParticipant::asyncTournamentSync() {
             return;
 
         if (ec) {
-            forceClose();
+            close();
             return;
         }
 
         if (mReadMessage->getType() != NetworkMessage::Type::SYNC) {
-            forceClose();
+            close();
             return;
         }
 
@@ -263,7 +263,7 @@ void TCPParticipant::asyncTournamentSync() {
         wrapper->tournament = std::make_unique<WebTournamentStore>();
 
         if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
-            forceClose();
+            close();
             return;
         }
 
@@ -285,7 +285,7 @@ void TCPParticipant::asyncTournamentSync() {
                     return;
 
                 if (!success) {
-                    forceClose();
+                    close();
                     return;
                 }
 
@@ -314,7 +314,7 @@ void TCPParticipant::asyncTournamentListen() {
 
         if (ec) {
             log_debug().field("message", ec.message()).msg("Got error code in tournament listen");
-            forceClose();
+            close();
             return;
         }
 
@@ -323,7 +323,7 @@ void TCPParticipant::asyncTournamentListen() {
             ClientActionId actionId;
 
             if (!mReadMessage->decodeUndo(actionId)) {
-                forceClose();
+                close();
                 return;
             }
 
@@ -334,7 +334,7 @@ void TCPParticipant::asyncTournamentListen() {
                 if (success)
                     asyncTournamentListen();
                 else
-                    forceClose();
+                    close();
             });
 
             return;
@@ -346,7 +346,7 @@ void TCPParticipant::asyncTournamentListen() {
 
             if (!mReadMessage->decodeAction(actionId, action)) {
                 log_warning().msg("Failed decoding action. Kicking client.");
-                forceClose();
+                close();
                 return;
             }
 
@@ -357,7 +357,7 @@ void TCPParticipant::asyncTournamentListen() {
                 if (success)
                     asyncTournamentListen();
                 else
-                    forceClose();
+                    close();
             }));
 
             return;
@@ -368,7 +368,7 @@ void TCPParticipant::asyncTournamentListen() {
             SharedActionList actionList;
 
             if (!mReadMessage->decodeSync(*tournament, actionList)) {
-                forceClose();
+                close();
                 return;
             }
 
@@ -379,7 +379,7 @@ void TCPParticipant::asyncTournamentListen() {
                 if (success)
                     asyncTournamentListen();
                 else
-                    forceClose();
+                    close();
             }));
 
             return;
@@ -392,16 +392,21 @@ void TCPParticipant::asyncTournamentListen() {
 void TCPParticipant::asyncClose(CloseCallback callback) {
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, callback]() {
+        log_debug().msg("TCP async close posted");
         mClosePosted = true;
-        forceClose();
+        if (mTournament != nullptr)
+            mTournament->clearOwner();
+
+        mConnection.reset();
+        mServer.leave(shared_from_this(), callback);
     });
 }
 
-void TCPParticipant::forceClose() {
+void TCPParticipant::close() {
     if (mTournament != nullptr)
         mTournament->clearOwner();
 
     mConnection.reset();
-    mServer.leave(shared_from_this());
+    mServer.leave(shared_from_this(), [](){});
 }
 

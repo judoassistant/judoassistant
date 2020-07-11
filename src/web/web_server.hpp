@@ -31,8 +31,9 @@ public:
     typedef std::function<void (bool)> SaveTournamentCallback;
     void saveTournament(std::shared_ptr<LoadedTournament> tournament, SaveTournamentCallback);
 
-    void leave(std::shared_ptr<TCPParticipant> participant);
-    void leave(std::shared_ptr<WebParticipant> participant);
+    typedef std::function<void ()> LeaveCallback;
+    void leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback callback);
+    void leave(std::shared_ptr<WebParticipant> participant, LeaveCallback callback);
 
 private:
     void work();
@@ -40,6 +41,9 @@ private:
     void assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName);
 
     void webAccept();
+
+    void saveTournaments(); // Used as callback when shutting down
+    void closeWebParticipants(); // Used as callback when shutting down
 
     Config mConfig;
     boost::asio::io_context mContext;

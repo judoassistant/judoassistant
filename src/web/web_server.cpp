@@ -2,6 +2,7 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/bind.hpp>
 #include <boost/filesystem/operations.hpp>
 
 #include "core/id.hpp"
@@ -22,6 +23,7 @@ WebServer::WebServer(const Config &config)
     , mWebEndpoint(tcp::v4(), config.webPort)
     , mWebAcceptor(mContext, mWebEndpoint)
 {
+    log_debug().field("workers", config.workers).msg("Constructing web server");
     tcpAccept();
     webAccept();
 }
@@ -59,27 +61,64 @@ void WebServer::run() {
         thread.join();
 }
 
-void WebServer::quit() {
-    mStrand.dispatch([this]() {
-        log_debug().field("participants.size", mParticipants.size()).field("web_participants.size", mWebParticipants.size()).field("loaded_tournaments.size", mLoadedTournaments.size()).msg("Quitting...");
-        for (auto & participant: mParticipants)
-            participant->quit();
+void WebServer::saveTournaments() {
+    log_debug().field("participants.size", mParticipants.size()).field("web_participants.size", mWebParticipants.size()).msg("Called save tournaments");
+
+    if (!mParticipants.empty()) // Wait for all tcp participants to close
+        return;
+
+    if (!mWebParticipants.empty()) // Wait for all web participants to close
+        return;
+
+    // Save and close all tournaments
+    log_debug().field("tournaments.size", mLoadedTournaments.size()).msg("Saving loaded tournaments...");
+    for (auto & p : mLoadedTournaments)
+        p.second->saveIfNeccesary();
+}
+
+void WebServer::closeWebParticipants() {
+    log_debug().field("participants.size", mParticipants.size()).msg("Called closeWebParticipants");
+
+    if (!mParticipants.empty()) // Wait for all tcp participants to close
+        return;
+
+    // Close all web participants
+    log_debug().field("web_participants.size", mWebParticipants.size()).msg("Closing web participants...");
+    if (!mWebParticipants.empty()) {
         for (auto & participant: mWebParticipants)
-            participant->quit();
+            participant->asyncClose(boost::asio::bind_executor(mStrand, boost::bind(&WebServer::saveTournaments, this)));
+    }
+    else {
+        boost::asio::dispatch(mStrand, boost::bind(&WebServer::saveTournaments, this));
+    }
+}
 
-        for (auto & p : mLoadedTournaments)
-            p.second->saveIfNeccesary();
-
+void WebServer::quit() {
+    boost::asio::post(mStrand, [this]() {
+        log_debug().msg("Closing acceptors");
         mTCPAcceptor.close();
         mWebAcceptor.close();
-        log_debug().msg("Closed sockets");
+
+
+        log_debug().field("tcp_participants.size", mParticipants.size()).msg("Closing tcp participants...");
+
+        // Close all TCP participants
+        if (!mParticipants.empty()) {
+            for (auto & participant: mParticipants)
+                participant->asyncClose(boost::asio::bind_executor(mStrand, boost::bind(&WebServer::closeWebParticipants, this)));
+        }
+        else {
+            log_debug().msg("Posting closeWebParticipants");
+            boost::asio::dispatch(mStrand, boost::bind(&WebServer::closeWebParticipants, this));
+        }
     });
+    log_debug().msg("Finished calling quit");
 }
 
 void WebServer::tcpAccept() {
     mTCPAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
-            if (ec.value() != boost::system::errc::operation_canceled)
+            if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
                 log_error().field("message", ec.message()).msg("Received error code in tcp async_accept");
         }
         else {
@@ -103,7 +142,7 @@ void WebServer::tcpAccept() {
 void WebServer::webAccept() {
     mWebAcceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (ec) {
-            if (ec.value() != boost::system::errc::operation_canceled)
+            if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
                 log_error().field("message", ec.message()).msg("Received error code in web async_accept");
         }
         else {
@@ -127,15 +166,19 @@ void WebServer::webAccept() {
     });
 }
 
-void WebServer::leave(std::shared_ptr<TCPParticipant> participant) {
-    mStrand.dispatch([this, participant]() {
+void WebServer::leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback callback) {
+    boost::asio::post(mStrand, [this, participant, callback]() {
         mParticipants.erase(participant);
+        log_debug().msg("Dispatching leave callback");
+        boost::asio::post(mContext, callback);
     });
 }
 
-void WebServer::leave(std::shared_ptr<WebParticipant> participant) {
-    mStrand.dispatch([this, participant]() {
+void WebServer::leave(std::shared_ptr<WebParticipant> participant, LeaveCallback callback) {
+    boost::asio::post(mStrand, [this, participant, callback]() {
         mWebParticipants.erase(participant);
+        log_debug().msg("Dispatching leave callback");
+        boost::asio::post(mContext, callback);
     });
 }
 
@@ -148,7 +191,7 @@ void WebServer::work() {
 }
 
 void WebServer::acquireTournament(const std::string &webName, AcquireTournamentCallback callback) {
-    mStrand.dispatch([this, webName, callback]() {
+    boost::asio::dispatch(mStrand, [this, webName, callback]() {
         auto it = mLoadedTournaments.find(webName);
         std::shared_ptr<LoadedTournament> tournament;
         if (it != mLoadedTournaments.end()) {
@@ -165,14 +208,14 @@ void WebServer::acquireTournament(const std::string &webName, AcquireTournamentC
 }
 
 void WebServer::getTournament(const std::string &webName, GetTournamentCallback callback) {
-    mStrand.dispatch([this, webName, callback]() {
+    boost::asio::dispatch(mStrand, [this, webName, callback]() {
         auto it = mLoadedTournaments.find(webName);
         if (it != mLoadedTournaments.end()) {
             boost::asio::dispatch(mContext, std::bind(callback, it->second));
             return;
         }
 
-        mDatabase->asyncGetSaveStatus(webName, [this, webName, callback](bool isSaved) {
+        mDatabase->asyncGetSaveStatus(webName, boost::asio::bind_executor(mStrand, [this, webName, callback](bool isSaved) {
             if (!isSaved) {
                 boost::asio::dispatch(mContext, std::bind(callback, nullptr));
                 return;
@@ -195,7 +238,7 @@ void WebServer::getTournament(const std::string &webName, GetTournamentCallback 
                 boost::asio::dispatch(mContext, std::bind(callback, nullptr));
                 return;
             }));
-        });
+        }));
 
     });
 }

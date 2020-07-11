@@ -134,8 +134,15 @@ void WebParticipant::asyncClose(CloseCallback callback) {
     boost::asio::post(mStrand, [this, self, callback](){
         mClosePosted = true;
         mConnection->async_close(boost::beast::websocket::close_code::service_restart, [this, self, callback](boost::system::error_code ec) {
-            forceClose(); // Clean-up using forceClose method
-            callback();
+            if (mTournament != nullptr) {
+                mTournament->eraseParticipant(shared_from_this());
+                mTournament.reset();
+            }
+
+            if (mConnection)
+                mConnection.reset();
+
+            mServer.leave(shared_from_this(), callback);
         });
     });
 }
@@ -148,7 +155,7 @@ void WebParticipant::forceClose() {
 
     if (mConnection)
         mConnection.reset();
-    mServer.leave(shared_from_this());
+    mServer.leave(shared_from_this(), []() {});
 }
 
 void WebParticipant::deliver(std::shared_ptr<JsonBuffer> message) {
