@@ -113,6 +113,8 @@ void WebServer::tcpAccept() {
                 if (ec)
                     return;
 
+                log_info().msg("TCP Participant Joined");
+
                 auto participant = std::make_shared<TCPParticipant>(mContext, std::move(connection), *this, *mDatabase);
                 participant->asyncAuth();
                 mParticipants.insert(std::move(participant));
@@ -140,6 +142,8 @@ void WebServer::webAccept() {
                     return;
                 }
 
+                log_info().msg("Web Participant Joined");
+
                 auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
                 participant->listen();
                 mWebParticipants.insert(std::move(participant));
@@ -153,6 +157,7 @@ void WebServer::webAccept() {
 
 void WebServer::leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback callback) {
     boost::asio::post(mStrand, [this, participant, callback]() {
+        log_info().msg("TCP Participant Left");
         mParticipants.erase(participant);
         boost::asio::post(mContext, callback);
     });
@@ -160,6 +165,7 @@ void WebServer::leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback
 
 void WebServer::leave(std::shared_ptr<WebParticipant> participant, LeaveCallback callback) {
     boost::asio::post(mStrand, [this, participant, callback]() {
+        log_info().msg("Web Participant Left");
         mWebParticipants.erase(participant);
         boost::asio::post(mContext, callback);
     });
