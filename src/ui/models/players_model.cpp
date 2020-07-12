@@ -11,6 +11,9 @@
 #include "ui/misc/numerical_string_comparator.hpp"
 #include "ui/models/players_model.hpp"
 #include "ui/store_managers/store_manager.hpp"
+#include "ui/stores/qplayer_country.hpp"
+#include "ui/stores/qplayer_rank.hpp"
+#include "ui/stores/qplayer_sex.hpp"
 #include "ui/stores/qtournament_store.hpp"
 
 PlayersModel::PlayersModel(StoreManager & storeManager, QObject * parent)
@@ -43,17 +46,17 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString::fromStdString(player.getLastName());
             case 2:
-                return (player.getSex() ? QVariant(QString::fromStdString(player.getSex()->toString())) : QVariant(""));
+                return (player.getSex() ? QVariant(QPlayerSex(*player.getSex()).toHumanString()) : QVariant(""));
             case 3:
-                return (player.getAge() ? QVariant(player.getAge()->toInt()) : QVariant(""));
+                return (player.getAge() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
             case 4:
                 return (player.getWeight() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
             case 5:
-                return (player.getRank() ? QVariant(QString::fromStdString(player.getRank()->toString())) : QVariant(""));
+                return (player.getRank() ? QVariant(QPlayerRank(*player.getRank()).toHumanString()) : QVariant(""));
             case 6:
                 return QString(QString::fromStdString(player.getClub()));
             case 7:
-                return (player.getCountry() ? QVariant(QString::fromStdString(player.getCountry()->toString())) : QVariant(""));
+                return (player.getCountry() ? QVariant(QPlayerCountry(*player.getCountry()).toHumanString()) : QVariant(""));
             case 8:
                 return QString::fromStdString(listPlayerCategories(player));
         }

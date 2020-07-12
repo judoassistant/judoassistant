@@ -10,6 +10,9 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/validators/optional_validator.hpp"
 #include "ui/widgets/create_player_dialog.hpp"
+#include "ui/stores/qplayer_country.hpp"
+#include "ui/stores/qplayer_rank.hpp"
+#include "ui/stores/qplayer_sex.hpp"
 
 CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
@@ -25,8 +28,8 @@ CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *par
 
     mRankContent = new QComboBox;
     mRankContent->addItem("");
-    for (PlayerRank rank : PlayerRank::values())
-        mRankContent->addItem(QString::fromStdString(rank.toString()));
+    for (QPlayerRank rank : PlayerRank::values())
+        mRankContent->addItem(rank.toHumanString());
 
     mClubContent = new QLineEdit;
 
@@ -35,13 +38,13 @@ CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *par
 
     mCountryContent = new QComboBox;
     mCountryContent->addItem("");
-    for (PlayerCountry country : PlayerCountry::values())
-        mCountryContent->addItem(QString::fromStdString(country.toString()));
+    for (QPlayerCountry country : PlayerCountry::values())
+        mCountryContent->addItem(country.toHumanString());
 
     mSexContent = new QComboBox;
     mSexContent->addItem("");
-    for (PlayerSex country : PlayerSex::values())
-        mSexContent->addItem(QString::fromStdString(country.toString()));
+    for (QPlayerSex sex : PlayerSex::values())
+        mSexContent->addItem(sex.toHumanString());
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First name"), mFirstNameContent);

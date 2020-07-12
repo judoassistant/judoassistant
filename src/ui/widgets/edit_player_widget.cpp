@@ -18,6 +18,9 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/validators/optional_validator.hpp"
 #include "ui/widgets/edit_player_widget.hpp"
+#include "ui/stores/qplayer_rank.hpp"
+#include "ui/stores/qplayer_country.hpp"
+#include "ui/stores/qplayer_sex.hpp"
 
 int EditPlayerWidget::getSexIndex() {
     assert(!mPlayerIds.empty());
@@ -83,8 +86,8 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     mRankContent = new QComboBox;
     mRankContent->addItem(EMPTY_TEXT);
     mRankContent->setItemData(0, QBrush(Qt::gray), Qt::ForegroundRole);
-    for (PlayerRank rank : PlayerRank::values())
-        mRankContent->addItem(QString::fromStdString(rank.toString()));
+    for (QPlayerRank rank : PlayerRank::values())
+        mRankContent->addItem(rank.toHumanString());
     connect(mRankContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editRank();});
 
     mClubContent = new QLineEdit;
@@ -97,15 +100,15 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     mCountryContent = new QComboBox;
     mCountryContent->addItem(EMPTY_TEXT);
     mCountryContent->setItemData(0, QBrush(Qt::gray), Qt::ForegroundRole);
-    for (PlayerCountry country : PlayerCountry::values())
-        mCountryContent->addItem(QString::fromStdString(country.toString()));
+    for (QPlayerCountry country : PlayerCountry::values())
+        mCountryContent->addItem(country.toHumanString());
     connect(mCountryContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editCountry();});
 
     mSexContent = new QComboBox;
     mSexContent->addItem(EMPTY_TEXT);
     mSexContent->setItemData(0, QBrush(Qt::gray), Qt::ForegroundRole);
-    for (PlayerSex sex : PlayerSex::values())
-        mSexContent->addItem(QString::fromStdString(sex.toString()));
+    for (QPlayerSex sex : PlayerSex::values())
+        mSexContent->addItem(sex.toHumanString());
     connect(mSexContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editSex();});
 
     QFormLayout *formLayout = new QFormLayout;
