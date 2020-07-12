@@ -15,13 +15,10 @@ public:
 
     PlayerCountry() {}
     PlayerCountry(const PlayerCountry &other) = default;
-    PlayerCountry(const std::string &str);
     PlayerCountry(int value);
     PlayerCountry(Enum value) : mValue(value) {}
 
     std::string toString() const;
-    std::string countryCode() const; // Returns the 3-letter IOC country code
-    std::vector<std::string> strings() const; // Returns a vector of all possible names and codes for this country
     int toInt() const;
     static std::vector<PlayerCountry> values();
 
@@ -42,9 +39,8 @@ public:
         ar(mValue);
     }
 
-private:
+protected:
     Enum mValue;
-    static std::string stringToLower(const std::string &str); // TODO: figure out how to properly handle unicode strings
 };
 
 std::ostream & operator<<(std::ostream &out, const PlayerCountry &country);
