@@ -152,7 +152,7 @@ bool BlockComparator::operator()(const std::pair<CategoryId, MatchType> first, c
     auto secondName = secondCategory.getName(second.second);
 
     if (firstName != secondName) // In case two categories have the same name
-        return mComp(firstName, secondName);
+        return mComp(QString::fromStdString(firstName), QString::fromStdString(secondName));
     return first < second;
 }
 

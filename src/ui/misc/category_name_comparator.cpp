@@ -8,6 +8,6 @@ CategoryNameComparator::CategoryNameComparator(const TournamentStore &tournament
 bool CategoryNameComparator::operator()(const CategoryId &a, const CategoryId &b) const {
     const auto &first = mTournament.getCategory(a);
     const auto &second = mTournament.getCategory(b);
-    return mComp(first.getName(), second.getName());
+    return mComp(QString::fromStdString(first.getName()), QString::fromStdString(second.getName()));
 }
 

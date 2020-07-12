@@ -308,8 +308,8 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
 
 bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
     if (left.column() == 8 && right.column() == 8) {
-        std::string leftString = sourceModel()->data(left).toString().toStdString();
-        std::string rightString = sourceModel()->data(right).toString().toStdString();
+        QString leftString = sourceModel()->data(left).toString();
+        QString rightString = sourceModel()->data(right).toString();
 
         NumericalStringComparator comp;
         return comp(leftString, rightString);
