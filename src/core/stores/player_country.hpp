@@ -7,7 +7,7 @@
 
 class PlayerCountry {
 public:
-    static const size_t SIZE = 3;
+    static const size_t SIZE = 2;
     enum Enum {
         DENMARK,
         FRANCE,
