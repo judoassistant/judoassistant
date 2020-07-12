@@ -32,11 +32,10 @@ ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVR
         connect(mHeaderContent, &QCheckBox::stateChanged, this, &ImportPlayersCSVDialog::setHasHeaderRow);
 
         mDelimiterContent = new QComboBox;
-        for (char a : CSVReader::listDelimiters()) {
-            std::string s; s.push_back(a);
-            mDelimiterContent->addItem(QString::fromStdString(s));
-            if (a == mReader->getDelimiter())
-                mDelimiterContent->setCurrentText(QString::fromStdString(s));
+        for (QChar del : CSVReader::listDelimiters()) {
+            mDelimiterContent->addItem(del);
+            if (del == mReader->getDelimiter())
+                mDelimiterContent->setCurrentText(del);
         }
 
         connect(mDelimiterContent, &QComboBox::currentTextChanged, this, &ImportPlayersCSVDialog::setDelimiter);
@@ -146,7 +145,7 @@ void ImportPlayersCSVDialog::setHasHeaderRow(int state) {
 }
 
 void ImportPlayersCSVDialog::setDelimiter(const QString &text) {
-    char del = text.toStdString().front();
+    QChar del = text.front();
     mImporter.setDelimiter(del);
 
     refillColumnBoxes();
@@ -285,7 +284,7 @@ void ImportPlayersCSVDialog::resetPreview() {
     for (int column = 0; column < static_cast<int>(mReader->columnCount()); ++column) {
         bool isValid = true;
         for (int row = 0; row < static_cast<int>(mReader->rowCount() - offset); ++row) {
-            QTableWidgetItem *item = new QTableWidgetItem(QString::fromStdString(mReader->get(row + offset, column)));
+            QTableWidgetItem *item = new QTableWidgetItem(mReader->get(row + offset, column));
             mPreviewWidget->setItem(row, column, item);
             if (!mImporter.isValid(row + offset, column)) {
                 isValid = false;
@@ -296,7 +295,7 @@ void ImportPlayersCSVDialog::resetPreview() {
             }
         }
 
-        QTableWidgetItem *header = new QTableWidgetItem(QString::fromStdString(mImporter.getHeader(column)));
+        QTableWidgetItem *header = new QTableWidgetItem(mImporter.getHeader(column));
         if (!isValid)
             header->setBackground(ERROR_COLOR);
         else
@@ -322,7 +321,7 @@ void ImportPlayersCSVDialog::updatePreviewColumn(size_t column) {
         }
     }
 
-    QTableWidgetItem *header = new QTableWidgetItem(QString::fromStdString(mImporter.getHeader(column)));
+    QTableWidgetItem *header = new QTableWidgetItem(mImporter.getHeader(column));
     if (!isValid)
         header->setBackground(ERROR_COLOR);
     else
