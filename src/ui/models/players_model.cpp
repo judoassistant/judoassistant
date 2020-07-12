@@ -1,6 +1,5 @@
-#include <QColor>
 #include <QBrush>
-#include <sstream>
+#include <QColor>
 
 #include "core/draw_systems/draw_system.hpp"
 #include "core/id.hpp"
@@ -58,7 +57,7 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 7:
                 return (player.getCountry() ? QVariant(QPlayerCountry(*player.getCountry()).toHumanString()) : QVariant(""));
             case 8:
-                return QString::fromStdString(listPlayerCategories(player));
+                return listPlayerCategories(player);
         }
     }
 
@@ -187,23 +186,23 @@ void PlayersModel::tournamentReset() {
     endResetModel();
 }
 
-std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const {
-    std::vector<std::string> names;
+QString PlayersModel::listPlayerCategories(const PlayerStore &player) const {
+    std::vector<QString> names;
     for (auto categoryId : player.getCategories()) {
         const CategoryStore &category = mStoreManager.getTournament().getCategory(categoryId);
-        names.push_back(category.getName());
+        names.push_back(QString::fromStdString(category.getName()));
     }
 
     std::sort(names.begin(), names.end(), NumericalStringComparator());
 
-    std::stringstream res;
+    QString res;
     for (size_t i = 0; i < names.size(); ++i) {
-        res << names[i];
+        res.append(names[i]);
         if (i != names.size() - 1)
-            res << ", ";
+            res.append(", ");
     }
 
-    return res.str();
+    return res;
 }
 
 void PlayersModel::playerCategoriesChanged(const std::vector<PlayerId> &playerIds) {

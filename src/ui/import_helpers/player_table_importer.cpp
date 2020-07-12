@@ -1,5 +1,4 @@
 #include <sstream>
-#include <QTextStream>
 
 #include "core/actions/add_players_action.hpp"
 #include "core/stores/category_store.hpp"
@@ -253,36 +252,34 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
 }
 
 QString PlayerTableImporter::getHeader(size_t column) const {
-    QTextStream stream;
+    QString header;
     if (mFirstNameColumn && *mFirstNameColumn == column)
-        stream << tr("First Name") << ", ";
+        header += tr("First Name") + ", ";
 
     if (mLastNameColumn && *mLastNameColumn == column)
-        stream << tr("Last Name") << ", ";
+        header += tr("Last Name") + ", ";
 
     if (mAgeColumn && *mAgeColumn == column)
-        stream << tr("Age") << ", ";
+        header += tr("Age") + ", ";
 
     if (mRankColumn && *mRankColumn == column)
-        stream << tr("Rank") << ", ";
+        header += tr("Rank") + ", ";
 
     if (mClubColumn && *mClubColumn == column)
-        stream << tr("Club") << ", ";
+        header += tr("Club") + ", ";
 
     if (mWeightColumn && *mWeightColumn == column)
-        stream << tr("Weight") << ", ";
+        header += tr("Weight") + ", ";
 
     if (mCountryColumn && *mCountryColumn == column)
-        stream << tr("Country") << ", ";
+        header += tr("Country") + ", ";
 
     if (mSexColumn && *mSexColumn == column)
-        stream << tr("Sex") << ", ";
+        header += tr("Sex") + ", ";
 
-    const QString &res = *(stream.string());
-
-    if (res.isEmpty())
+    if (header.isEmpty())
         return QString::number(column+1);
-    return res.left(res.size() - 2); // remove the last comma
+    return header.left(header.size() - 2); // remove the last comma
 }
 
 void PlayerTableImporter::import(StoreManager & storeManager) {
