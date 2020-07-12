@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/core.hpp"
+#include "core/serialize.hpp"
 
 class PlayerAge {
 public:

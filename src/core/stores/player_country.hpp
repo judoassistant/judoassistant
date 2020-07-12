@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+
 #include "core/core.hpp"
+#include "core/serialize.hpp"
 
 class PlayerCountry {
 public:
