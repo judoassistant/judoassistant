@@ -1,11 +1,10 @@
 #pragma once
 
-#include <QObject>
+#include <QString>
 
 #include "core/stores/player_weight.hpp"
 
-class QPlayerWeight : public QObject, public PlayerWeight {
-    Q_OBJECT
+class QPlayerWeight : public PlayerWeight {
 public:
     QPlayerWeight(const QPlayerWeight &other): PlayerWeight(other) {}
     QPlayerWeight(const PlayerWeight &other): PlayerWeight(other) {}

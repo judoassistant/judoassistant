@@ -1,11 +1,10 @@
 #pragma once
 
-#include <QObject>
+#include <QString>
 
 #include "core/stores/player_age.hpp"
 
-class QPlayerAge : public QObject, public PlayerAge {
-    Q_OBJECT
+class QPlayerAge : public PlayerAge {
 public:
     QPlayerAge(const QPlayerAge &other): PlayerAge(other) {}
     QPlayerAge(const PlayerAge &other): PlayerAge(other) {}

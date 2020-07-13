@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QObject>
+#include <QCoreApplication>
 #include <QString>
 #include "core/stores/player_sex.hpp"
 
-class QPlayerSex : public QObject, public PlayerSex {
-    Q_OBJECT
+class QPlayerSex : public PlayerSex {
+    Q_DECLARE_TR_FUNCTIONS(QPlayerSex)
 public:
     QPlayerSex(const QPlayerSex &other): PlayerSex(other) {}
     QPlayerSex(const PlayerSex &other): PlayerSex(other) {}

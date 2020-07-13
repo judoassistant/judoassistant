@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QObject>
+#include <QCoreApplication>
 #include <QString>
 #include "core/stores/player_rank.hpp"
 
-class QPlayerRank : public QObject, public PlayerRank {
-    Q_OBJECT
+class QPlayerRank : public PlayerRank {
+    Q_DECLARE_TR_FUNCTIONS(QPlayerRank)
 public:
     QPlayerRank(const QPlayerRank &other): PlayerRank(other) {}
     QPlayerRank(const PlayerRank &other): PlayerRank(other) {}

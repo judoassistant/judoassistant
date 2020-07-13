@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QObject>
+#include <QCoreApplication>
 #include <QString>
 #include "core/stores/player_country.hpp"
 
-class QPlayerCountry : public QObject, public PlayerCountry {
-    Q_OBJECT
+class QPlayerCountry : public PlayerCountry {
+    Q_DECLARE_TR_FUNCTIONS(QPlayerCountry)
 public:
     QPlayerCountry(const QPlayerCountry &other): PlayerCountry(other) {}
     QPlayerCountry(const PlayerCountry &other): PlayerCountry(other) {}
