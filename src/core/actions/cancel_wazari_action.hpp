@@ -24,7 +24,6 @@ public:
 
 private:
     MatchStore::PlayerIndex mPlayerIndex;
-    std::chrono::milliseconds mMasterTime;
 };
 
 CEREAL_REGISTER_TYPE(CancelWazariAction)

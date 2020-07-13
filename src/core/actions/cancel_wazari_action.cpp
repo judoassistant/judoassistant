@@ -5,9 +5,8 @@
 #include "core/draw_systems/draw_system.hpp"
 
 CancelWazariAction::CancelWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
+    : MatchEventAction(categoryId, matchId, masterTime)
     , mPlayerIndex(playerIndex)
-    , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> CancelWazariAction::freshClone() const {

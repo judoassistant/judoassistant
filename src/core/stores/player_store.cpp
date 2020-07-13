@@ -110,3 +110,11 @@ const std::optional<PlayerSex> PlayerStore::getSex() const {
     return mFields.sex;
 }
 
+std::optional<std::chrono::milliseconds> PlayerStore::getLastFinishTime() const {
+    return mLastFinishTime;
+}
+
+void PlayerStore::setLastFinishTime(std::optional<std::chrono::milliseconds> lastFinishTime) {
+    mLastFinishTime = lastFinishTime;
+}
+

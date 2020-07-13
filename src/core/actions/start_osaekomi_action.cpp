@@ -5,8 +5,7 @@
 #include "core/draw_systems/draw_system.hpp"
 
 StartOsaekomiAction::StartOsaekomiAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
-    , mMasterTime(masterTime)
+    : MatchEventAction(categoryId, matchId, masterTime)
     , mPlayerIndex(playerIndex)
 {}
 

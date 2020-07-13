@@ -21,9 +21,6 @@ public:
         ar(cereal::base_class<MatchEventAction>(this));
         ar(mMasterTime);
     }
-
-private:
-    std::chrono::milliseconds mMasterTime;
 };
 
 CEREAL_REGISTER_TYPE(ResumeMatchAction)

@@ -39,7 +39,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        ar(mId, mCategories, mMatches, mFields);
+        ar(mId, mFields, mLastFinishTime, mCategories, mMatches);
     }
 
     const std::string & getFirstName() const;
@@ -71,9 +71,13 @@ public:
     void eraseMatch(CategoryId categoryId, MatchId matchId);
     bool containsMatch(CategoryId categoryId, MatchId matchId) const;
 
+    std::optional<std::chrono::milliseconds> getLastFinishTime() const;
+    void setLastFinishTime(std::optional<std::chrono::milliseconds> lastFinishTime);
+
 private:
     PlayerId mId;
     PlayerFields mFields;
+    std::optional<std::chrono::milliseconds> mLastFinishTime;
 
     std::unordered_set<CategoryId> mCategories;
     std::unordered_set<std::pair<CategoryId,MatchId>> mMatches;

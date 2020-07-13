@@ -59,7 +59,7 @@ public:
 
         template<typename Archive>
         void serialize(Archive& ar, uint32_t const version) {
-            ar(status, goldenScore, resumeTime, duration, scores, osaekomi, osaekomiWazari);
+            ar(status, finishTime, goldenScore, resumeTime, duration, scores, osaekomi, osaekomiWazari);
         }
     };
 

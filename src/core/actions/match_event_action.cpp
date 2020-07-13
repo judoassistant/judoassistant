@@ -3,10 +3,12 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/stores/player_store.hpp"
 
-MatchEventAction::MatchEventAction(CategoryId categoryId, MatchId matchId)
+MatchEventAction::MatchEventAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
     : mCategoryId(categoryId)
     , mMatchId(matchId)
+    , mMasterTime(masterTime)
 {}
 
 void MatchEventAction::save(const MatchStore &match, unsigned int eventsToSave ) {
@@ -33,6 +35,19 @@ void MatchEventAction::recover(TournamentStore &tournament) {
     assert(match.getEvents().size() >= mPrevEventSize);
     while (match.getEvents().size() > mPrevEventSize)
         match.popEvent();
+
+    // Recover lastFinishTime for players
+    if (updatedStatus == MatchStatus::FINISHED) {
+        if (match.getWhitePlayer()) {
+            auto &whitePlayer = tournament.getPlayer(*match.getWhitePlayer());
+            whitePlayer.setLastFinishTime(mPrevWhiteLastFinishTime);
+        }
+
+        if (match.getBluePlayer()) {
+            auto &bluePlayer = tournament.getPlayer(*match.getBluePlayer());
+            bluePlayer.setLastFinishTime(mPrevBlueLastFinishTime);
+        }
+    }
 
     // Update category and tatamis if matches went to/from finished or not_started
     if (updatedStatus != prevStatus && (prevStatus == MatchStatus::NOT_STARTED || prevStatus == MatchStatus::FINISHED || updatedStatus == MatchStatus::NOT_STARTED || updatedStatus == MatchStatus::FINISHED)) {
@@ -82,10 +97,25 @@ bool MatchEventAction::shouldRecover() {
     return mDidSave;
 }
 
-void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &match) {
+void MatchEventAction::notify(TournamentStore &tournament, MatchStore &match) {
     auto &category = tournament.getCategory(match.getCategory());
     auto updatedStatus = match.getStatus();
     auto prevStatus = mPrevState.status;
+
+    // Update lastFinishTime for players
+    if (updatedStatus == MatchStatus::FINISHED) {
+        if (match.getWhitePlayer()) {
+            auto &whitePlayer = tournament.getPlayer(*match.getWhitePlayer());
+            mPrevWhiteLastFinishTime = whitePlayer.getLastFinishTime();
+            whitePlayer.setLastFinishTime(mMasterTime);
+        }
+
+        if (match.getBluePlayer()) {
+            auto &bluePlayer = tournament.getPlayer(*match.getBluePlayer());
+            mPrevBlueLastFinishTime = bluePlayer.getLastFinishTime();
+            bluePlayer.setLastFinishTime(mMasterTime);
+        }
+    }
 
     // update category status
     auto & categoryStatus = category.getStatus(match.getType());

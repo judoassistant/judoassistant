@@ -5,8 +5,7 @@
 #include "core/draw_systems/draw_system.hpp"
 
 PauseMatchAction::PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
-    , mMasterTime(masterTime)
+    : MatchEventAction(categoryId, matchId, masterTime)
 {}
 
 std::unique_ptr<Action> PauseMatchAction::freshClone() const {

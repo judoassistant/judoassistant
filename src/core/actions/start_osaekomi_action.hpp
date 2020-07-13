@@ -23,7 +23,6 @@ public:
     }
 
 private:
-    std::chrono::milliseconds mMasterTime;
     MatchStore::PlayerIndex mPlayerIndex;
 };
 

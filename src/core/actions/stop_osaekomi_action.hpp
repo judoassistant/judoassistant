@@ -20,9 +20,6 @@ public:
     void serialize(Archive& ar, uint32_t const version) {
         ar(cereal::base_class<MatchEventAction>(this), mMasterTime);
     }
-
-private:
-    std::chrono::milliseconds mMasterTime;
 };
 
 CEREAL_REGISTER_TYPE(StopOsaekomiAction)
