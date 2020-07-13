@@ -47,13 +47,13 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 2:
                 return (player.getSex() ? QVariant(QPlayerSex(*player.getSex()).toHumanString()) : QVariant(""));
             case 3:
-                return (player.getAge() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
+                return (player.getAge() ? QVariant(player.getAge()->toInt()) : QVariant(""));
             case 4:
                 return (player.getWeight() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
             case 5:
                 return (player.getRank() ? QVariant(QPlayerRank(*player.getRank()).toHumanString()) : QVariant(""));
             case 6:
-                return QString(QString::fromStdString(player.getClub()));
+                return QString::fromStdString(player.getClub());
             case 7:
                 return (player.getCountry() ? QVariant(QPlayerCountry(*player.getCountry()).toHumanString()) : QVariant(""));
             case 8:
