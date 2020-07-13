@@ -49,6 +49,7 @@ public:
         State(bool finished = false);
 
         MatchStatus status;
+        std::chrono::milliseconds finishTime; // the time when the match finished if status == MatchStatus::FINISHED and not permanent bye. Undefined otherwise
         bool goldenScore; // whether the match is currently in golden score or not
         std::chrono::milliseconds resumeTime; // the time when the clock was last resumed
         std::chrono::milliseconds duration; // the match duration when the clock was last paused
@@ -113,6 +114,9 @@ public:
 
     void setResumeTime(std::chrono::milliseconds resumeTime);
     std::chrono::milliseconds getResumeTime() const;
+
+    void setFinishTime(std::chrono::milliseconds finishTime);
+    std::chrono::milliseconds getFinishTime() const;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {

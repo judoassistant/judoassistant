@@ -229,3 +229,11 @@ void MatchStore::clearState() {
     mState = State(mBye);
 }
 
+void MatchStore::setFinishTime(std::chrono::milliseconds finishTime) {
+    mState.finishTime = finishTime;
+}
+
+std::chrono::milliseconds MatchStore::getFinishTime() const {
+    return mState.finishTime;
+}
+

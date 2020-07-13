@@ -28,8 +28,10 @@ void Ruleset::pause(MatchStore &match, std::chrono::milliseconds masterTime) con
     // match is unpaused. Therefore match is first paused and then potentially
     // marked as finished.
     match.setStatus(MatchStatus::PAUSED);
-    if (isFinished(match, masterTime))
+    if (isFinished(match, masterTime)) {
         match.setStatus(MatchStatus::FINISHED);
+        match.setFinishTime(masterTime);
+    }
     else if (currentDuration >= getNormalTime())
         match.setGoldenScore(true);
 }
@@ -51,6 +53,7 @@ void Ruleset::updateStatus(MatchStore &match, std::chrono::milliseconds masterTi
 
     if (isFinished(match, masterTime)) {
         match.setStatus(MatchStatus::FINISHED);
+        match.setFinishTime(masterTime);
         if (match.currentDuration(masterTime) <= getNormalTime())
             match.setGoldenScore(false);
     }
@@ -84,8 +87,10 @@ void Ruleset::stopOsaekomi(MatchStore &match, std::chrono::milliseconds masterTi
     match.setOsaekomi(std::nullopt);
     match.setOsaekomiWazari(false);
 
-    if (match.getStatus() == MatchStatus::PAUSED && isFinished(match, masterTime))
+    if (match.getStatus() == MatchStatus::PAUSED && isFinished(match, masterTime)) {
         match.setStatus(MatchStatus::FINISHED);
+        match.setFinishTime(masterTime);
+    }
 }
 
 bool Ruleset::shouldAwardOsaekomiWazari(const MatchStore &match, std::chrono::milliseconds masterTime) const {
