@@ -12,9 +12,9 @@ CSVReader::CSVReader(const QString &path) {
         }
 
         for (std::string line; std::getline(file, line); )
-            mLines.push_back(line);
+            mLines.push_back(QString::fromStdString(line));
 
-        mDelimiter = (!mLines.empty() ? guessDelimiter(mLines.front()) : ',');
+        mDelimiter = (!mLines.empty() ? guessDelimiter(mLines.front()) : QChar(','));
     }
     catch (const std::exception &e) {
         mOpen = false;
@@ -25,11 +25,11 @@ CSVReader::CSVReader(const QString &path) {
     parse();
 }
 
-char CSVReader::guessDelimiter(const std::string &line) const {
-    char del = ',';
+QChar CSVReader::guessDelimiter(const QString &line) const {
+    QChar del(',');
     size_t delCount = 0;
 
-    for (char a : listDelimiters()) {
+    for (QChar a : listDelimiters()) {
         size_t count = std::count(line.begin(), line.end(), a);
         if (count >= delCount) {
             del = a;
@@ -40,11 +40,11 @@ char CSVReader::guessDelimiter(const std::string &line) const {
     return del;
 }
 
-char CSVReader::getDelimiter() const {
+QChar CSVReader::getDelimiter() const {
     return mDelimiter;
 }
 
-void CSVReader::setDelimiter(char del) {
+void CSVReader::setDelimiter(QChar del) {
     mDelimiter = del;
 
     parse();
@@ -58,39 +58,23 @@ size_t CSVReader::columnCount() const {
     return mColumnCount;
 }
 
-std::string trim(const std::string &str) {
-    size_t begin;
-    for (begin = 0; begin < str.size(); ++begin) {
-        if (str[begin] != ' ')
-            break;
-    }
-
-    size_t end;
-    for (end = str.size(); end > 0; --end) {
-        if (str[end-1] != ' ')
-            break;
-    }
-
-    return str.substr(begin, end-begin);
-}
-
 void CSVReader::parse() {
     mFields.clear();
     mColumnCount = 0;
 
-    for (std::string line : mLines) {
+    for (const QString &line : mLines) {
         mFields.emplace_back();
-        std::string curField;
+        QString curField;
 
         bool inQuotes = false;
-        for (char c : line) {
+        for (QChar c : line) {
             if (c == '"' && mDelimiter != '"') {
                 inQuotes = !inQuotes;
                 continue;
             }
 
             if (c == mDelimiter && !inQuotes) {
-                mFields.back().push_back(trim(curField));
+                mFields.back().push_back(curField.trimmed());
                 curField.clear();
                 continue;
             }
@@ -98,12 +82,12 @@ void CSVReader::parse() {
             curField.push_back(c);
         }
 
-        mFields.back().push_back(trim(curField));
+        mFields.back().push_back(curField.trimmed());
         mColumnCount = std::max(mColumnCount, mFields.back().size());
     }
 }
 
-std::string CSVReader::get(size_t row, size_t column) const {
+QString CSVReader::get(size_t row, size_t column) const {
     assert(row < rowCount());
     assert(column < columnCount());
 
@@ -111,10 +95,10 @@ std::string CSVReader::get(size_t row, size_t column) const {
 
     if (column < vec.size())
         return vec[column];
-    return "";
+    return QString("");
 }
 
-std::vector<char> CSVReader::listDelimiters() {
+std::vector<QChar> CSVReader::listDelimiters() {
     return {',', ';', '\t'};
 }
 

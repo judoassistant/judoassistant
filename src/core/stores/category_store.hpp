@@ -50,7 +50,6 @@ public:
     CategoryStore(const CategoryStore &other);
 
     const std::string & getName() const;
-    std::string getName(MatchType type) const;
     void setName(const std::string &name);
 
     const CategoryId & getId() const;

@@ -3,6 +3,7 @@
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
+#include "ui/stores/qplayer_country.hpp"
 #include "ui/widgets/colors.hpp"
 #include "ui/widgets/scoreboard_painters/international_scoreboard_painter.hpp"
 
@@ -95,7 +96,7 @@ void InternationalScoreboardPainter::paintIntroductionPlayer(QPainter &painter, 
 
     // Paint country name
     if (country.has_value()) {
-        QString countryText = QString::fromStdString(country->countryCode());
+        QString countryText = QPlayerCountry(*country).countryCode();
         font.setPixelSize(flagHeight*3/5);
         painter.setFont(font);
 
@@ -194,7 +195,7 @@ void InternationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const 
 
     // Paint country name
     if (country.has_value()) {
-        QString countryText = QString::fromStdString(country->countryCode());
+        QString countryText = QPlayerCountry(*country).countryCode();
         font.setPixelSize(flagHeight*3/5);
         painter.setFont(font);
 
@@ -340,7 +341,7 @@ void FlagImage::update(std::optional<PlayerCountry> country) {
         return;
     }
 
-    QString countryCode = QString::fromStdString(country->countryCode());
+    QString countryCode = QPlayerCountry(*country).countryCode();
     QString filename = QString(DATA_DIR) + QString("/flags/%1.svg").arg(countryCode.toLower());
     this->image = QImage(filename);
 }

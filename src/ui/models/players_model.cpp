@@ -1,6 +1,5 @@
-#include <QColor>
 #include <QBrush>
-#include <sstream>
+#include <QColor>
 
 #include "core/draw_systems/draw_system.hpp"
 #include "core/id.hpp"
@@ -11,6 +10,9 @@
 #include "ui/misc/numerical_string_comparator.hpp"
 #include "ui/models/players_model.hpp"
 #include "ui/store_managers/store_manager.hpp"
+#include "ui/stores/qplayer_country.hpp"
+#include "ui/stores/qplayer_rank.hpp"
+#include "ui/stores/qplayer_sex.hpp"
 #include "ui/stores/qtournament_store.hpp"
 
 PlayersModel::PlayersModel(StoreManager & storeManager, QObject * parent)
@@ -43,19 +45,19 @@ QVariant PlayersModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString::fromStdString(player.getLastName());
             case 2:
-                return (player.getSex() ? QVariant(QString::fromStdString(player.getSex()->toString())) : QVariant(""));
+                return (player.getSex() ? QVariant(QPlayerSex(*player.getSex()).toHumanString()) : QVariant(""));
             case 3:
-                return (player.getAge() ? QVariant(player.getAge()->toInt()) : QVariant(""));
+                return (player.getAge() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
             case 4:
                 return (player.getWeight() ? QVariant(player.getWeight()->toFloat()) : QVariant(""));
             case 5:
-                return (player.getRank() ? QVariant(QString::fromStdString(player.getRank()->toString())) : QVariant(""));
+                return (player.getRank() ? QVariant(QPlayerRank(*player.getRank()).toHumanString()) : QVariant(""));
             case 6:
                 return QString(QString::fromStdString(player.getClub()));
             case 7:
-                return (player.getCountry() ? QVariant(QString::fromStdString(player.getCountry()->toString())) : QVariant(""));
+                return (player.getCountry() ? QVariant(QPlayerCountry(*player.getCountry()).toHumanString()) : QVariant(""));
             case 8:
-                return QString::fromStdString(listPlayerCategories(player));
+                return listPlayerCategories(player);
         }
     }
 
@@ -184,23 +186,23 @@ void PlayersModel::tournamentReset() {
     endResetModel();
 }
 
-std::string PlayersModel::listPlayerCategories(const PlayerStore &player) const {
-    std::vector<std::string> names;
+QString PlayersModel::listPlayerCategories(const PlayerStore &player) const {
+    std::vector<QString> names;
     for (auto categoryId : player.getCategories()) {
         const CategoryStore &category = mStoreManager.getTournament().getCategory(categoryId);
-        names.push_back(category.getName());
+        names.push_back(QString::fromStdString(category.getName()));
     }
 
     std::sort(names.begin(), names.end(), NumericalStringComparator());
 
-    std::stringstream res;
+    QString res;
     for (size_t i = 0; i < names.size(); ++i) {
-        res << names[i];
+        res.append(names[i]);
         if (i != names.size() - 1)
-            res << ", ";
+            res.append(", ");
     }
 
-    return res.str();
+    return res;
 }
 
 void PlayersModel::playerCategoriesChanged(const std::vector<PlayerId> &playerIds) {
@@ -305,8 +307,8 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
 
 bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
     if (left.column() == 8 && right.column() == 8) {
-        std::string leftString = sourceModel()->data(left).toString().toStdString();
-        std::string rightString = sourceModel()->data(right).toString().toStdString();
+        QString leftString = sourceModel()->data(left).toString();
+        QString rightString = sourceModel()->data(right).toString();
 
         NumericalStringComparator comp;
         return comp(leftString, rightString);

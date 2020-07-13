@@ -7,6 +7,7 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QMetaObject>
+#include <QCoreApplication>
 
 #include "core/id.hpp"
 #include "core/stores/match_store.hpp"
@@ -17,14 +18,16 @@ class StoreManager;
 class CategoryStore;
 class UnallocatedBlockGraphicsItem;
 
-class BlockComparator {
+class BlockComparator  {
+    Q_DECLARE_TR_FUNCTIONS(BlockComparator)
 public:
     BlockComparator(const BlockComparator &other) = default;
-    BlockComparator(const TournamentStore &tournament);
+    BlockComparator(const TournamentStore &tournament) : mTournament(&tournament) {}
     bool operator()(const std::pair<CategoryId, MatchType>, const std::pair<CategoryId, MatchType>) const;
 private:
     const TournamentStore *mTournament;
     NumericalStringComparator mComp;
+    QString getBlockName(const CategoryStore &category, MatchType matchType) const;
 };
 
 class UnallocatedBlocksWidget : public QGraphicsView {

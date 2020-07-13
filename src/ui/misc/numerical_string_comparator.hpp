@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <string>
+#include <QString>
 
 #include "core/core.hpp"
 
@@ -12,8 +12,8 @@
  */
 class NumericalStringComparator {
 private:
-    std::vector<std::pair<bool, std::string>> split_string(const std::string & str) const;
+    std::vector<std::pair<bool, QString>> split_string(const QString &str) const;
 
 public:
-    bool operator()(const std::string &a, const std::string &b) const;
+    bool operator()(const QString &a, const QString &b) const;
 };

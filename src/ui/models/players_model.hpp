@@ -42,7 +42,7 @@ protected:
     void categoriesErased(const std::vector<CategoryId> &categoryIds);
 
 private:
-    std::string listPlayerCategories(const PlayerStore &player) const;
+    QString listPlayerCategories(const PlayerStore &player) const;
     const int COLUMN_COUNT = 9;
     StoreManager & mStoreManager;
     std::set<PlayerId> mIds;

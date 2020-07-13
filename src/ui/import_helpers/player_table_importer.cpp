@@ -5,6 +5,11 @@
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/import_helpers/player_table_importer.hpp"
 #include "ui/store_managers/store_manager.hpp"
+#include "ui/stores/qplayer_age.hpp"
+#include "ui/stores/qplayer_country.hpp"
+#include "ui/stores/qplayer_rank.hpp"
+#include "ui/stores/qplayer_sex.hpp"
+#include "ui/stores/qplayer_weight.hpp"
 #include "ui/stores/qtournament_store.hpp"
 
 PlayerTableImporter::PlayerTableImporter(CSVReader *reader)
@@ -40,7 +45,7 @@ void PlayerTableImporter::guessHasHeaderRow() {
     size_t cellMatches = 0;
 
     for (size_t column = 0; column < mReader->columnCount(); ++column) {
-        const QString cell = QString::fromStdString(mReader->get(0, column));
+        const QString cell = mReader->get(0, column);
 
         if (isFirstNameHeader(cell)
             || isLastNameHeader(cell)
@@ -75,7 +80,7 @@ void PlayerTableImporter::guessColumns() {
         return;
 
     for (size_t column = 0; column < mReader->columnCount(); ++column) {
-        const QString cell = QString::fromStdString(mReader->get(0, column));
+        const QString cell = mReader->get(0, column);
 
         if (!mFirstNameColumn.has_value() && isFirstNameHeader(cell)) {
             mFirstNameColumn = column;
@@ -193,14 +198,14 @@ void PlayerTableImporter::setSexColumn(std::optional<size_t> val) {
 
 bool PlayerTableImporter::isValid(size_t row, size_t column) const {
     // String columns are always valid
-    std::string val = mReader->get(row, column);
+    const QString val = mReader->get(row, column);
 
-    if (val.empty())
+    if (val.isEmpty())
         return true;
 
     if (mAgeColumn && *mAgeColumn == column) {
         try {
-            PlayerAge age(val);
+            QPlayerAge::fromHumanString(val);
         }
         catch (const std::exception &e) {
             return false;
@@ -209,7 +214,7 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
 
     if (mRankColumn && *mRankColumn == column) {
         try {
-            PlayerRank rank(val);
+            QPlayerRank::fromHumanString(val);
         }
         catch (const std::exception &e) {
             return false;
@@ -218,7 +223,7 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
 
     if (mWeightColumn && *mWeightColumn == column) {
         try {
-            PlayerWeight weight(val);
+            QPlayerWeight::fromHumanString(val);
         }
         catch (const std::exception &e) {
             return false;
@@ -227,7 +232,7 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
 
     if (mCountryColumn && *mCountryColumn == column) {
         try {
-            PlayerCountry country(val);
+            QPlayerCountry::fromHumanString(val);
         }
         catch (const std::exception &e) {
             return false;
@@ -236,7 +241,7 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
 
     if (mSexColumn && *mSexColumn == column) {
         try {
-            PlayerSex sex(val);
+            QPlayerSex::fromHumanString(val);
         }
         catch (const std::exception &e) {
             return false;
@@ -246,37 +251,35 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
     return true;
 }
 
-std::string PlayerTableImporter::getHeader(size_t column) const {
-    std::stringstream ss;
+QString PlayerTableImporter::getHeader(size_t column) const {
+    QString header;
     if (mFirstNameColumn && *mFirstNameColumn == column)
-        ss << "First Name, ";
+        header += tr("First Name") + ", ";
 
     if (mLastNameColumn && *mLastNameColumn == column)
-        ss << "Last Name, ";
+        header += tr("Last Name") + ", ";
 
     if (mAgeColumn && *mAgeColumn == column)
-        ss << "Age, ";
+        header += tr("Age") + ", ";
 
     if (mRankColumn && *mRankColumn == column)
-        ss << "Rank, ";
+        header += tr("Rank") + ", ";
 
     if (mClubColumn && *mClubColumn == column)
-        ss << "Club, ";
+        header += tr("Club") + ", ";
 
     if (mWeightColumn && *mWeightColumn == column)
-        ss << "Weight, ";
+        header += tr("Weight") + ", ";
 
     if (mCountryColumn && *mCountryColumn == column)
-        ss << "Country, ";
+        header += tr("Country") + ", ";
 
     if (mSexColumn && *mSexColumn == column)
-        ss << "Sex, ";
+        header += tr("Sex") + ", ";
 
-    std::string res = ss.str();
-
-    if (res.empty())
-        return std::to_string(column+1);
-    return res.substr(0, res.size() - 2); // remove the last comma
+    if (header.isEmpty())
+        return QString::number(column+1);
+    return header.left(header.size() - 2); // remove the last comma
 }
 
 void PlayerTableImporter::import(StoreManager & storeManager) {
@@ -287,20 +290,20 @@ void PlayerTableImporter::import(StoreManager & storeManager) {
         PlayerFields fields;
 
         if (mFirstNameColumn)
-            fields.firstName = mReader->get(row, *mFirstNameColumn);
+            fields.firstName = mReader->get(row, *mFirstNameColumn).toStdString();
 
         if (mLastNameColumn)
-            fields.lastName = mReader->get(row, *mLastNameColumn);
+            fields.lastName = mReader->get(row, *mLastNameColumn).toStdString();
 
-        fields.age = parseValue<PlayerAge>(row, mAgeColumn);
-        fields.rank = parseValue<PlayerRank>(row, mRankColumn);
+        fields.age = parseValue<PlayerAge, QPlayerAge>(row, mAgeColumn);
+        fields.rank = parseValue<PlayerRank, QPlayerRank>(row, mRankColumn);
 
         if (mClubColumn)
-            fields.club = mReader->get(row, *mClubColumn);
+            fields.club = mReader->get(row, *mClubColumn).toStdString();
 
-        fields.weight = parseValue<PlayerWeight>(row, mWeightColumn);
-        fields.country = parseValue<PlayerCountry>(row, mCountryColumn);
-        fields.sex = parseValue<PlayerSex>(row, mSexColumn);
+        fields.weight = parseValue<PlayerWeight, QPlayerWeight>(row, mWeightColumn);
+        fields.country = parseValue<PlayerCountry, QPlayerCountry>(row, mCountryColumn);
+        fields.sex = parseValue<PlayerSex, QPlayerSex>(row, mSexColumn);
 
         fieldsList.push_back(std::move(fields));
     }
@@ -308,7 +311,7 @@ void PlayerTableImporter::import(StoreManager & storeManager) {
     storeManager.dispatch(std::make_unique<AddPlayersAction>(storeManager.getTournament(), std::move(fieldsList)));
 }
 
-void PlayerTableImporter::setDelimiter(char del) {
+void PlayerTableImporter::setDelimiter(QChar del) {
     mReader->setDelimiter(del);
 
     if (!mColumnsManuallySet) {

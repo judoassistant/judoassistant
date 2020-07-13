@@ -14,4 +14,7 @@ public:
     std::pair<CategoryId,MatchType> block() const;
     void setBlock(CategoryId categoryId, MatchType matchType);
     bool hasBlock() const;
+    void setText(const QString &categoryName, MatchType matchType);
+
+private:
 };

@@ -1,13 +1,16 @@
 #pragma once
 
 #include <optional>
+#include <QString>
+#include <QObject>
 
 #include "core/core.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 
 class StoreManager;
 
-class PlayerTableImporter {
+class PlayerTableImporter : public QObject {
+    Q_OBJECT
 public:
     static constexpr size_t HEADER_MATCH_ACTION = 2; // Guess that the first row is the header row if at least HEADER_MATCH_ACTION titles match
 
@@ -24,7 +27,7 @@ public:
     void setWeightColumn(std::optional<size_t> val);
     void setCountryColumn(std::optional<size_t> val);
     void setSexColumn(std::optional<size_t> val);
-    void setDelimiter(char del);
+    void setDelimiter(QChar del);
 
     std::optional<size_t> getFirstNameColumn() const;
     std::optional<size_t> getLastNameColumn() const;
@@ -36,7 +39,7 @@ public:
     std::optional<size_t> getSexColumn() const;
 
     bool isValid(size_t row, size_t column) const;
-    std::string getHeader(size_t column) const;
+    QString getHeader(size_t column) const;
 
     void guessHasHeaderRow();
     void guessColumns();
@@ -44,17 +47,19 @@ public:
     void import(StoreManager & storeManager);
 
 private:
-    template<typename T>
-    std::optional<T> parseValue(size_t row, std::optional<size_t> column) const {
-        std::optional<T> res;
+    template<typename CoreType, typename UIType>
+    std::optional<CoreType> parseValue(size_t row, std::optional<size_t> column) const {
+        // Use UiType to parse the string and return a CoreType
+
+        std::optional<CoreType> res;
 
         if (column) {
-            std::string str = mReader->get(row, *column);
+            const QString str = mReader->get(row, *column);
             try {
-                T val(str);
-                res = val;
+                res = UIType::fromHumanString(str);
             }
             catch (const std::exception &e) {
+                // noop
             }
         }
 

@@ -1,31 +1,29 @@
 #include "ui/misc/numerical_string_comparator.hpp"
 
-std::vector<std::pair<bool, std::string>> NumericalStringComparator::split_string(const std::string & str) const {
-    std::vector<std::pair<bool, std::string>> res;
-    std::string current;
+std::vector<std::pair<bool, QString>> NumericalStringComparator::split_string(const QString &str) const {
+    std::vector<std::pair<bool, QString>> res;
+    QString current;
     bool isNumber;
 
-    for (char a : str) {
-        bool isDigit = ('0' <= a && a <= '9');
-
-        if (!current.empty()) {
-            if (isDigit != isNumber) {
+    for (QChar a : str) {
+        if (!current.isEmpty()) {
+            if (a.isDigit() != isNumber) {
                 res.push_back(std::make_pair(isNumber, current));
                 current.clear();
             }
         }
 
-        isNumber = isDigit;
-        current.push_back(a);
+        isNumber = a.isDigit();
+        current.append(a);
     }
 
-    if (!current.empty())
+    if (!current.isEmpty())
         res.push_back(std::make_pair(isNumber, current));
 
     return res;
 }
 
-bool NumericalStringComparator::operator()(const std::string &a, const std::string &b) const {
+bool NumericalStringComparator::operator()(const QString &a, const QString &b) const {
     auto splitA = split_string(a);
     auto splitB = split_string(b);
 
@@ -34,21 +32,24 @@ bool NumericalStringComparator::operator()(const std::string &a, const std::stri
 
     // compare the parts lexicographically
     for (; itA != splitA.end() && itB != splitB.end(); ++itA, ++itB) {
-        if (itA->second == itB->second)
+        const QString &partA = itA->second;
+        const QString &partB = itB->second;
+
+        if (partA == partB)
             continue;
 
         if (itA->first && itA->first) { // Both parts are number
-            int numberA = std::stoi(itA->second);
-            int numberB = std::stoi(itB->second);
+            int numberA = partA.toInt();
+            int numberB = partB.toInt();
 
             if (numberA != numberB)
                 return numberA < numberB;
             continue;
         }
 
-        return itA->second < itB->second;
+        return partA < partB;
     }
 
-    return splitA.size() < splitB.size();
+    return splitA.size() < splitB.size(); // Use size as tie breaker
 }
 

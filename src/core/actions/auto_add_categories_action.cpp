@@ -131,11 +131,10 @@ void AutoAddCategoriesAction::redoImpl(TournamentStore & tournament) {
     const auto &preferences = tournament.getPreferences();
     tournament.beginAddCategories(mCategoryIds);
     for (size_t i = 0; i < mCategoryIds.size(); ++i) {
-        std::stringstream ss;
-        ss << mBaseName << " " << i+1;
+        std::string name = mBaseName + " " + std::to_string(i+1);
         auto ruleset = Ruleset::getDefaultRuleset();
         auto drawSystem = DrawSystem::getDrawSystem(preferences.getPreferredDrawSystem(mPlayerIds[i].size()));
-        tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], ss.str(), std::move(ruleset), std::move(drawSystem)));
+        tournament.addCategory(std::make_unique<CategoryStore>(mCategoryIds[i], name, std::move(ruleset), std::move(drawSystem)));
     }
     tournament.endAddCategories(mCategoryIds);
 

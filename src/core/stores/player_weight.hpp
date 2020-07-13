@@ -30,10 +30,15 @@ public:
         ar(mValue);
     }
 
-    static float max();
-    static float min();
+    static constexpr float max() {
+        return 400;
+    }
 
-private:
+    static constexpr float min() {
+        return 0;
+    }
+
+protected:
     float mValue;
 };
 

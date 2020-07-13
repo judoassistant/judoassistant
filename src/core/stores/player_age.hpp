@@ -8,7 +8,6 @@ public:
     PlayerAge() {}
     PlayerAge(const PlayerAge &other) = default;
     PlayerAge(int age);
-    PlayerAge(const std::string &str);
 
     std::string toString() const;
     int toInt() const;
@@ -30,10 +29,15 @@ public:
         ar(mValue);
     }
 
-    static int max();
-    static int min();
+    static constexpr int max() {
+        return 255;
+    }
 
-private:
+    static constexpr int min() {
+        return 0;
+    }
+
+protected:
     int mValue;
 };
 

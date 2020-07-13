@@ -189,7 +189,7 @@ bool CategoriesProxyModel::lessThan(const QModelIndex &left, const QModelIndex &
         const auto &rightCategory = tournament.getCategory(mModel->getCategory(right.row()));
 
         NumericalStringComparator comp;
-        return comp(leftCategory.getName(), rightCategory.getName());
+        return comp(QString::fromStdString(leftCategory.getName()), QString::fromStdString(rightCategory.getName()));
     }
 
     return QSortFilterProxyModel::lessThan(left, right);
