@@ -142,17 +142,29 @@ void UnallocatedBlocksWidget::reloadBlocks() {
     mScene->setSceneRect(0, 0, UnallocatedBlockGraphicsItem::WIDTH + PADDING*2, offset);
 }
 
-BlockComparator::BlockComparator(const TournamentStore &tournament) : mTournament(&tournament) {}
+QString BlockComparator::getBlockName(const CategoryStore &category, MatchType matchType) const {
+    QString res = QString::fromStdString(category.getName());
+
+    if (category.getDrawSystem().hasFinalBlock()) {
+        res += ' ';
+        if (matchType == MatchType::ELIMINATION)
+            res += tr("(Elimination)");
+        else
+            res += tr("(Final)");
+    }
+
+    return res;
+}
 
 bool BlockComparator::operator()(const std::pair<CategoryId, MatchType> first, const std::pair<CategoryId, MatchType> second) const {
     const CategoryStore & firstCategory = mTournament->getCategory(first.first);
     const CategoryStore & secondCategory = mTournament->getCategory(second.first);
 
-    auto firstName = firstCategory.getName(first.second);
-    auto secondName = secondCategory.getName(second.second);
+    auto firstName = getBlockName(firstCategory, first.second);
+    auto secondName = getBlockName(secondCategory, second.second);
 
     if (firstName != secondName) // In case two categories have the same name
-        return mComp(QString::fromStdString(firstName), QString::fromStdString(secondName));
+        return mComp(firstName, secondName);
     return first < second;
 }
 

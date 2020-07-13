@@ -98,7 +98,7 @@ void BlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     drag->setMimeData(mime);
 
     // mime->setColorData(color);
-    mime->setText(mName);
+    mime->setText(mName, mBlock.second);
     mime->setBlock(mBlock.first, mBlock.second);
 
     QPixmap pixmap(mWidth, mHeight); // TODO: Fix offset

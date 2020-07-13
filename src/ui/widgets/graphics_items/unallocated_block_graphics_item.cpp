@@ -87,8 +87,8 @@ void UnallocatedBlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *even
     drag->setMimeData(mime);
 
     // mime->setColorData(color);
-    mime->setText(QString::fromStdString(mCategory->getName(mType)));
     mime->setBlock(mCategory->getId(), mType);
+    mime->setText(QString::fromStdString(mCategory->getName()), mType);
 
     QPixmap pixmap(WIDTH, HEIGHT);
     pixmap.fill(Qt::white);

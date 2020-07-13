@@ -50,14 +50,6 @@ const std::string & CategoryStore::getName() const {
     return mName;
 }
 
-std::string CategoryStore::getName(MatchType type) const {
-    std::stringstream res;
-    res << mName;
-    if (getDrawSystem().hasFinalBlock())
-        res << " (" << (type == MatchType::ELIMINATION ? "Elimination" : "Final") << ")"; // TODO: Translate
-    return res.str();
-}
-
 void CategoryStore::setName(const std::string &name) {
     mName = name;
 }
