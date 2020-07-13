@@ -530,6 +530,7 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
     res.AddMember("combinedId", encodeCombinedId(combinedId, allocator), allocator);
     res.AddMember("bye", match.isBye(), allocator);
     res.AddMember("title", encodeString(match.getTitle(), allocator), allocator);
+    res.AddMember("position", category.getMatchPosition(match.getId()), allocator);
 
     if (match.getWhitePlayer().has_value())
         res.AddMember("whitePlayer", match.getWhitePlayer()->getValue(), allocator);

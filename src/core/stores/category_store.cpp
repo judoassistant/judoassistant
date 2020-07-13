@@ -110,6 +110,12 @@ const MatchStore & CategoryStore::getMatch(MatchId id) const {
     return *(mMatches[it->second]);
 }
 
+size_t CategoryStore::getMatchPosition(MatchId id) const {
+    auto it = mMatchMap.find(id);
+    assert(it != mMatchMap.end());
+    return it->second;
+}
+
 void CategoryStore::pushMatch(std::unique_ptr<MatchStore> match) {
     MatchId id = match->getId();
 

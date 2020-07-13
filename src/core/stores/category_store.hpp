@@ -58,6 +58,7 @@ public:
     MatchList & getMatches();
     MatchStore & getMatch(MatchId id);
     const MatchStore & getMatch(MatchId id) const;
+    size_t getMatchPosition(MatchId id) const;
     void pushMatch(std::unique_ptr<MatchStore> match);
     std::unique_ptr<MatchStore> popMatch();
     bool containsMatch(MatchId id) const;
