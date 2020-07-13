@@ -245,7 +245,7 @@ void ScoreOperatorWidget::awardHansokuMake(ScoreboardPainterParams &params, Matc
     if (!ruleset.canAwardHansokuMake(params.match, playerIndex))
         return;
 
-    auto reply = QMessageBox::question(this, tr("Would you like to award direct hansoku-make?"), tr("Are you sure you would like to award direct hansoku-make?"), QMessageBox::Yes | QMessageBox::Cancel);
+    auto reply = QMessageBox::question(this, tr("Would you like to award direct hansoku-make?"), tr("Are you sure you would like to award direct hansoku-make?"), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
     if (reply == QMessageBox::Cancel)
         return;
 

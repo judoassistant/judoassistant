@@ -431,7 +431,7 @@ void ScoreOperatorWindow::goNextMatch() {
             if (category.containsMatch(mCurrentMatch->second)) {
                 const auto &match = category.getMatch(mCurrentMatch->second);
                 if (match.getStatus() != MatchStatus::FINISHED) {
-                    auto reply = QMessageBox::question(this, tr("Go to next match?"), tr("Are you sure you would like to go to the next match? The current match is not finished."), QMessageBox::Yes | QMessageBox::Cancel);
+                    auto reply = QMessageBox::question(this, tr("Go to next match?"), tr("Are you sure you would like to go to the next match? The current match is not finished."), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
                     if (reply == QMessageBox::Cancel)
                         return;
                 }
@@ -470,7 +470,7 @@ void ScoreOperatorWindow::show() {
 }
 
 void ScoreOperatorWindow::resetButtonClick() {
-    auto reply = QMessageBox::question(this, tr("Would you like to reset the match?"), tr("Are you sure you would like to reset the match?"), QMessageBox::Yes | QMessageBox::Cancel);
+    auto reply = QMessageBox::question(this, tr("Would you like to reset the match?"), tr("Are you sure you would like to reset the match?"), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
     if (reply == QMessageBox::Cancel)
         return;
 

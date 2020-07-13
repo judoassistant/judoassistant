@@ -40,7 +40,7 @@ void CategoryMatchesWidget::showEditDialog() {
 }
 
 void CategoryMatchesWidget::showResetDialog() {
-    auto reply = QMessageBox::question(this, tr("Would you like to reset the match?"), tr("Are you sure you would like to reset the match?"), QMessageBox::Yes | QMessageBox::Cancel);
+    auto reply = QMessageBox::question(this, tr("Would you like to reset the match?"), tr("Are you sure you would like to reset the match?"), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
     if (reply == QMessageBox::Cancel)
         return;
 
