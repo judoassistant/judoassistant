@@ -63,6 +63,8 @@ steps:
     custom_dns: [10.83.252.10, 10.83.16.53, 10.88.1.95]
     cache_from: "judoassistant/judoassistant-web:latest"
   when:
-    event:
-    - tag
+    branch:
+      - master
+  #   event:
+  #   - tag
 
