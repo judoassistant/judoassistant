@@ -33,5 +33,6 @@ private:
 
     StoreManager &mStoreManager;
     QTimer mPausingTimer;
+    QFont mFont;
 };
 

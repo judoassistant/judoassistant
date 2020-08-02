@@ -25,6 +25,7 @@
 ScoreOperatorWidget::ScoreOperatorWidget(StoreManager &storeManager, QWidget *parent)
     : ScoreDisplayWidget(storeManager, parent)
     , mStoreManager(storeManager)
+    , mFont("Noto Sans Mono")
 {
     connect(&mPausingTimer, &QTimer::timeout, this, &ScoreOperatorWidget::pausingTimerHit);
     mPausingTimer.start(PAUSING_TIMER_INTERVAL);
@@ -38,6 +39,10 @@ ScoreOperatorWidget::ScoreOperatorWidget(StoreManager &storeManager, QWidget *pa
 
     auto *blueOsaekomiShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
     connect(blueOsaekomiShortcut, &QShortcut::activated, this, &ScoreOperatorWidget::blueOsaekomiShortcut);
+
+    // setup font
+    mFont.setBold(false);
+    mFont.setCapitalization(QFont::AllUppercase);
 }
 
 void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, const ScoreboardPainterParams &params) {
@@ -46,23 +51,57 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
 
     const Ruleset &ruleset = params.category.getRuleset();
 
+    // Set font size for controls
+    auto font = mFont;
+    font.setPixelSize(mScoreboardPainter->getWhiteIpponRect().height() * 0.1);
+    painter.setFont(font);
+
     // Pause/Resume control
-    if (ruleset.canPause(params.match, params.masterTime) || ruleset.canResume(params.match, params.masterTime))
+    if (ruleset.canPause(params.match, params.masterTime) || ruleset.canResume(params.match, params.masterTime)) {
         painter.drawRect(mScoreboardPainter->getDurationRect());
 
-    // White Player Controls
+        auto label = (params.match.getStatus() == MatchStatus::UNPAUSED ? tr("Pause") : tr("Resume"));
+        painter.drawText(mScoreboardPainter->getDurationRect(), Qt::AlignTop | Qt::AlignHCenter, label);
+    }
+
+    // White Player Score Controls
     painter.drawRect(mScoreboardPainter->getWhiteIpponRect());
+    painter.drawText(mScoreboardPainter->getWhiteIpponRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Ippon"));
+
     painter.drawRect(mScoreboardPainter->getWhiteWazariRect());
+    painter.drawText(mScoreboardPainter->getWhiteWazariRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Wazari"));
+
     painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
-    painter.drawRect(mScoreboardPainter->getWhiteShidoRect());
-    painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
+    painter.drawText(mScoreboardPainter->getWhiteOsaekomiRect(), Qt::AlignTop | Qt::AlignHCenter, tr("White Player Osaekomi"));
+
 
     // Blue Player Controls
     painter.drawRect(mScoreboardPainter->getBlueIpponRect());
+    painter.drawText(mScoreboardPainter->getBlueIpponRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Ippon"));
+
     painter.drawRect(mScoreboardPainter->getBlueWazariRect());
+    painter.drawText(mScoreboardPainter->getBlueWazariRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Wazari"));
+
     painter.drawRect(mScoreboardPainter->getBlueOsaekomiRect());
+    painter.drawText(mScoreboardPainter->getBlueOsaekomiRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Blue Player Osaekomi"));
+
+    // Set font size for shido/hansoku controls
+    font.setPixelSize(mScoreboardPainter->getWhiteShidoRect().height() * 0.1);
+    painter.setFont(font);
+
+    // White shido/hansoku controls
+    painter.drawRect(mScoreboardPainter->getWhiteShidoRect());
+    painter.drawText(mScoreboardPainter->getWhiteShidoRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Shido"));
+
+    painter.drawRect(mScoreboardPainter->getWhiteHansokuRect());
+    painter.drawText(mScoreboardPainter->getWhiteHansokuRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Hansoku"));
+
+    // Blue shido/hansoku controls
     painter.drawRect(mScoreboardPainter->getBlueShidoRect());
+    painter.drawText(mScoreboardPainter->getBlueShidoRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Shido"));
+
     painter.drawRect(mScoreboardPainter->getBlueHansokuRect());
+    painter.drawText(mScoreboardPainter->getBlueHansokuRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Hansoku"));
 }
 
 void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
