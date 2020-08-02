@@ -105,6 +105,9 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
 }
 
 void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() != Qt::LeftButton && event->button() != Qt::RightButton)
+        return;
+
     const auto pos = event->pos();
     if (!mCombinedId)
         return;
@@ -125,7 +128,7 @@ void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
     const auto &bluePlayer = tournament.getPlayer(*(match.getBluePlayer()));
 
     ScoreboardPainterParams params{category, match, whitePlayer, bluePlayer, mStoreManager.masterTime(), false};
-    bool shiftPressed = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool cancelModifier = event->modifiers().testFlag(Qt::ShiftModifier) || event->button() == Qt::RightButton;
 
     if (mScoreboardPainter->getDurationRect().contains(pos)) {
         durationClick(params);
@@ -134,25 +137,25 @@ void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
         osaekomiClick(params, MatchStore::PlayerIndex::WHITE);
     }
     else if (mScoreboardPainter->getWhiteIpponRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardIppon(params, MatchStore::PlayerIndex::WHITE);
         else
             cancelIppon(params, MatchStore::PlayerIndex::WHITE);
     }
     else if (mScoreboardPainter->getWhiteWazariRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardWazari(params, MatchStore::PlayerIndex::WHITE);
         else
             cancelWazari(params, MatchStore::PlayerIndex::WHITE);
     }
     else if (mScoreboardPainter->getWhiteShidoRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardShido(params, MatchStore::PlayerIndex::WHITE);
         else
             cancelShido(params, MatchStore::PlayerIndex::WHITE);
     }
     else if (mScoreboardPainter->getWhiteHansokuRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardHansokuMake(params, MatchStore::PlayerIndex::WHITE);
         else
             cancelHansokuMake(params, MatchStore::PlayerIndex::WHITE);
@@ -161,25 +164,25 @@ void ScoreOperatorWidget::mouseReleaseEvent(QMouseEvent *event) {
         osaekomiClick(params, MatchStore::PlayerIndex::BLUE);
     }
     else if (mScoreboardPainter->getBlueIpponRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardIppon(params, MatchStore::PlayerIndex::BLUE);
         else
             cancelIppon(params, MatchStore::PlayerIndex::BLUE);
     }
     else if (mScoreboardPainter->getBlueWazariRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardWazari(params, MatchStore::PlayerIndex::BLUE);
         else
             cancelWazari(params, MatchStore::PlayerIndex::BLUE);
     }
     else if (mScoreboardPainter->getBlueShidoRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardShido(params, MatchStore::PlayerIndex::BLUE);
         else
             cancelShido(params, MatchStore::PlayerIndex::BLUE);
     }
     else if (mScoreboardPainter->getBlueHansokuRect().contains(pos)) {
-        if (!shiftPressed)
+        if (!cancelModifier)
             awardHansokuMake(params, MatchStore::PlayerIndex::BLUE);
         else
             cancelHansokuMake(params, MatchStore::PlayerIndex::BLUE);
