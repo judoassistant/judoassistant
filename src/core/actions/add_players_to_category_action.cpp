@@ -36,18 +36,16 @@ void AddPlayersToCategoryAction::redoImpl(TournamentStore & tournament) {
         category.addPlayer(playerId);
     }
 
-    tournament.addPlayersToCategory(mCategoryId, mAddedPlayerIds);
-
     if (!mAddedPlayerIds.empty()) {
         mDrawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{mCategoryId}, mSeed);
         mDrawAction->redo(tournament);
     }
+
+    tournament.addPlayersToCategory(mCategoryId, mAddedPlayerIds);
 }
 
 void AddPlayersToCategoryAction::undoImpl(TournamentStore & tournament) {
     if (!tournament.containsCategory(mCategoryId)) return;
-
-    tournament.erasePlayersFromCategory(mCategoryId, mAddedPlayerIds);
 
     CategoryStore & category = tournament.getCategory(mCategoryId);
     for (auto playerId : mAddedPlayerIds) {
@@ -60,6 +58,8 @@ void AddPlayersToCategoryAction::undoImpl(TournamentStore & tournament) {
         mDrawAction->undo(tournament);
         mDrawAction.reset();
     }
+
+    tournament.erasePlayersFromCategory(mCategoryId, mAddedPlayerIds);
 
     mAddedPlayerIds.clear();
 }

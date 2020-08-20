@@ -206,9 +206,10 @@ QString PlayersModel::listPlayerCategories(const PlayerStore &player) const {
 }
 
 void PlayersModel::playerCategoriesChanged(const std::vector<PlayerId> &playerIds) {
+    static constexpr unsigned int CATEGORY_COLUMN = 8;
     for (auto playerId : playerIds) {
         int row = getRow(playerId);
-        emit dataChanged(createIndex(row, 7), createIndex(row, 7));
+        emit dataChanged(createIndex(row, CATEGORY_COLUMN), createIndex(row, CATEGORY_COLUMN));
     }
 }
 
