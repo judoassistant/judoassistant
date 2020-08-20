@@ -1,5 +1,6 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -15,6 +16,12 @@ LoginDialog::LoginDialog(MasterStoreManager &storeManager, QWidget *parent)
     setWindowTitle(tr("Login"));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+
+    {
+        QLabel *helpLabel = new QLabel(tr("The live web results feature of JudoAssistant is currently in closed alpha and requires an account. In order to get an account contact Svend <svendcs@svendcs.com>"), this);
+        helpLabel->setWordWrap(true);
+        mainLayout->addWidget(helpLabel);
+    }
 
     {
         QWidget *group = new QWidget(this);

@@ -1,5 +1,6 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -16,6 +17,12 @@ ConfigureDialog::ConfigureDialog(MasterStoreManager &storeManager, QWidget *pare
     setWindowTitle(tr("Configure Web Name"));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+
+    {
+        QLabel *helpLabel = new QLabel(tr("Select the web name for your tournament. This will be displayed in the address bar on live.judoassistant.com."), this);
+        helpLabel->setWordWrap(true);
+        mainLayout->addWidget(helpLabel);
+    }
 
     {
         QWidget *group = new QWidget(this);
