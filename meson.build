@@ -37,10 +37,21 @@ if get_option('ui')
 
     qt5 = import('qt5')
     qt5_dep = dependency('qt5', modules: ['Core', 'Widgets', 'Gui'])
+
+    qtkeychain_dep = dependency('qtkeychain', required: false)
+
+    if not qtkeychain_dep.found()
+        cmake = import('cmake')
+
+        qtkeychain_proj = cmake.subproject('qtkeychain')
+        qtkeychain_dep = qtkeychain_proj.dependency('qt5keychain')
+    endif
 else
     boost_ui_dep = disabler()
     qt5 = disabler()
     qt5_dep = disabler()
+
+    qtkeychain_dep = disabler()
 endif
 
 # Web server dependencies

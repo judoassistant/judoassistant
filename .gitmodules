@@ -4,3 +4,6 @@
 [submodule "flags"]
 	path = flags
 	url = https://github.com/lipis/flag-icon-css.git
+[submodule "subprojects/qtkeychain"]
+	path = subprojects/qtkeychain
+	url = git@github.com:frankosterfeld/qtkeychain.git
