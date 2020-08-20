@@ -45,6 +45,7 @@ ScoreOperatorWindow::ScoreOperatorWindow()
 
     findNextMatch();
     disableControlButtons();
+    populateTatamiSelect();
 
     createStatusBar();
     createTournamentMenu();
@@ -116,14 +117,23 @@ void ScoreOperatorWindow::clearTatamiSelect() {
 
 void ScoreOperatorWindow::populateTatamiSelect() {
     const auto &tatamis = mStoreManager.getTournament().getTatamis();
-    mTatamiSelect->setEnabled(tatamis.tatamiCount() > 0);
+
+    if (tatamis.tatamiCount() == 0) {
+        mTatamiSelect->setEnabled(false);
+        return;
+    }
+
+    mTatamiSelect->setEnabled(true);
+
+    mTatamiSelect->addItem(tr("Please select a tatami.."));
+    mTatamiSelect->setItemData(0, QBrush(Qt::gray), Qt::ForegroundRole);
 
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
         mTatamiSelect->addItem(tr("Tatami %1").arg(QString::number(i+1)));
 
         TatamiLocation location = {tatamis.getHandle(i)};
         if (mTatami && location == *mTatami)
-            mTatamiSelect->setCurrentIndex(i);
+            mTatamiSelect->setCurrentIndex(i+1);
     }
 }
 
@@ -242,8 +252,6 @@ QWidget* ScoreOperatorWindow::createLowerSection() {
         connect(mResetButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resetButtonClick);
 
         mTatamiSelect = new QComboBox(matchBox);
-        mTatamiSelect->setPlaceholderText(tr("Select tatami.."));
-        mTatamiSelect->setEnabled(false);
         connect(mTatamiSelect, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ScoreOperatorWindow::setTatami);
 
         subLayout->addWidget(mNextButton);
@@ -307,10 +315,12 @@ void ScoreOperatorWindow::endResetTournament() {
 void ScoreOperatorWindow::setTatami(int index) {
     const auto &tatamis = mStoreManager.getTournament().getTatamis();
 
-    if (index == -1 || static_cast<size_t>(index) >= tatamis.tatamiCount()) // in case the combobox was cleared
+    if (index == -1 || static_cast<size_t>(index) > tatamis.tatamiCount()) // in case the combobox was cleared
         return;
 
-    TatamiLocation location{tatamis.getHandle(index)};
+    std::optional<TatamiLocation> location;
+    if (index > 0) // If the placeholder item was not selected
+        location = {tatamis.getHandle(index-1)};
 
     if (location == mTatami)
         return;
