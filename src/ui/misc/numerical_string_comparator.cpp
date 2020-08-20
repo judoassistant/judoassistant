@@ -3,7 +3,7 @@
 std::vector<std::pair<bool, QString>> NumericalStringComparator::split_string(const QString &str) const {
     std::vector<std::pair<bool, QString>> res;
     QString current;
-    bool isNumber;
+    bool isNumber = false; // Set to false to suppress compiler uninitialized warnings
 
     for (QChar a : str) {
         if (!current.isEmpty()) {
