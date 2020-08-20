@@ -2,8 +2,7 @@
 
 #include <stack>
 
-#include <QActionGroup>
-#include <QMetaObject>
+#include <QComboBox>
 #include <QPushButton>
 
 #include "core/core.hpp"
@@ -31,8 +30,8 @@ private:
     void openReportIssue();
     void showAboutDialog();
 
-    void clearTatamiMenu();
-    void populateTatamiMenu();
+    void clearTatamiSelect();
+    void populateTatamiSelect();
 
     void beginResetTournament();
     void endResetTournament();
@@ -42,7 +41,7 @@ private:
     void beginResetMatches(const std::vector<CategoryId> &categoryIds);
     void endResetMatches(const std::vector<CategoryId> &categoryIds);
 
-    void setTatami(TatamiLocation tatami);
+    void setTatami(int index);
 
     void findNextMatch();
     void updateNextButton();
@@ -69,8 +68,6 @@ private:
 
     void changeNetworkClientState(NetworkClientState state);
 
-    QMenu *mTatamiMenu;
-    QActionGroup *mTatamiActionGroup;
     MatchWidget *mNextMatchWidget;
     ScoreOperatorWidget *mScoreOperatorWidget;
 
@@ -84,6 +81,7 @@ private:
 
     QPushButton *mNextButton;
     QPushButton *mResetButton;
+    QComboBox *mTatamiSelect;
     WarningWidget *mWarningWidget;
 
     ScoreDisplayWindow mDisplayWindow;

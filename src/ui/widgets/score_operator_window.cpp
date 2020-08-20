@@ -78,15 +78,15 @@ void ScoreOperatorWindow::createTournamentMenu() {
 }
 
 void ScoreOperatorWindow::createEditMenu() {
-    QMenu *menu = menuBar()->addMenu(tr("Edit"));
+    // QMenu *menu = menuBar()->addMenu(tr("Edit"));
 
-    mTatamiMenu = menu->addMenu(tr("Tatami"));
+    // mTatamiMenu = menu->addMenu(tr("Tatami"));
 
-    {
+    // {
         // QAction *englishAction = new QAction(tr("English"), this);
         // submenu->addAction(englishAction);
-        // populateTatamiMenu();
-    }
+        // populateTatamiSelect();
+    // }
     // {
     //     QAction *action = new QAction(tr("Undo"), this);
     //     action->setShortcuts(QKeySequence::Undo);
@@ -108,29 +108,22 @@ void ScoreOperatorWindow::createEditMenu() {
     // }
 }
 
-void ScoreOperatorWindow::clearTatamiMenu() {
+void ScoreOperatorWindow::clearTatamiSelect() {
     // delete mTatamiActionGroup;
-    mTatamiActionGroup = nullptr;
-    mTatamiMenu->clear();
+    mTatamiSelect->clear();
+    mTatamiSelect->setEnabled(false);
 }
 
-void ScoreOperatorWindow::populateTatamiMenu() {
+void ScoreOperatorWindow::populateTatamiSelect() {
     const auto &tatamis = mStoreManager.getTournament().getTatamis();
+    mTatamiSelect->setEnabled(tatamis.tatamiCount() > 0);
 
-    mTatamiActionGroup = new QActionGroup(this);
     for (size_t i = 0; i < tatamis.tatamiCount(); ++i) {
+        mTatamiSelect->addItem(tr("Tatami %1").arg(QString::number(i+1)));
+
         TatamiLocation location = {tatamis.getHandle(i)};
-
-        QAction *action = new QAction(tr("Tatami %1").arg(QString::number(i+1)), mTatamiMenu);
-        action->setCheckable(true);
-        mTatamiActionGroup->addAction(action);
-        if (mTatami && location == *mTatami) {
-            action->setChecked(true);
-        }
-
-        connect(action, &QAction::triggered, this, [=]() { setTatami(location); });
-
-        mTatamiMenu->addAction(action);
+        if (mTatami && location == *mTatami)
+            mTatamiSelect->setCurrentIndex(i);
     }
 }
 
@@ -248,8 +241,14 @@ QWidget* ScoreOperatorWindow::createLowerSection() {
         mResetButton = new QPushButton("Reset Match", matchBox);
         connect(mResetButton, &QPushButton::clicked, this, &ScoreOperatorWindow::resetButtonClick);
 
+        mTatamiSelect = new QComboBox(matchBox);
+        mTatamiSelect->setPlaceholderText(tr("Select tatami.."));
+        mTatamiSelect->setEnabled(false);
+        connect(mTatamiSelect, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ScoreOperatorWindow::setTatami);
+
         subLayout->addWidget(mNextButton);
         subLayout->addWidget(mResetButton);
+        subLayout->addWidget(mTatamiSelect);
 
         matchBox->setLayout(subLayout);
         layout->addWidget(matchBox);
@@ -289,25 +288,34 @@ void ScoreOperatorWindow::beginResetTournament() {
 
 void ScoreOperatorWindow::endResetTournament() {
     auto &tournament = mStoreManager.getTournament();
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &ScoreOperatorWindow::clearTatamiMenu));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &ScoreOperatorWindow::populateTatamiMenu));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &ScoreOperatorWindow::clearTatamiMenu));
-    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &ScoreOperatorWindow::populateTatamiMenu));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeAdded, this, &ScoreOperatorWindow::clearTatamiSelect));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAdded, this, &ScoreOperatorWindow::populateTatamiSelect));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisAboutToBeErased, this, &ScoreOperatorWindow::clearTatamiSelect));
+    mConnections.push(connect(&tournament, &QTournamentStore::tatamisErased, this, &ScoreOperatorWindow::populateTatamiSelect));
     mConnections.push(connect(&tournament, &QTournamentStore::tatamisChanged, this, &ScoreOperatorWindow::changeTatamis));
 
     mConnections.push(connect(&tournament, &QTournamentStore::matchesChanged, this, &ScoreOperatorWindow::changeMatches));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &ScoreOperatorWindow::beginResetMatches));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &ScoreOperatorWindow::endResetMatches));
 
-    clearTatamiMenu();
-    populateTatamiMenu();
+    clearTatamiSelect();
+    populateTatamiSelect();
     findNextMatch();
     updateControlButtons();
 }
 
-void ScoreOperatorWindow::setTatami(TatamiLocation tatami) {
-    mTatami = tatami;
+void ScoreOperatorWindow::setTatami(int index) {
+    const auto &tatamis = mStoreManager.getTournament().getTatamis();
 
+    if (index == -1 || static_cast<size_t>(index) >= tatamis.tatamiCount()) // in case the combobox was cleared
+        return;
+
+    TatamiLocation location{tatamis.getHandle(index)};
+
+    if (location == mTatami)
+        return;
+
+    mTatami = location;
     findNextMatch();
 }
 
