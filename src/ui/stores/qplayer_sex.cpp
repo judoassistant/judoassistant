@@ -24,8 +24,8 @@ QPlayerSex QPlayerSex::fromHumanString(const QString &str) {
 
 QString QPlayerSex::toHumanString() const {
     switch (mValue) {
-        case MALE: return tr("male");
-        case FEMALE: return tr("female");
+        case MALE: return tr("Male");
+        case FEMALE: return tr("Female");
         default: return "";
     }
 }
