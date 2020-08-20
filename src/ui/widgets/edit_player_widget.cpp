@@ -294,8 +294,8 @@ void EditPlayerWidget::editWeight() {
         return;
 
     std::optional<PlayerWeight> newValue;
-    if (!mAgeContent->text().isEmpty())
-        newValue = PlayerWeight(mAgeContent->text().toFloat());
+    if (!mWeightContent->text().isEmpty())
+        newValue = PlayerWeight(mWeightContent->text().toFloat());
 
     const TournamentStore &tournament = mStoreManager.getTournament();
     bool changed = false;
