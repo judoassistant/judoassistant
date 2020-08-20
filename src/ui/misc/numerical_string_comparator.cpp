@@ -38,7 +38,7 @@ bool NumericalStringComparator::operator()(const QString &a, const QString &b) c
         if (partA == partB)
             continue;
 
-        if (itA->first && itA->first) { // Both parts are number
+        if (itA->first && itB->first) { // Both parts are number
             int numberA = partA.toInt();
             int numberB = partB.toInt();
 
