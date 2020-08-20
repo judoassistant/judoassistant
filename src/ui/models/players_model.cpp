@@ -266,20 +266,31 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
         return false;
 
     auto playerId = mModel->getPlayer(sourceRow);
-    const auto &player = mStoreManager.getTournament().getPlayer(playerId);
+    const auto &tournament = mStoreManager.getTournament();
+    const auto &player = tournament.getPlayer(playerId);
 
     if (mCategoryId) {
         return player.containsCategory(*mCategoryId);
     }
 
     if (!mTextFilter.isEmpty()) { // Text search overrides other filters
+        // Try to match name
         auto fullName = QString::fromStdString(player.getFirstName()) + " " + QString::fromStdString(player.getLastName());
         if (fullName.contains(mTextFilter, Qt::CaseInsensitive))
             return true;
 
+        // Try to match club
         auto club = QString::fromStdString(player.getClub());
         if (club.contains(mTextFilter, Qt::CaseInsensitive))
             return true;
+
+        // Try to match categories
+        for (auto categoryId : player.getCategories()) {
+            const auto &category = tournament.getCategory(categoryId);
+            auto categoryName = QString::fromStdString(category.getName());
+            if (categoryName.contains(mTextFilter, Qt::CaseInsensitive))
+                return true;
+        }
 
         return false;
     }
