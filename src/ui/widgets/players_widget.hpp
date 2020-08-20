@@ -30,6 +30,7 @@ protected:
     void toggleColumn(const QString &key, int column, bool checked);
     void updateHideActionText();
     void updateFilterActionText();
+    void searchBarEdited(const QString &text);
 
 private:
     MasterStoreManager &mStoreManager;
@@ -38,5 +39,6 @@ private:
     EditPlayerWidget *mEditPlayerWidget;
     QAction *mHideAction;
     QAction *mFilterAction;
+    QLineEdit *mSearchBar;
 };
 

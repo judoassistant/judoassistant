@@ -272,6 +272,18 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
         return player.containsCategory(*mCategoryId);
     }
 
+    if (!mTextFilter.isEmpty()) { // Text search overrides other filters
+        auto fullName = QString::fromStdString(player.getFirstName()) + " " + QString::fromStdString(player.getLastName());
+        if (fullName.contains(mTextFilter, Qt::CaseInsensitive))
+            return true;
+
+        auto club = QString::fromStdString(player.getClub());
+        if (club.contains(mTextFilter, Qt::CaseInsensitive))
+            return true;
+
+        return false;
+    }
+
     if (player.getAge().has_value()) {
         const int age = player.getAge()->toInt();
 
@@ -302,7 +314,6 @@ bool PlayersProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourc
     }
 
     return true;
-
 }
 
 bool PlayersProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
@@ -343,6 +354,14 @@ void PlayersProxyModel::showU21(bool checked) {
 
 void PlayersProxyModel::showSenior(bool checked) {
     mShowSenior = checked;
+    invalidateFilter();
+}
+
+void PlayersProxyModel::setTextFilter(const QString &text) {
+    if (text == mTextFilter)
+        return;
+
+    mTextFilter = text;
     invalidateFilter();
 }
 

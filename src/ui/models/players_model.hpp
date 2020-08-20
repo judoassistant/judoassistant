@@ -66,6 +66,7 @@ public:
     void showSenior(bool checked);
     void showMale(bool checked);
     void showFemale(bool checked);
+    void setTextFilter(const QString &text);
 
 private:
     StoreManager & mStoreManager;
@@ -79,5 +80,6 @@ private:
     bool mShowSenior;
     bool mShowMale;
     bool mShowFemale;
+    QString mTextFilter;
 };
 

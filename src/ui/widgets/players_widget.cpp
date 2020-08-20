@@ -44,6 +44,18 @@ PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
         connect(mFilterAction, &QAction::triggered, this, &PlayersWidget::showFilterMenu);
         updateFilterActionText();
 
+        // Add spacer to toolbar
+        QWidget* spacer = new QWidget();
+        spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        toolBar->addWidget(spacer);
+
+        // Add search bar
+        mSearchBar = new QLineEdit();
+        mSearchBar->setMaximumWidth(300);
+        connect(mSearchBar, &QLineEdit::textEdited, this, &PlayersWidget::searchBarEdited);
+        mSearchBar->setPlaceholderText("Search..");
+        toolBar->addWidget(mSearchBar);
+
         layout->addWidget(toolBar);
     }
 
@@ -377,5 +389,9 @@ void PlayersWidget::updateFilterActionText() {
         mFilterAction->setText(tr("Filter"));
     else
         mFilterAction->setText(tr("%1 Filter(s)", "", count).arg(count));
+}
+
+void PlayersWidget::searchBarEdited(const QString &text) {
+    mModel->setTextFilter(text);
 }
 
