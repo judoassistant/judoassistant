@@ -11,6 +11,7 @@ public:
     void asyncConnect(const std::string &hostname, unsigned int port, ConnectHandler handler) override;
     void asyncWrite(const boost::asio::mutable_buffer &buffer, WriteHandler handler) override;
     void asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandler handler) override;
+    void close() override;
 
 private:
     boost::asio::io_context &mContext;

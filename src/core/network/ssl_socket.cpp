@@ -47,3 +47,6 @@ void SSLSocket::asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandler
     boost::asio::async_read(mSocket, buffer, handler);
 }
 
+void SSLSocket::close() {
+    mSocket.lowest_layer().close();
+}

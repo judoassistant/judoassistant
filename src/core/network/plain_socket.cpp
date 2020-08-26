@@ -42,3 +42,6 @@ void PlainSocket::asyncRead(const boost::asio::mutable_buffer &buffer, ReadHandl
     boost::asio::async_read(mSocket, buffer, handler);
 }
 
+void PlainSocket::close() {
+    mSocket.close();
+}
