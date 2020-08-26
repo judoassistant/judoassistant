@@ -76,7 +76,7 @@ void WebClient::createConnection(ConnectionHandler handler) {
                 return;
             }
 
-            mConnection = NetworkConnection(std::move(mSocket));
+            mConnection = std::make_shared<NetworkConnection>(std::move(mSocket));
             mSocket.reset();
             mConnection->asyncJoin([this, handler](boost::system::error_code ec) {
                 if (ec) {
@@ -313,6 +313,8 @@ void WebClient::checkWebName(TournamentId id, const QString &webName) {
 }
 
 void WebClient::killConnection() {
+    if (mConnection != nullptr)
+        mConnection->closeSocket();
     mConnection.reset();
     mSocket.reset();
     mState = WebClientState::NOT_CONNECTED;

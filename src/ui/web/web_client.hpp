@@ -68,7 +68,7 @@ private:
     boost::asio::io_context &mContext;
     WebClientState mState;
     std::unique_ptr<NetworkSocket> mSocket;
-    std::optional<NetworkConnection> mConnection;
+    std::shared_ptr<NetworkConnection> mConnection;
     bool mDisconnecting;
     std::queue<std::shared_ptr<NetworkMessage>> mWriteQueue;
     std::shared_ptr<NetworkServer> mNetworkServer;

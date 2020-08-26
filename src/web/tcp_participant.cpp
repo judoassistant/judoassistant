@@ -395,6 +395,8 @@ void TCPParticipant::asyncClose(CloseCallback callback) {
         if (mTournament != nullptr)
             mTournament->clearOwner();
 
+        if (mConnection != nullptr)
+            mConnection->closeSocket();
         mConnection.reset();
         mServer.leave(shared_from_this(), callback);
     });
@@ -404,6 +406,8 @@ void TCPParticipant::close() {
     if (mTournament != nullptr)
         mTournament->clearOwner();
 
+    if (mConnection != nullptr)
+        mConnection->closeSocket();
     mConnection.reset();
     mServer.leave(shared_from_this(), [](){});
 }

@@ -8,7 +8,7 @@
 class NetworkMessage;
 class NetworkSocket;
 
-class NetworkConnection {
+class NetworkConnection : public std::enable_shared_from_this<NetworkConnection> {
 public:
     NetworkConnection(std::unique_ptr<NetworkSocket> socket);
 
@@ -23,6 +23,8 @@ public:
 
     typedef std::function<void(boost::system::error_code)> WriteHandler;
     void asyncWrite(NetworkMessage &message, WriteHandler handler);
+
+    void closeSocket();
 
 private:
     void writeHeader(NetworkMessage &message, WriteHandler handler);
