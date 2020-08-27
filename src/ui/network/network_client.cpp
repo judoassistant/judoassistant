@@ -55,7 +55,8 @@ void NetworkClient::connect(const std::string &host, unsigned int port) {
         // TODO: Somehow kill when taking too long
         mSocket->asyncConnect(host, port, [this](boost::system::error_code ec) {
             if (ec) {
-                log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
+                if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
+                    log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
                 killConnection();
                 emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 emit connectionAttemptFailed();
@@ -98,7 +99,8 @@ void NetworkClient::writeMessage() {
         if (ec) {
             if (!mConnection) // Was killed by reader
                 return;
-            log_error().field("message", ec.message()).msg("Encountered error when reading message. Disconnecting");
+            if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
+                log_error().field("message", ec.message()).msg("Encountered error when reading message. Disconnecting");
             while(!mWriteQueue.empty())
                 mWriteQueue.pop();
             killConnection();
@@ -125,7 +127,8 @@ void NetworkClient::connectIdle() {
         if (ec) {
             if (mQuitPosted) // Everything is handled by asyncRead
                 return;
-            log_error().field("message", ec.message()).msg("Encountered error when reading message. Disconnecting");
+            if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
+                log_error().field("message", ec.message()).msg("Encountered error when reading message. Disconnecting");
             killConnection();
             emit connectionLost();
             emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
@@ -237,7 +240,8 @@ void NetworkClient::killConnection() {
 void NetworkClient::connectJoin() {
     mConnection->asyncJoin([this](boost::system::error_code ec) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
+            if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
+                log_error().field("message", ec.message()).msg("Encountered error when connecting. Killing connection");
             killConnection();
             emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             emit connectionAttemptFailed();
@@ -256,7 +260,8 @@ void NetworkClient::connectSynchronizeClocks() {
 
     mConnection->asyncWrite(*syncRequestMessage, [this, syncRequestMessage, t1](boost::system::error_code ec) {
         if (ec) {
-            log_error().field("message", ec.message()).msg("Encountered error when sending clock sync request. Killing connection");
+            if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
+                log_error().field("message", ec.message()).msg("Encountered error when sending clock sync request. Killing connection");
             killConnection();
             emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
             emit connectionAttemptFailed();
@@ -268,7 +273,8 @@ void NetworkClient::connectSynchronizeClocks() {
             auto t2 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
             if (ec || mReadMessage->getType() != NetworkMessage::Type::CLOCK_SYNC) {
-                log_error().msg("Encountered error when reading clock sync message. Killing connection");
+                if (ec && (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor))
+                    log_error().msg("Encountered error when reading clock sync message. Killing connection");
                 killConnection();
                 emit stateChanged(mState = NetworkClientState::NOT_CONNECTED);
                 emit connectionAttemptFailed();
