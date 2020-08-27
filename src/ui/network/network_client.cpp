@@ -26,7 +26,7 @@ void NetworkClient::postAction(ClientActionId actionId, std::unique_ptr<Action> 
         mUnconfirmedActionList.push_back(std::make_pair(actionId, sharedAction));
         mUnconfirmedActionMap[actionId] = std::prev(mUnconfirmedActionList.end());
 
-        if (!mConnection)
+        if (mConnection == nullptr)
             return;
 
         auto message = std::make_unique<NetworkMessage>();
@@ -62,7 +62,7 @@ void NetworkClient::connect(const std::string &host, unsigned int port) {
                 return;
             }
 
-            mConnection = NetworkConnection(std::move(mSocket));
+            mConnection = std::make_shared<NetworkConnection>(std::move(mSocket));
             mSocket.reset();
             connectJoin();
         });
@@ -225,6 +225,8 @@ void NetworkClient::connectIdle() {
 }
 
 void NetworkClient::killConnection() {
+    if (mConnection != nullptr)
+        mConnection->closeSocket();
     mConnection.reset();
     mSocket.reset();
     while (!mWriteQueue.empty())

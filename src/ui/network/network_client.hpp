@@ -58,7 +58,7 @@ private:
     NetworkClientState mState;
     boost::asio::io_context &mContext;
     std::unique_ptr<NetworkSocket> mSocket;
-    std::optional<NetworkConnection> mConnection;
+    std::shared_ptr<NetworkConnection> mConnection;
     std::string mHost;
     int mPort;
     bool mQuitPosted;
