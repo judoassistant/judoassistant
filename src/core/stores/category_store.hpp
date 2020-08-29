@@ -43,7 +43,7 @@ CategoryStatus operator+(const CategoryStatus &a, const CategoryStatus &b);
 class CategoryStore {
 public:
     typedef std::vector<std::unique_ptr<MatchStore>> MatchList;
-    static constexpr std::chrono::milliseconds MIN_EXPECTED_DURATION = std::chrono::minutes(16); // TODO: Have a more robust way drawing very short categories
+    static constexpr std::chrono::milliseconds MIN_EXPECTED_DURATION = std::chrono::minutes(6); // TODO: Have a more robust way drawing very short categories
 
     CategoryStore() {}
     CategoryStore(CategoryId id, const std::string &name, std::unique_ptr<Ruleset> ruleset, std::unique_ptr<DrawSystem> drawSystem);

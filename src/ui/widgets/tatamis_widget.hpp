@@ -22,7 +22,7 @@ class GridGraphicsManager {
 public:
     GridGraphicsManager(QGraphicsScene *scene, QWidget *parent = nullptr);
 
-    static constexpr int GRID_RESOLUTION = 20; // The number of minutes per grid unit
+    static constexpr int GRID_RESOLUTION = 6; // The number of minutes per grid unit
     static constexpr int GRID_HEIGHT = 120; // The pixel size of a grid unit
     static constexpr int GRID_WIDTH = 450; // The pixel size of a grid unit
     static constexpr int VERTICAL_OFFSET = 80; // The amount of vertical space used for headers
