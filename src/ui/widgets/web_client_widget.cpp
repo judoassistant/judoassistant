@@ -97,7 +97,6 @@ void WebClientWidget::buttonClick() {
             log_debug().msg("Check webName");
         }
         else {
-            log_debug().msg("Show configure dialog");
             ConfigureDialog dialog(mStoreManager);
             if (dialog.exec() != QDialog::Accepted)
                 return;

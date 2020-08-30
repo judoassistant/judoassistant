@@ -188,7 +188,6 @@ void WebClient::disconnect() {
 }
 
 void WebClient::registerWebName(TournamentId id, const QString &webName) {
-    log_debug().field("id", id).field("webName", webName.toStdString()).msg("Registering web name");
     mContext.post([this, id, webName]() {
         assert(mState == WebClientState::CONNECTED);
         mState = WebClientState::CONFIGURING;
@@ -227,8 +226,6 @@ void WebClient::registerWebName(TournamentId id, const QString &webName) {
                     killConnection();
                     return;
                 }
-
-                log_debug().field("type", responseMessage->getType()).msg("Got response");
 
                 if (responseMessage->getType() != NetworkMessage::Type::REGISTER_WEB_NAME_RESPONSE) {
                     log_error().msg("Received response message of wrong type. Failing");

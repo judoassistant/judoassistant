@@ -285,7 +285,6 @@ bool MasterStoreManager::moveBackup(const std::string &base, unsigned int n, con
 }
 
 MasterStoreManager::~MasterStoreManager() {
-    log_debug().msg("MasterStoreManager::Destructor called");
     stop();
     wait();
 }
