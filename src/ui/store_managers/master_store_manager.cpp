@@ -47,10 +47,6 @@ void MasterStoreManager::startServer(int port) {
     mNetworkServer->start(port);
 }
 
-MasterStoreManager::~MasterStoreManager() {
-
-}
-
 void MasterStoreManager::stop() {
     mWebClient.stop();
     StoreManager::stop();
@@ -288,3 +284,8 @@ bool MasterStoreManager::moveBackup(const std::string &base, unsigned int n, con
     return true;
 }
 
+MasterStoreManager::~MasterStoreManager() {
+    log_debug().msg("MasterStoreManager::Destructor called");
+    stop();
+    wait();
+}

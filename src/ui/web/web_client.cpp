@@ -32,7 +32,7 @@ void WebClient::validateToken(const QString &token) {
 }
 
 void WebClient::createConnection(ConnectionHandler handler) {
-    mContext.dispatch([this, handler]() {
+    mContext.post([this, handler]() {
         assert(mState == WebClientState::NOT_CONNECTED);
 
         mDisconnecting = false;
@@ -173,7 +173,7 @@ void WebClient::stop() {
 }
 
 void WebClient::disconnect() {
-    mContext.dispatch([this]() {
+    mContext.post([this]() {
         if (mState == WebClientState::NOT_CONNECTED)
             return;
 
@@ -189,7 +189,7 @@ void WebClient::disconnect() {
 
 void WebClient::registerWebName(TournamentId id, const QString &webName) {
     log_debug().field("id", id).field("webName", webName.toStdString()).msg("Registering web name");
-    mContext.dispatch([this, id, webName]() {
+    mContext.post([this, id, webName]() {
         assert(mState == WebClientState::CONNECTED);
         mState = WebClientState::CONFIGURING;
         emit stateChanged(mState);
