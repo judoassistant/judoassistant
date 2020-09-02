@@ -7,7 +7,3 @@ REM Configure and build
 meson --buildtype=release build-release -Dprefix="%cd%\build-release\pkg" -Dbindir="" || Exit 1
 ninja -j2 -C build-release || Exit 1
 
-REM Prepare package directory
-cd build-release
-ninja install
-

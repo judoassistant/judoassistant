@@ -19,6 +19,10 @@ steps:
   commands:
   - ./ci/package-windows.bat
   - Exit $LastExitCode # Required to return correct code
+- name: publish
+  commands:
+  - ./ci/publish-windows.bat
+  - Exit $LastExitCode # Required to return correct code
 ---
 kind: pipeline
 type: docker
