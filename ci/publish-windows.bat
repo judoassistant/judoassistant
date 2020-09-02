@@ -1,3 +1,7 @@
 REM Publish windows build
+:: ssh-keygen -f "C:\Drone\drone-runner-exec\id_ci" -P ""
 
-ssh -i "C:\Users\Svend\.ssh\id_ci" "judoassistant-0.3.0-windows.exe" ci@judoassistant.com:/var/www/builds.judoassistant.com/master
+if "%DRONE_BRANCH%"=="master" scp -i "C:\Drone\drone-runner-exec\id_ci" -o StrictHostKeyChecking=no "build-release\pkg\judoassistant-*-windows.exe" ci@judoassistant.com:"/var/www/builds.judoassistant.com/master"
+
+if defined DRONE_TAG scp -i "C:\Drone\drone-runner-exec\id_ci" -o StrictHostKeyChecking=no "build-release\pkg\judoassistant-*-windows.exe" ci@judoassistant.com:"/var/www/builds.judoassistant.com/releases"
+

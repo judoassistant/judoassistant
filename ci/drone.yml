@@ -23,6 +23,11 @@ steps:
   commands:
   - ./ci/publish-windows.bat
   - Exit $LastExitCode # Required to return correct code
+  when:
+    branch:
+    - master
+    event:
+    - tag
 ---
 kind: pipeline
 type: docker
@@ -67,8 +72,6 @@ steps:
     custom_dns: [10.83.252.10, 10.83.16.53, 10.88.1.95]
     cache_from: "judoassistant/judoassistant-web:latest"
   when:
-    branch:
-      - master
-  #   event:
-  #   - tag
+    event:
+    - tag
 
