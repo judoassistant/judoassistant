@@ -26,8 +26,6 @@ steps:
   when:
     branch:
     - master
-    event:
-    - tag
 ---
 kind: pipeline
 type: docker
