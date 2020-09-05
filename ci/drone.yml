@@ -58,6 +58,7 @@ steps:
   depends_on:
   - dockerfiles
   - web-build
+  - ui-build
   settings:
     repo: judoassistant/judoassistant-web
     dockerfile: build-web/docker/web/Dockerfile
@@ -72,4 +73,21 @@ steps:
   when:
     event:
     - tag
+- name: src-publish
+  image: judoassistant/judoassistant-ui-dev
+  environment:
+    SSH_KEY:
+      from_secret: ssh_key
+  commands:
+  - meson dist -C build-ubuntu
+  - mkdir -p ~/.ssh
+  - eval `ssh-agent -s`
+  - echo "$SSH_KEY" | ssh-add -
+  - scp -o StrictHostKeyChecking=no build-ubuntu/meson-dist/*.tar.xz ci@judoassistant.com:/var/www/builds.judoassistant.com/releases/
+  when:
+    event:
+    - tag
+  depends_on:
+  - web-build
+  - ui-build
 
