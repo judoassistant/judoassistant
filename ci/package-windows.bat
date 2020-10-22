@@ -10,6 +10,7 @@ copy C:\Libraries\zstd-v1.4.2-win64\dll\libzstd.dll pkg
 copy C:\Libraries\Qt\5.13.0\msvc2017_64\bin\Qt5Core.dll pkg
 copy C:\Libraries\Qt\5.13.0\msvc2017_64\bin\Qt5Gui.dll pkg
 copy C:\Libraries\Qt\5.13.0\msvc2017_64\bin\Qt5Widgets.dll pkg
+copy C:\Libraries\Qt\5.13.0\msvc2017_64\plugins\platforms\qwindows.dll pkg\platforms
 copy C:\Windows\Fonts\NotoSans-Bold.ttf pkg
 copy C:\Windows\Fonts\NotoSans-Regular.ttf pkg
 copy C:\Windows\Fonts\NotoSansMono-Bold.ttf pkg
