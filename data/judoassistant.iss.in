@@ -24,6 +24,7 @@ Source: "libzstd.dll"; DestDir: "{app}"
 Source: "Qt5Core.dll"; DestDir: "{app}"
 Source: "Qt5Gui.dll"; DestDir: "{app}"
 Source: "Qt5Widgets.dll"; DestDir: "{app}"
+Source: "platforms\qwindows.dll"; DestDir: "{app}\platforms"
 Source: "NotoSans-Bold.ttf"; DestDir: "{fonts}"; FontInstall: "Noto Sans Bold"; Flags: onlyifdoesntexist uninsneveruninstall
 Source: "NotoSans-Regular.ttf"; DestDir: "{fonts}"; FontInstall: "Noto Sans Regular"; Flags: onlyifdoesntexist uninsneveruninstall
 Source: "NotoSansMono-Bold.ttf"; DestDir: "{fonts}"; FontInstall: "Noto Sans Mono Regular"; Flags: onlyifdoesntexist uninsneveruninstall
