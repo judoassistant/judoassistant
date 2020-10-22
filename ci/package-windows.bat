@@ -3,6 +3,7 @@ cd build-release
 ninja install || Exit 1
 
 REM Copy libraries
+mkdir pkg\platforms
 copy C:\Libraries\boost_1_70_0\lib64-msvc-14.2\boost_filesystem-vc142-mt-x64-1_70.dll pkg
 copy C:\Libraries\OpenSSL-Win64\bin\libcrypto-1_1-x64.dll pkg
 copy C:\Libraries\OpenSSL-Win64\bin\libssl-1_1-x64.dll pkg
