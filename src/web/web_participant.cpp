@@ -240,7 +240,7 @@ bool WebParticipant::subscribePlayer(const std::string &str) {
 
 bool WebParticipant::listTournaments() {
     auto self = shared_from_this();
-    mDatabase.asyncListTournaments(boost::asio::bind_executor(mStrand, [this, self](bool success, std::vector<TournamentListing> tournament) {
+    mDatabase.asyncListTournaments(boost::asio::bind_executor(mStrand, [this, self](bool success, std::vector<TournamentListing> pastTournaments, std::vector<TournamentListing> upcomingTournaments) {
         if (mClosePosted)
             return;
 
@@ -251,7 +251,7 @@ bool WebParticipant::listTournaments() {
             return;
         }
 
-        deliver(encoder.encodeTournamentListingMessage(tournament));
+        deliver(encoder.encodeTournamentListingMessage(pastTournaments, upcomingTournaments));
     }));
 
     return true;

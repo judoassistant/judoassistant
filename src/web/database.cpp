@@ -308,31 +308,45 @@ void Database::asyncListTournaments(ListTournamentsCallback callback) {
 }
 
 void Database::listTournaments(ListTournamentsCallback callback) {
-    auto max_time = boost::posix_time::second_clock::universal_time() + boost::gregorian::days(31);
-    std::string max_date = boost::gregorian::to_iso_extended_string(max_time.date());
-    std::vector<TournamentListing> tournaments;
+    auto current_time = boost::posix_time::second_clock::universal_time();
+    std::string current_date = boost::gregorian::to_iso_extended_string(current_time.date());
+
+    std::vector<TournamentListing> upcomingTournaments;
+    std::vector<TournamentListing> pastTournaments;
 
     try {
         pqxx::work work(mConnection);
-        pqxx::result r = work.exec("select web_name, name, location, date FROM tournaments where date <= "
-                                + work.quote(max_date)
-                                + " order by date asc");
+        pqxx::result upcomingResult = work.exec("select web_name, name, location, date FROM tournaments where date >= "
+                                + work.quote(current_date)
+                                + " order by date asc limit 20");
+        pqxx::result pastResult = work.exec("select web_name, name, location, date FROM tournaments where date < "
+                                + work.quote(current_date)
+                                + " order by date desc limit 20");
         work.commit();
 
-        for (size_t i = 0; i < r.size(); ++i) {
+        for (size_t i = 0; i < upcomingResult.size(); ++i) {
             TournamentListing listing;
-            listing.webName = r[i][0].as<std::string>();
-            listing.name = r[i][1].as<std::string>();
-            listing.location = r[i][2].as<std::string>();
-            listing.date = r[i][3].as<std::string>();
-            tournaments.push_back(listing);
+            listing.webName = upcomingResult[i][0].as<std::string>();
+            listing.name = upcomingResult[i][1].as<std::string>();
+            listing.location = upcomingResult[i][2].as<std::string>();
+            listing.date = upcomingResult[i][3].as<std::string>();
+            upcomingTournaments.push_back(listing);
         }
 
-        boost::asio::dispatch(mContext, std::bind(callback, true, std::move(tournaments)));
+        for (size_t i = 0; i < pastResult.size(); ++i) {
+            TournamentListing listing;
+            listing.webName = pastResult[i][0].as<std::string>();
+            listing.name = pastResult[i][1].as<std::string>();
+            listing.location = pastResult[i][2].as<std::string>();
+            listing.date = pastResult[i][3].as<std::string>();
+            pastTournaments.push_back(listing);
+        }
+
+        boost::asio::dispatch(mContext, std::bind(callback, true, std::move(pastTournaments), std::move(upcomingTournaments)));
     }
     catch (const std::exception &e) {
         log_error().field("what", e.what()).msg("PQXX exception caught");
-        boost::asio::dispatch(mContext, std::bind(callback, false, std::move(tournaments)));
+        boost::asio::dispatch(mContext, std::bind(callback, false, std::move(pastTournaments), std::move(upcomingTournaments)));
     }
 }
 

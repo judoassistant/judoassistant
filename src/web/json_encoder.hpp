@@ -43,7 +43,7 @@ public:
     std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionMessage(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff);
     std::unique_ptr<JsonBuffer> encodeTatamiSubscriptionFailMessage();
 
-    std::unique_ptr<JsonBuffer> encodeTournamentListingMessage(const std::vector<TournamentListing> &tournament);
+    std::unique_ptr<JsonBuffer> encodeTournamentListingMessage(const std::vector<TournamentListing> &pastTournaments, const std::vector<TournamentListing> &upcomingTournaments);
     std::unique_ptr<JsonBuffer> encodeTournamentListingFailMessage();
 
     std::unique_ptr<JsonBuffer> encodeClockMessage(std::chrono::milliseconds clock);
