@@ -556,6 +556,8 @@ rapidjson::Value JsonEncoder::encodeMatch(const CategoryStore &category, const M
 
     res.AddMember("duration", encodeDuration(match.getDuration(), allocator), allocator);
 
+    res.AddMember("normalTime", encodeDuration(category.getRuleset().getNormalTime(), allocator), allocator);
+
     res.AddMember("osaekomi", encodeOsaekomi(match.getOsaekomi(), clockDiff, allocator), allocator);
 
     std::optional<MatchStore::PlayerIndex> winner;
