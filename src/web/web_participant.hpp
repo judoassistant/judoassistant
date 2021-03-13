@@ -30,6 +30,7 @@ private:
     bool subscribePlayer(const std::string &id);
     bool subscribeTatami(const std::string &index);
     bool listTournaments();
+    bool clock();
 
     void write();
 

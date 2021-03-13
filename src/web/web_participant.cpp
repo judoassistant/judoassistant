@@ -106,6 +106,13 @@ bool WebParticipant::parseMessage(const std::string &message) {
         return listTournaments();
     }
 
+    if (parts[0] == "clock") {
+        if (parts.size() != 1)
+            return false;
+        return clock();
+    }
+
+
     return false;
 }
 
@@ -246,6 +253,15 @@ bool WebParticipant::listTournaments() {
 
         deliver(encoder.encodeTournamentListingMessage(tournament));
     }));
+
+    return true;
+}
+
+bool WebParticipant::clock() {
+    auto t = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+
+    JsonEncoder encoder;
+    deliver(encoder.encodeClockMessage(t));
 
     return true;
 }

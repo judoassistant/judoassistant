@@ -46,6 +46,8 @@ public:
     std::unique_ptr<JsonBuffer> encodeTournamentListingMessage(const std::vector<TournamentListing> &tournament);
     std::unique_ptr<JsonBuffer> encodeTournamentListingFailMessage();
 
+    std::unique_ptr<JsonBuffer> encodeClockMessage(std::chrono::milliseconds clock);
+
 private:
     rapidjson::Value encodeMeta(const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);
 

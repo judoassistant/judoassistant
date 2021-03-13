@@ -862,19 +862,24 @@ rapidjson::Value JsonEncoder::encodeTournamentListing(const TournamentListing &t
     return res;
 }
 
-std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingMessage(const std::vector<TournamentListing> &tournamentListings) {
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingMessage(const std::vector<TournamentListing> &pastTournamentsListing, const std::vector<TournamentListing> &upcomingTournamentsListing) {
     rapidjson::Document document;
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
     document.AddMember("type", encodeString("tournamentListing", allocator), allocator);
 
+    // Past tournaments
+    rapidjson::Value pastTournaments(rapidjson::kArrayType);
+    for (const auto &tournament : pastTournamentsListing)
+        pastTournaments.PushBack(encodeTournamentListing(tournament, allocator), allocator);
+    document.AddMember("pastTournaments", pastTournaments, allocator);
 
-    // tournaments
-    rapidjson::Value tournaments(rapidjson::kArrayType);
-    for (const auto &tournament : tournamentListings)
-        tournaments.PushBack(encodeTournamentListing(tournament, allocator), allocator);
-    document.AddMember("tournaments", tournaments, allocator);
+    // Upcoming tournaments
+    rapidjson::Value upcomingTournaments(rapidjson::kArrayType);
+    for (const auto &tournament : upcomingTournamentsListing)
+        upcomingTournaments.PushBack(encodeTournamentListing(tournament, allocator), allocator);
+    document.AddMember("upcomingTournaments", upcomingTournaments, allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -890,6 +895,20 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingFailMessage() {
 
     document.AddMember("type", encodeString("tournamentListingFail", allocator), allocator);
 
+    auto buffer = std::make_unique<JsonBuffer>();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
+    document.Accept(writer);
+
+    return buffer;
+}
+
+std::unique_ptr<JsonBuffer> JsonEncoder::encodeClockMessage(std::chrono::milliseconds clock) {
+    rapidjson::Document document;
+    document.SetObject();
+    auto &allocator = document.GetAllocator();
+
+    document.AddMember("type", encodeString("clock", allocator), allocator);
+    document.AddMember("clock", clock.count(), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
