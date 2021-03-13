@@ -33,7 +33,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionMessage(con
     else {
         document.SetObject();
 
-        document.AddMember("messageType", encodeString("tournamentSubscription", allocator), allocator);
+        document.AddMember("type", encodeString("tournamentSubscription", allocator), allocator);
 
         // Tournament meta data field
         document.AddMember("tournament", encodeMeta(tournament, allocator), allocator);
@@ -133,7 +133,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionMessage(const
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("categorySubscription", allocator), allocator);
+    document.AddMember("type", encodeString("categorySubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedCategory", encodeSubscribedCategory(tournament, category, allocator), allocator);
@@ -156,7 +156,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionMessage(const W
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("playerSubscription", allocator), allocator);
+    document.AddMember("type", encodeString("playerSubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedPlayer", encodeSubscribedPlayer(player, allocator), allocator);
@@ -184,7 +184,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionMessage(const W
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tatamiSubscription", allocator), allocator);
+    document.AddMember("type", encodeString("tatamiSubscription", allocator), allocator);
 
     // subscribed category field
     document.AddMember("subscribedTatami", encodeSubscribedTatami(index, tournament, allocator), allocator);
@@ -274,7 +274,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentChangesMessage(const We
     }
     else {
         document.SetObject();
-        document.AddMember("messageType", encodeString("tournamentChanges", allocator), allocator);
+        document.AddMember("type", encodeString("tournamentChanges", allocator), allocator);
 
         // Tournament meta data field
         if (tournament.tournamentChanged())
@@ -636,7 +636,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentSubscriptionFailMessage
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournamentSubscriptionFail", allocator), allocator);
+    document.AddMember("type", encodeString("tournamentSubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -650,7 +650,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeCategorySubscriptionFailMessage()
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("categorySubscriptionFail", allocator), allocator);
+    document.AddMember("type", encodeString("categorySubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -664,7 +664,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTatamiSubscriptionFailMessage() {
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tatamiSubscriptionFail", allocator), allocator);
+    document.AddMember("type", encodeString("tatamiSubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -678,7 +678,7 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodePlayerSubscriptionFailMessage() {
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("playerSubscriptionFail", allocator), allocator);
+    document.AddMember("type", encodeString("playerSubscriptionFail", allocator), allocator);
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
@@ -865,7 +865,8 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingMessage(const st
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournamentListing", allocator), allocator);
+    document.AddMember("type", encodeString("tournamentListing", allocator), allocator);
+
 
     // tournaments
     rapidjson::Value tournaments(rapidjson::kArrayType);
@@ -885,7 +886,8 @@ std::unique_ptr<JsonBuffer> JsonEncoder::encodeTournamentListingFailMessage() {
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    document.AddMember("messageType", encodeString("tournamentListingFail", allocator), allocator);
+    document.AddMember("type", encodeString("tournamentListingFail", allocator), allocator);
+
 
     auto buffer = std::make_unique<JsonBuffer>();
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer->getStringBuffer());
