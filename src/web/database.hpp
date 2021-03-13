@@ -46,7 +46,7 @@ public:
     typedef std::function<void(bool)> UpdateTournamentCallback;
     void asyncUpdateTournament(const std::string &webName, const std::string &name, const std::string &location, const std::string &date, UpdateTournamentCallback callback);
 
-    typedef std::function<void(bool, std::vector<TournamentListing>)> ListTournamentsCallback;
+    typedef std::function<void(bool, std::vector<TournamentListing>, std::vector<TournamentListing>)> ListTournamentsCallback;
     void asyncListTournaments(ListTournamentsCallback callback);
 
 private:
