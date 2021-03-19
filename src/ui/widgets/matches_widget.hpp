@@ -62,17 +62,17 @@ private:
 
     bool mResettingMatches;
     QTimer mTimer;
-    std::unordered_map<std::pair<CategoryId,MatchId>, size_t> mLoadedMatches; // Matches loaded and loading time
+    std::unordered_map<CombinedId, size_t> mLoadedMatches; // Matches loaded and loading time
     std::unordered_set<PositionId> mLoadedGroups; // Blocks loaded
 
-    std::deque<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
-    std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedMatchesSet;
+    std::deque<std::pair<CombinedId, size_t>> mUnfinishedMatches; // Unfinished (and loaded) matches and loading time
+    std::unordered_set<CombinedId> mUnfinishedMatchesSet;
 
-    std::unordered_map<PlayerId, std::unordered_set<std::pair<CategoryId, MatchId>>> mUnfinishedMatchesPlayers;
-    std::unordered_map<std::pair<CategoryId, MatchId>, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
-    std::unordered_set<std::pair<CategoryId, MatchId>> mUnpausedMatches;
+    std::unordered_map<PlayerId, std::unordered_set<CombinedId>> mUnfinishedMatchesPlayers;
+    std::unordered_map<CombinedId, std::pair<std::optional<PlayerId>, std::optional<PlayerId>>> mUnfinishedMatchesPlayersInv;
+    std::unordered_set<CombinedId> mUnpausedMatches;
 
-    std::unordered_map<std::pair<CategoryId, MatchId>, MatchGraphicsItem*> mItems;
+    std::unordered_map<CombinedId, MatchGraphicsItem*> mItems;
 };
 
 class MatchesWidget : public QWidget {
@@ -93,3 +93,4 @@ private:
     std::stack<QMetaObject::Connection> mConnections;
     MatchesGridGraphicsManager *mGrid;
 };
+

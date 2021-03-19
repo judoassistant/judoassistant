@@ -8,7 +8,7 @@
 class CancelIpponAction : public MatchEventAction {
 public:
     CancelIpponAction() = default;
-    CancelIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
+    CancelIpponAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;

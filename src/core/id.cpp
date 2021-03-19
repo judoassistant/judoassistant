@@ -143,11 +143,3 @@ std::string CombinedId::toString() const {
     return mCategoryId.toString() + ";" + mMatchId.toString();
 }
 
-CategoryId CombinedId::getCategoryId() const {
-    return mCategoryId;
-}
-
-MatchId CombinedId::getMatchId() const {
-    return mMatchId;
-}
-

@@ -9,14 +9,13 @@
 class TournamentStore;
 enum class MatchType;
 
-// TODO: Try to share code base with ui tatami matches model
 class WebTatamiModel {
 public:
     static constexpr unsigned int DISPLAY_COUNT = 5; // The minimum number of matches to keep loaded
 
     WebTatamiModel(const TournamentStore &tournament, TatamiLocation tatami);
-    const std::list<std::pair<CategoryId, MatchId>>& getMatches() const;
-    const std::list<std::pair<CategoryId, MatchId>>& getInsertedMatches() const;
+    const std::list<CombinedId>& getMatches() const;
+    const std::list<CombinedId>& getInsertedMatches() const;
     bool matchesChanged() const;
     bool changed() const;
 
@@ -35,15 +34,15 @@ private:
 
     bool mResetting;
 
-    std::unordered_map<std::pair<CategoryId, MatchId>, size_t> mLoadedMatches; // Matches loaded and their loading time
+    std::unordered_map<CombinedId, size_t> mLoadedMatches; // Matches loaded and their loading time
     std::unordered_set<PositionId> mLoadedGroups; // Blocks loaded
 
-    std::list<std::tuple<CategoryId, MatchId, size_t>> mUnfinishedLoadedMatches; // Unfinished (and loaded) matches and loading time
-    std::unordered_set<std::pair<CategoryId, MatchId>> mUnfinishedLoadedMatchesSet;
+    std::list<std::pair<CombinedId, size_t>> mUnfinishedLoadedMatches; // Unfinished (and loaded) matches and loading time
+    std::unordered_set<CombinedId> mUnfinishedLoadedMatchesSet;
 
     bool mMatchesChanged;
     bool mChanged;
-    std::list<std::pair<CategoryId, MatchId>> mMatches;
-    std::list<std::pair<CategoryId, MatchId>> mInsertedMatches;
+    std::list<CombinedId> mMatches;
+    std::list<CombinedId> mInsertedMatches;
 };
 

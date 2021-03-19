@@ -44,7 +44,8 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const 
             size_t j = shiftedIds.size() - i - 1;
             if (!shiftedIds[i] || !shiftedIds[j]) continue;
             std::string matchTitle = (mComposited ? "Elimination" : "Pool");
-            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, matchTitle, false, shiftedIds[i], shiftedIds[j]);
+            const auto matchId = MatchId::generate(category, generator);
+            auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, matchTitle, false, shiftedIds[i], shiftedIds[j]);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }

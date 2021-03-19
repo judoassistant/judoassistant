@@ -37,22 +37,21 @@ const std::string & PlayerStore::getClub() const {
     return mFields.club;
 }
 
-void PlayerStore::eraseMatch(CategoryId categoryId, MatchId matchId) {
-    mMatches.erase(std::make_pair(categoryId, matchId));
+void PlayerStore::eraseMatch(const CombinedId &combinedId) {
+    mMatches.erase(combinedId);
 }
 
-void PlayerStore::addMatch(CategoryId categoryId, MatchId matchId) {
-    auto p = std::make_pair(categoryId, matchId);
-    assert(mMatches.find(p) == mMatches.end());
-    mMatches.insert(p);
+void PlayerStore::addMatch(const CombinedId &combinedId) {
+    assert(mMatches.find(combinedId) == mMatches.end());
+    mMatches.insert(combinedId);
 }
 
-const std::unordered_set<std::pair<CategoryId,MatchId>> & PlayerStore::getMatches() const {
+const std::unordered_set<CombinedId> & PlayerStore::getMatches() const {
     return mMatches;
 }
 
-bool PlayerStore::containsMatch(CategoryId categoryId, MatchId matchId) const {
-    return mMatches.find(std::make_pair(categoryId, matchId)) != mMatches.end();
+bool PlayerStore::containsMatch(const CombinedId &combinedId) const {
+    return mMatches.find(combinedId) != mMatches.end();
 }
 
 void PlayerStore::eraseCategory(CategoryId id) {

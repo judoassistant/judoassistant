@@ -16,12 +16,12 @@ WebTatamiModel::WebTatamiModel(const TournamentStore &tournament, TatamiLocation
     flush();
 }
 
-const std::list<std::pair<CategoryId, MatchId>>& WebTatamiModel::getMatches() const {
+const std::list<CombinedId>& WebTatamiModel::getMatches() const {
     assert(!mResetting);
     return mMatches;
 }
 
-const std::list<std::pair<CategoryId, MatchId>>& WebTatamiModel::getInsertedMatches() const {
+const std::list<CombinedId>& WebTatamiModel::getInsertedMatches() const {
     assert(!mResetting);
     return mInsertedMatches;
 }
@@ -33,7 +33,7 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
     const auto &category = mTournament.getCategory(categoryId);
 
     for (auto matchId: matchIds) {
-        auto combinedId = std::make_pair(categoryId, matchId);
+        CombinedId combinedId(categoryId, matchId);
         auto it = mLoadedMatches.find(combinedId);
         if (it == mLoadedMatches.end())
             continue;
@@ -48,7 +48,7 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
             // Remove from unfinished matches
             // Probably at the front of the list
             for (auto i = mUnfinishedLoadedMatches.begin(); i != mUnfinishedLoadedMatches.end(); ++i) {
-                auto curId = std::make_pair(std::get<0>(*i), std::get<1>(*i));
+                const CombinedId &curId = i->first;
                 if (curId == combinedId) {
                     mUnfinishedLoadedMatches.erase(i);
                     break;
@@ -61,12 +61,12 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
             // Add to unfinished matches
             auto i = mUnfinishedLoadedMatches.begin();
             for (;i != mUnfinishedLoadedMatches.end(); ++i) {
-                auto curLoadingTime = std::get<2>(*i);
+                auto curLoadingTime = i->second;
                 if (curLoadingTime > loadingTime)
                     break;
             }
 
-            mUnfinishedLoadedMatches.insert(i, std::make_tuple(categoryId, matchId, loadingTime));
+            mUnfinishedLoadedMatches.insert(i, std::pair(combinedId, loadingTime));
             mUnfinishedLoadedMatchesSet.insert(combinedId);
         }
     }
@@ -132,18 +132,17 @@ void WebTatamiModel::loadBlocks() {
         mLoadedGroups.insert(handle.id);
         const auto &group = tatami.at(handle);
 
-        for (const auto &p : group.getMatches()) {
-            auto &category = mTournament.getCategory(p.first);
-            auto &match = category.getMatch(p.second);
+        for (const auto &combinedId : group.getMatches()) {
+            auto &category = mTournament.getCategory(combinedId.getCategoryId());
+            auto &match = category.getMatch(combinedId.getMatchId());
             auto loadingTime = mLoadedMatches.size();
-            auto combinedId = match.getCombinedId();
 
             mLoadedMatches[combinedId] = loadingTime;
 
             if (match.getStatus() == MatchStatus::FINISHED)
                 continue;
 
-            mUnfinishedLoadedMatches.emplace_back(match.getCategory(), match.getId(), loadingTime);
+            mUnfinishedLoadedMatches.emplace_back(combinedId, loadingTime);
             mUnfinishedLoadedMatchesSet.insert(combinedId);
         }
     }
@@ -168,7 +167,7 @@ void WebTatamiModel::flush() {
 
         // Copy matches from mUnfinishedMatches
         if (it == mMatches.end() && jt != mUnfinishedLoadedMatches.end()) {
-            auto combinedId = std::make_pair(std::get<0>(*jt), std::get<1>(*jt));
+            const CombinedId &combinedId = jt->first;
             mMatches.insert(it, combinedId);
             mInsertedMatches.push_back(combinedId);
             mMatchesChanged = true;
@@ -186,7 +185,7 @@ void WebTatamiModel::flush() {
         }
 
         // Both iterators != end
-        auto combinedId = std::make_pair(std::get<0>(*jt), std::get<1>(*jt));
+        const CombinedId &combinedId = jt->first;
         if (*it == combinedId) {
             // Matches are the same. Continue
             ++it;

@@ -15,7 +15,7 @@ public:
     class ConstMatchIterator {
     public:
         ConstMatchIterator & operator++();
-        std::pair<CategoryId, MatchId> operator*();
+        CombinedId operator*();
         bool operator!=(const ConstMatchIterator &other) const;
         bool operator==(const ConstMatchIterator &other) const;
 

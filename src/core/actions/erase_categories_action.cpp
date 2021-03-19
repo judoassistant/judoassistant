@@ -78,11 +78,11 @@ void EraseCategoriesAction::redoImpl(TournamentStore & tournament) {
         for (const std::unique_ptr<MatchStore> &match : category.getMatches()) {
             auto whitePlayerId = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayerId)
-                tournament.getPlayer(*whitePlayerId).eraseMatch(categoryId, match->getId());
+                tournament.getPlayer(*whitePlayerId).eraseMatch(match->getCombinedId());
 
             auto bluePlayerId = match->getPlayer(MatchStore::PlayerIndex::BLUE);
             if (bluePlayerId)
-                tournament.getPlayer(*bluePlayerId).eraseMatch(categoryId, match->getId());
+                tournament.getPlayer(*bluePlayerId).eraseMatch(match->getCombinedId());
         }
 
         mCategories.push(tournament.eraseCategory(categoryId));
@@ -114,11 +114,11 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
         for (const std::unique_ptr<MatchStore> &match : category->getMatches()) {
             auto whitePlayerId = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayerId)
-                tournament.getPlayer(*whitePlayerId).addMatch(category->getId(), match->getId());
+                tournament.getPlayer(*whitePlayerId).addMatch(match->getCombinedId());
 
             auto bluePlayerId = match->getPlayer(MatchStore::PlayerIndex::BLUE);
             if (bluePlayerId)
-                tournament.getPlayer(*bluePlayerId).addMatch(category->getId(), match->getId());
+                tournament.getPlayer(*bluePlayerId).addMatch(match->getCombinedId());
         }
 
         tournament.addCategory(std::move(category));

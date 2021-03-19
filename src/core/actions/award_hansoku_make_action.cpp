@@ -4,14 +4,14 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-AwardHansokuMakeAction::AwardHansokuMakeAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
+AwardHansokuMakeAction::AwardHansokuMakeAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
+    : MatchEventAction(combinedId)
     , mPlayerIndex(playerIndex)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardHansokuMakeAction::freshClone() const {
-    return std::make_unique<AwardHansokuMakeAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+    return std::make_unique<AwardHansokuMakeAction>(mCombinedId, mPlayerIndex, mMasterTime);
 }
 
 std::string AwardHansokuMakeAction::getDescription() const {
@@ -21,12 +21,12 @@ std::string AwardHansokuMakeAction::getDescription() const {
 }
 
 void AwardHansokuMakeAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
 
     const auto &ruleset = category.getRuleset();
     if (!ruleset.canAwardHansokuMake(match, mPlayerIndex))

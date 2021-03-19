@@ -54,11 +54,11 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
         for (const std::unique_ptr<MatchStore> &match : category.getMatches()) {
             std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayer && tournament.containsPlayer(*whitePlayer))
-                tournament.getPlayer(*whitePlayer).eraseMatch(categoryId, match->getId());
+                tournament.getPlayer(*whitePlayer).eraseMatch(CombinedId(categoryId, match->getId()));
 
             std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
             if (bluePlayer && tournament.containsPlayer(*bluePlayer))
-                tournament.getPlayer(*bluePlayer).eraseMatch(categoryId, match->getId());
+                tournament.getPlayer(*bluePlayer).eraseMatch(CombinedId(categoryId, match->getId()));
         }
 
         mOldMatches.push_back(category.clearMatches());
@@ -163,11 +163,11 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
         for (std::unique_ptr<MatchStore> & match : mOldMatches.back()) {
             std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayer && tournament.containsPlayer(*whitePlayer))
-                tournament.getPlayer(*whitePlayer).addMatch(categoryId, match->getId());
+                tournament.getPlayer(*whitePlayer).addMatch(match->getCombinedId());
 
             std::optional<PlayerId> bluePlayer = match->getPlayer(MatchStore::PlayerIndex::BLUE);
             if (bluePlayer && tournament.containsPlayer(*bluePlayer))
-                tournament.getPlayer(*bluePlayer).addMatch(categoryId, match->getId());
+                tournament.getPlayer(*bluePlayer).addMatch(match->getCombinedId());
 
             category.pushMatch(std::move(match));
         }

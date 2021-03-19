@@ -63,7 +63,7 @@ private:
     rapidjson::Value encodeMatch(const CategoryStore &category, const MatchStore &match, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator, bool shouldCache);
     rapidjson::Value encodeCategoryResults(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeString(const std::string &str, rapidjson::Document::AllocatorType &allocator);
-    rapidjson::Value encodeCombinedId(const std::pair<CategoryId, MatchId> &id, rapidjson::Document::AllocatorType &allocator);
+    rapidjson::Value encodeCombinedId(const CombinedId &id, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeMatchScore(const MatchStore::Score &score, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeMatchStatus(const MatchStatus &status, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value encodeMatchEvent(const MatchEvent &event, rapidjson::Document::AllocatorType &allocator);
@@ -76,6 +76,6 @@ private:
 
     std::optional<rapidjson::Document> mCachedSubscriptionObject;
     std::optional<rapidjson::Document> mCachedChangesObject;
-    std::unordered_map<std::pair<CategoryId, MatchId>, rapidjson::Document> mCachedMatches;
+    std::unordered_map<CombinedId, rapidjson::Document> mCachedMatches;
 };
 

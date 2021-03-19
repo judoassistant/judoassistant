@@ -9,9 +9,9 @@ class StoreManager;
 class EditMatchDialog : public QDialog {
     Q_OBJECT
 public:
-    EditMatchDialog(StoreManager &storeManager, std::pair<CategoryId, MatchId> combinedId, QWidget *parent);
+    EditMatchDialog(StoreManager &storeManager, CombinedId combinedId, QWidget *parent);
 
 private:
     StoreManager &mStoreManager;
-    std::pair<CategoryId, MatchId> mCombinedId;
+    CombinedId mCombinedId;
 };

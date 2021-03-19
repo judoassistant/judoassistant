@@ -8,7 +8,7 @@
 class ResumeMatchAction : public MatchEventAction {
 public:
     ResumeMatchAction() = default;
-    ResumeMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
+    ResumeMatchAction(CombinedId combinedId, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;

@@ -4,13 +4,13 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-ResumeMatchAction::ResumeMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
+ResumeMatchAction::ResumeMatchAction(CombinedId combinedId, std::chrono::milliseconds masterTime)
+    : MatchEventAction(combinedId)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> ResumeMatchAction::freshClone() const {
-    return std::make_unique<ResumeMatchAction>(mCategoryId, mMatchId, mMasterTime);
+    return std::make_unique<ResumeMatchAction>(mCombinedId, mMasterTime);
 }
 
 std::string ResumeMatchAction::getDescription() const {
@@ -18,13 +18,13 @@ std::string ResumeMatchAction::getDescription() const {
 }
 
 void ResumeMatchAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
 
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
     const auto &ruleset = category.getRuleset();
 
     if (!ruleset.canResume(match, mMasterTime))

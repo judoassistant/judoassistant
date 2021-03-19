@@ -23,7 +23,7 @@ void MatchWidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     QStyleOptionGraphicsItem styleOptions;
     if (mCombinedId) {
-        MatchGraphicsItem graphicsItem(mStoreManager, mCombinedId->first, mCombinedId->second, rect());
+        MatchGraphicsItem graphicsItem(mStoreManager, *mCombinedId, rect());
         graphicsItem.paint(&painter, &styleOptions, this);
     }
     else {
@@ -55,7 +55,7 @@ QSize MatchWidget::sizeHint() const {
     return QSize(MatchGraphicsItem::WIDTH_HINT, MatchGraphicsItem::HEIGHT_HINT);
 }
 
-void MatchWidget::setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId) {
+void MatchWidget::setMatch(std::optional<CombinedId> combinedId) {
     mCombinedId = combinedId;
 
     update(0, 0, width(), height());
@@ -83,7 +83,7 @@ void MatchWidget::changeMatches(CategoryId categoryId, std::vector<MatchId> matc
     if (!mCombinedId)
         return;
 
-    if (mCombinedId->first == categoryId && std::find(matchIds.begin(), matchIds.end(), mCombinedId->second) != matchIds.end())
+    if (mCombinedId->getCategoryId() == categoryId && std::find(matchIds.begin(), matchIds.end(), mCombinedId->getMatchId()) != matchIds.end())
         update(0, 0, width(), height());
 }
 
@@ -92,7 +92,7 @@ void MatchWidget::resetMatches(const std::vector<CategoryId> &categoryIds) {
         return;
 
     for (auto categoryId : categoryIds) {
-        if (mCombinedId->first == categoryId) {
+        if (mCombinedId->getCategoryId() == categoryId) {
             mCombinedId = std::nullopt;
             update(0, 0, width(), height());
             return;
@@ -104,9 +104,7 @@ void MatchWidget::changeCategories(std::vector<CategoryId> categoryIds) {
     if (!mCombinedId)
         return;
 
-    auto categoryId = mCombinedId->first;
-
-    if (std::find(categoryIds.begin(), categoryIds.end(), categoryId) != categoryIds.end())
+    if (std::find(categoryIds.begin(), categoryIds.end(), mCombinedId->getCategoryId()) != categoryIds.end())
         update(0, 0, width(), height());
 }
 
@@ -115,8 +113,8 @@ void MatchWidget::changePlayers(std::vector<PlayerId> playerIds) {
         return;
 
     const auto &tournament = mStoreManager.getTournament();
-    const auto &category = tournament.getCategory(mCombinedId->first);
-    const auto &match = category.getMatch(mCombinedId->second);
+    const auto &category = tournament.getCategory(mCombinedId->getCategoryId());
+    const auto &match = category.getMatch(mCombinedId->getMatchId());
 
     bool changed = false;
     for (auto playerId : playerIds) {

@@ -33,8 +33,7 @@ void CategoryMatchesWidget::showEditDialog() {
     if (matchIds.empty())
         return;
 
-    std::pair<CategoryId, MatchId> combinedId(mModel->getCategory().value(), matchIds.front());
-
+    const CombinedId combinedId(mModel->getCategory().value(), matchIds.front());
     EditMatchDialog dialog(mStoreManager, combinedId, this);
     dialog.exec();
 }
@@ -50,7 +49,8 @@ void CategoryMatchesWidget::showResetDialog() {
     if (matchIds.empty())
         return;
 
-    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(mModel->getCategory().value(), matchIds.front()));
+    const CombinedId combinedId(mModel->getCategory().value(), matchIds.front());
+    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(combinedId));
 }
 
 void CategoryMatchesWidget::showContextMenu(const QPoint &pos) {

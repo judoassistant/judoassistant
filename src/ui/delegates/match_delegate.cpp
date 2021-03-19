@@ -17,7 +17,7 @@ void MatchDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
             painter->fillRect(drawRect, option.palette.highlight());
 
         QStyleOptionGraphicsItem styleOption;
-        MatchGraphicsItem item(mStoreManager, combinedId.getCategoryId(), combinedId.getMatchId(), drawRect);
+        MatchGraphicsItem item(mStoreManager, combinedId, drawRect);
         item.paint(painter, &styleOption, nullptr);
     } else {
         QStyledItemDelegate::paint(painter, option, index);

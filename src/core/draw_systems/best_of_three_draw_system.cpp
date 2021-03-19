@@ -38,8 +38,9 @@ std::vector<std::unique_ptr<AddMatchAction>> BestOfThreeDrawSystem::initCategory
         shiftedIds.emplace_back(mPlayers[i]);
 
     for (size_t i = 0; i < 3; ++i) {
-        auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::ELIMINATION, "Best-of-Three", false, playerIds[whitePlayer], playerIds[bluePlayer]);
-        mMatches.push_back(action->getMatchId());
+        const auto matchId = MatchId::generate(category, generator);
+        auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, "Best-of-Three", false, playerIds[whitePlayer], playerIds[bluePlayer]);
+        mMatches.push_back(matchId);
         actions.push_back(std::move(action));
     }
 
@@ -68,7 +69,7 @@ std::vector<std::unique_ptr<Action>> BestOfThreeDrawSystem::updateCategory(const
     const auto &thirdMatch = category.getMatch(mMatches[2]);
 
     if (thirdMatch.isBye() != bye)
-        actions.push_back(std::make_unique<SetMatchByeAction>(category.getId(), mMatches[2], bye));
+        actions.push_back(std::make_unique<SetMatchByeAction>(CombinedId(category.getId(), mMatches[2]), bye));
     return actions;
 }
 

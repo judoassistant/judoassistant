@@ -8,7 +8,7 @@
 class AwardHansokuMakeAction : public MatchEventAction {
 public:
     AwardHansokuMakeAction() = default;
-    AwardHansokuMakeAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
+    AwardHansokuMakeAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;

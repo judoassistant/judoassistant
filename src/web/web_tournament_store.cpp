@@ -181,10 +181,8 @@ void WebTournamentStore::endResetCategories() {
 }
 
 void WebTournamentStore::changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds) {
-    for (auto matchId : matchIds) {
-        auto combinedId = std::make_pair(categoryId, matchId);
-        mChangedMatches.insert(combinedId);
-    }
+    for (auto matchId : matchIds)
+        mChangedMatches.insert(CombinedId(categoryId, matchId));
 
     if (!mResettingTatamis) {
         for (WebTatamiModel &model : mTatamiModels)
@@ -204,11 +202,11 @@ void WebTournamentStore::endResetMatches(const std::vector<CategoryId> &category
     }
 }
 
-void WebTournamentStore::addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {
+void WebTournamentStore::addMatchesToPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) {
     mPlayerMatchResets.insert(playerId);
 }
 
-void WebTournamentStore::eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {
+void WebTournamentStore::eraseMatchesFromPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) {
     mPlayerMatchResets.insert(playerId);
 }
 
@@ -275,7 +273,7 @@ const std::unordered_set<CategoryId>& WebTournamentStore::getCategoryMatchResets
     return mCategoryMatchResets;
 }
 
-const std::unordered_set<std::pair<CategoryId, MatchId>>& WebTournamentStore::getChangedMatches() const {
+const std::unordered_set<CombinedId>& WebTournamentStore::getChangedMatches() const {
     return mChangedMatches;
 }
 

@@ -5,9 +5,8 @@
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
 
-AddMatchAction::AddMatchAction(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
-    : mId(id)
-    , mCategoryId(categoryId)
+AddMatchAction::AddMatchAction(const CombinedId &combinedId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId)
+    : mCombinedId(combinedId)
     , mType(type)
     , mTitle(title)
     , mBye(bye)
@@ -16,47 +15,47 @@ AddMatchAction::AddMatchAction(MatchId id, CategoryId categoryId, MatchType type
 {}
 
 void AddMatchAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId)) return;
+    if (!tournament.containsCategory(mCombinedId.getCategoryId())) return;
 
-    CategoryStore & category = tournament.getCategory(mCategoryId);
-    if (category.containsMatch(mId))
+    CategoryStore & category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (category.containsMatch(mCombinedId.getMatchId()))
         throw ActionExecutionException("Failed to redo AddMatchAction. Match already exists.");
 
     std::optional<PlayerId> whitePlayerId;
     if (mWhitePlayerId && tournament.containsPlayer(*mWhitePlayerId)) {
         whitePlayerId = mWhitePlayerId;
-        tournament.getPlayer(*whitePlayerId).addMatch(mCategoryId, mId);
+        tournament.getPlayer(*whitePlayerId).addMatch(mCombinedId);
     }
 
     std::optional<PlayerId> bluePlayerId;
     if (mBluePlayerId && tournament.containsPlayer(*mBluePlayerId)) {
         bluePlayerId = mBluePlayerId;
-        tournament.getPlayer(*bluePlayerId).addMatch(mCategoryId, mId);
+        tournament.getPlayer(*bluePlayerId).addMatch(mCombinedId);
     }
 
-    category.pushMatch(std::make_unique<MatchStore>(mId, mCategoryId, mType, mTitle, mBye, whitePlayerId, bluePlayerId));
+    category.pushMatch(std::make_unique<MatchStore>(mCombinedId, mType, mTitle, mBye, whitePlayerId, bluePlayerId));
 }
 
 void AddMatchAction::undoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId)) return;
+    if (!tournament.containsCategory(mCombinedId.getCategoryId())) return;
 
-    CategoryStore & category = tournament.getCategory(mCategoryId);
+    CategoryStore & category = tournament.getCategory(mCombinedId.getCategoryId());
 
     if (mWhitePlayerId && tournament.containsPlayer(*mWhitePlayerId))
-        tournament.getPlayer(*mWhitePlayerId).eraseMatch(mCategoryId, mId);
+        tournament.getPlayer(*mWhitePlayerId).eraseMatch(mCombinedId);
 
     if (mBluePlayerId && tournament.containsPlayer(*mBluePlayerId))
-        tournament.getPlayer(*mBluePlayerId).eraseMatch(mCategoryId, mId);
+        tournament.getPlayer(*mBluePlayerId).eraseMatch(mCombinedId);
 
     category.popMatch();
 }
 
 MatchId AddMatchAction::getMatchId() {
-    return mId;
+    return mCombinedId.getMatchId();
 }
 
 std::unique_ptr<Action> AddMatchAction::freshClone() const {
-    return std::make_unique<AddMatchAction>(mId, mCategoryId, mType, mTitle, mBye, mWhitePlayerId, mBluePlayerId);
+    return std::make_unique<AddMatchAction>(mCombinedId, mType, mTitle, mBye, mWhitePlayerId, mBluePlayerId);
 }
 
 std::string AddMatchAction::getDescription() const {
