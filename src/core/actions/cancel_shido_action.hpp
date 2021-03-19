@@ -8,7 +8,7 @@
 class CancelShidoAction : public MatchEventAction {
 public:
     CancelShidoAction() = default;
-    CancelShidoAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
+    CancelShidoAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;

@@ -9,9 +9,9 @@ ResetMatchesAction::ResetMatchesAction(const std::vector<CategoryId> &categoryId
     , mMatchId(std::nullopt)
 {}
 
-ResetMatchesAction::ResetMatchesAction(CategoryId categoryId, MatchId matchId)
-    : mCategoryIds({categoryId})
-    , mMatchId(matchId)
+ResetMatchesAction::ResetMatchesAction(CombinedId combinedId)
+    : mCategoryIds({combinedId.getCategoryId()})
+    , mMatchId(combinedId.getMatchId())
 {}
 
 ResetMatchesAction::ResetMatchesAction(const std::vector<CategoryId> &categoryIds, std::optional<MatchId> matchId)
@@ -66,8 +66,8 @@ void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
         return;
 
     for (auto combinedId : mChangedMatches) {
-        auto &category = tournament.getCategory(combinedId.first);
-        auto &match = category.getMatch(combinedId.second);
+        auto &category = tournament.getCategory(combinedId.getCategoryId());
+        auto &match = category.getMatch(combinedId.getMatchId());
 
         auto prevStatus = match.getState().status;
 
@@ -155,8 +155,8 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
 
     for (auto it = mChangedMatches.rbegin(); it != mChangedMatches.rend(); ++it) {
         auto combinedId = *it;
-        auto &category = tournament.getCategory(combinedId.first);
-        auto &match = category.getMatch(combinedId.second);
+        auto &category = tournament.getCategory(combinedId.getCategoryId());
+        auto &match = category.getMatch(combinedId.getMatchId());
 
         auto updatedStatus = match.getStatus();
         auto prevStatus = mPrevStates.top().status;

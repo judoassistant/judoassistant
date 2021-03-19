@@ -6,7 +6,7 @@
 class SetMatchPlayerAction : public Action {
 public:
     SetMatchPlayerAction() = default;
-    SetMatchPlayerAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::optional<PlayerId> playerId);
+    SetMatchPlayerAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::optional<PlayerId> playerId);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -16,12 +16,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId, mPlayerIndex, mPlayerId);
+        ar(mCombinedId, mPlayerIndex, mPlayerId);
     }
 
 private:
-    CategoryId mCategoryId;
-    MatchId mMatchId;
+    CombinedId mCombinedId;
     MatchStore::PlayerIndex mPlayerIndex;
     std::optional<PlayerId> mPlayerId;
     std::optional<PlayerId> mOldPlayerId;

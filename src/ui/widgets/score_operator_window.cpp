@@ -361,7 +361,7 @@ void ScoreOperatorWindow::findNextMatch() {
                     continue;
                 }
 
-                const auto &match = tournament.getCategory(combinedId.first).getMatch(combinedId.second);
+                const auto &match = tournament.getCategory(combinedId.getCategoryId()).getMatch(combinedId.getMatchId());
 
                 if (match.isBye())
                     continue;
@@ -384,13 +384,13 @@ void ScoreOperatorWindow::findNextMatch() {
 void ScoreOperatorWindow::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
     // handle next match changing
     bool shouldUpdateNextButton = false;
-    if (mNextMatch.has_value() && mNextMatch->first == categoryId) {
-        if(std::find(matchIds.begin(), matchIds.end(), mNextMatch->second) != matchIds.end()) {
+    if (mNextMatch.has_value() && mNextMatch->getCategoryId() == categoryId) {
+        if(std::find(matchIds.begin(), matchIds.end(), mNextMatch->getMatchId()) != matchIds.end()) {
             shouldUpdateNextButton = true;
         }
     }
 
-    if (mCurrentMatch.has_value() && mCurrentMatch->first == categoryId) {
+    if (mCurrentMatch.has_value() && mCurrentMatch->getCategoryId() == categoryId) {
         shouldUpdateNextButton = true;
         updateControlButtons();
     }
@@ -405,7 +405,7 @@ void ScoreOperatorWindow::beginResetMatches(const std::vector<CategoryId> &categ
         return;
 
     for (auto categoryId : categoryIds) {
-        if (mCurrentMatch->first == categoryId) {
+        if (mCurrentMatch->getCategoryId() == categoryId) {
             disableControlButtons(); // disable controls
             return;
         }
@@ -424,7 +424,7 @@ void ScoreOperatorWindow::updateNextButton() {
         enabled = false;
     }
     else {
-        const auto &match = tournament.getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+        const auto &match = tournament.getCategory(mNextMatch->getCategoryId()).getMatch(mNextMatch->getMatchId());
         if (!match.getWhitePlayer() || !match.getBluePlayer())
             enabled = false;
     }
@@ -438,16 +438,16 @@ void ScoreOperatorWindow::goNextMatch() {
         return;
 
     const auto &tournament = mStoreManager.getTournament();
-    const auto &nextMatch = tournament.getCategory(mNextMatch->first).getMatch(mNextMatch->second);
+    const auto &nextMatch = tournament.getCategory(mNextMatch->getCategoryId()).getMatch(mNextMatch->getMatchId());
     if (!nextMatch.getWhitePlayer() || !nextMatch.getBluePlayer())
         return;
 
     // Check if current match is finished
     if (mCurrentMatch.has_value()) {
-        if (tournament.containsCategory(mCurrentMatch->first)) {
-            const auto &category = tournament.getCategory(mCurrentMatch->first);
-            if (category.containsMatch(mCurrentMatch->second)) {
-                const auto &match = category.getMatch(mCurrentMatch->second);
+        if (tournament.containsCategory(mCurrentMatch->getCategoryId())) {
+            const auto &category = tournament.getCategory(mCurrentMatch->getCategoryId());
+            if (category.containsMatch(mCurrentMatch->getMatchId())) {
+                const auto &match = category.getMatch(mCurrentMatch->getMatchId());
                 if (match.getStatus() != MatchStatus::FINISHED) {
                     auto reply = QMessageBox::question(this, tr("Go to next match?"), tr("Are you sure you would like to go to the next match? The current match is not finished."), QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
                     if (reply == QMessageBox::Cancel)
@@ -495,6 +495,6 @@ void ScoreOperatorWindow::resetButtonClick() {
     if (!mCurrentMatch)
         return;
 
-    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(mCurrentMatch->first, mCurrentMatch->second));
+    mStoreManager.dispatch(std::make_unique<ResetMatchesAction>(*mCurrentMatch));
 }
 

@@ -8,7 +8,7 @@
 class StopOsaekomiAction : public MatchEventAction {
 public:
     StopOsaekomiAction() = default;
-    StopOsaekomiAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
+    StopOsaekomiAction(CombinedId combinedId, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;

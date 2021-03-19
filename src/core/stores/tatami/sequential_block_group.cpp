@@ -118,10 +118,10 @@ SequentialBlockGroup::ConstMatchIterator & SequentialBlockGroup::ConstMatchItera
     return *this;
 }
 
-std::pair<CategoryId, MatchId> SequentialBlockGroup::ConstMatchIterator::operator*() {
+CombinedId SequentialBlockGroup::ConstMatchIterator::operator*() {
     assert(mCurrentCategory != nullptr);
     auto matchId = mCurrentCategory->getMatches()[mCurrentMatch]->getId();
-    return std::make_pair(mCurrentCategory->getId(), matchId);
+    return CombinedId(mCurrentCategory->getId(), matchId);
 }
 
 bool SequentialBlockGroup::ConstMatchIterator::operator!=(const SequentialBlockGroup::ConstMatchIterator &other) const {

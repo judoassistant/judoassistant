@@ -22,7 +22,7 @@ public:
         NOT_STARTED, STARTED, FINISHED
     };
 
-    typedef std::vector<std::pair<CategoryId, MatchId>> MatchList; // Iteration and swapping of two elements given indexes must be supported
+    typedef std::vector<CombinedId> MatchList; // Iteration and swapping of two elements given indexes must be supported
 
     ConcurrentBlockGroup();
 
@@ -66,10 +66,10 @@ private:
     PositionManager<SequentialBlockGroup> mGroups;
     MatchList mMatches;
     Status mStatus;
-    std::unordered_map<std::pair<CategoryId, MatchId>,size_t> mMatchMap;
+    std::unordered_map<CombinedId,size_t> mMatchMap;
     std::chrono::milliseconds mExpectedDuration;
 
-    std::unordered_set<std::pair<CategoryId, MatchId>> mStartedMatches;
-    std::unordered_set<std::pair<CategoryId, MatchId>> mFinishedMatches;
+    std::unordered_set<CombinedId> mStartedMatches;
+    std::unordered_set<CombinedId> mFinishedMatches;
 };
 

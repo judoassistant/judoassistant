@@ -4,18 +4,18 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-SetMatchByeAction::SetMatchByeAction(CategoryId categoryId, MatchId matchId, bool bye)
-    : MatchEventAction(categoryId, matchId)
+SetMatchByeAction::SetMatchByeAction(CombinedId combinedId, bool bye)
+    : MatchEventAction(combinedId)
     , mBye(bye)
 {}
 
 void SetMatchByeAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
 
     if (match.isBye() == mBye)
         return;
@@ -35,7 +35,7 @@ void SetMatchByeAction::undoImpl(TournamentStore & tournament) {
 }
 
 std::unique_ptr<Action> SetMatchByeAction::freshClone() const {
-    return std::make_unique<SetMatchByeAction>(mCategoryId, mMatchId, mBye);
+    return std::make_unique<SetMatchByeAction>(mCombinedId, mBye);
 }
 
 std::string SetMatchByeAction::getDescription() const {

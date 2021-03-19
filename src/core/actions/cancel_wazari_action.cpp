@@ -4,14 +4,14 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-CancelWazariAction::CancelWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
+CancelWazariAction::CancelWazariAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime)
+    : MatchEventAction(combinedId)
     , mPlayerIndex(playerIndex)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> CancelWazariAction::freshClone() const {
-    return std::make_unique<CancelWazariAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime);
+    return std::make_unique<CancelWazariAction>(mCombinedId, mPlayerIndex, mMasterTime);
 }
 
 std::string CancelWazariAction::getDescription() const {
@@ -22,12 +22,12 @@ std::string CancelWazariAction::getDescription() const {
 }
 
 void CancelWazariAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
 
     const auto &ruleset = category.getRuleset();
     if (!ruleset.canCancelWazari(match, mPlayerIndex))

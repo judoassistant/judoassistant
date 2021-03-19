@@ -13,11 +13,10 @@ constexpr int COLUMN_TWO_WIDTH = 100;
 constexpr int HEADER_HEIGHT = 30;
 constexpr int LARGE_FONT_SIZE = 18;
 
-MatchGraphicsItem::MatchGraphicsItem(const StoreManager &storeManager, CategoryId categoryId, MatchId matchId, QRect rect, QGraphicsItem *parent)
+MatchGraphicsItem::MatchGraphicsItem(const StoreManager &storeManager, CombinedId combinedId, QRect rect, QGraphicsItem *parent)
     : QGraphicsItem(parent)
     , mStoreManager(storeManager)
-    , mCategoryId(categoryId)
-    , mMatchId(matchId)
+    , mCombinedId(combinedId)
     , mRect(rect)
 {
 }
@@ -28,14 +27,14 @@ QRectF MatchGraphicsItem::boundingRect() const {
 
 void MatchGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     const auto &tournament = mStoreManager.getTournament();
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
 
-    const auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    const auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
 
-    const auto &match = category.getMatch(mMatchId);
+    const auto &match = category.getMatch(mCombinedId.getMatchId());
 
     painter->save();
     painter->translate(mRect.x(), mRect.y());

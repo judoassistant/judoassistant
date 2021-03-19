@@ -4,15 +4,15 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-AwardWazariAction::AwardWazariAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi)
-    : MatchEventAction(categoryId, matchId)
+AwardWazariAction::AwardWazariAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi)
+    : MatchEventAction(combinedId)
     , mPlayerIndex(playerIndex)
     , mOsaekomi(osaekomi)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardWazariAction::freshClone() const {
-    return std::make_unique<AwardWazariAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime, mOsaekomi);
+    return std::make_unique<AwardWazariAction>(mCombinedId, mPlayerIndex, mMasterTime, mOsaekomi);
 }
 
 std::string AwardWazariAction::getDescription() const {
@@ -28,12 +28,12 @@ std::string AwardWazariAction::getDescription() const {
 }
 
 void AwardWazariAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
 
     if (mOsaekomi && match.isOsaekomiWazari())
         return;

@@ -14,7 +14,7 @@ public:
     MatchWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
     void paintEvent(QPaintEvent *event) override;
 
-    void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId);
+    void setMatch(std::optional<CombinedId> combinedId);
     QSize sizeHint() const override;
 
     void beginResetTournament();
@@ -27,6 +27,6 @@ private:
     const StoreManager &mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;
 
-    std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
+    std::optional<CombinedId> mCombinedId;
 };
 

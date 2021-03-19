@@ -82,9 +82,9 @@ std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(
     }
 
     // Add the semi finals and finals
-    auto firstSemiFinal = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::FINAL, "Semi-Final", false, std::nullopt, std::nullopt);
-    auto secondSemiFinal = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::FINAL, "Semi-Final", false, std::nullopt, std::nullopt);
-    auto finaly = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), MatchType::FINAL, "Final", false, std::nullopt, std::nullopt);
+    auto firstSemiFinal = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Semi-Final", false, std::nullopt, std::nullopt);
+    auto secondSemiFinal = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Semi-Final", false, std::nullopt, std::nullopt);
+    auto finaly = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Final", false, std::nullopt, std::nullopt);
 
     mMatches.push_back(firstSemiFinal->getMatchId());
     mMatches.push_back(secondSemiFinal->getMatchId());
@@ -114,15 +114,15 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
 
         // Check first semi final players
         if (firstSemiFinal.getWhitePlayer() != firstPoolResults[0].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, firstPoolResults[0].first));
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, firstPoolResults[0].first));
         if (firstSemiFinal.getBluePlayer() != secondPoolResults[1].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, secondPoolResults[1].first));
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, secondPoolResults[1].first));
 
         // Check second semi final players
         if (secondSemiFinal.getWhitePlayer() != secondPoolResults[0].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, secondPoolResults[0].first));
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, secondPoolResults[0].first));
         if (secondSemiFinal.getBluePlayer() != firstPoolResults[1].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, firstPoolResults[1].first));
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, firstPoolResults[1].first));
 
         // Check final players
         const auto &ruleset = category.getRuleset();
@@ -133,7 +133,7 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
             whitePlayer = firstSemiFinal.getPlayer(ruleset.getWinner(firstSemiFinal).value());
 
         if (whitePlayer != finaly.getWhitePlayer())
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), finaly.getId(), MatchStore::PlayerIndex::WHITE, whitePlayer));
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::WHITE, whitePlayer));
 
         // Check blue player
         std::optional<PlayerId> bluePlayer = std::nullopt;
@@ -141,24 +141,24 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
             bluePlayer = secondSemiFinal.getPlayer(ruleset.getWinner(secondSemiFinal).value());
 
         if (bluePlayer != finaly.getBluePlayer())
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), finaly.getId(), MatchStore::PlayerIndex::BLUE, bluePlayer));
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::BLUE, bluePlayer));
 
         return actions;
     }
 
     // Elimination not finished. Make sure semi-finals and finals have no players
     if (firstSemiFinal.getWhitePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
     if (firstSemiFinal.getBluePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), firstSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
     if (secondSemiFinal.getWhitePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
     if (secondSemiFinal.getBluePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), secondSemiFinal.getId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
     if (finaly.getWhitePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), finaly.getId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
     if (finaly.getBluePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), finaly.getId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
     return actions;
 }
 

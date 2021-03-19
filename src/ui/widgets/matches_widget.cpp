@@ -147,8 +147,7 @@ void MatchesGraphicsManager::loadBlocks(bool forceReloadItems) {
     const auto &tatami = tatamis.at(mLocation);
 
     struct MatchInfo {
-        CategoryId categoryId;
-        MatchId matchId;
+        CombinedId combinedId;
         MatchStatus status;
         std::optional<PlayerId> whitePlayer;
         std::optional<PlayerId> bluePlayer;
@@ -167,13 +166,12 @@ void MatchesGraphicsManager::loadBlocks(bool forceReloadItems) {
         mLoadedGroups.insert(handle.id);
         const auto &group = tatami.at(handle);
 
-        for (const auto &p : group.getMatches()) {
+        for (const auto &combinedId : group.getMatches()) {
             MatchInfo matchInfo;
-            auto &category = tournament.getCategory(p.first);
-            auto &match = category.getMatch(p.second);
+            auto &category = tournament.getCategory(combinedId.getCategoryId());
+            auto &match = category.getMatch(combinedId.getMatchId());
 
-            matchInfo.categoryId = p.first;
-            matchInfo.matchId = p.second;
+            matchInfo.combinedId = combinedId;
             matchInfo.status =  match.getStatus();
             matchInfo.whitePlayer = match.getWhitePlayer();
             matchInfo.bluePlayer = match.getBluePlayer();
@@ -195,21 +193,20 @@ void MatchesGraphicsManager::loadBlocks(bool forceReloadItems) {
     if (!newMatches.empty()) {
         for (const MatchInfo &matchInfo : newMatches) {
             auto loadingTime = mLoadedMatches.size();
-            auto combinedId = std::make_pair(matchInfo.categoryId, matchInfo.matchId);
-            mLoadedMatches[combinedId] = loadingTime;
+            mLoadedMatches[matchInfo.combinedId] = loadingTime;
 
             if (!matchInfo.bye && matchInfo.status != MatchStatus::FINISHED) {
-                mUnfinishedMatches.push_back(std::make_tuple(matchInfo.categoryId, matchInfo.matchId, loadingTime));
-                mUnfinishedMatchesSet.insert(combinedId);
+                mUnfinishedMatches.push_back(std::make_pair(matchInfo.combinedId, loadingTime));
+                mUnfinishedMatchesSet.insert(matchInfo.combinedId);
 
                 if (matchInfo.status == MatchStatus::UNPAUSED || matchInfo.osaekomi)
-                    mUnpausedMatches.insert(combinedId);
+                    mUnpausedMatches.insert(matchInfo.combinedId);
 
-                mUnfinishedMatchesPlayersInv[combinedId] = {matchInfo.whitePlayer, matchInfo.bluePlayer};
+                mUnfinishedMatchesPlayersInv[matchInfo.combinedId] = {matchInfo.whitePlayer, matchInfo.bluePlayer};
                 if (matchInfo.whitePlayer)
-                    mUnfinishedMatchesPlayers[*matchInfo.whitePlayer].insert(combinedId);
+                    mUnfinishedMatchesPlayers[*matchInfo.whitePlayer].insert(matchInfo.combinedId);
                 if (matchInfo.bluePlayer)
-                    mUnfinishedMatchesPlayers[*matchInfo.bluePlayer].insert(combinedId);
+                    mUnfinishedMatchesPlayers[*matchInfo.bluePlayer].insert(matchInfo.combinedId);
             }
 
         }
@@ -224,7 +221,7 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
     bool shouldReloadItems = false;
 
     for (auto matchId : matchIds) {
-        auto combinedId = std::make_pair(categoryId, matchId);
+        CombinedId combinedId(categoryId, matchId);
         auto it = mLoadedMatches.find(combinedId);
         if (it == mLoadedMatches.end())
             continue;
@@ -286,7 +283,7 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
         else if (isFinished && !wasFinished) {
             size_t row = 0;
             for (const auto & p : mUnfinishedMatches) {
-                if (std::get<0>(p) == categoryId && std::get<1>(p) == matchId)
+                if (p.first == combinedId)
                     break;
                 ++row;
             }
@@ -327,12 +324,12 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
             // Find the first position with a higher loading time (lower bound)
             auto pos = mUnfinishedMatches.begin();
             int row = 0;
-            while (pos != mUnfinishedMatches.end() && std::get<2>(*pos) < loadingTime) {
+            while (pos != mUnfinishedMatches.end() && pos->second < loadingTime) {
                 ++pos;
                 ++row;
             }
 
-            mUnfinishedMatches.insert(pos, std::make_tuple(categoryId, matchId, loadingTime));
+            mUnfinishedMatches.insert(pos, std::make_pair(combinedId, loadingTime));
             mUnfinishedMatchesSet.insert(combinedId);
 
             if (match.getWhitePlayer())
@@ -352,7 +349,8 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
         reloadItems();
     else {
         for (auto matchId : matchIds) {
-            auto it = mItems.find(std::make_pair(categoryId, matchId));
+            const CombinedId combinedId(categoryId, matchId);
+            auto it = mItems.find(combinedId);
             if (it != mItems.end()) {
                 MatchGraphicsItem *item = it->second;
                 auto rect = item->boundingRect();
@@ -430,7 +428,7 @@ void MatchesGraphicsManager::beginResetCategoryMatches(const std::vector<Categor
     for (auto categoryId : categoryIds) {
         const auto &category = tournament.getCategory(categoryId);
         for (const auto &match : category.getMatches()) {
-            if (mLoadedMatches.find({categoryId, match->getId()}) != mLoadedMatches.end()) {
+            if (mLoadedMatches.find(match->getCombinedId()) != mLoadedMatches.end()) {
                 beginResetMatches(); // Let the tatamiChanged call endResetMatches()
                 return;
             }
@@ -462,13 +460,12 @@ void MatchesGraphicsManager::reloadItems() {
 
     for (size_t i = 0; i < mUnfinishedMatches.size() && i < ROW_CAP; ++i) {
         auto e = mUnfinishedMatches[i];
-        CategoryId categoryId = std::get<0>(e);
-        MatchId matchId = std::get<1>(e);
+        const CombinedId &combinedId = e.first;
 
         QRect rect(x + MatchesGridGraphicsManager::HORIZONTAL_PADDING, y, MatchesGridGraphicsManager::GRID_WIDTH - MatchesGridGraphicsManager::HORIZONTAL_PADDING * 2, MatchesGridGraphicsManager::GRID_HEIGHT - MatchesGridGraphicsManager::BOTTOM_PADDING);
-        auto item = new MatchGraphicsItem(mStoreManager, categoryId, matchId, rect);
+        auto item = new MatchGraphicsItem(mStoreManager, combinedId, rect);
         mScene->addItem(item);
-        mItems[std::make_pair(categoryId, matchId)] = item;
+        mItems[combinedId] = item;
         y += MatchesGridGraphicsManager::GRID_HEIGHT;
     }
 }

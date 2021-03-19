@@ -4,9 +4,8 @@
 #include "core/stores/category_store.hpp"
 #include "core/stores/tournament_store.hpp"
 
-MatchEventAction::MatchEventAction(CategoryId categoryId, MatchId matchId)
-    : mCategoryId(categoryId)
-    , mMatchId(matchId)
+MatchEventAction::MatchEventAction(const CombinedId &combinedId)
+    : mCombinedId(combinedId)
 {}
 
 void MatchEventAction::save(const MatchStore &match, unsigned int eventsToSave ) {
@@ -23,8 +22,8 @@ void MatchEventAction::recover(TournamentStore &tournament) {
         mDrawActions.pop();
     }
 
-    auto &category = tournament.getCategory(mCategoryId);
-    auto &match = category.getMatch(mMatchId);
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    auto &match = category.getMatch(mCombinedId.getMatchId());
     auto updatedStatus = match.getStatus();
     auto prevStatus = mPrevState.status;
 
@@ -71,11 +70,11 @@ void MatchEventAction::recover(TournamentStore &tournament) {
 
 
     // Notify of match changed
-    tournament.changeMatches(match.getCategory(), {match.getId()});
+    tournament.changeMatches(match.getCategoryId(), {match.getId()});
 
     // Notify results
     if (updatedStatus == MatchStatus::FINISHED || prevStatus == MatchStatus::FINISHED)
-        tournament.resetCategoryResults({match.getCategory()});
+        tournament.resetCategoryResults({match.getCategoryId()});
 }
 
 bool MatchEventAction::shouldRecover() {
@@ -83,7 +82,7 @@ bool MatchEventAction::shouldRecover() {
 }
 
 void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &match) {
-    auto &category = tournament.getCategory(match.getCategory());
+    auto &category = tournament.getCategory(match.getCategoryId());
     auto updatedStatus = match.getStatus();
     auto prevStatus = mPrevState.status;
 
@@ -131,10 +130,10 @@ void MatchEventAction::notify(TournamentStore &tournament, const MatchStore &mat
             mDrawActions.push(std::move(action));
         }
 
-        tournament.resetCategoryResults({match.getCategory()});
+        tournament.resetCategoryResults({match.getCategoryId()});
     }
 
     // Notify of match changed
-    tournament.changeMatches(match.getCategory(), {match.getId()});
+    tournament.changeMatches(match.getCategoryId(), {match.getId()});
 }
 

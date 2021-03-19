@@ -10,7 +10,7 @@ class MatchEventAction : public Action {
 public:
     // TODO: Try to split this into multiple classes to reduce overhead
     MatchEventAction() = default;
-    MatchEventAction(CategoryId categoryId, MatchId matchId);
+    MatchEventAction(const CombinedId &combinedId);
 
     void save(const MatchStore &match, unsigned int eventsToSave = 0);
     void recover(TournamentStore &tournament);
@@ -19,12 +19,11 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryId, mMatchId);
+        ar(mCombinedId);
     }
 protected:
     // fields common to all match event actions
-    CategoryId mCategoryId;
-    MatchId mMatchId;
+    CombinedId mCombinedId;
 
     // undo fields
     bool mDidSave;

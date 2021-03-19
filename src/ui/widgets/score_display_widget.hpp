@@ -23,14 +23,14 @@ class ScoreDisplayWidget : public QWidget {
 public:
     ScoreDisplayWidget(const StoreManager &storeManager, QWidget *parent = nullptr);
 
-    void setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId, bool showIntro = true);
+    void setMatch(std::optional<CombinedId> combinedId, bool showIntro = true);
     void setState(ScoreDisplayState state);
 
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 protected:
-    std::optional<std::pair<CategoryId, MatchId>> mCombinedId;
+    std::optional<CombinedId> mCombinedId;
     ScoreDisplayState mState;
     std::unique_ptr<ScoreboardPainter> mScoreboardPainter;
     ScoreboardStylePreference mScoreboardStyle;

@@ -82,7 +82,9 @@ std::vector<std::unique_ptr<AddMatchAction>> KnockoutDrawSystem::initCategory(co
             bool isBye = (round == 0 && !(whiteId && blueId));
             auto matchType = (round + 2 < rounds ? MatchType::ELIMINATION : MatchType::FINAL);
 
-            auto action = std::make_unique<AddMatchAction>(MatchId::generate(category, generator), category.getId(), matchType, matchTitle(round, rounds), isBye, whiteId, blueId);
+            const auto matchId = MatchId::generate(category, generator);
+
+            auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), matchType, matchTitle(round, rounds), isBye, whiteId, blueId);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }
@@ -127,7 +129,8 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
     while (currentLayer < mMatches.size()) {
         bool shouldBreak = true; // The loop can break early if no matches has finished in this round
         for (size_t i = currentLayer; i < currentLayer + roundSize; ++i) {
-            auto matchId = mMatches[i];
+            const auto matchId = mMatches[i];
+            const CombinedId combinedId(category.getId(), matchId);
             const auto &match = category.getMatch(matchId);
 
             if (match.isBye()) {
@@ -150,7 +153,7 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
                     whitePlayer = whiteChild.getPlayer(ruleset.getWinner(whiteChild).value());
 
                 if (whitePlayer != match.getWhitePlayer())
-                    actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::WHITE, whitePlayer));
+                    actions.push_back(std::make_unique<SetMatchPlayerAction>(combinedId, MatchStore::PlayerIndex::WHITE, whitePlayer));
             }
 
             {
@@ -163,7 +166,7 @@ std::vector<std::unique_ptr<Action>> KnockoutDrawSystem::updateCategory(const To
                     bluePlayer = blueChild.getPlayer(ruleset.getWinner(blueChild).value());
 
                 if (bluePlayer != match.getBluePlayer())
-                    actions.push_back(std::make_unique<SetMatchPlayerAction>(category.getId(), matchId, MatchStore::PlayerIndex::BLUE, bluePlayer));
+                    actions.push_back(std::make_unique<SetMatchPlayerAction>(combinedId, MatchStore::PlayerIndex::BLUE, bluePlayer));
             }
         }
 

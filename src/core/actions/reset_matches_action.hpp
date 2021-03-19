@@ -11,7 +11,7 @@ class ResetMatchesAction : public Action {
 public:
     ResetMatchesAction() = default;
     ResetMatchesAction(const std::vector<CategoryId> &categoryIds);
-    ResetMatchesAction(CategoryId categoryId, MatchId matchId);
+    ResetMatchesAction(CombinedId combinedId);
     ResetMatchesAction(const std::vector<CategoryId> &categoryIds, std::optional<MatchId> matchId);
 
     void redoImpl(TournamentStore & tournament) override;
@@ -30,7 +30,7 @@ private:
     std::optional<MatchId> mMatchId;
 
     // undo fields
-    std::vector<std::pair<CategoryId, MatchId>> mChangedMatches;
+    std::vector<CombinedId> mChangedMatches;
     std::stack<MatchStore::State> mPrevStates;
     std::stack<std::vector<MatchEvent>> mPrevEvents;
     std::stack<std::unique_ptr<Action>> mDrawActions;

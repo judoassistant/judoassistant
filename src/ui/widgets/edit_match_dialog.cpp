@@ -4,7 +4,7 @@
 #include "ui/widgets/edit_match_dialog.hpp"
 #include "ui/widgets/score_operator_widget.hpp"
 
-EditMatchDialog::EditMatchDialog(StoreManager &storeManager, std::pair<CategoryId, MatchId> combinedId, QWidget *parent)
+EditMatchDialog::EditMatchDialog(StoreManager &storeManager, CombinedId combinedId, QWidget *parent)
     : QDialog(parent)
     , mStoreManager(storeManager)
     , mCombinedId(combinedId)

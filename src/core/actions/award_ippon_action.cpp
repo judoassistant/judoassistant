@@ -5,15 +5,15 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-AwardIpponAction::AwardIpponAction(CategoryId categoryId, MatchId matchId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi)
-    : MatchEventAction(categoryId, matchId)
+AwardIpponAction::AwardIpponAction(CombinedId combinedId, MatchStore::PlayerIndex playerIndex, std::chrono::milliseconds masterTime, bool osaekomi)
+    : MatchEventAction(combinedId)
     , mPlayerIndex(playerIndex)
     , mOsaekomi(osaekomi)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> AwardIpponAction::freshClone() const {
-    return std::make_unique<AwardIpponAction>(mCategoryId, mMatchId, mPlayerIndex, mMasterTime, mOsaekomi);
+    return std::make_unique<AwardIpponAction>(mCombinedId, mPlayerIndex, mMasterTime, mOsaekomi);
 }
 
 std::string AwardIpponAction::getDescription() const {
@@ -29,12 +29,12 @@ std::string AwardIpponAction::getDescription() const {
 }
 
 void AwardIpponAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
 
     const auto &ruleset = category.getRuleset();
     if (!ruleset.canAwardIppon(match, mPlayerIndex))

@@ -9,7 +9,7 @@
 class SetMatchByeAction : public MatchEventAction {
 public:
     SetMatchByeAction() = default;
-    SetMatchByeAction(CategoryId categoryId, MatchId matchId, bool bye);
+    SetMatchByeAction(CombinedId combinedId, bool bye);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 

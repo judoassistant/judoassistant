@@ -12,7 +12,7 @@ class AddMatchAction : public Action {
 public:
     AddMatchAction() = default;
     // AddMatchAction(const TournamentStore & tournament, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
-    AddMatchAction(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
+    AddMatchAction(const CombinedId &combinedId, MatchType type, const std::string &title, bool bye, std::optional<PlayerId> whitePlayerId, std::optional<PlayerId> bluePlayerId);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
@@ -23,8 +23,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId);
-        ar(mCategoryId);
+        ar(mCombinedId);
         ar(mType);
         ar(mTitle);
         ar(mBye);
@@ -33,8 +32,7 @@ public:
     }
 
 private:
-    MatchId mId;
-    CategoryId mCategoryId;
+    CombinedId mCombinedId;
     MatchType mType;
     std::string mTitle;
     bool mBye;

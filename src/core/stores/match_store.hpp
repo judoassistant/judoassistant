@@ -64,9 +64,8 @@ public:
 
     MatchStore() {}
     MatchStore(const MatchStore &other);
-    MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool permanentBye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
+    MatchStore(const CombinedId &combinedId, MatchType type, const std::string &title, bool permanentBye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer);
 
-    MatchId getId() const;
     std::optional<PlayerId> getPlayer(PlayerIndex index) const;
     std::optional<PlayerId> getWhitePlayer() const;
     std::optional<PlayerId> getBluePlayer() const;
@@ -103,8 +102,9 @@ public:
     MatchStatus getStatus() const;
     void setStatus(MatchStatus status);
 
-    CategoryId getCategory() const;
-    std::pair<CategoryId, MatchId> getCombinedId() const;
+    MatchId getId() const;
+    CategoryId getCategoryId() const;
+    CombinedId getCombinedId() const;
 
     void setDuration(std::chrono::milliseconds duration);
     std::chrono::milliseconds getDuration() const;
@@ -116,7 +116,7 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mCategory, mType, mTitle, mPermanentBye, mBye, mPlayers, mState, mEvents);
+        ar(mCombinedId, mType, mTitle, mPermanentBye, mBye, mPlayers, mState, mEvents);
     }
 
     const std::optional<std::pair<PlayerIndex, std::chrono::milliseconds>>& getOsaekomi() const;
@@ -132,8 +132,7 @@ public:
     void setState(const State &state);
     void clearState();
 private:
-    MatchId mId;
-    CategoryId mCategory;
+    CombinedId mCombinedId;
     MatchType mType;
     std::string mTitle;
     bool mPermanentBye;

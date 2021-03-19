@@ -112,8 +112,8 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
         if (element.matchCount == element.totalMatchCount) continue;
         progressQueue.push(element);
 
-        const auto &category = tournament.getCategory(combinedId.first);
-        const auto &match = category.getMatch(combinedId.second);
+        const auto &category = tournament.getCategory(combinedId.getCategoryId());
+        const auto &match = category.getMatch(combinedId.getMatchId());
 
         if (match.getStatus() == MatchStatus::FINISHED)
             mFinishedMatches.insert(combinedId);

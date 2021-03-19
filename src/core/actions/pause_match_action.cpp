@@ -4,13 +4,13 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/draw_systems/draw_system.hpp"
 
-PauseMatchAction::PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime)
-    : MatchEventAction(categoryId, matchId)
+PauseMatchAction::PauseMatchAction(CombinedId combinedId, std::chrono::milliseconds masterTime)
+    : MatchEventAction(combinedId)
     , mMasterTime(masterTime)
 {}
 
 std::unique_ptr<Action> PauseMatchAction::freshClone() const {
-    return std::make_unique<PauseMatchAction>(mCategoryId, mMatchId, mMasterTime);
+    return std::make_unique<PauseMatchAction>(mCombinedId, mMasterTime);
 }
 
 std::string PauseMatchAction::getDescription() const {
@@ -18,12 +18,12 @@ std::string PauseMatchAction::getDescription() const {
 }
 
 void PauseMatchAction::redoImpl(TournamentStore & tournament) {
-    if (!tournament.containsCategory(mCategoryId))
+    if (!tournament.containsCategory(mCombinedId.getCategoryId()))
         return;
-    auto &category = tournament.getCategory(mCategoryId);
-    if (!category.containsMatch(mMatchId))
+    auto &category = tournament.getCategory(mCombinedId.getCategoryId());
+    if (!category.containsMatch(mCombinedId.getMatchId()))
         return;
-    auto &match = category.getMatch(mMatchId);
+    auto &match = category.getMatch(mCombinedId.getMatchId());
 
     const auto &ruleset = category.getRuleset();
     if (!ruleset.canPause(match, mMasterTime))

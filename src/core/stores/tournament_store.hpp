@@ -90,8 +90,8 @@ public:
     virtual void endResetMatches(const std::vector<CategoryId> &categoryIds) {}
     virtual void resetCategoryResults(const std::vector<CategoryId> &categoryId) {} // Notify of category results change
 
-    virtual void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {}
-    virtual void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) {}
+    virtual void addMatchesToPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) {}
+    virtual void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) {}
 
     virtual void changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {}
     virtual void beginAddTatamis(const std::vector<TatamiLocation> &locations) {}

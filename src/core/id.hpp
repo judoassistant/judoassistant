@@ -160,8 +160,6 @@ public:
     static TournamentId generate();
 };
 
-// TODO: Make a CategoryMatchId
-
 class ClientActionId {
 public:
     ClientActionId();
@@ -204,8 +202,13 @@ public:
 
     std::string toString() const;
 
-    CategoryId getCategoryId() const;
-    MatchId getMatchId() const;
+    CategoryId getCategoryId() const {
+        return mCategoryId;
+    }
+
+    MatchId getMatchId() const {
+        return mMatchId;
+    }
 
 private:
     CategoryId mCategoryId;

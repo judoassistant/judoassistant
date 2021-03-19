@@ -40,18 +40,18 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
 
     const auto &tournament = mStoreManager.getTournament();
 
-    if (!tournament.containsCategory(mCombinedId->first)) {
+    if (!tournament.containsCategory(mCombinedId->getCategoryId())) {
         mScoreboardPainter->paintEmpty(painter, rect);
         return;
     }
 
-    const auto &category = tournament.getCategory(mCombinedId->first);
+    const auto &category = tournament.getCategory(mCombinedId->getCategoryId());
 
-    if (!category.containsMatch(mCombinedId->second)) {
+    if (!category.containsMatch(mCombinedId->getMatchId())) {
         mScoreboardPainter->paintEmpty(painter, rect);
         return;
     }
-    const auto &match = category.getMatch(mCombinedId->second);
+    const auto &match = category.getMatch(mCombinedId->getMatchId());
 
     if (!match.getWhitePlayer() || !match.getBluePlayer()) {
         mScoreboardPainter->paintEmpty(painter, rect);
@@ -81,7 +81,7 @@ void ScoreDisplayWidget::paintEvent(QPaintEvent *event) {
     }
 }
 
-void ScoreDisplayWidget::setMatch(std::optional<std::pair<CategoryId, MatchId>> combinedId, bool showIntro) {
+void ScoreDisplayWidget::setMatch(std::optional<CombinedId> combinedId, bool showIntro) {
     mCombinedId = combinedId;
     if (showIntro) {
         mState = ScoreDisplayState::INTRODUCTION;
@@ -119,10 +119,10 @@ void ScoreDisplayWidget::endResetTournament() {
 
 void ScoreDisplayWidget::changeMatches(CategoryId categoryId, std::vector<MatchId> matchIds) {
     if (!mCombinedId) return;
-    if (mCombinedId->first != categoryId) return;
+    if (mCombinedId->getCategoryId() != categoryId) return;
 
     for (auto matchId : matchIds) {
-        if (mCombinedId->second == matchId) {
+        if (mCombinedId->getMatchId() == matchId) {
             if (mState == ScoreDisplayState::INTRODUCTION)
                 mState = ScoreDisplayState::NORMAL;
             update(0, 0, width(), height());
@@ -137,14 +137,14 @@ void ScoreDisplayWidget::changePlayers(std::vector<PlayerId> playerIds) {
 
     const auto &tournament = mStoreManager.getTournament();
 
-    if (!tournament.containsCategory(mCombinedId->first))
+    if (!tournament.containsCategory(mCombinedId->getCategoryId()))
         return;
 
-    const auto &category = tournament.getCategory(mCombinedId->first);
+    const auto &category = tournament.getCategory(mCombinedId->getCategoryId());
 
-    if (!category.containsMatch(mCombinedId->second))
+    if (!category.containsMatch(mCombinedId->getMatchId()))
         return;
-    const auto &match = category.getMatch(mCombinedId->second);
+    const auto &match = category.getMatch(mCombinedId->getMatchId());
 
     for (auto playerId : playerIds) {
         if (match.getWhitePlayer() == playerId || match.getBluePlayer() == playerId) {
@@ -159,7 +159,7 @@ void ScoreDisplayWidget::resetMatches(const std::vector<CategoryId> &categoryIds
         return;
 
     for (auto categoryId : categoryIds) {
-        if (mCombinedId->first == categoryId) {
+        if (mCombinedId->getCategoryId() == categoryId) {
             update(0, 0, width(), height());
             return;
         }
@@ -168,7 +168,7 @@ void ScoreDisplayWidget::resetMatches(const std::vector<CategoryId> &categoryIds
 
 void ScoreDisplayWidget::changeCategories(std::vector<CategoryId> categoryIds) {
     for (auto categoryId : categoryIds) {
-        if (mCombinedId && mCombinedId->first == categoryId) {
+        if (mCombinedId && mCombinedId->getCategoryId() == categoryId) {
             update(0, 0, width(), height());
             return;
         }

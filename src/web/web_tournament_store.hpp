@@ -21,7 +21,7 @@ public:
     const std::unordered_set<CategoryId>& getCategoryMatchResets() const;
     const std::unordered_set<CategoryId>& getCategoryResultsResets() const;
 
-    const std::unordered_set<std::pair<CategoryId, MatchId>>& getChangedMatches() const;
+    const std::unordered_set<CombinedId>& getChangedMatches() const;
 
     // Parent methods to override
     void changeTournament() override;
@@ -55,8 +55,8 @@ public:
     void beginEraseTatamis(const std::vector<TatamiLocation> &locations) override;
     void endEraseTatamis(const std::vector<TatamiLocation> &locations) override;
 
-    void addMatchesToPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
-    void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<std::pair<CategoryId, MatchId>> &matchIds) override;
+    void addMatchesToPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) override;
+    void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) override;
 
     void resetCategoryResults(const std::vector<CategoryId> &categoryId) override;
 
@@ -79,7 +79,7 @@ private:
     std::unordered_set<CategoryId> mCategoryMatchResets;
     std::unordered_set<CategoryId> mCategoryResultsResets;
 
-    std::unordered_set<std::pair<CategoryId, MatchId>> mChangedMatches;
+    std::unordered_set<CombinedId> mChangedMatches;
 
     std::vector<WebTatamiModel> mTatamiModels;
     bool mResettingTatamis;

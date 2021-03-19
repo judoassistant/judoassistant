@@ -66,16 +66,16 @@ public:
     void eraseCategory(CategoryId id);
     bool containsCategory(CategoryId id) const;
 
-    const std::unordered_set<std::pair<CategoryId,MatchId>> & getMatches() const;
-    void addMatch(CategoryId categoryId, MatchId matchId);
-    void eraseMatch(CategoryId categoryId, MatchId matchId);
-    bool containsMatch(CategoryId categoryId, MatchId matchId) const;
+    const std::unordered_set<CombinedId> & getMatches() const;
+    void addMatch(const CombinedId &combinedId);
+    void eraseMatch(const CombinedId &combinedId);
+    bool containsMatch(const CombinedId &combinedId) const;
 
 private:
     PlayerId mId;
     PlayerFields mFields;
 
     std::unordered_set<CategoryId> mCategories;
-    std::unordered_set<std::pair<CategoryId,MatchId>> mMatches;
+    std::unordered_set<CombinedId> mMatches;
 };
 

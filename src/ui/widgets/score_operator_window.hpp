@@ -75,8 +75,8 @@ private:
     QAction *mDisconnectAction;
 
     std::optional<TatamiLocation> mTatami;
-    std::optional<std::pair<CategoryId, MatchId>> mCurrentMatch;
-    std::optional<std::pair<CategoryId, MatchId>> mNextMatch;
+    std::optional<CombinedId> mCurrentMatch;
+    std::optional<CombinedId> mNextMatch;
     std::stack<QMetaObject::Connection> mConnections;
 
     QPushButton *mNextButton;

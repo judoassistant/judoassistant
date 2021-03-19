@@ -10,9 +10,8 @@ MatchStore::State::State(bool finished)
 
 }
 
-MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const std::string &title, bool permanentBye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
-    : mId(id)
-    , mCategory(categoryId)
+MatchStore::MatchStore(const CombinedId &combinedId, MatchType type, const std::string &title, bool permanentBye, std::optional<PlayerId> whitePlayer, std::optional<PlayerId> bluePlayer)
+    : mCombinedId(combinedId)
     , mType(type)
     , mTitle(title)
     , mPermanentBye(permanentBye)
@@ -24,8 +23,7 @@ MatchStore::MatchStore(MatchId id, CategoryId categoryId, MatchType type, const 
 }
 
 MatchStore::MatchStore(const MatchStore &other)
-    : mId(other.mId)
-    , mCategory(other.mCategory)
+    : mCombinedId(other.mCombinedId)
     , mType(other.mType)
     , mTitle(other.mTitle)
     , mPermanentBye(other.mPermanentBye)
@@ -34,10 +32,6 @@ MatchStore::MatchStore(const MatchStore &other)
     , mState(other.mState)
     , mEvents(other.mEvents)
 {}
-
-MatchId MatchStore::getId() const {
-    return mId;
-}
 
 bool MatchStore::isGoldenScore() const {
     return mState.goldenScore;
@@ -75,12 +69,16 @@ const MatchStore::Score & MatchStore::getScore(PlayerIndex index) const {
     return mState.scores[static_cast<size_t>(index)];
 }
 
-CategoryId MatchStore::getCategory() const {
-    return mCategory;
+CategoryId MatchStore::getCategoryId() const {
+    return mCombinedId.getCategoryId();
 }
 
-std::pair<CategoryId, MatchId> MatchStore::getCombinedId() const {
-    return {mCategory, mId};
+MatchId MatchStore::getId() const {
+    return mCombinedId.getMatchId();
+}
+
+CombinedId MatchStore::getCombinedId() const {
+    return mCombinedId;
 }
 
 MatchStore::Score & MatchStore::getWhiteScore() {

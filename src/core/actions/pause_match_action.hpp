@@ -8,7 +8,7 @@
 class PauseMatchAction : public MatchEventAction {
 public:
     PauseMatchAction() = default;
-    PauseMatchAction(CategoryId categoryId, MatchId matchId, std::chrono::milliseconds masterTime);
+    PauseMatchAction(CombinedId combinedId, std::chrono::milliseconds masterTime);
 
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
