@@ -53,14 +53,14 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
 
     // Set font size for controls
     auto font = mFont;
-    font.setPixelSize(mScoreboardPainter->getWhiteIpponRect().height() * 0.1);
+    font.setPixelSize(mScoreboardPainter->getWhiteIpponRect().height() * 0.2);
     painter.setFont(font);
 
     // Pause/Resume control
     if (ruleset.canPause(params.match, params.masterTime) || ruleset.canResume(params.match, params.masterTime)) {
         painter.drawRect(mScoreboardPainter->getDurationRect());
 
-        auto label = (params.match.getStatus() == MatchStatus::UNPAUSED ? tr("Pause") : tr("Resume"));
+        auto label = (params.match.getStatus() == MatchStatus::UNPAUSED ? tr("Stop Timer") : tr("Start Timer"));
         painter.drawText(mScoreboardPainter->getDurationRect(), Qt::AlignTop | Qt::AlignHCenter, label);
     }
 
@@ -71,22 +71,25 @@ void ScoreOperatorWidget::paintControls(QPainter &painter, const QRect &rect, co
     painter.drawRect(mScoreboardPainter->getWhiteWazariRect());
     painter.drawText(mScoreboardPainter->getWhiteWazariRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Wazari"));
 
-    painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
-    painter.drawText(mScoreboardPainter->getWhiteOsaekomiRect(), Qt::AlignTop | Qt::AlignHCenter, tr("White Player Osaekomi"));
-
-
-    // Blue Player Controls
+    // Blue Player Score Controls
     painter.drawRect(mScoreboardPainter->getBlueIpponRect());
     painter.drawText(mScoreboardPainter->getBlueIpponRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Ippon"));
 
     painter.drawRect(mScoreboardPainter->getBlueWazariRect());
     painter.drawText(mScoreboardPainter->getBlueWazariRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Wazari"));
 
+    // Osaekomi Controls
+    font.setPixelSize(mScoreboardPainter->getWhiteOsaekomiRect().height() * 0.2);
+    painter.setFont(font);
+
+    painter.drawRect(mScoreboardPainter->getWhiteOsaekomiRect());
+    painter.drawText(mScoreboardPainter->getWhiteOsaekomiRect(), Qt::AlignTop | Qt::AlignHCenter, tr("White Player Osaekomi"));
+
     painter.drawRect(mScoreboardPainter->getBlueOsaekomiRect());
     painter.drawText(mScoreboardPainter->getBlueOsaekomiRect(), Qt::AlignTop | Qt::AlignHCenter, tr("Blue Player Osaekomi"));
 
     // Set font size for shido/hansoku controls
-    font.setPixelSize(mScoreboardPainter->getWhiteShidoRect().height() * 0.1);
+    font.setPixelSize(mScoreboardPainter->getWhiteShidoRect().height() * 0.15);
     painter.setFont(font);
 
     // White shido/hansoku controls
