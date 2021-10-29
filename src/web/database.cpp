@@ -324,7 +324,7 @@ void Database::listTournaments(ListTournamentsCallback callback) {
                                 + " order by date desc limit 20");
         work.commit();
 
-        for (size_t i = 0; i < upcomingResult.size(); ++i) {
+        for (int i = 0; i < upcomingResult.size(); ++i) {
             TournamentListing listing;
             listing.webName = upcomingResult[i][0].as<std::string>();
             listing.name = upcomingResult[i][1].as<std::string>();
@@ -333,7 +333,7 @@ void Database::listTournaments(ListTournamentsCallback callback) {
             upcomingTournaments.push_back(listing);
         }
 
-        for (size_t i = 0; i < pastResult.size(); ++i) {
+        for (int i = 0; i < pastResult.size(); ++i) {
             TournamentListing listing;
             listing.webName = pastResult[i][0].as<std::string>();
             listing.name = pastResult[i][1].as<std::string>();
