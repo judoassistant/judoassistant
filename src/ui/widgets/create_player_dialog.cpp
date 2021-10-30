@@ -81,8 +81,10 @@ void CreatePlayerDialog::acceptClick() {
     if (!mAgeContent->text().isEmpty())
         fields.age = PlayerAge(mAgeContent->text().toInt());
 
-    if (!mWeightContent->text().isEmpty())
-        fields.weight = PlayerWeight(mWeightContent->text().toFloat());
+    if (!mWeightContent->text().isEmpty()) {
+        QLocale locale;
+        fields.weight = PlayerWeight(locale.toFloat(mWeightContent->text()));
+    }
 
     if (mRankContent->currentIndex() > 0) // account for the first index being nullopt
         fields.rank = PlayerRank(mRankContent->currentIndex() - 1);

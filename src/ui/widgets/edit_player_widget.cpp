@@ -301,8 +301,10 @@ void EditPlayerWidget::editWeight() {
         return;
 
     std::optional<PlayerWeight> newValue;
-    if (!mWeightContent->text().isEmpty())
-        newValue = PlayerWeight(mWeightContent->text().toFloat());
+    if (!mWeightContent->text().isEmpty()) {
+        QLocale locale;
+        newValue = PlayerWeight(locale.toFloat(mWeightContent->text()));
+    }
 
     const TournamentStore &tournament = mStoreManager.getTournament();
     bool changed = false;
@@ -497,7 +499,8 @@ void EditPlayerWidget::updateWeight() {
 
     std::optional<PlayerWeight> innerValue = *ageValue;
 
-    mWeightContent->setText(innerValue ? QString::number(innerValue->toFloat()) : "");
+    QLocale locale;
+    mWeightContent->setText(innerValue ? locale.toString(innerValue->toFloat()) : "");
     mWeightContent->setPlaceholderText("");
 }
 
