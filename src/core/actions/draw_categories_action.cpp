@@ -86,7 +86,6 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
         mActions.push_back(std::move(actions));
 
         // Compute category status
-        CategoryStatus knockoutStatus;
         category.setStatus(MatchType::ELIMINATION, CategoryStatus());
         category.setStatus(MatchType::FINAL, CategoryStatus());
 
