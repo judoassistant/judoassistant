@@ -5,7 +5,7 @@ std::unique_ptr<Ruleset> TwentyEighteenTwoMinuteRuleset::clone() const {
 }
 
 std::string TwentyEighteenTwoMinuteRuleset::getName() const {
-    return "2018 (2 minutes)";
+    return "Current (2 minutes)";
 }
 
 std::chrono::milliseconds TwentyEighteenTwoMinuteRuleset::getNormalTime() const {

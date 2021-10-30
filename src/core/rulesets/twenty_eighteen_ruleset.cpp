@@ -186,7 +186,7 @@ std::unique_ptr<Ruleset> TwentyEighteenRuleset::clone() const {
 }
 
 std::string TwentyEighteenRuleset::getName() const {
-    return "2018";
+    return "Current";
 }
 
 std::chrono::milliseconds TwentyEighteenRuleset::getNormalTime() const {
