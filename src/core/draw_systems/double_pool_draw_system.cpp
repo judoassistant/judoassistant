@@ -84,15 +84,15 @@ std::vector<std::unique_ptr<AddMatchAction>> DoublePoolDrawSystem::initCategory(
     // Add the semi finals and finals
     auto firstSemiFinal = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Semi-Final", false, std::nullopt, std::nullopt);
     auto secondSemiFinal = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Semi-Final", false, std::nullopt, std::nullopt);
-    auto finaly = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Final", false, std::nullopt, std::nullopt);
+    auto finals = std::make_unique<AddMatchAction>(CombinedId(category.getId(), MatchId::generate(category, generator)), MatchType::FINAL, "Final", false, std::nullopt, std::nullopt);
 
     mMatches.push_back(firstSemiFinal->getMatchId());
     mMatches.push_back(secondSemiFinal->getMatchId());
-    mMatches.push_back(finaly->getMatchId());
+    mMatches.push_back(finals->getMatchId());
 
     actions.push_back(std::move(firstSemiFinal));
     actions.push_back(std::move(secondSemiFinal));
-    actions.push_back(std::move(finaly)); // final is a reserved keyword. Hence the weird varname
+    actions.push_back(std::move(finals)); // final is a reserved keyword. Hence the weird varname
 
     return actions;
 }
@@ -105,60 +105,75 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
 
     auto &firstSemiFinal = category.getMatch(mMatches[mMatches.size() - 3]);
     auto &secondSemiFinal = category.getMatch(mMatches[mMatches.size() - 2]);
-    auto &finaly = category.getMatch(mMatches.back());
+    auto &finals = category.getMatch(mMatches.back());
 
-    const auto &status = category.getStatus(MatchType::ELIMINATION);
-    if (status.isFinished()) { // elimination finished
-        auto firstPoolResults = mFirstPool->getResults(tournament, category);
-        auto secondPoolResults = mSecondPool->getResults(tournament, category);
-
-        // Check first semi final players
-        if (firstSemiFinal.getWhitePlayer() != firstPoolResults[0].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, firstPoolResults[0].first));
-        if (firstSemiFinal.getBluePlayer() != secondPoolResults[1].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, secondPoolResults[1].first));
-
-        // Check second semi final players
-        if (secondSemiFinal.getWhitePlayer() != secondPoolResults[0].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, secondPoolResults[0].first));
-        if (secondSemiFinal.getBluePlayer() != firstPoolResults[1].first)
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, firstPoolResults[1].first));
-
-        // Check final players
-        const auto &ruleset = category.getRuleset();
-
-        // Check white player
-        std::optional<PlayerId> whitePlayer = std::nullopt;
-        if (firstSemiFinal.getStatus() == MatchStatus::FINISHED)
-            whitePlayer = firstSemiFinal.getPlayer(ruleset.getWinner(firstSemiFinal).value());
-
-        if (whitePlayer != finaly.getWhitePlayer())
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::WHITE, whitePlayer));
-
-        // Check blue player
-        std::optional<PlayerId> bluePlayer = std::nullopt;
-        if (secondSemiFinal.getStatus() == MatchStatus::FINISHED)
-            bluePlayer = secondSemiFinal.getPlayer(ruleset.getWinner(secondSemiFinal).value());
-
-        if (bluePlayer != finaly.getBluePlayer())
-            actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::BLUE, bluePlayer));
-
+    const auto &eliminationFinished = category.getStatus(MatchType::ELIMINATION).isFinished();
+    if (!eliminationFinished) {
+        if (firstSemiFinal.getWhitePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        if (firstSemiFinal.getBluePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+        if (secondSemiFinal.getWhitePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        if (secondSemiFinal.getBluePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+        if (finals.getWhitePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(finals.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        if (finals.getBluePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(finals.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
         return actions;
     }
 
-    // Elimination not finished. Make sure semi-finals and finals have no players
-    if (firstSemiFinal.getWhitePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
-    if (firstSemiFinal.getBluePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
-    if (secondSemiFinal.getWhitePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
-    if (secondSemiFinal.getBluePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
-    if (finaly.getWhitePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
-    if (finaly.getBluePlayer())
-        actions.push_back(std::make_unique<SetMatchPlayerAction>(finaly.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+    // Update match players for semi finals
+    const auto firstPoolResults = mFirstPool->getResults(tournament, category);
+    const auto secondPoolResults = mSecondPool->getResults(tournament, category);
+
+    // Check first semi final players
+    PlayerId firstSemiFinalWhitePlayer = firstPoolResults[0].first;
+    PlayerId firstSemiFinalBluePlayer = secondPoolResults[1].first;
+    if (tournament.getPlayer(firstSemiFinalWhitePlayer).getBlueJudogiHint()) // Try to satisfy blue judogi hints
+        std::swap(firstSemiFinalWhitePlayer, firstSemiFinalBluePlayer);
+
+    if (firstSemiFinal.getWhitePlayer() != firstSemiFinalWhitePlayer)
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, firstSemiFinalWhitePlayer));
+    if (firstSemiFinal.getBluePlayer() != firstSemiFinalBluePlayer)
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(firstSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, firstSemiFinalBluePlayer));
+
+    // Check second semi final players
+    PlayerId secondSemiFinalWhitePlayer = secondPoolResults[0].first;
+    PlayerId secondSemiFinalBluePlayer = firstPoolResults[1].first;
+    if (tournament.getPlayer(secondSemiFinalWhitePlayer).getBlueJudogiHint())
+        std::swap(secondSemiFinalWhitePlayer, secondSemiFinalBluePlayer);
+
+    if (secondSemiFinal.getWhitePlayer() != secondSemiFinalWhitePlayer)
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::WHITE, secondSemiFinalWhitePlayer));
+    if (secondSemiFinal.getBluePlayer() != secondSemiFinalBluePlayer)
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(secondSemiFinal.getCombinedId(), MatchStore::PlayerIndex::BLUE, secondSemiFinalBluePlayer));
+
+    const bool semiFinalsFinished = (firstSemiFinal.getStatus() == MatchStatus::FINISHED && secondSemiFinal.getStatus() == MatchStatus::FINISHED);
+    if (!semiFinalsFinished) {
+        if (finals.getWhitePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(finals.getCombinedId(), MatchStore::PlayerIndex::WHITE, std::nullopt));
+        if (finals.getBluePlayer())
+            actions.push_back(std::make_unique<SetMatchPlayerAction>(finals.getCombinedId(), MatchStore::PlayerIndex::BLUE, std::nullopt));
+        return actions;
+    }
+
+    // Update match players for finals
+    const auto &ruleset = category.getRuleset();
+
+    PlayerId finalWhitePlayer = firstSemiFinal.getPlayer(ruleset.getWinner(firstSemiFinal).value()).value();
+    PlayerId finalBluePlayer = secondSemiFinal.getPlayer(ruleset.getWinner(secondSemiFinal).value()).value();
+
+    if (tournament.getPlayer(finalWhitePlayer).getBlueJudogiHint()) // Try to satisfy blue judogi hints
+        std::swap(finalWhitePlayer, finalBluePlayer);
+
+    if (finals.getWhitePlayer() != finalWhitePlayer)
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(finals.getCombinedId(), MatchStore::PlayerIndex::WHITE, finalWhitePlayer));
+
+    if (finals.getBluePlayer() != finalBluePlayer)
+        actions.push_back(std::make_unique<SetMatchPlayerAction>(finals.getCombinedId(), MatchStore::PlayerIndex::BLUE, finalBluePlayer));
+
     return actions;
 }
 
@@ -174,15 +189,15 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> DoublePoolDrawSyst
 
     const auto &ruleset = category.getRuleset();
 
-    auto &finaly = category.getMatch(mMatches.back());
+    auto &finals = category.getMatch(mMatches.back());
     auto &firstSemiFinal = category.getMatch(mMatches[mMatches.size() - 3]);
     auto &secondSemiFinal = category.getMatch(mMatches[mMatches.size() - 2]);
 
-    auto finalWinnerIndex = ruleset.getWinner(finaly).value();
+    auto finalWinnerIndex = ruleset.getWinner(finals).value();
     auto finalLoserIndex = (finalWinnerIndex == MatchStore::PlayerIndex::WHITE) ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE;
 
-    auto finalWinnerId = finaly.getPlayer(finalWinnerIndex).value();
-    auto finalLoserId = finaly.getPlayer(finalLoserIndex).value();
+    auto finalWinnerId = finals.getPlayer(finalWinnerIndex).value();
+    auto finalLoserId = finals.getPlayer(finalLoserIndex).value();
 
     results.emplace_back(finalWinnerId, 1);
     results.emplace_back(finalLoserId, 2);

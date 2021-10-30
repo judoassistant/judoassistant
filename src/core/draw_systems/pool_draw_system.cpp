@@ -45,7 +45,13 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const 
             if (!shiftedIds[i] || !shiftedIds[j]) continue;
             std::string matchTitle = (mComposited ? "Elimination" : "Pool");
             const auto matchId = MatchId::generate(category, generator);
-            auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, matchTitle, false, shiftedIds[i], shiftedIds[j]);
+
+            PlayerId whitePlayer = shiftedIds[i].value();
+            PlayerId bluePlayer = shiftedIds[j].value();
+            if (tournament.getPlayer(whitePlayer).getBlueJudogiHint()) // Try to satisfy blue judogi hints
+                std::swap(whitePlayer, bluePlayer);
+
+            auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, matchTitle, false, whitePlayer, bluePlayer);
             mMatches.push_back(action->getMatchId());
             actions.push_back(std::move(action));
         }

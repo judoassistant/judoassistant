@@ -25,21 +25,18 @@ std::vector<std::unique_ptr<AddMatchAction>> BestOfThreeDrawSystem::initCategory
     if (mPlayers.size() != 2)
         return actions;
 
+
     std::mt19937 randomEng(seed);
+    const size_t randomIndex = (randomEng() % 2);
+    PlayerId whitePlayer = playerIds[randomIndex];
+    PlayerId bluePlayer = playerIds[1 - randomIndex];
 
-    size_t whitePlayer = (randomEng() % 2); // random bit
-    size_t bluePlayer = 1 - whitePlayer;
-
-    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
-    std::vector<std::optional<PlayerId>> shiftedIds;
-    if (mPlayers.size() % 2 != 0)
-        shiftedIds.push_back(std::nullopt);
-    for (size_t i = 0; i < mPlayers.size(); ++i)
-        shiftedIds.emplace_back(mPlayers[i]);
+    if (tournament.getPlayer(whitePlayer).getBlueJudogiHint()) // Try to satisfy blue judogi hints
+        std::swap(whitePlayer, bluePlayer);
 
     for (size_t i = 0; i < 3; ++i) {
         const auto matchId = MatchId::generate(category, generator);
-        auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, "Best-of-Three", false, playerIds[whitePlayer], playerIds[bluePlayer]);
+        auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, "Best-of-Three", false, whitePlayer, bluePlayer);
         mMatches.push_back(matchId);
         actions.push_back(std::move(action));
     }
