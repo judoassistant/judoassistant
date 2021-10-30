@@ -14,6 +14,7 @@
 #include "core/actions/change_players_rank_action.hpp"
 #include "core/actions/change_players_sex_action.hpp"
 #include "core/actions/change_players_weight_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"

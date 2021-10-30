@@ -4,10 +4,13 @@
 #include "core/actions/action.hpp"
 #include "core/stores/player_store.hpp"
 
+class DrawCategoriesAction;
+
 class ChangePlayersBlueJudogiHintAction : public Action {
 public:
     ChangePlayersBlueJudogiHintAction() = default;
     ChangePlayersBlueJudogiHintAction(std::vector<PlayerId> playerIds, bool value);
+    ChangePlayersBlueJudogiHintAction(std::vector<PlayerId> playerIds, bool value, size_t seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -16,17 +19,18 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mPlayerIds);
-        ar(mValue);
+        ar(mPlayerIds, mValue, mSeed);
     }
 
 private:
     std::vector<PlayerId> mPlayerIds;
     bool mValue;
+    size_t mSeed;
 
     // undo members
     std::vector<PlayerId> mChangedPlayers;
     std::vector<bool> mOldValues;
+    std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(ChangePlayersBlueJudogiHintAction)
