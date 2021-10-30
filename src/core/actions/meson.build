@@ -23,6 +23,7 @@ core_sources += ['src/core/actions/change_draw_system_preference_identifier_acti
 core_sources += ['src/core/actions/change_draw_system_preference_limit_action.cpp']
 core_sources += ['src/core/actions/change_match_card_style_preference_action.cpp']
 core_sources += ['src/core/actions/change_players_age_action.cpp']
+core_sources += ['src/core/actions/change_players_blue_judogi_hint_action.cpp']
 core_sources += ['src/core/actions/change_players_club_action.cpp']
 core_sources += ['src/core/actions/change_players_country_action.cpp']
 core_sources += ['src/core/actions/change_players_first_name_action.cpp']
