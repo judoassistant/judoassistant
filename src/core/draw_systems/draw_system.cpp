@@ -8,7 +8,6 @@ const std::vector<std::unique_ptr<const DrawSystem>> & DrawSystem::getDrawSystem
         systems.push_back(std::make_unique<const PoolDrawSystem>());
         systems.push_back(std::make_unique<const DoublePoolDrawSystem>());
         systems.push_back(std::make_unique<const BestOfThreeDrawSystem>());
-        systems.push_back(std::make_unique<const KnockoutDrawSystem>());
     }
 
     return systems;

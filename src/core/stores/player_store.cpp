@@ -109,3 +109,11 @@ const std::optional<PlayerSex> PlayerStore::getSex() const {
     return mFields.sex;
 }
 
+void PlayerStore::setBlueJudogiHint(bool blueJudogiHint) {
+    mFields.blueJudogiHint = blueJudogiHint;
+}
+
+const bool PlayerStore::getBlueJudogiHint() const {
+    return mFields.blueJudogiHint;
+}
+

@@ -46,6 +46,8 @@ CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *par
     for (QPlayerSex sex : PlayerSex::values())
         mSexContent->addItem(sex.toHumanString());
 
+    mBlueJudogiHintContent = new QCheckBox;
+
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First name"), mFirstNameContent);
     formLayout->addRow(tr("Last name"), mLastNameContent);
@@ -55,6 +57,7 @@ CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *par
     formLayout->addRow(tr("Rank"), mRankContent);
     formLayout->addRow(tr("Club"), mClubContent);
     formLayout->addRow(tr("Country"), mCountryContent);
+    formLayout->addRow(tr("No White Judogi"), mBlueJudogiHintContent);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
@@ -91,6 +94,8 @@ void CreatePlayerDialog::acceptClick() {
 
     if (mSexContent->currentIndex() > 0) // account for the first index being nullopt
         fields.sex = PlayerSex(mSexContent->currentIndex() - 1);
+
+    fields.blueJudogiHint = mBlueJudogiHintContent->checkState() == Qt::Checked;
 
     mStoreManager.dispatch(std::make_unique<AddPlayersAction>(mStoreManager.getTournament(), std::vector<PlayerFields>{std::move(fields)}));
     accept();

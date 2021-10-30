@@ -112,7 +112,7 @@ MatchType MatchStore::getType() const {
 std::ostream &operator<<(std::ostream &out, const MatchType &matchType) {
     if (matchType == MatchType::FINAL)
         return out << "final";
-    return out << "knockout";
+    return out << "elimination";
 
 }
 

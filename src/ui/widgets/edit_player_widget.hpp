@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QMetaObject>
@@ -31,6 +32,7 @@ private:
     void editWeight();
     void editCountry();
     void editSex();
+    void editBlueJudogiHint();
     void changePlayers(std::vector<PlayerId> ids);
     void beginResetTournament();
     void endResetTournament();
@@ -43,6 +45,7 @@ private:
     void updateWeight();
     void updateCountry();
     void updateSex();
+    void updateBlueJudogiHint();
 
     int getSexIndex();
     std::optional<std::string> getClubString();
@@ -50,6 +53,7 @@ private:
     std::optional<std::string> getLastNameString();
     std::optional<std::optional<PlayerAge>> getAgeValue();
     std::optional<std::optional<PlayerWeight>> getWeightValue();
+    std::optional<bool> getBlueJudogiHintValue();
     int getRankIndex();
     int getCountryIndex();
 
@@ -63,6 +67,7 @@ private:
     QLineEdit *mWeightContent;
     QComboBox *mCountryContent;
     QComboBox *mSexContent;
+    QCheckBox *mBlueJudogiHintContent;
 
     std::stack<QMetaObject::Connection> mConnections;
 };
