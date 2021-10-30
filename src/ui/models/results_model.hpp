@@ -42,7 +42,7 @@ private:
 
     void beginResetResults();
     void endResetResults();
-    const int COLUMN_COUNT = 3;
+    const int COLUMN_COUNT = 4;
 
     StoreManager & mStoreManager;
     std::stack<QMetaObject::Connection> mConnections;

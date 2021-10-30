@@ -45,6 +45,8 @@ QVariant ResultsModel::data(const QModelIndex &index, int role) const {
             case 1:
                 return QString::fromStdString(player.getLastName());
             case 2:
+                return QString::fromStdString(player.getClub());
+            case 3:
                 return (position ? QVariant(*position) : QVariant(""));
         }
     }
@@ -61,6 +63,8 @@ QVariant ResultsModel::headerData(int section, Qt::Orientation orientation, int 
                 case 1:
                     return QString(tr("Last Name"));
                 case 2:
+                    return QString(tr("Club"));
+                case 3:
                     return QString(tr("Position"));
             }
         }
