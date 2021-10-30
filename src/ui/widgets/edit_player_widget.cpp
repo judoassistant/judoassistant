@@ -6,6 +6,7 @@
 #include <QFormLayout>
 
 #include "core/actions/change_players_age_action.hpp"
+#include "core/actions/change_players_blue_judogi_hint_action.hpp"
 #include "core/actions/change_players_club_action.hpp"
 #include "core/actions/change_players_country_action.hpp"
 #include "core/actions/change_players_first_name_action.hpp"
@@ -111,6 +112,9 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
         mSexContent->addItem(sex.toHumanString());
     connect(mSexContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editSex();});
 
+    mBlueJudogiHintContent = new QCheckBox;
+    connect(mBlueJudogiHintContent, &QCheckBox::stateChanged, [&](int state) {editBlueJudogiHint();});
+
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(tr("First Name"), mFirstNameContent);
     formLayout->addRow(tr("Last Name"), mLastNameContent);
@@ -120,6 +124,7 @@ EditPlayerWidget::EditPlayerWidget(StoreManager & storeManager, QWidget *parent)
     formLayout->addRow(tr("Rank"), mRankContent);
     formLayout->addRow(tr("Club"), mClubContent);
     formLayout->addRow(tr("Country"), mCountryContent);
+    formLayout->addRow(tr("No White Judogi"), mBlueJudogiHintContent);
 
     setPlayers({});
     setLayout(formLayout);
@@ -177,6 +182,7 @@ void EditPlayerWidget::setPlayers(const std::vector<PlayerId> &playerIds) {
     updateWeight();
     updateCountry();
     updateSex();
+    updateBlueJudogiHint();
 }
 
 void EditPlayerWidget::editFirstName() {
@@ -471,6 +477,7 @@ void EditPlayerWidget::updateClub() {
     mClubContent->setPlaceholderText("");
 }
 
+
 void EditPlayerWidget::updateWeight() {
     mWeightContent->clear();
     mWeightContent->setEnabled(!mPlayerIds.empty());
@@ -610,3 +617,64 @@ std::optional<std::optional<PlayerWeight>> EditPlayerWidget::getWeightValue() {
 
     return res;
 }
+
+void EditPlayerWidget::updateBlueJudogiHint() {
+    mBlueJudogiHintContent->setEnabled(!mPlayerIds.empty());
+
+    if (mPlayerIds.empty()) {
+        // mFirstNameContent->setPlaceholderText("");
+        mBlueJudogiHintContent->setCheckState(Qt::Unchecked);
+        return;
+    }
+
+    std::optional<bool> value = getBlueJudogiHintValue();
+
+    if (!value.has_value()) {
+        mBlueJudogiHintContent->setTristate(true);
+        mBlueJudogiHintContent->setCheckState(Qt::PartiallyChecked);
+        return;
+    }
+
+    mBlueJudogiHintContent->setTristate(false); // Avoid user changing the value to Qt::PartiallyChecked
+    mBlueJudogiHintContent->setCheckState(*value ? Qt::Checked : Qt::Unchecked);
+}
+
+void EditPlayerWidget::editBlueJudogiHint() {
+    if (mPlayerIds.empty())
+        return;
+
+    bool newValue = mBlueJudogiHintContent->checkState() == Qt::Checked;
+
+    const TournamentStore &tournament = mStoreManager.getTournament();
+    bool changed = false;
+    for (auto playerId : mPlayerIds) {
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        bool oldValue = player.getBlueJudogiHint();
+
+        if (oldValue != newValue) {
+            changed = true;
+            break;
+        }
+    }
+
+    if (!changed) return;
+
+    mStoreManager.dispatch(std::make_unique<ChangePlayersBlueJudogiHintAction >(std::vector<PlayerId>(mPlayerIds.begin(), mPlayerIds.end()), newValue));
+}
+
+std::optional<bool> EditPlayerWidget::getBlueJudogiHintValue() {
+    const TournamentStore &tournament = mStoreManager.getTournament();
+
+    std::optional<bool> res;
+
+    for (auto playerId : mPlayerIds) {
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        if (!res.has_value())
+            res = player.getBlueJudogiHint();
+        else if (*res != player.getBlueJudogiHint())
+            return std::nullopt;
+    }
+
+    return res;
+}
+
