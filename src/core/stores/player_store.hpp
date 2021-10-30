@@ -16,6 +16,8 @@
 #include "core/stores/player_weight.hpp"
 
 struct PlayerFields {
+    PlayerFields() : blueJudogiHint(false) {}
+
     std::string firstName;
     std::string lastName;
     std::optional<PlayerAge> age;
@@ -24,12 +26,29 @@ struct PlayerFields {
     std::optional<PlayerWeight> weight;
     std::optional<PlayerCountry> country;
     std::optional<PlayerSex> sex;
+    bool blueJudogiHint;
 
     template<typename Archive>
-    void serialize(Archive& ar, const unsigned int version) {
+    void save(Archive& ar, const unsigned int version) const {
         ar(firstName, lastName, age, rank, club, weight, country, sex);
+
+        if (version > 0)
+            ar(blueJudogiHint);
+    }
+
+    template<typename Archive>
+    void load(Archive& ar, const unsigned int version) {
+        ar(firstName, lastName, age, rank, club, weight, country, sex);
+
+        if (version > 0)
+            ar(blueJudogiHint);
+        else {
+            blueJudogiHint = false;
+        }
     }
 };
+
+CEREAL_CLASS_VERSION(PlayerFields, 1);
 
 class PlayerStore {
 public:
@@ -51,6 +70,7 @@ public:
     const std::string & getClub() const;
     const PlayerId & getId() const;
     const std::optional<PlayerSex> getSex() const;
+    const bool getBlueJudogiHint() const;
 
     void setFirstName(const std::string & firstName);
     void setLastName(const std::string & lastName);
@@ -60,6 +80,7 @@ public:
     void setCountry(std::optional<PlayerCountry> country);
     void setClub(const std::string & club);
     void setSex(const std::optional<PlayerSex> sex);
+    void setBlueJudogiHint(bool blueJudogiHint);
 
     const std::unordered_set<CategoryId> & getCategories() const;
     void addCategory(CategoryId id);
@@ -78,4 +99,6 @@ private:
     std::unordered_set<CategoryId> mCategories;
     std::unordered_set<CombinedId> mMatches;
 };
+
+CEREAL_CLASS_VERSION(PlayerStore, 1);
 
