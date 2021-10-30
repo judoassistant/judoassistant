@@ -2,11 +2,12 @@
 
 #include "core/core.hpp"
 
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDialog>
+#include <QDoubleSpinBox>
 #include <QLineEdit>
 #include <QSpinBox>
-#include <QComboBox>
-#include <QDoubleSpinBox>
 
 class StoreManager;
 
@@ -28,4 +29,6 @@ private:
     QLineEdit *mWeightContent;
     QComboBox *mCountryContent;
     QComboBox *mSexContent;
+    QCheckBox *mBlueJudogiHintContent;
 };
+
