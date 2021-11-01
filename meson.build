@@ -114,10 +114,10 @@ web_exe = executable('judoassistant-web', web_sources, include_directories: incl
 # Install data
 if get_option('ui')
     # Icons
-    install_data('icons/icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
-    install_data('icons/icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
-    install_data('icons/icons/svg/filter.svg', rename: 'filter.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
-    install_data('icons/icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/svg/account-plus.svg', rename: 'player-add.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/svg/account-multiple-plus.svg', rename: 'category-add.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/svg/filter.svg', rename: 'filter.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
+    install_data('icons/svg/eye-off.svg', rename: 'hide.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'icons'))
 
     # Flags
     install_data('flags/flags/4x3/dk.svg', rename: 'den.svg', install_dir: join_paths(get_option('datadir'), meson.project_name(), 'flags'))
