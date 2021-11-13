@@ -1,4 +1,5 @@
 #include <sstream>
+#include <QStringList>
 
 #include "core/actions/add_players_action.hpp"
 #include "core/stores/category_store.hpp"
@@ -22,7 +23,7 @@ PlayerTableImporter::PlayerTableImporter(CSVReader *reader)
     guessColumns();
 }
 
-bool PlayerTableImporter::hasHeaderRow() {
+bool PlayerTableImporter::hasHeaderRow() const {
     return mHasHeaderRow;
 }
 
@@ -252,34 +253,46 @@ bool PlayerTableImporter::isValid(size_t row, size_t column) const {
 }
 
 QString PlayerTableImporter::getHeader(size_t column) const {
-    QString header;
-    if (mFirstNameColumn && *mFirstNameColumn == column)
-        header += tr("First Name") + ", ";
+    QString header = QString::number(column + 1);
 
-    if (mLastNameColumn && *mLastNameColumn == column)
-        header += tr("Last Name") + ", ";
+    // Read header from the csv file
+    if (hasHeaderRow() && mReader->rowCount() > 0) {
+        QString fileColumnHeader = mReader->get(0, column);
 
-    if (mAgeColumn && *mAgeColumn == column)
-        header += tr("Age") + ", ";
+        if (!fileColumnHeader.isEmpty()) {
+            header += QString(" (%1)").arg(fileColumnHeader);
+        }
+    }
 
-    if (mRankColumn && *mRankColumn == column)
-        header += tr("Rank") + ", ";
+    QStringList fields;
+    if (mFirstNameColumn == column)
+        fields << tr("First Name");
 
-    if (mClubColumn && *mClubColumn == column)
-        header += tr("Club") + ", ";
+    if (mLastNameColumn == column)
+        fields << tr("Last Name");
 
-    if (mWeightColumn && *mWeightColumn == column)
-        header += tr("Weight") + ", ";
+    if (mAgeColumn == column)
+        fields << tr("Age");
 
-    if (mCountryColumn && *mCountryColumn == column)
-        header += tr("Country") + ", ";
+    if (mRankColumn == column)
+        fields << tr("Rank");
 
-    if (mSexColumn && *mSexColumn == column)
-        header += tr("Sex") + ", ";
+    if (mClubColumn == column)
+        fields << tr("Club");
 
-    if (header.isEmpty())
-        return QString::number(column+1);
-    return header.left(header.size() - 2); // remove the last comma
+    if (mWeightColumn == column)
+        fields << tr("Weight");
+
+    if (mCountryColumn == column)
+        fields << tr("Country");
+
+    if (mSexColumn == column)
+        fields << tr("Sex");
+
+    if (fields.isEmpty())
+        return header;
+
+    return header += tr(" → ") + fields.join(", ");
 }
 
 void PlayerTableImporter::import(StoreManager & storeManager) {

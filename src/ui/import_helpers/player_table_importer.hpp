@@ -16,7 +16,7 @@ public:
 
     PlayerTableImporter(CSVReader *reader);
 
-    bool hasHeaderRow();
+    bool hasHeaderRow() const;
     void setHasHeaderRow(bool val);
 
     void setFirstNameColumn(std::optional<size_t> val);
