@@ -33,9 +33,11 @@ struct Comparator {
 };
 
 DrawSystemIdentifier PreferencesStore::getPreferredDrawSystem(std::size_t size) const {
-    assert(size > 0);
-    auto it = std::upper_bound(mPreferredDrawSystems.begin(), mPreferredDrawSystems.end(), size, Comparator());
-    return std::prev(it)->drawSystem;
+    size_t i = mPreferredDrawSystems.size() - 1;
+    while (i > 0 && mPreferredDrawSystems[i].playerLowerLimit > size)
+        --i;
+
+    return mPreferredDrawSystems[i].drawSystem;
 }
 
 ScoreboardStylePreference PreferencesStore::getScoreboardStyle() const {
