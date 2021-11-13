@@ -6,6 +6,7 @@
 #include "core/actions/add_match_action.hpp"
 #include "core/actions/add_players_action.hpp"
 #include "core/actions/add_players_to_category_action.hpp"
+#include "core/actions/add_players_with_categories_action.hpp"
 #include "core/actions/auto_add_categories_action.hpp"
 #include "core/actions/award_hansoku_make_action.hpp"
 #include "core/actions/award_ippon_action.hpp"
