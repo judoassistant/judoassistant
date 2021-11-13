@@ -10,6 +10,6 @@ public:
     QPlayerAge(const PlayerAge &other): PlayerAge(other) {}
     QPlayerAge(float weight): PlayerAge(weight) {}
 
-    static QPlayerAge fromHumanString(const QString &str); // Interprets a string in the current locale as a weight
-    QString toHumanString() const; // Returns a string representing the weight in the current locale
+    static QPlayerAge fromHumanString(const QString &str); // Interprets a string in the current locale as an age
+    QString toHumanString() const; // Returns a string representing the age in the current locale
 };
