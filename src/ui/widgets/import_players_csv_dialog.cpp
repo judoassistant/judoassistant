@@ -137,10 +137,6 @@ void ImportPlayersCSVDialog::setHasHeaderRow(int state) {
     bool checked = (state == Qt::Checked);
     mImporter.setHasHeaderRow(checked);
 
-    if (checked) {
-        mImporter.guessColumns();
-        refillColumnBoxes();
-    }
     resetPreview();
 }
 
