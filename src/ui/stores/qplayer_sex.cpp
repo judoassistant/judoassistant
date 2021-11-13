@@ -2,8 +2,8 @@
 
 std::vector<QString> QPlayerSex::strings() const {
     switch (mValue) {
-        case MALE: return {tr("male"), tr("man"), tr("m"), tr("boy")};
-        case FEMALE: return {tr("female"), tr("woman"), tr("w"), tr("f"), tr("girl")};
+        case MALE: return {tr("male"), tr("man"), tr("m"), tr("boy"), tr("herrer"), tr("herre")};
+        case FEMALE: return {tr("female"), tr("woman"), tr("w"), tr("f"), tr("girl"), tr("damer"), tr("dame")};
         default: return {};
     }
 }
