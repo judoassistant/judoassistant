@@ -27,6 +27,7 @@ public:
     void setWeightColumn(std::optional<size_t> val);
     void setCountryColumn(std::optional<size_t> val);
     void setSexColumn(std::optional<size_t> val);
+    void setCategoryColumn(std::optional<size_t> val);
     void setDelimiter(QChar del);
 
     std::optional<size_t> getFirstNameColumn() const;
@@ -37,6 +38,7 @@ public:
     std::optional<size_t> getWeightColumn() const;
     std::optional<size_t> getCountryColumn() const;
     std::optional<size_t> getSexColumn() const;
+    std::optional<size_t> getCategoryColumn() const;
 
     bool isValid(size_t row, size_t column) const;
     QString getHeader(size_t column) const;
@@ -74,6 +76,9 @@ private:
     bool isWeightHeader(const QString &cell) const;
     bool isCountryHeader(const QString &cell) const;
     bool isSexHeader(const QString &cell) const;
+    bool isCategoryHeader(const QString &cell) const;
+
+    void addOrFindCategories(StoreManager & storeManager);
 
     CSVReader *mReader;
     bool mHasHeaderRow;
@@ -87,5 +92,6 @@ private:
     std::optional<size_t> mWeightColumn;
     std::optional<size_t> mCountryColumn;
     std::optional<size_t> mSexColumn;
+    std::optional<size_t> mCategoryColumn;
 };
 

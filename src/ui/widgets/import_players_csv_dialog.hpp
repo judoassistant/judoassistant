@@ -30,6 +30,7 @@ protected slots:
     void setWeightColumn(int index);
     void setCountryColumn(int index);
     void setSexColumn(int index);
+    void setCategoryColumn(int index);
     void refillColumnBoxes();
 
 private:
@@ -51,6 +52,7 @@ private:
     QComboBox *mWeightContent;
     QComboBox *mCountryContent;
     QComboBox *mSexContent;
+    QComboBox *mCategoryContent;
     QTableWidget *mPreviewWidget;
     std::vector<bool> mIsColumnValid;
 };

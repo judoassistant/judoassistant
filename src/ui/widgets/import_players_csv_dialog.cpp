@@ -58,6 +58,7 @@ ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVR
         mWeightContent = new QComboBox;
         mCountryContent = new QComboBox;
         mSexContent = new QComboBox;
+        mCategoryContent = new QComboBox;
 
         connect(mFirstNameContent, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImportPlayersCSVDialog::setFirstNameColumn);
         connect(mLastNameContent, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImportPlayersCSVDialog::setLastNameColumn);
@@ -67,6 +68,7 @@ ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVR
         connect(mWeightContent, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImportPlayersCSVDialog::setWeightColumn);
         connect(mCountryContent, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImportPlayersCSVDialog::setCountryColumn);
         connect(mSexContent, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImportPlayersCSVDialog::setSexColumn);
+        connect(mCategoryContent, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImportPlayersCSVDialog::setCategoryColumn);
 
         refillColumnBoxes();
 
@@ -78,6 +80,7 @@ ImportPlayersCSVDialog::ImportPlayersCSVDialog(StoreManager & storeManager, CSVR
         formLayout->addRow(tr("Rank"), mRankContent);
         formLayout->addRow(tr("Club"), mClubContent);
         formLayout->addRow(tr("Country"), mCountryContent);
+        formLayout->addRow(tr("Category"), mCategoryContent);
         group->setLayout(formLayout);
         mainLayout->addWidget(group);
 
@@ -244,6 +247,18 @@ void ImportPlayersCSVDialog::setSexColumn(int index) {
         updatePreviewColumn(*newValue);
 }
 
+void ImportPlayersCSVDialog::setCategoryColumn(int index) {
+    auto oldValue = mImporter.getCategoryColumn();
+    auto newValue = (index == 0 ? std::nullopt : std::make_optional(static_cast<size_t>(index - 1)));
+
+    mImporter.setCategoryColumn(newValue);
+
+    if (oldValue)
+        updatePreviewColumn(*oldValue);
+    if (newValue)
+        updatePreviewColumn(*newValue);
+}
+
 void ImportPlayersCSVDialog::refillColumnBox(QComboBox* box, std::optional<size_t> currentColumn) {
     bool state = box->blockSignals(true);
     box->clear();
@@ -267,6 +282,7 @@ void ImportPlayersCSVDialog::refillColumnBoxes() {
     refillColumnBox(mWeightContent, mImporter.getWeightColumn());
     refillColumnBox(mCountryContent, mImporter.getCountryColumn());
     refillColumnBox(mSexContent, mImporter.getSexColumn());
+    refillColumnBox(mCategoryContent, mImporter.getCategoryColumn());
 }
 
 void ImportPlayersCSVDialog::resetPreview() {

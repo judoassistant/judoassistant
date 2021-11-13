@@ -1,7 +1,11 @@
 #include <sstream>
 #include <QStringList>
 
+#include "core/actions/add_category_action.hpp"
 #include "core/actions/add_players_action.hpp"
+#include "core/actions/add_players_to_category_action.hpp"
+#include "core/actions/add_players_with_categories_action.hpp"
+#include "core/actions/draw_categories_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/import_helpers/player_table_importer.hpp"
@@ -72,6 +76,7 @@ void PlayerTableImporter::guessColumns() {
     mWeightColumn = std::nullopt;
     mCountryColumn = std::nullopt;
     mSexColumn = std::nullopt;
+    mCategoryColumn = std::nullopt;
 
     if (!mHasHeaderRow)
         return;
@@ -120,6 +125,11 @@ void PlayerTableImporter::guessColumns() {
 
         if (!mSexColumn.has_value() && isSexHeader(cell)) {
             mSexColumn = column;
+            continue;
+        }
+
+        if (!mCategoryColumn.has_value() && isCategoryHeader(cell)) {
+            mCategoryColumn = column;
             continue;
         }
     }
@@ -192,8 +202,17 @@ std::optional<size_t> PlayerTableImporter::getSexColumn() const {
     return mSexColumn;
 }
 
+std::optional<size_t> PlayerTableImporter::getCategoryColumn() const {
+    return mCategoryColumn;
+}
+
 void PlayerTableImporter::setSexColumn(std::optional<size_t> val) {
     mSexColumn = val;
+    mColumnsManuallySet = true;
+}
+
+void PlayerTableImporter::setCategoryColumn(std::optional<size_t> val) {
+    mCategoryColumn = val;
     mColumnsManuallySet = true;
 }
 
@@ -289,6 +308,9 @@ QString PlayerTableImporter::getHeader(size_t column) const {
     if (mSexColumn == column)
         fields << tr("Sex");
 
+    if (mCategoryColumn == column)
+        fields << tr("Category");
+
     if (fields.isEmpty())
         return header;
 
@@ -296,11 +318,13 @@ QString PlayerTableImporter::getHeader(size_t column) const {
 }
 
 void PlayerTableImporter::import(StoreManager & storeManager) {
-    std::vector<PlayerFields> fieldsList;
+    std::vector<PlayerFields> players;
+    std::vector<std::optional<std::string>> categories;
 
     size_t offset = hasHeaderRow();
     for (size_t row = offset; row < mReader->rowCount(); ++row) {
         PlayerFields fields;
+        std::optional<std::string> category;
 
         if (mFirstNameColumn)
             fields.firstName = mReader->get(row, *mFirstNameColumn).toStdString();
@@ -318,10 +342,18 @@ void PlayerTableImporter::import(StoreManager & storeManager) {
         fields.country = parseValue<PlayerCountry, QPlayerCountry>(row, mCountryColumn);
         fields.sex = parseValue<PlayerSex, QPlayerSex>(row, mSexColumn);
 
-        fieldsList.push_back(std::move(fields));
+        if (mCategoryColumn) {
+            const std::string categoryName = mReader->get(row, *mCategoryColumn).toStdString();
+
+            if (!categoryName.empty())
+                category = categoryName;
+        }
+
+        players.push_back(std::move(fields));
+        categories.push_back(category);
     }
 
-    storeManager.dispatch(std::make_unique<AddPlayersAction>(storeManager.getTournament(), std::move(fieldsList)));
+    storeManager.dispatch(std::make_unique<AddPlayersWithCategoriesAction>(storeManager.getTournament(), players, categories));
 }
 
 void PlayerTableImporter::setDelimiter(QChar del) {
@@ -403,6 +435,14 @@ bool PlayerTableImporter::isSexHeader(const QString &cell) const {
     if (lower == QString("sex"))
         return true;
     if (lower == QString("gender"))
+        return true;
+    return false;
+}
+
+bool PlayerTableImporter::isCategoryHeader(const QString &cell) const {
+    const QString lower = cell.toLower();
+
+    if (lower == QString("category"))
         return true;
     return false;
 }
