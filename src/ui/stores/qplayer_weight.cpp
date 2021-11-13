@@ -3,27 +3,46 @@
 #include <QLocale>
 #include <QRegExp>
 
-QPlayerWeight QPlayerWeight::fromHumanString(const QString &str) {
-    // Find part of string corresponding to a number
+// Find part of string corresponding to a number
+QString matchString(const QString &str) {
     QRegExp reg_exp("(\\d+([,\\.]\\d\\d?)?)");
     int res = reg_exp.indexIn(str);
 
     if (res == -1)
         throw std::invalid_argument(str.toStdString());
 
-    QString match = reg_exp.cap(0);
+    return reg_exp.cap(0);
+}
 
-    // Try to parse the string with C locale and system locale
-    QLocale systemLocale;
-    QLocale cLocale(QLocale::C);
+// Try to parse a string to float using C locale and system locale
+float StringToFloat(const QString &str) {
+    // Parse using system locale
+    {
+        QLocale systemLocale;
+        bool ok;
+        float value = systemLocale.toFloat(str, &ok);
+        if (ok)
+            return value;
+    }
 
-    bool ok;
-    float value = systemLocale.toFloat(match, &ok);
+    {
+        QLocale cLocale(QLocale::C);
+        bool ok;
+        float value = cLocale.toFloat(str, &ok);
+        if (ok)
+            return value;
+    }
 
-    if (!ok)
-        value = cLocale.toFloat(match, &ok);
+    throw std::invalid_argument(str.toStdString());
 
-    if (!ok || value < min() || value > max())
+    return 0;
+}
+
+QPlayerWeight QPlayerWeight::fromHumanString(const QString &str) {
+    const QString match = matchString(str);
+    float value = StringToFloat(match);
+
+    if (value < min() || value > max())
         throw std::invalid_argument(str.toStdString());
 
     return QPlayerWeight(value);

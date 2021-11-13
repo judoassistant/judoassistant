@@ -13,3 +13,4 @@ public:
     static QPlayerWeight fromHumanString(const QString &str); // Interprets a string in the current locale as a weight
     QString toHumanString() const; // Returns a string representing the weight in the current locale
 };
+
