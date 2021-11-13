@@ -23,6 +23,7 @@
 #include "ui/stores/qplayer_rank.hpp"
 #include "ui/stores/qplayer_country.hpp"
 #include "ui/stores/qplayer_sex.hpp"
+#include "ui/stores/qplayer_weight.hpp"
 
 int EditPlayerWidget::getSexIndex() {
     assert(!mPlayerIds.empty());
@@ -301,10 +302,8 @@ void EditPlayerWidget::editWeight() {
         return;
 
     std::optional<PlayerWeight> newValue;
-    if (!mWeightContent->text().isEmpty()) {
-        QLocale locale;
-        newValue = PlayerWeight(locale.toFloat(mWeightContent->text()));
-    }
+    if (!mWeightContent->text().isEmpty())
+        newValue = QPlayerWeight::fromHumanString(mWeightContent->text());
 
     const TournamentStore &tournament = mStoreManager.getTournament();
     bool changed = false;

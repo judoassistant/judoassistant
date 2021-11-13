@@ -13,6 +13,7 @@
 #include "ui/stores/qplayer_country.hpp"
 #include "ui/stores/qplayer_rank.hpp"
 #include "ui/stores/qplayer_sex.hpp"
+#include "ui/stores/qplayer_weight.hpp"
 
 CreatePlayerDialog::CreatePlayerDialog(StoreManager & storeManager, QWidget *parent)
     : QDialog(parent)
@@ -81,10 +82,8 @@ void CreatePlayerDialog::acceptClick() {
     if (!mAgeContent->text().isEmpty())
         fields.age = PlayerAge(mAgeContent->text().toInt());
 
-    if (!mWeightContent->text().isEmpty()) {
-        QLocale locale;
-        fields.weight = PlayerWeight(locale.toFloat(mWeightContent->text()));
-    }
+    if (!mWeightContent->text().isEmpty())
+        fields.weight = QPlayerWeight::fromHumanString(mWeightContent->text());
 
     if (mRankContent->currentIndex() > 0) // account for the first index being nullopt
         fields.rank = PlayerRank(mRankContent->currentIndex() - 1);
