@@ -13,3 +13,4 @@ public:
     static QPlayerAge fromHumanString(const QString &str); // Interprets a string in the current locale as an age
     QString toHumanString() const; // Returns a string representing the age in the current locale
 };
+
