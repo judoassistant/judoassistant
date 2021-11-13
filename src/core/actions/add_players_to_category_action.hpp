@@ -29,7 +29,7 @@ private:
 
     // undo members
     std::vector<PlayerId> mAddedPlayerIds;
-    std::unique_ptr<DrawCategoriesAction> mDrawAction;
+    std::unique_ptr<Action> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(AddPlayersToCategoryAction)

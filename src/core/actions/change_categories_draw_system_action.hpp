@@ -33,8 +33,8 @@ private:
     // undo members
     std::vector<CategoryId> mChangedCategories;
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
-    std::unique_ptr<DrawCategoriesAction> mDrawAction;
-    std::vector<std::unique_ptr<SetTatamiLocationAction>> mLocationActions;
+    std::unique_ptr<Action> mDrawAction;
+    std::vector<std::unique_ptr<Action>> mLocationActions;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesDrawSystemAction)

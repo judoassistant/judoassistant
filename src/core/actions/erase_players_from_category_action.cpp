@@ -1,11 +1,13 @@
 #include "core/actions/draw_categories_action.hpp"
 #include "core/actions/erase_players_from_category_action.hpp"
+#include "core/actions/change_categories_draw_system_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/player_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/stores/preferences_store.hpp"
 
 ErasePlayersFromCategoryAction::ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds)
     : ErasePlayersFromCategoryAction(categoryId, playerIds, getSeed())
@@ -41,7 +43,14 @@ void ErasePlayersFromCategoryAction::redoImpl(TournamentStore & tournament) {
     tournament.erasePlayersFromCategory(mCategoryId, mErasedPlayerIds);
 
     if (!mErasedPlayerIds.empty()) {
-        mDrawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{mCategoryId}, mSeed);
+        const auto categoryPlayerCount = category.getPlayers().size();
+        const DrawSystemIdentifier preferredDrawSystem = tournament.getPreferences().getPreferredDrawSystem(categoryPlayerCount);
+        const bool shouldChangeDrawSystem = category.getDrawSystem().getIdentifier() != preferredDrawSystem;
+
+        if (shouldChangeDrawSystem)
+            mDrawAction = std::make_unique<ChangeCategoriesDrawSystemAction>(std::vector<CategoryId>{mCategoryId}, preferredDrawSystem, mSeed);
+        else
+            mDrawAction = std::make_unique<DrawCategoriesAction>(std::vector<CategoryId>{mCategoryId}, mSeed);
         mDrawAction->redo(tournament);
     }
 }
