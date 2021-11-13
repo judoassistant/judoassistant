@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <optional>
 
 #include "core/core.hpp"
 #include "core/id.hpp"
@@ -56,6 +57,7 @@ public:
     std::unique_ptr<CategoryStore> eraseCategory(CategoryId id);
     bool containsCategory(CategoryId id) const;
     bool containsMatch(CategoryId categoryId, MatchId matchId) const;
+    std::optional<CategoryId> getCategoryByName(const std::string &name) const;
 
     const TatamiList & getTatamis() const;
     TatamiList & getTatamis();

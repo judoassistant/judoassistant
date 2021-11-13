@@ -16,8 +16,6 @@ class Ruleset;
 
 enum class MatchType;
 
-// TODO: Make 'magic' categories that update automatically
-
 struct CategoryStatus {
     CategoryStatus()
         : notStartedMatches(0)

@@ -160,3 +160,21 @@ PreferencesStore& TournamentStore::getPreferences() {
     return *mPreferences;
 }
 
+std::optional<CategoryId> TournamentStore::getCategoryByName(const std::string &name) const {
+    std::optional<CategoryId> matchedId;
+
+    for (const auto &pair : mCategories) {
+        const CategoryId categoryId = pair.first;
+        const CategoryStore &category = *(pair.second);
+
+        if (category.getName() != name)
+            continue;
+
+        // To ensure deterministic behaviour, we return the largest id that matches
+        if (matchedId < categoryId)
+            matchedId = categoryId;
+    }
+
+    return matchedId;
+}
+
