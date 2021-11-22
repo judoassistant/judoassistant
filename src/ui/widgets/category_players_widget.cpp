@@ -9,7 +9,9 @@
 #include "core/stores/match_store.hpp"
 #include "ui/models/players_model.hpp"
 #include "ui/store_managers/store_manager.hpp"
+#include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/category_players_widget.hpp"
+#include "ui/widgets/confirm_action_dialog.hpp"
 
 CategoryPlayersWidget::CategoryPlayersWidget (StoreManager & storeManager, QWidget *parent)
     : QTableView(parent)
@@ -17,7 +19,6 @@ CategoryPlayersWidget::CategoryPlayersWidget (StoreManager & storeManager, QWidg
 {
     mModel = new PlayersProxyModel(mStoreManager, this);
     setModel(mModel);
-    // TODO: Make this customizeable for the user
     for (int column : {2,3,5,6,7,8})
         setColumnHidden(column, true);
     setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -67,8 +68,20 @@ void CategoryPlayersWidget::eraseSelectedPlayersFromCategory() {
 
     if (!mModel->getCategory().has_value())
         return;
+
     CategoryId categoryId = mModel->getCategory().value();
 
-    mStoreManager.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds)));
+    auto action = std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds));
+
+    if (!userConfirmsAction(*action))
+        return;
+    mStoreManager.dispatch(std::move(action));
 }
 
+bool CategoryPlayersWidget::userConfirmsAction(const ConfirmableAction &action) const {
+    const auto &tournament = mStoreManager.getTournament();
+    if (!action.doesRequireConfirmation(tournament))
+        return true;
+
+    return ConfirmActionDialog::confirmAction();
+}
