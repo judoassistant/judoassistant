@@ -16,6 +16,7 @@
 #include "core/rulesets/ruleset_identifier.hpp"
 
 class StoreManager;
+class ConfirmableAction;
 
 class EditCategoryWidget : public QWidget {
     Q_OBJECT
@@ -24,6 +25,8 @@ public:
     void setCategories(const std::vector<CategoryId> &categoryIds);
 
 private:
+    bool userConfirmsAction(const ConfirmableAction &action) const;
+
     const QString MULTIPLE_TEXT = QObject::tr("-- multiple --");
 
     std::optional<DrawSystemIdentifier> getDrawSystemIdentifier();

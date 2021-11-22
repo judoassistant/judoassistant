@@ -1,7 +1,4 @@
 #include <QLabel>
-#include <QPushButton>
-#include <QDialogButtonBox>
-#include <QGridLayout>
 #include <QFormLayout>
 
 #include "core/actions/change_categories_draw_system_action.hpp"
@@ -19,6 +16,7 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/validators/optional_validator.hpp"
 #include "ui/widgets/edit_category_widget.hpp"
+#include "ui/widgets/confirm_action_dialog.hpp"
 
 std::optional<DrawSystemIdentifier> EditCategoryWidget::getDrawSystemIdentifier() {
     std::optional<DrawSystemIdentifier> res;
@@ -168,7 +166,14 @@ void EditCategoryWidget::editDrawDisabled(int state) {
 
     bool disabled = mDrawDisabledContent->isChecked();
 
-    mStoreManager.dispatch(std::make_unique<SetCategoriesDrawDisabled>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), disabled));
+    auto action = std::make_unique<SetCategoriesDrawDisabled>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), disabled);
+
+    if (!userConfirmsAction(*action)) {
+        updateDrawDisabled(); // Revert content
+        return;
+    }
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void EditCategoryWidget::editName() {
@@ -201,7 +206,14 @@ void EditCategoryWidget::editRuleset() {
     assert(static_cast<std::size_t>(mRulesetContent->currentIndex()) != Ruleset::getRulesets().size()); // the multiple field is selected
 
     RulesetIdentifier ruleset = mRulesetContent->currentData().value<RulesetIdentifier>();
-    mStoreManager.dispatch(std::make_unique<ChangeCategoriesRulesetAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), ruleset));
+
+    auto action = std::make_unique<ChangeCategoriesRulesetAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), ruleset);
+    if (!userConfirmsAction(*action)) {
+        updateRuleset(); // Revert content
+        return;
+    }
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void EditCategoryWidget::editDrawSystem() {
@@ -211,7 +223,14 @@ void EditCategoryWidget::editDrawSystem() {
     assert(static_cast<std::size_t>(mDrawSystemContent->currentIndex()) != DrawSystem::getDrawSystems().size()); // the multiple field is selected
 
     DrawSystemIdentifier drawSystem = mDrawSystemContent->currentData().value<DrawSystemIdentifier>();
-    mStoreManager.dispatch(std::make_unique<ChangeCategoriesDrawSystemAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), drawSystem));
+    auto action = std::make_unique<ChangeCategoriesDrawSystemAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), drawSystem);
+
+    if (!userConfirmsAction(*action)) {
+        updateDrawSystem(); // Revert content
+        return;
+    }
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void EditCategoryWidget::updateDrawDisabled() {
@@ -375,5 +394,13 @@ std::optional<std::string> EditCategoryWidget::getNameString() {
     }
 
     return res;
+}
+
+bool EditCategoryWidget::userConfirmsAction(const ConfirmableAction &action) const {
+    const auto &tournament = mStoreManager.getTournament();
+    if (!action.doesRequireConfirmation(tournament))
+        return true;
+
+    return ConfirmActionDialog::confirmAction();
 }
 
