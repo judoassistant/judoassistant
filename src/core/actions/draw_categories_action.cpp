@@ -192,3 +192,17 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
     }
 
 }
+
+bool DrawCategoriesAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+
+        const auto &category = tournament.getCategory(categoryId);
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+
