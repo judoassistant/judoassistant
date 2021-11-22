@@ -16,6 +16,7 @@
 #include "ui/widgets/category_matches_widget.hpp"
 #include "ui/widgets/category_matches_widget.hpp"
 #include "ui/widgets/category_players_widget.hpp"
+#include "ui/widgets/confirm_action_dialog.hpp"
 #include "ui/widgets/create_category_dialog.hpp"
 #include "ui/widgets/edit_category_widget.hpp"
 
@@ -98,12 +99,22 @@ void CategoriesWidget::showCategoryCreateDialog() {
 
 void CategoriesWidget::eraseSelectedCategories() {
     auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
-    mStoreManager.dispatch(std::make_unique<EraseCategoriesAction>(std::move(categoryIds)));
+    auto action = std::make_unique<EraseCategoriesAction>(std::move(categoryIds));
+
+    if (!userConfirmsAction(*action))
+        return;
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void CategoriesWidget::drawSelectedCategories() {
     auto categoryIds = mModel->getCategories(mTableView->selectionModel()->selection());
-    mStoreManager.dispatch(std::make_unique<DrawCategoriesAction>(std::move(categoryIds)));
+    auto action = std::make_unique<DrawCategoriesAction>(std::move(categoryIds));
+
+    if (!userConfirmsAction(*action))
+        return;
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void CategoriesWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
@@ -168,5 +179,13 @@ void CategoriesWidget::showContextMenu(const QPoint &pos) {
     // }
 
     menu.exec(mTableView->mapToGlobal(pos), 0);
+}
+
+bool CategoriesWidget::userConfirmsAction(const ConfirmableAction &action) const {
+    const auto &tournament = mStoreManager.getTournament();
+    if (!action.doesRequireConfirmation(tournament))
+        return true;
+
+    return ConfirmActionDialog::confirmAction();
 }
 
