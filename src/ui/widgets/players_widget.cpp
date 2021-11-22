@@ -21,6 +21,7 @@
 #include "ui/widgets/create_player_dialog.hpp"
 #include "ui/widgets/edit_player_widget.hpp"
 #include "ui/widgets/players_widget.hpp"
+#include "ui/widgets/confirm_action_dialog.hpp"
 
 PlayersWidget::PlayersWidget(MasterStoreManager &storeManager)
     : mStoreManager(storeManager)
@@ -210,9 +211,21 @@ void PlayersWidget::showContextMenu(const QPoint &pos) {
     menu.exec(QCursor::pos() - QPoint(4, 4));
 }
 
+bool PlayersWidget::userConfirmsAction(const ConfirmableAction &action) const {
+    const auto &tournament = mStoreManager.getTournament();
+    if (!action.doesRequireConfirmation(tournament))
+        return true;
+
+    return ConfirmActionDialog::confirmAction();
+}
+
 void PlayersWidget::eraseSelectedPlayers() {
     auto playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreManager.dispatch(std::make_unique<ErasePlayersAction>(std::move(playerIds)));
+    auto action = std::make_unique<ErasePlayersAction>(std::move(playerIds));
+
+    if (!userConfirmsAction(*action))
+        return;
+    mStoreManager.dispatch(std::move(action));
 }
 
 void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) {
@@ -224,17 +237,30 @@ void PlayersWidget::selectionChanged(const QItemSelection &selected, const QItem
 void PlayersWidget::eraseSelectedPlayersFromAllCategories() {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
 
-    mStoreManager.dispatch(std::make_unique<ErasePlayersFromAllCategoriesAction>(std::move(playerIds)));
+    auto action = std::make_unique<ErasePlayersFromAllCategoriesAction>(std::move(playerIds));
+    if (!userConfirmsAction(*action))
+        return;
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void PlayersWidget::eraseSelectedPlayersFromCategory(CategoryId categoryId) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreManager.dispatch(std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds)));
+
+    auto action = std::make_unique<ErasePlayersFromCategoryAction>(categoryId, std::move(playerIds));
+    if (!userConfirmsAction(*action))
+        return;
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 void PlayersWidget::addSelectedPlayersToCategory(CategoryId categoryId) {
     std::vector<PlayerId> playerIds = mModel->getPlayers(mTableView->selectionModel()->selection());
-    mStoreManager.dispatch(std::make_unique<AddPlayersToCategoryAction>(categoryId, std::move(playerIds)));
+    auto action = std::make_unique<AddPlayersToCategoryAction>(categoryId, std::move(playerIds));
+
+    if (!userConfirmsAction(*action))
+        return;
+    mStoreManager.dispatch(std::move(action));
 }
 
 void PlayersWidget::showCategoryCreateDialog() {
