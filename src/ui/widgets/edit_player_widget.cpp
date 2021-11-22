@@ -1,8 +1,5 @@
 #include "core/log.hpp"
 #include <QLabel>
-#include <QPushButton>
-#include <QDialogButtonBox>
-#include <QGridLayout>
 #include <QFormLayout>
 
 #include "core/actions/change_players_age_action.hpp"
@@ -17,13 +14,14 @@
 #include "core/actions/draw_categories_action.hpp"
 #include "core/stores/category_store.hpp"
 #include "ui/store_managers/store_manager.hpp"
-#include "ui/stores/qtournament_store.hpp"
-#include "ui/validators/optional_validator.hpp"
-#include "ui/widgets/edit_player_widget.hpp"
-#include "ui/stores/qplayer_rank.hpp"
 #include "ui/stores/qplayer_country.hpp"
+#include "ui/stores/qplayer_rank.hpp"
 #include "ui/stores/qplayer_sex.hpp"
 #include "ui/stores/qplayer_weight.hpp"
+#include "ui/stores/qtournament_store.hpp"
+#include "ui/validators/optional_validator.hpp"
+#include "ui/widgets/confirm_action_dialog.hpp"
+#include "ui/widgets/edit_player_widget.hpp"
 
 int EditPlayerWidget::getSexIndex() {
     assert(!mPlayerIds.empty());
@@ -662,7 +660,14 @@ void EditPlayerWidget::editBlueJudogiHint() {
 
     if (!changed) return;
 
-    mStoreManager.dispatch(std::make_unique<ChangePlayersBlueJudogiHintAction >(std::vector<PlayerId>(mPlayerIds.begin(), mPlayerIds.end()), newValue));
+    auto action = std::make_unique<ChangePlayersBlueJudogiHintAction>(std::vector<PlayerId>(mPlayerIds.begin(), mPlayerIds.end()), newValue);
+
+    if (!userConfirmsAction(*action)) {
+        updateBlueJudogiHint(); // Revert checkbox to previous value
+        return;
+    }
+
+    mStoreManager.dispatch(std::move(action));
 }
 
 std::optional<bool> EditPlayerWidget::getBlueJudogiHintValue() {
@@ -679,5 +684,13 @@ std::optional<bool> EditPlayerWidget::getBlueJudogiHintValue() {
     }
 
     return res;
+}
+
+bool EditPlayerWidget::userConfirmsAction(const ConfirmableAction &action) const {
+    const auto &tournament = mStoreManager.getTournament();
+    if (!action.doesRequireConfirmation(tournament))
+        return true;
+
+    return ConfirmActionDialog::confirmAction();
 }
 

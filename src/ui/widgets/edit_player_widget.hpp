@@ -13,6 +13,7 @@
 #include "core/stores/player_store.hpp"
 
 class StoreManager;
+class ConfirmableAction;
 
 class EditPlayerWidget : public QWidget {
     Q_OBJECT
@@ -21,6 +22,8 @@ public:
     void setPlayers(const std::vector<PlayerId> &playerIds);
 
 private:
+    bool userConfirmsAction(const ConfirmableAction &action) const;
+
     const QString EMPTY_TEXT = QObject::tr("-- none --");
     const QString MULTIPLE_TEXT = QObject::tr("-- multiple --");
 
