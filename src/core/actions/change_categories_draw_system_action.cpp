@@ -20,10 +20,9 @@ std::unique_ptr<Action> ChangeCategoriesDrawSystemAction::freshClone() const {
     return std::make_unique<ChangeCategoriesDrawSystemAction>(mCategoryIds, mDrawSystem, mSeed);
 }
 
-void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
-    auto drawSystem = DrawSystem::getDrawSystem(mDrawSystem);
+std::vector<CategoryId> ChangeCategoriesDrawSystemAction::getCategoriesThatChange(const TournamentStore &tournament) const {
+    std::vector<CategoryId> categoryIds;
 
-    // Compute categories that need updating
     for (auto categoryId : mCategoryIds) {
         if (!tournament.containsCategory(categoryId))
             continue;
@@ -31,8 +30,17 @@ void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
         const CategoryStore & category = tournament.getCategory(categoryId);
         if (category.getDrawSystem().getIdentifier() == mDrawSystem)
             continue;
-        mChangedCategories.push_back(categoryId);
+
+        categoryIds.push_back(categoryId);
     }
+
+    return categoryIds;
+}
+
+void ChangeCategoriesDrawSystemAction::redoImpl(TournamentStore & tournament) {
+    auto drawSystem = DrawSystem::getDrawSystem(mDrawSystem);
+
+    mChangedCategories = getCategoriesThatChange(tournament);
 
     // Remove the final blocks from tatamis if neccessary
     if (!drawSystem->hasFinalBlock()) {
@@ -84,5 +92,16 @@ void ChangeCategoriesDrawSystemAction::undoImpl(TournamentStore & tournament) {
 
 std::string ChangeCategoriesDrawSystemAction::getDescription() const {
     return "Change categories draw system";
+}
+
+bool ChangeCategoriesDrawSystemAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    for (const CategoryId &categoryId : getCategoriesThatChange(tournament)) {
+        const auto &category = tournament.getCategory(categoryId);
+
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
 }
 

@@ -64,3 +64,23 @@ std::string ErasePlayersAction::getDescription() const {
     return "Erase players";
 }
 
+bool ErasePlayersAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    std::set<CategoryId> modifiedCategories;
+
+    for (const auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId)) continue;
+
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        modifiedCategories.insert(player.getCategories().begin(), player.getCategories().end());
+    }
+
+    for (const auto categoryId : modifiedCategories) {
+        const CategoryStore &category = tournament.getCategory(categoryId);
+
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+

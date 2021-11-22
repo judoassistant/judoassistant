@@ -195,6 +195,10 @@ bool CategoryStatus::isFinished() const {
     return notStartedMatches == 0 && startedMatches == 0;
 }
 
+bool CategoryStatus::isStarted() const {
+    return startedMatches > 0 || finishedMatches > 0;
+}
+
 void CategoryStore::setDrawDisabled(bool disabled) {
     mDrawDisabled = disabled;
 }
@@ -203,3 +207,8 @@ bool CategoryStore::isDrawDisabled() const {
     return mDrawDisabled;
 }
 
+bool CategoryStore::isStarted() const {
+    if(getStatus(MatchType::FINAL).isStarted())
+        return true;
+    return getStatus(MatchType::ELIMINATION).isStarted();
+}

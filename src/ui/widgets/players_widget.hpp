@@ -9,6 +9,7 @@
 class MasterStoreManager;
 class EditPlayerWidget;
 class PlayersProxyModel;
+class ConfirmableAction;
 
 class PlayersWidget : public QWidget {
     Q_OBJECT
@@ -33,6 +34,8 @@ protected:
     void searchBarEdited(const QString &text);
 
 private:
+    bool userConfirmsAction(const ConfirmableAction &action) const;
+
     MasterStoreManager &mStoreManager;
     QTableView *mTableView;
     PlayersProxyModel *mModel;

@@ -2,11 +2,11 @@
 
 #include "core/id.hpp"
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
 
 class TournamentStore;
-class DrawCategoriesAction;
 
-class AddPlayersToCategoryAction : public Action {
+class AddPlayersToCategoryAction : public Action, public ConfirmableAction {
 public:
     AddPlayersToCategoryAction() = default;
     AddPlayersToCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
@@ -22,6 +22,7 @@ public:
         ar(mCategoryId, mPlayerIds, mSeed);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
 private:
     CategoryId mCategoryId;
     std::vector<PlayerId> mPlayerIds;

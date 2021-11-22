@@ -28,12 +28,26 @@ std::unique_ptr<Action> DrawCategoriesAction::freshClone() const {
     return std::make_unique<DrawCategoriesAction>(mCategoryIds, mSeed);
 }
 
+std::vector<CategoryId> DrawCategoriesAction::getCategoriesThatChange(const TournamentStore &tournament) const {
+    std::vector<CategoryId> categoryIds;
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        const auto &category = tournament.getCategory(categoryId);
+        // Skip category if draw is disabled the category has no matches already
+        if (category.isDrawDisabled() && category.getMatches().empty())
+            continue;
+        categoryIds.push_back(categoryId);
+    }
+
+    return categoryIds;
+}
+
 void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
     std::unordered_set<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
-    // find existing categories
-    std::vector<CategoryId> categoryIds;
+    std::vector<CategoryId> categoryIds = getCategoriesThatChange(tournament);
     for (auto categoryId : mCategoryIds) {
         if (!tournament.containsCategory(categoryId))
             continue;
@@ -192,3 +206,14 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
     }
 
 }
+
+bool DrawCategoriesAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    for (auto categoryId : getCategoriesThatChange(tournament)) {
+        const auto &category = tournament.getCategory(categoryId);
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+

@@ -13,6 +13,7 @@ class CategoryMatchesWidget;
 class CategoryPlayersWidget;
 class EditCategoryWidget;
 class StoreManager;
+class ConfirmableAction;
 
 class CategoriesWidget : public QWidget {
     Q_OBJECT
@@ -23,8 +24,10 @@ public slots:
     void eraseSelectedCategories();
     void drawSelectedCategories();
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
 private:
     void showContextMenu(const QPoint &pos);
+    bool userConfirmsAction(const ConfirmableAction &action) const;
 
     StoreManager &mStoreManager;
     QTableView *mTableView;

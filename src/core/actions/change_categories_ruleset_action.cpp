@@ -15,19 +15,33 @@ std::unique_ptr<Action> ChangeCategoriesRulesetAction::freshClone() const {
     return std::make_unique<ChangeCategoriesRulesetAction>(mCategoryIds, mRuleset);
 }
 
-void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
-    std::unordered_set<BlockLocation> changedLocations;
-    std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
-
+std::vector<CategoryId> ChangeCategoriesRulesetAction::getCategoriesThatChange(const TournamentStore &tournament) const {
+    std::vector<CategoryId> categoryIds;
     auto ruleset = Ruleset::getRuleset(mRuleset);
 
     for (auto categoryId : mCategoryIds) {
         if (!tournament.containsCategory(categoryId))
             continue;
+
         const CategoryStore & category = tournament.getCategory(categoryId);
         if (category.getRuleset().getIdentifier() == mRuleset)
             continue;
-        mChangedCategories.push_back(categoryId);
+
+        categoryIds.push_back(categoryId);
+    }
+
+    return categoryIds;
+}
+
+void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
+    std::unordered_set<BlockLocation> changedLocations;
+    std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
+
+
+    mChangedCategories = getCategoriesThatChange(tournament);
+
+    for (auto categoryId : mChangedCategories) {
+        auto &category = tournament.getCategory(categoryId);
 
         if (category.getLocation(MatchType::ELIMINATION)) {
             changedLocations.insert(*category.getLocation(MatchType::ELIMINATION));
@@ -40,6 +54,7 @@ void ChangeCategoriesRulesetAction::redoImpl(TournamentStore & tournament) {
         }
     }
 
+    auto ruleset = Ruleset::getRuleset(mRuleset);
     for (auto categoryId : mChangedCategories) {
         CategoryStore & category = tournament.getCategory(categoryId);
 
@@ -94,5 +109,16 @@ void ChangeCategoriesRulesetAction::undoImpl(TournamentStore & tournament) {
 
 std::string ChangeCategoriesRulesetAction::getDescription() const {
     return "Change categories ruleset";
+}
+
+bool ChangeCategoriesRulesetAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    for (const CategoryId &categoryId : getCategoriesThatChange(tournament)) {
+        const auto &category = tournament.getCategory(categoryId);
+
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
 }
 

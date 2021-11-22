@@ -29,6 +29,7 @@ struct CategoryStatus {
     }
 
     bool isFinished() const;
+    bool isStarted() const;
 
     unsigned int notStartedMatches;
     unsigned int startedMatches;
@@ -94,6 +95,7 @@ public:
 
     void setDrawDisabled(bool disabled);
     bool isDrawDisabled() const;
+    bool isStarted() const;
 
 private:
     CategoryId mId;

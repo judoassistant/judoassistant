@@ -9,6 +9,7 @@
 
 class StoreManager;
 class PlayersProxyModel;
+class ConfirmableAction;
 
 class CategoryPlayersWidget : public QTableView {
     Q_OBJECT
@@ -22,6 +23,8 @@ protected:
     void eraseSelectedPlayersFromCategory();
 
 private:
+    bool userConfirmsAction(const ConfirmableAction &action) const;
+
     StoreManager &mStoreManager;
     PlayersProxyModel *mModel;
 };

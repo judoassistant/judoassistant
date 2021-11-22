@@ -1,6 +1,8 @@
 #pragma once
 
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
+#include "core/actions/confirmable_action.hpp"
 
 class CategoryId;
 class DrawSystem;
@@ -8,7 +10,7 @@ class MatchStore;
 class TournamentStore;
 struct CategoryStatus;
 
-class DrawCategoriesAction : public Action {
+class DrawCategoriesAction : public Action, public ConfirmableAction {
 public:
     DrawCategoriesAction() = default;
     DrawCategoriesAction(const std::vector<CategoryId> &categoryIds);
@@ -20,12 +22,16 @@ public:
     std::unique_ptr<Action> freshClone() const override;
     std::string getDescription() const override;
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
+
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
         ar(mCategoryIds, mSeed);
     }
 
 private:
+    std::vector<CategoryId> getCategoriesThatChange(const TournamentStore &tournament) const;
+
     std::vector<CategoryId> mCategoryIds;
     unsigned int mSeed;
 

@@ -3,11 +3,12 @@
 #include <stack>
 
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
 #include "core/id.hpp"
 #include "core/stores/match_store.hpp"
 
 // Action used for either resetting multiple categories or one match
-class ResetMatchesAction : public Action {
+class ResetMatchesAction : public Action, public ConfirmableAction {
 public:
     ResetMatchesAction() = default;
     ResetMatchesAction(const std::vector<CategoryId> &categoryIds);
@@ -25,6 +26,8 @@ public:
         ar(mCategoryIds, mMatchId);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
+
 private:
     std::vector<CategoryId> mCategoryIds;
     std::optional<MatchId> mMatchId;
@@ -38,3 +41,4 @@ private:
 
 CEREAL_REGISTER_TYPE(ResetMatchesAction)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, ResetMatchesAction)
+

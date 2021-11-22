@@ -3,13 +3,14 @@
 #include <stack>
 
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
 #include "core/id.hpp"
 
 class TournamentStore;
 struct BlockLocation;
 enum class MatchType;
 
-class EraseCategoriesAction : public Action {
+class EraseCategoriesAction : public Action, public ConfirmableAction {
 public:
     EraseCategoriesAction() = default;
     EraseCategoriesAction(const std::vector<CategoryId> &categoryIds);
@@ -24,7 +25,9 @@ public:
         ar(mCategoryIds);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
 private:
+
     std::vector<CategoryId> mCategoryIds;
 
     // undo members

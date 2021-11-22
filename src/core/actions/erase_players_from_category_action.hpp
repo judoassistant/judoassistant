@@ -1,12 +1,13 @@
 #pragma once
 
-#include "core/id.hpp"
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
+#include "core/id.hpp"
 
 class DrawCategoriesAction;
 class TournamentStore;
 
-class ErasePlayersFromCategoryAction : public Action {
+class ErasePlayersFromCategoryAction : public Action, public ConfirmableAction {
 public:
     ErasePlayersFromCategoryAction() = default;
     ErasePlayersFromCategoryAction(CategoryId categoryId, const std::vector<PlayerId> &playerIds);
@@ -21,6 +22,8 @@ public:
     void serialize(Archive& ar, uint32_t const version) {
         ar(mCategoryId, mPlayerIds, mSeed);
     }
+
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
 
 private:
     CategoryId mCategoryId;
