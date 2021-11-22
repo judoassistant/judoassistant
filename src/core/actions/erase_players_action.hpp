@@ -2,13 +2,12 @@
 
 #include <stack>
 
-#include "core/core.hpp"
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
+#include "core/core.hpp"
 #include "core/stores/player_store.hpp"
 
-class ErasePlayersFromCategoryAction;
-
-class ErasePlayersAction : public Action {
+class ErasePlayersAction : public Action, public ConfirmableAction {
 public:
     ErasePlayersAction() = default;
     ErasePlayersAction(const std::vector<PlayerId> &playerIds);
@@ -24,6 +23,8 @@ public:
         ar(mPlayerIds, mSeed);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
+
 private:
     std::vector<PlayerId> mPlayerIds;
     unsigned int mSeed;
@@ -31,7 +32,7 @@ private:
     // undo members
     std::vector<PlayerId> mErasedPlayerIds;
     std::stack<std::unique_ptr<PlayerStore>> mPlayers;
-    std::stack<std::unique_ptr<ErasePlayersFromCategoryAction>> mActions;
+    std::stack<std::unique_ptr<Action>> mActions;
 };
 
 CEREAL_REGISTER_TYPE(ErasePlayersAction)

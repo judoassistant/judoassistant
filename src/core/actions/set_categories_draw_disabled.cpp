@@ -63,3 +63,21 @@ std::string SetCategoriesDrawDisabled::getDescription() const {
     return "Enable categories match drawing";
 }
 
+bool SetCategoriesDrawDisabled::doesRequireConfirmation(const TournamentStore &tournament) const {
+    if (!mDisabled)
+        return false; // In this case, we only add matches
+
+    for (auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        const auto &category = tournament.getCategory(categoryId);
+        if (category.isDrawDisabled() == mDisabled)
+            continue;
+
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+

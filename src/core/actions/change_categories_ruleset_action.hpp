@@ -1,13 +1,13 @@
 #pragma once
 
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
 #include "core/rulesets/ruleset_identifier.hpp"
 
 class TournamentStore;
 class Ruleset;
-class ResetMatchesAction;
 
-class ChangeCategoriesRulesetAction : public Action {
+class ChangeCategoriesRulesetAction : public Action, public ConfirmableAction {
 public:
     ChangeCategoriesRulesetAction() = default;
     ChangeCategoriesRulesetAction(const std::vector<CategoryId> &categoryIds, RulesetIdentifier ruleset);
@@ -22,14 +22,18 @@ public:
         ar(mCategoryIds, mRuleset);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
+
 private:
+    std::vector<CategoryId> getCategoriesThatChange(const TournamentStore &tournament) const;
+
     std::vector<CategoryId> mCategoryIds;
     RulesetIdentifier mRuleset;
 
     // undo members
     std::vector<CategoryId> mChangedCategories;
     std::vector<std::unique_ptr<Ruleset>> mOldRulesets;
-    std::unique_ptr<ResetMatchesAction> mResetAction;
+    std::unique_ptr<Action> mResetAction;
 };
 
 CEREAL_REGISTER_TYPE(ChangeCategoriesRulesetAction)

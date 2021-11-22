@@ -142,3 +142,17 @@ void EraseCategoriesAction::undoImpl(TournamentStore & tournament) {
 std::string EraseCategoriesAction::getDescription() const {
     return "Erase players from category";
 }
+
+bool EraseCategoriesAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    for (const auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+
+        const CategoryStore &category = tournament.getCategory(categoryId);
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+

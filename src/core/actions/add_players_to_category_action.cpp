@@ -78,3 +78,11 @@ std::string AddPlayersToCategoryAction::getDescription() const {
     return "Add players to category";
 }
 
+bool AddPlayersToCategoryAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    if (!tournament.containsCategory(mCategoryId))
+        return false;
+    const CategoryStore & category = tournament.getCategory(mCategoryId);
+
+    return category.isStarted();
+}
+

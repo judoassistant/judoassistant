@@ -2,6 +2,7 @@
 
 #include "core/actions/action.hpp"
 #include "core/actions/confirmable_action.hpp"
+#include "core/actions/confirmable_action.hpp"
 
 class CategoryId;
 class DrawSystem;
@@ -9,7 +10,7 @@ class MatchStore;
 class TournamentStore;
 struct CategoryStatus;
 
-class DrawCategoriesAction : public Action, ConfirmableAction {
+class DrawCategoriesAction : public Action, public ConfirmableAction {
 public:
     DrawCategoriesAction() = default;
     DrawCategoriesAction(const std::vector<CategoryId> &categoryIds);
@@ -29,6 +30,8 @@ public:
     }
 
 private:
+    std::vector<CategoryId> getCategoriesThatChange(const TournamentStore &tournament) const;
+
     std::vector<CategoryId> mCategoryIds;
     unsigned int mSeed;
 

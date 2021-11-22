@@ -1,12 +1,11 @@
 #pragma once
 
-#include "core/core.hpp"
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
+#include "core/core.hpp"
 #include "core/stores/player_store.hpp"
 
-class DrawCategoriesAction;
-
-class ChangePlayersBlueJudogiHintAction : public Action {
+class ChangePlayersBlueJudogiHintAction : public Action, public ConfirmableAction {
 public:
     ChangePlayersBlueJudogiHintAction() = default;
     ChangePlayersBlueJudogiHintAction(std::vector<PlayerId> playerIds, bool value);
@@ -22,6 +21,8 @@ public:
         ar(mPlayerIds, mValue, mSeed);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
+
 private:
     std::vector<PlayerId> mPlayerIds;
     bool mValue;
@@ -30,7 +31,7 @@ private:
     // undo members
     std::vector<PlayerId> mChangedPlayers;
     std::vector<bool> mOldValues;
-    std::unique_ptr<DrawCategoriesAction> mDrawAction;
+    std::unique_ptr<Action> mDrawAction;
 };
 
 CEREAL_REGISTER_TYPE(ChangePlayersBlueJudogiHintAction)

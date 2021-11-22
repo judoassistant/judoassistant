@@ -1,15 +1,14 @@
 #pragma once
 
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
 #include "core/draw_systems/draw_system_identifier.hpp"
 
 class CategoryId;
-class DrawCategoriesAction;
 class DrawSystem;
-class SetTatamiLocationAction;
 class TournamentStore;
 
-class ChangeCategoriesDrawSystemAction : public Action {
+class ChangeCategoriesDrawSystemAction : public Action, public ConfirmableAction {
 public:
     ChangeCategoriesDrawSystemAction() = default;
     ChangeCategoriesDrawSystemAction(std::vector<CategoryId> categoryIds, DrawSystemIdentifier drawSystem);
@@ -25,7 +24,11 @@ public:
         ar(mCategoryIds, mDrawSystem, mSeed);
     }
 
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
+
 private:
+    std::vector<CategoryId> getCategoriesThatChange(const TournamentStore &tournament) const;
+
     std::vector<CategoryId> mCategoryIds;
     DrawSystemIdentifier mDrawSystem;
     unsigned int mSeed;

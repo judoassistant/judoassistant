@@ -80,3 +80,19 @@ std::string ErasePlayersFromCategoryAction::getDescription() const {
     return "Erase players from category";
 }
 
+bool ErasePlayersFromCategoryAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    bool playersExist = false;
+    for (auto playerId : mPlayerIds) {
+        if (tournament.containsPlayer(playerId)) {
+            playersExist = true;
+            break;
+        }
+    }
+
+    if (!playersExist)
+        return false;
+
+    const CategoryStore & category = tournament.getCategory(mCategoryId);
+    return category.isStarted();
+}
+

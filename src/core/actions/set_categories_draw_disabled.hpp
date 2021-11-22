@@ -1,13 +1,14 @@
 #pragma once
 
 #include "core/actions/action.hpp"
+#include "core/actions/confirmable_action.hpp"
 
 class TournamentStore;
 class CategoryId;
 class DrawCategoriesAction;
 class DrawSystem;
 
-class SetCategoriesDrawDisabled : public Action {
+class SetCategoriesDrawDisabled : public Action, public ConfirmableAction {
 public:
     SetCategoriesDrawDisabled() = default;
     SetCategoriesDrawDisabled(std::vector<CategoryId> categoryIds, bool disabled);
@@ -22,6 +23,8 @@ public:
     void serialize(Archive& ar, uint32_t const version) {
         ar(mCategoryIds, mDisabled, mSeed);
     }
+
+    bool doesRequireConfirmation(const TournamentStore &tournament) const override;
 
 private:
     std::vector<CategoryId> mCategoryIds;

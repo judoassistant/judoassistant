@@ -75,3 +75,26 @@ std::unique_ptr<Action> ChangePlayersBlueJudogiHintAction::freshClone() const {
     return std::make_unique<ChangePlayersBlueJudogiHintAction>(mPlayerIds, mValue, mSeed);
 }
 
+bool ChangePlayersBlueJudogiHintAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    std::set<CategoryId> modifiedCategories;
+
+    for (const auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId))
+            continue;
+
+        const PlayerStore &player = tournament.getPlayer(playerId);
+        if (player.getBlueJudogiHint() == mValue)
+            continue;
+
+        modifiedCategories.insert(player.getCategories().begin(), player.getCategories().end());
+    }
+
+    for (const auto categoryId : modifiedCategories) {
+        const auto &category = tournament.getCategory(categoryId);
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+

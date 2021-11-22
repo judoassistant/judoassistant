@@ -54,3 +54,23 @@ std::string ErasePlayersFromAllCategoriesAction::getDescription() const {
     return "Erase players from all categories";
 }
 
+bool ErasePlayersFromAllCategoriesAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    std::set<CategoryId> modifiedCategories;
+
+    for (const auto playerId : mPlayerIds) {
+        if (!tournament.containsPlayer(playerId)) continue;
+
+        const auto &player = tournament.getPlayer(playerId);
+        const auto &playerCategories = player.getCategories();
+        modifiedCategories.insert(playerCategories.begin(), playerCategories.end());
+    }
+
+    for (const auto categoryId : modifiedCategories) {
+        const auto &category = tournament.getCategory(categoryId);
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
+}
+

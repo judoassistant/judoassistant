@@ -37,10 +37,14 @@ void ResetMatchesAction::redoImpl(TournamentStore & tournament) {
     if (mMatchId.has_value()) {
         assert(mCategoryIds.size() == 1);
 
-        const auto &category = tournament.getCategory(mCategoryIds.front());
+        const auto categoryId = mCategoryIds.front();
+        if (!tournament.containsCategory(categoryId))
+            return;
 
+        const auto &category = tournament.getCategory(categoryId);
         if (!category.containsMatch(*mMatchId))
             return;
+
         auto &match = category.getMatch(*mMatchId);
 
         if (match.getStatus() == MatchStatus::NOT_STARTED)
@@ -208,5 +212,32 @@ void ResetMatchesAction::undoImpl(TournamentStore & tournament) {
     // Notify results
     if (!categoryDrawUpdates.empty())
         tournament.resetCategoryResults(std::vector<CategoryId>(categoryDrawUpdates.begin(), categoryDrawUpdates.end()));
+}
+
+bool ResetMatchesAction::doesRequireConfirmation(const TournamentStore &tournament) const {
+    if (mMatchId.has_value()) {
+        const auto categoryId = mCategoryIds.front();
+        if (!tournament.containsCategory(categoryId))
+            return false;
+
+        const auto &category = tournament.getCategory(categoryId);
+        if (!category.containsMatch(*mMatchId))
+            return false;
+
+        const auto &match = category.getMatch(*mMatchId);
+
+        return match.getStatus() != MatchStatus::NOT_STARTED;
+    }
+
+    for (const auto categoryId : mCategoryIds) {
+        if (!tournament.containsCategory(categoryId))
+            continue;
+        const auto &category = tournament.getCategory(categoryId);
+
+        if (category.isStarted())
+            return true;
+    }
+
+    return false;
 }
 
