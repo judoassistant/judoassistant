@@ -1,4 +1,4 @@
-project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_library=static'], version: '0.5.0', license: 'MIT')
+project('judoassistant', 'cpp', default_options: ['cpp_std=c++17', 'default_library=static'], version: '0.6.0', license: 'MIT')
 
 # JudoAssistant Version
 judoassistant_version = meson.project_version()
