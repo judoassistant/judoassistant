@@ -36,6 +36,7 @@ private:
     unsigned int mSeed;
 
     // undo members
+    std::vector<CategoryId> mChangedCategories;
     std::vector<std::vector<std::unique_ptr<MatchStore>>> mOldMatches;
     std::vector<std::vector<std::unique_ptr<Action>>> mActions;
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;

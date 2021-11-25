@@ -143,7 +143,7 @@ bool CategoryStore::containsMatch(MatchId id) const {
 
 CategoryStore::MatchList CategoryStore::clearMatches() {
     MatchList res = std::move(mMatches);
-    mMatches.clear();
+    mMatches = MatchList();
     mMatchMap.clear();
     mMatchCount[0] = 0;
     mMatchCount[1] = 0;

@@ -47,21 +47,12 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
     std::unordered_set<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
-    std::vector<CategoryId> categoryIds = getCategoriesThatChange(tournament);
-    for (auto categoryId : mCategoryIds) {
-        if (!tournament.containsCategory(categoryId))
-            continue;
-        const auto &category = tournament.getCategory(categoryId);
-        // Skip category if draw is disabled the category has no matches already
-        if (category.isDrawDisabled() && category.getMatches().empty())
-            continue;
-        categoryIds.push_back(categoryId);
-    }
+    mChangedCategories = getCategoriesThatChange(tournament);
 
-    tournament.beginResetMatches(categoryIds);
+    tournament.beginResetMatches(mChangedCategories);
 
     // Update categories
-    for (auto categoryId : categoryIds) {
+    for (auto categoryId : mChangedCategories) {
         // Delete all existing matches
         CategoryStore & category = tournament.getCategory(categoryId);
 
@@ -75,7 +66,9 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
                 tournament.getPlayer(*bluePlayer).eraseMatch(CombinedId(categoryId, match->getId()));
         }
 
-        mOldMatches.push_back(category.clearMatches());
+        std::vector<std::unique_ptr<MatchStore>> matches = category.clearMatches();
+        mOldMatches.push_back(std::move(matches));
+
         mOldDrawSystems.push_back(category.getDrawSystem().clone());
 
         std::array<CategoryStatus, 2> status;
@@ -125,8 +118,8 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
         }
     }
 
-    tournament.endResetMatches(categoryIds);
-    tournament.resetCategoryResults(categoryIds);
+    tournament.endResetMatches(mChangedCategories);
+    tournament.resetCategoryResults(mChangedCategories);
 
     if (!changedLocations.empty()) {
         std::vector<BlockLocation> locations(changedLocations.begin(), changedLocations.end());
@@ -139,22 +132,10 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
     std::unordered_set<BlockLocation> changedLocations;
     std::vector<std::pair<CategoryId, MatchType>> changedBlocks;
 
-    // find existing categories
-    std::vector<CategoryId> categoryIds;
-    for (auto categoryId : mCategoryIds) {
-        if (!tournament.containsCategory(categoryId))
-            continue;
-        const auto &category = tournament.getCategory(categoryId);
-        // Skip category if draw is disabled the category has no matches already
-        if (category.isDrawDisabled() && category.getMatches().empty())
-            continue;
-        categoryIds.push_back(categoryId);
-    }
-
-    tournament.beginResetMatches(categoryIds);
+    tournament.beginResetMatches(mChangedCategories);
 
     // Last in, first out
-    for (auto i = categoryIds.rbegin(); i != categoryIds.rend(); ++i) {
+    for (auto i = mChangedCategories.rbegin(); i != mChangedCategories.rend(); ++i) {
         CategoryId categoryId = *i;
 
         CategoryStore & category = tournament.getCategory(categoryId);
@@ -173,7 +154,10 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
         category.setStatus(MatchType::ELIMINATION, oldStatus[static_cast<size_t>(MatchType::ELIMINATION)]);
         category.setStatus(MatchType::FINAL, oldStatus[static_cast<size_t>(MatchType::FINAL)]);
 
-        for (std::unique_ptr<MatchStore> & match : mOldMatches.back()) {
+        std::vector<std::unique_ptr<MatchStore>> matches = std::move(mOldMatches.back());
+        mOldMatches.pop_back();
+
+        for (std::unique_ptr<MatchStore> & match : matches) {
             std::optional<PlayerId> whitePlayer = match->getPlayer(MatchStore::PlayerIndex::WHITE);
             if (whitePlayer && tournament.containsPlayer(*whitePlayer))
                 tournament.getPlayer(*whitePlayer).addMatch(match->getCombinedId());
@@ -185,8 +169,6 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
             category.pushMatch(std::move(match));
         }
 
-        mOldMatches.pop_back();
-
         for (MatchType type : {MatchType::FINAL, MatchType::ELIMINATION}) {
             std::optional<BlockLocation> location = category.getLocation(type);
             if (location) {
@@ -196,8 +178,8 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
         }
     }
 
-    tournament.endResetMatches(categoryIds);
-    tournament.resetCategoryResults(categoryIds);
+    tournament.endResetMatches(mChangedCategories);
+    tournament.resetCategoryResults(mChangedCategories);
 
     if (!changedLocations.empty()) {
         std::vector<BlockLocation> locations(changedLocations.begin(), changedLocations.end());
@@ -205,6 +187,7 @@ void DrawCategoriesAction::undoImpl(TournamentStore & tournament) {
         tournament.changeTatamis(locations, changedBlocks);
     }
 
+    mChangedCategories.clear();
 }
 
 bool DrawCategoriesAction::doesRequireConfirmation(const TournamentStore &tournament) const {
