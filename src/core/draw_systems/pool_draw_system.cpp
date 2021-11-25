@@ -73,8 +73,8 @@ struct PoolPlayerRank {
     PlayerId playerId;
     size_t wonMatches;
     std::chrono::milliseconds durationSum;
-    // size_t ippons;
-    // size_t wazaris;
+    size_t ippons;
+    size_t wazaris;
     // size_t hansokuMakes;
     // size_t shidos;
     // PlayerWeight weight;
@@ -82,13 +82,13 @@ struct PoolPlayerRank {
     bool operator<(const PoolPlayerRank &other) const {
         if (wonMatches != other.wonMatches)
             return wonMatches > other.wonMatches;
+        if (ippons != other.ippons)
+            return ippons > other.ippons;
+        if (wazaris != other.wazaris)
+            return wazaris > other.wazaris;
         if (durationSum != other.durationSum)
             return durationSum < other.durationSum;
         return playerId < other.playerId; // to ensure total ordering
-        // if (ippons != other.ippons)
-        //     return ippons > other.ippons;
-        // if (wazaris != other.wazaris)
-        //     return wazaris > other.wazaris;
         // if (hansokuMakes != other.hansokuMakes)
         //     return hansokuMakes < other.hansokuMakes;
         // if (shidos != other.shidos)
@@ -115,8 +115,8 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::ge
         rank.playerId = playerId;
         rank.wonMatches = 0;
         rank.durationSum = std::chrono::milliseconds(0);
-        // rank.ippons = 0;
-        // rank.wazaris = 0;
+        rank.ippons = 0;
+        rank.wazaris = 0;
         // rank.hansokuMakes = 0;
         // rank.shidos = 0;
         // rank.weight = tournament.getPlayer(playerId).getWeight().value_or(PlayerWeight(0.0));
@@ -137,15 +137,15 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::ge
 
         whiteRank.durationSum += match.getDuration();
         blueRank.durationSum += match.getDuration();
-        // const MatchStore::Score & whiteScore = match.getWhiteScore();
-        // whiteRank.ippons += whiteScore.ippon;
-        // whiteRank.wazaris += whiteScore.wazari;
+        const MatchStore::Score & whiteScore = match.getWhiteScore();
+        whiteRank.ippons += whiteScore.ippon;
+        whiteRank.wazaris += whiteScore.wazari;
         // whiteRank.shidos += whiteScore.shido;
         // whiteRank.hansokuMakes += static_cast<size_t>(whiteScore.hansokuMake);
 
-        // const MatchStore::Score & blueScore = match.getBlueScore();
-        // blueRank.ippons += blueScore.ippon;
-        // blueRank.wazaris += blueScore.wazari;
+        const MatchStore::Score & blueScore = match.getBlueScore();
+        blueRank.ippons += blueScore.ippon;
+        blueRank.wazaris += blueScore.wazari;
         // blueRank.shidos += blueScore.shido;
         // blueRank.hansokuMakes += static_cast<size_t>(blueScore.hansokuMake);
     }
