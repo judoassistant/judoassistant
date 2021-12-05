@@ -23,12 +23,13 @@
 #include "ui/widgets/categories_widget.hpp"
 #include "ui/widgets/hub_window.hpp"
 #include "ui/widgets/import_players_csv_dialog.hpp"
-#include "ui/widgets/tournament_preferences_dialog.hpp"
 #include "ui/widgets/judoassistant_preferences_dialog.hpp"
 #include "ui/widgets/matches_widget.hpp"
+#include "ui/widgets/network_information_dialog.hpp"
 #include "ui/widgets/players_widget.hpp"
 #include "ui/widgets/sidebar_widget.hpp"
 #include "ui/widgets/tatamis_widget.hpp"
+#include "ui/widgets/tournament_preferences_dialog.hpp"
 #include "ui/widgets/tournament_widget.hpp"
 
 HubWindow::HubWindow() {
@@ -249,14 +250,21 @@ void HubWindow::createHelpMenu() {
         menu->addAction(action);
     }
 
-    menu->addSeparator();
-
     {
         QAction *action = new QAction(tr("Report an Issue"), this);
         connect(action, &QAction::triggered, this, &HubWindow::openReportIssue);
 
         menu->addAction(action);
     }
+
+    menu->addSeparator();
+
+    {
+        QAction *action = new QAction(tr("Network Information"), this);
+        connect(action, &QAction::triggered, this, &HubWindow::showNetworkInformationDialog);
+        menu->addAction(action);
+    }
+
     {
         QAction *action = new QAction(tr("About"), this);
         connect(action, &QAction::triggered, this, &HubWindow::showAboutDialog);
@@ -366,6 +374,11 @@ void HubWindow::saveAsTournament() {
 
 void HubWindow::showAboutDialog() {
     QMessageBox::about(this, tr("JudoAssistant - About"), tr("JudoAssistant - Version %1").arg(QString::fromStdString(ApplicationVersion::current().toString())));
+}
+
+void HubWindow::showNetworkInformationDialog() {
+    NetworkInformationDialog dialog(this);
+    dialog.exec();
 }
 
 void HubWindow::openImportPlayers() {
