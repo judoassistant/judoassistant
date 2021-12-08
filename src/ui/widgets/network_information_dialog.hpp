@@ -14,6 +14,7 @@ public:
     NetworkInformationDialog(QWidget *parent = nullptr);
 
 private:
+    void listAddresses();
     // QWidget *mHostContent;
     // QSpinBox *mPortContent;
     // QLineEdit *mPasswordContent;

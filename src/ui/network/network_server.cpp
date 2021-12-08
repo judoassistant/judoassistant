@@ -27,6 +27,7 @@ void NetworkServer::start(unsigned int port) {
 
         try {
             mEndpoint = boost::asio::ip::tcp::endpoint(tcp::v4(), port);
+            log_debug().field("addr", mEndpoint->address().to_string()).msg("Setup endpoint");
             mAcceptor = boost::asio::ip::tcp::acceptor(mContext, *mEndpoint);
         }
         catch (const std::exception &e) {
