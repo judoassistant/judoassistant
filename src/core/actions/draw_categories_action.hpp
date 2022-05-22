@@ -3,6 +3,7 @@
 #include "core/actions/action.hpp"
 #include "core/actions/confirmable_action.hpp"
 #include "core/actions/confirmable_action.hpp"
+#include "core/actions/add_match_action.hpp"
 
 class CategoryId;
 class DrawSystem;
@@ -38,7 +39,7 @@ private:
     // undo members
     std::vector<CategoryId> mChangedCategories;
     std::vector<std::vector<std::unique_ptr<MatchStore>>> mOldMatches;
-    std::vector<std::vector<std::unique_ptr<Action>>> mActions;
+    std::vector<std::vector<std::unique_ptr<AddMatchAction>>> mActions;
     std::vector<std::unique_ptr<DrawSystem>> mOldDrawSystems;
     std::vector<std::array<CategoryStatus, 2>> mOldStati;
 };

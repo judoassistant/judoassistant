@@ -7,6 +7,7 @@
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/graphics_items/tatami_text_graphics_item.hpp"
 #include "ui/widgets/matches_widget.hpp"
+#include "core/log.hpp"
 
 MatchesGridGraphicsManager::MatchesGridGraphicsManager(QGraphicsScene *scene)
     : mScene(scene)
@@ -361,6 +362,7 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
 }
 
 void MatchesGraphicsManager::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
+    log_debug().field("blocks", blocks).msg("Changing locations");
     const auto &tournament = mStoreManager.getTournament();
     const auto &tatamis = tournament.getTatamis();
     if (!tatamis.containsTatami(mLocation))

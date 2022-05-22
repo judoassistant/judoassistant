@@ -37,6 +37,7 @@ public:
     int getRow(MatchId matchId) const;
 
 private:
+    void changeCategories(const std::vector<CategoryId> &categoryIds);
     void changeMatches(CategoryId categoryId, const std::vector<MatchId> &matchIds);
     void changePlayers(const std::vector<PlayerId> &playerIds);
 

@@ -12,7 +12,7 @@ CategoryStore::CategoryStore(CategoryId id, const std::string &name, std::unique
     , mLocation({std::nullopt,std::nullopt})
     , mRuleset(std::move(ruleset))
     , mDrawSystem(std::move(drawSystem))
-    , mDrawDisabled(false)
+    , mMatchesHidden(false)
 {}
 
 CategoryStore::CategoryStore(const CategoryStore &other)
@@ -25,7 +25,7 @@ CategoryStore::CategoryStore(const CategoryStore &other)
     , mLocation(other.mLocation)
     , mRuleset(other.mRuleset->clone())
     , mDrawSystem(other.mDrawSystem->clone())
-    , mDrawDisabled(other.mDrawDisabled)
+    , mMatchesHidden(other.mMatchesHidden)
 {
     for (const auto & match : other.mMatches)
         mMatches.push_back(std::make_unique<MatchStore>(*match));
@@ -199,12 +199,12 @@ bool CategoryStatus::isStarted() const {
     return startedMatches > 0 || finishedMatches > 0;
 }
 
-void CategoryStore::setDrawDisabled(bool disabled) {
-    mDrawDisabled = disabled;
+void CategoryStore::setMatchesHidden(bool hidden) {
+    mMatchesHidden = hidden;
 }
 
-bool CategoryStore::isDrawDisabled() const {
-    return mDrawDisabled;
+bool CategoryStore::areMatchesHidden() const {
+    return mMatchesHidden;
 }
 
 bool CategoryStore::isStarted() const {

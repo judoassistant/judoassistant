@@ -12,6 +12,7 @@ struct BlockLocation;
 
 class SequentialBlockGroup {
 public:
+    // Iterates non-hidden matches in a sequential block group
     class ConstMatchIterator {
     public:
         ConstMatchIterator & operator++();
@@ -44,19 +45,17 @@ public:
 
     ConstMatchIterator matchesBegin(const TournamentStore &tournament) const;
     ConstMatchIterator matchesEnd(const TournamentStore &tournament) const;
-    size_t getMatchCount() const; // Number of matches there are not permanent byes
 
     void recompute(const TournamentStore &tournament);
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mBlocks, mMatchCount, mExpectedDuration);
+        ar(mBlocks, mExpectedDuration);
     }
 
     std::chrono::milliseconds getExpectedDuration() const;
 private:
     std::vector<std::pair<CategoryId, MatchType>> mBlocks;
-    size_t mMatchCount;
     std::chrono::milliseconds mExpectedDuration;
 };
 

@@ -33,10 +33,7 @@ std::vector<CategoryId> DrawCategoriesAction::getCategoriesThatChange(const Tour
     for (auto categoryId : mCategoryIds) {
         if (!tournament.containsCategory(categoryId))
             continue;
-        const auto &category = tournament.getCategory(categoryId);
-        // Skip category if draw is disabled the category has no matches already
-        if (category.isDrawDisabled() && category.getMatches().empty())
-            continue;
+
         categoryIds.push_back(categoryId);
     }
 
@@ -76,21 +73,16 @@ void DrawCategoriesAction::redoImpl(TournamentStore & tournament) {
         status[static_cast<size_t>(MatchType::FINAL)] = category.getStatus(MatchType::FINAL);
         mOldStati.push_back(std::move(status));
 
-        // TODO: Change mAction to have AddMatchActions instead
-        std::vector<std::unique_ptr<Action>> actions;
-        if (!category.isDrawDisabled()) {
-            // Init the category using the draw system
-            std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
-            std::sort(playerIds.begin(), playerIds.end()); // Required to ensure consistent ordering
-            std::vector<std::unique_ptr<AddMatchAction>> addMatchActions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
+        // Init the category using the draw system
+        std::vector<PlayerId> playerIds(category.getPlayers().begin(), category.getPlayers().end());
+        std::sort(playerIds.begin(), playerIds.end()); // Required to ensure consistent ordering
+        std::vector<std::unique_ptr<AddMatchAction>> addMatchActions = category.getDrawSystem().initCategory(tournament, category, playerIds, mSeed);
 
-            for (auto &actionPtr : addMatchActions) {
-                actionPtr->redo(tournament);
-                actions.push_back(std::move(actionPtr));
-            }
+        for (auto &action : addMatchActions) {
+            action->redo(tournament);
         }
 
-        mActions.push_back(std::move(actions));
+        mActions.push_back(std::move(addMatchActions));
 
         // Compute category status
         category.setStatus(MatchType::ELIMINATION, CategoryStatus());

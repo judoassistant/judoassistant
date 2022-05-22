@@ -12,8 +12,6 @@ struct ConcurrentGroupLocation;
 struct SequentialGroupLocation;
 class MatchStore;
 
-// TODO: Add interface to delay matches
-
 class ConcurrentBlockGroup {
 public:
     static constexpr int MAX_GROUP_COUNT = 3;

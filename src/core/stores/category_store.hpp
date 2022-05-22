@@ -88,13 +88,13 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mId, mName, mPlayers, mMatches, mMatchMap, mMatchCount, mStatus, mLocation, mRuleset, mDrawSystem, mDrawDisabled);
+        ar(mId, mName, mPlayers, mMatches, mMatchMap, mMatchCount, mStatus, mLocation, mRuleset, mDrawSystem, mMatchesHidden);
     }
 
     std::chrono::milliseconds expectedDuration(MatchType type) const;
 
-    void setDrawDisabled(bool disabled);
-    bool isDrawDisabled() const;
+    void setMatchesHidden(bool hidden);
+    bool areMatchesHidden() const;
     bool isStarted() const;
 
 private:
@@ -108,6 +108,6 @@ private:
     std::array<std::optional<BlockLocation>, 2> mLocation;
     std::unique_ptr<Ruleset> mRuleset;
     std::unique_ptr<DrawSystem> mDrawSystem;
-    bool mDrawDisabled;
+    bool mMatchesHidden;
 };
 

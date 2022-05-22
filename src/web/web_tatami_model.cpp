@@ -46,7 +46,6 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
 
         if (isFinished && !wasFinished) {
             // Remove from unfinished matches
-            // Probably at the front of the list
             for (auto i = mUnfinishedLoadedMatches.begin(); i != mUnfinishedLoadedMatches.end(); ++i) {
                 const CombinedId &curId = i->first;
                 if (curId == combinedId) {
@@ -70,7 +69,6 @@ void WebTatamiModel::changeMatches(const TournamentStore &tournament, CategoryId
             mUnfinishedLoadedMatchesSet.insert(combinedId);
         }
     }
-
 }
 
 void WebTatamiModel::changeTatamis(const TournamentStore &tournament, const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {

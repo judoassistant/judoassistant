@@ -6,7 +6,7 @@
 #include "core/actions/change_categories_ruleset_action.hpp"
 #include "core/actions/draw_categories_action.hpp"
 #include "core/actions/reset_matches_action.hpp"
-#include "core/actions/set_categories_draw_disabled.hpp"
+#include "core/actions/set_categories_matches_hidden_action.hpp"
 #include "core/actions/set_tatami_location_action.hpp"
 #include "core/draw_systems/draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
@@ -15,8 +15,8 @@
 #include "ui/store_managers/store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/validators/optional_validator.hpp"
-#include "ui/widgets/edit_category_widget.hpp"
 #include "ui/widgets/confirm_action_dialog.hpp"
+#include "ui/widgets/edit_category_widget.hpp"
 
 std::optional<DrawSystemIdentifier> EditCategoryWidget::getDrawSystemIdentifier() {
     std::optional<DrawSystemIdentifier> res;
@@ -65,9 +65,9 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
     connect(mDrawSystemContent, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {editDrawSystem();});
     updateDrawSystem();
 
-    mDrawDisabledContent = new QCheckBox;
-    mDrawDisabledContent->setTristate(true);
-    connect(mDrawDisabledContent, &QCheckBox::clicked, this, &EditCategoryWidget::editDrawDisabled);
+    mMatchesHiddenContent = new QCheckBox;
+    mMatchesHiddenContent->setTristate(true);
+    connect(mMatchesHiddenContent, &QCheckBox::clicked, this, &EditCategoryWidget::editMatchesHidden);
 
     mPlayerCountContent = new QLabel("");
     mMatchCountContent = new QLabel("");
@@ -76,7 +76,7 @@ EditCategoryWidget::EditCategoryWidget(StoreManager & storeManager, QWidget *par
     formLayout->addRow(tr("Name"), mNameContent);
     formLayout->addRow(tr("Ruleset"), mRulesetContent);
     formLayout->addRow(tr("Draw System"), mDrawSystemContent);
-    formLayout->addRow(tr("Disable Draw"), mDrawDisabledContent);
+    formLayout->addRow(tr("Hide Matches"), mMatchesHiddenContent);
     formLayout->addRow(tr("Player Count"), mPlayerCountContent);
     formLayout->addRow(tr("Match Count"), mMatchCountContent);
 
@@ -112,7 +112,7 @@ void EditCategoryWidget::setCategories(const std::vector<CategoryId> &categoryId
     updateName();
     updateRuleset();
     updateDrawSystem();
-    updateDrawDisabled();
+    updateMatchesHidden();
     updatePlayerCount();
     updateMatchCount();
 }
@@ -157,19 +157,18 @@ void EditCategoryWidget::changeCategories(std::vector<CategoryId> ids) {
     updateName();
     updateRuleset();
     updateDrawSystem();
-    updateDrawDisabled();
+    updateMatchesHidden();
 }
 
-void EditCategoryWidget::editDrawDisabled(int state) {
+void EditCategoryWidget::editMatchesHidden(int state) {
     if (mCategoryIds.empty())
         return;
 
-    bool disabled = mDrawDisabledContent->isChecked();
-
-    auto action = std::make_unique<SetCategoriesDrawDisabled>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), disabled);
+    const bool hidden = mMatchesHiddenContent->isChecked();
+    auto action = std::make_unique<SetCategoriesMatchesHiddenAction>(std::vector<CategoryId>(mCategoryIds.begin(), mCategoryIds.end()), hidden);
 
     if (!userConfirmsAction(*action)) {
-        updateDrawDisabled(); // Revert content
+        updateMatchesHidden(); // Revert content
         return;
     }
 
@@ -233,30 +232,30 @@ void EditCategoryWidget::editDrawSystem() {
     mStoreManager.dispatch(std::move(action));
 }
 
-void EditCategoryWidget::updateDrawDisabled() {
+void EditCategoryWidget::updateMatchesHidden() {
     if (mCategoryIds.empty()) {
-        mDrawDisabledContent->setEnabled(false);
-        mDrawDisabledContent->setCheckState(Qt::Unchecked);
+        mMatchesHiddenContent->setEnabled(false);
+        mMatchesHiddenContent->setCheckState(Qt::Unchecked);
         return;
     }
 
-    mDrawDisabledContent->setEnabled(true);
+    mMatchesHiddenContent->setEnabled(true);
     TournamentStore &tournament = mStoreManager.getTournament();
 
-    bool disabled = false;
+    bool hidden = false;
     for (auto it = mCategoryIds.begin(); it != mCategoryIds.end(); ++it) {
         const auto &category = tournament.getCategory(*it);
         if (it == mCategoryIds.begin()) {
-            disabled = category.isDrawDisabled();
+            hidden = category.areMatchesHidden();
         }
-        else if (category.isDrawDisabled() != disabled) {
+        else if (category.areMatchesHidden() != hidden) {
             // Multiple values
-            mDrawDisabledContent->setCheckState(Qt::PartiallyChecked);
+            mMatchesHiddenContent->setCheckState(Qt::PartiallyChecked);
             return;
         }
     }
 
-    mDrawDisabledContent->setCheckState(disabled ? Qt::Checked : Qt::Unchecked);
+    mMatchesHiddenContent->setCheckState(hidden ? Qt::Checked : Qt::Unchecked);
 }
 
 void EditCategoryWidget::updateName() {

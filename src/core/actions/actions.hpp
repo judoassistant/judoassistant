@@ -43,7 +43,7 @@
 #include "core/actions/pause_match_action.hpp"
 #include "core/actions/reset_matches_action.hpp"
 #include "core/actions/resume_match_action.hpp"
-#include "core/actions/set_categories_draw_disabled.hpp"
+#include "core/actions/set_categories_matches_hidden_action.hpp"
 #include "core/actions/set_match_bye_action.hpp"
 #include "core/actions/set_match_player_action.hpp"
 #include "core/actions/set_tatami_count_action.hpp"

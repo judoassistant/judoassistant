@@ -8,8 +8,7 @@
 #include "core/stores/tournament_store.hpp"
 
 SequentialBlockGroup::SequentialBlockGroup()
-    : mMatchCount(0)
-    , mExpectedDuration(std::chrono::milliseconds(0))
+    : mExpectedDuration(std::chrono::milliseconds(0))
 {}
 
 void SequentialBlockGroup::eraseBlock(std::pair<CategoryId, MatchType> block) {
@@ -51,20 +50,14 @@ SequentialBlockGroup::ConstMatchIterator SequentialBlockGroup::matchesEnd(const 
     return ConstMatchIterator(tournament, *this, mBlocks.size(), 0);
 }
 
-size_t SequentialBlockGroup::getMatchCount() const {
-    return mMatchCount;
-}
-
 void SequentialBlockGroup::recompute(const TournamentStore &tournament) {
-    mMatchCount = 0;
     mExpectedDuration = std::chrono::seconds(0);
 
     for (size_t i = 0; i < mBlocks.size(); ++i) {
-        auto block = mBlocks[i];
+        const auto block = mBlocks[i];
         const auto &category = tournament.getCategory(block.first);
 
         mExpectedDuration += category.expectedDuration(block.second);
-        mMatchCount += category.getMatchCount(block.second);
     }
 }
 

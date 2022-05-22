@@ -78,6 +78,31 @@ SequentialBlockGroup & ConcurrentBlockGroup::at(size_t index) {
     return mGroups.at(index);
 }
 
+std::vector<CombinedId> mergeMatchIterators(std::vector<SequentialBlockGroup::ConstMatchIterator> &matchIterators, std::vector<SequentialBlockGroup::ConstMatchIterator> &matchEndIterators) {
+    std::queue<size_t> mergeQueue;
+    for (size_t i = 0; i != matchIterators.size(); ++i) {
+        mergeQueue.push(i);
+    }
+
+    std::vector<CombinedId> matches;
+    while (!mergeQueue.empty()) {
+        const auto index = mergeQueue.front();
+        mergeQueue.pop();
+
+        auto &it = matchIterators[index];
+        const auto end = matchEndIterators[index];
+
+        if (it == end)
+            continue;
+
+        matches.push_back(*it);
+        ++it;
+        mergeQueue.push(index);
+    }
+
+    return matches;
+}
+
 void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mMatches.clear();
     mMatchMap.clear();
@@ -85,32 +110,21 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mFinishedMatches.clear();
     mExpectedDuration = std::chrono::seconds(0);
 
-    // Merging algorithm: Keep fetching matches from the group with smallest progress(#(matches fetched) / #(matches total))
-    std::priority_queue<MergeQueueElement> progressQueue;
-    std::vector<SequentialBlockGroup::ConstMatchIterator> iterators;
+    std::vector<SequentialBlockGroup::ConstMatchIterator> matchBeginIterators;
+    std::vector<SequentialBlockGroup::ConstMatchIterator> matchEndIterators;
 
     for (size_t i = 0; i < groupCount(); ++i) {
         const SequentialBlockGroup & group = at(i);
-        iterators.push_back(group.matchesBegin(tournament));
         mExpectedDuration += group.getExpectedDuration();
 
-        if (group.getMatchCount() > 0)
-            progressQueue.push(MergeQueueElement(i, 0, group.getMatchCount()));
+        matchBeginIterators.push_back(group.matchesBegin(tournament));
+        matchEndIterators.push_back(group.matchesEnd(tournament));
     }
 
-    while (!progressQueue.empty()) {
-        auto element = progressQueue.top();
-        progressQueue.pop();
-
-        auto & iterator = iterators[element.index];
-        auto combinedId = *iterator;
-        ++iterator;
+    const auto matchIds = mergeMatchIterators(matchBeginIterators, matchEndIterators);
+    for (const CombinedId combinedId : matchIds) {
         mMatchMap[combinedId] = mMatches.size();
         mMatches.push_back(combinedId);
-
-        ++(element.matchCount);
-        if (element.matchCount == element.totalMatchCount) continue;
-        progressQueue.push(element);
 
         const auto &category = tournament.getCategory(combinedId.getCategoryId());
         const auto &match = category.getMatch(combinedId.getMatchId());

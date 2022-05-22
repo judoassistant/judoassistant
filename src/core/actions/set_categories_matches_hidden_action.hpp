@@ -7,12 +7,13 @@ class TournamentStore;
 class CategoryId;
 class DrawCategoriesAction;
 class DrawSystem;
+class BlockLocation;
 
-class SetCategoriesDrawDisabled : public Action, public ConfirmableAction {
+class SetCategoriesMatchesHiddenAction : public Action, public ConfirmableAction {
 public:
-    SetCategoriesDrawDisabled() = default;
-    SetCategoriesDrawDisabled(std::vector<CategoryId> categoryIds, bool disabled);
-    SetCategoriesDrawDisabled(std::vector<CategoryId> categoryIds, bool disabled, unsigned int seed);
+    SetCategoriesMatchesHiddenAction() = default;
+    SetCategoriesMatchesHiddenAction(std::vector<CategoryId> categoryIds, bool hidden);
+    SetCategoriesMatchesHiddenAction(std::vector<CategoryId> categoryIds, bool hidden, unsigned int seed);
     void redoImpl(TournamentStore & tournament) override;
     void undoImpl(TournamentStore & tournament) override;
 
@@ -21,21 +22,23 @@ public:
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
-        ar(mCategoryIds, mDisabled, mSeed);
+        ar(mCategoryIds, mHidden, mSeed);
     }
 
     bool doesRequireConfirmation(const TournamentStore &tournament) const override;
 
 private:
+    void signalChanges(const std::vector<CategoryId> &changedCategories, TournamentStore &tournament);
+    std::vector<CategoryId> getCategoriesThatChange(const TournamentStore & tournament) const;
+
     std::vector<CategoryId> mCategoryIds;
-    bool mDisabled;
+    bool mHidden;
     unsigned int mSeed;
 
     // undo members
     std::vector<CategoryId> mChangedCategories;
-    std::unique_ptr<DrawCategoriesAction> mDrawAction;
 };
 
-CEREAL_REGISTER_TYPE(SetCategoriesDrawDisabled)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, SetCategoriesDrawDisabled)
+CEREAL_REGISTER_TYPE(SetCategoriesMatchesHiddenAction)
+CEREAL_REGISTER_POLYMORPHIC_RELATION(Action, SetCategoriesMatchesHiddenAction)
 

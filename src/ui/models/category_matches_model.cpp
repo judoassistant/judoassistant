@@ -43,7 +43,7 @@ void CategoryMatchesModel::endResetMatches() {
     if (mCategoryId && tournament.containsCategory(*mCategoryId)) {
         const auto &category = tournament.getCategory(*mCategoryId);
 
-        for (auto & matchPtr : category.getMatches()) {
+    for (auto & matchPtr : category.getMatches()) {
             const auto &match = *matchPtr;
             auto matchId = match.getId();
 
@@ -83,6 +83,7 @@ void CategoryMatchesModel::endResetTournament() {
     auto &tournament = mStoreManager.getTournament();
     mConnections.push(connect(&tournament, &QTournamentStore::matchesChanged, this, &CategoryMatchesModel::changeMatches));
     mConnections.push(connect(&tournament, &QTournamentStore::playersChanged, this, &CategoryMatchesModel::changePlayers));
+    mConnections.push(connect(&tournament, &QTournamentStore::categoriesChanged, this, &CategoryMatchesModel::changeCategories));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesAboutToBeReset, this, &CategoryMatchesModel::beginResetMatches));
     mConnections.push(connect(&tournament, &QTournamentStore::matchesReset, this, &CategoryMatchesModel::endResetMatches));
 }
@@ -147,6 +148,16 @@ int CategoryMatchesModel::getRow(MatchId matchId) const {
     auto it = mMatchesMap.find(matchId);
     assert(it != mMatchesMap.end());
     return static_cast<int>(it->second);
+}
+
+void CategoryMatchesModel::changeCategories(const std::vector<CategoryId> &categoryIds) {
+    if (!mCategoryId.has_value())
+        return;
+    if (std::find(categoryIds.begin(), categoryIds.end(), *mCategoryId) == categoryIds.end())
+        return;
+
+    beginResetMatches();
+    endResetMatches();
 }
 
 void CategoryMatchesModel::changePlayers(const std::vector<PlayerId> &playerIds) {

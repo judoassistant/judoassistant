@@ -486,6 +486,7 @@ rapidjson::Value JsonEncoder::encodeCategory(const CategoryStore &category, rapi
 
     res.AddMember("id", category.getId().getValue(), allocator);
     res.AddMember("name", encodeString(category.getName(), allocator), allocator);
+    res.AddMember("matchesHidden", category.areMatchesHidden(), allocator);
 
     return res;
 }
@@ -765,23 +766,21 @@ rapidjson::Value JsonEncoder::encodeOsaekomi(const std::optional<std::pair<Match
 rapidjson::Value JsonEncoder::encodeCategoryResults(const TournamentStore &tournament, const CategoryStore &category, rapidjson::Document::AllocatorType &allocator) {
     rapidjson::Value res(rapidjson::kArrayType);
 
-    if (!category.isDrawDisabled()) {
-        const auto &drawSystem = category.getDrawSystem();
-        auto results = drawSystem.getResults(tournament, category);
+    const auto &drawSystem = category.getDrawSystem();
+    auto results = drawSystem.getResults(tournament, category);
 
-        for (const auto &row : results) {
-            rapidjson::Value val;
-            val.SetObject();
+    for (const auto &row : results) {
+        rapidjson::Value val;
+        val.SetObject();
 
-            val.AddMember("player", row.first.getValue(), allocator);
+        val.AddMember("player", row.first.getValue(), allocator);
 
-            rapidjson::Value pos;
-            if (row.second.has_value())
-                pos.Set(*(row.second), allocator);
-            val.AddMember("pos", pos, allocator);
+        rapidjson::Value pos;
+        if (row.second.has_value())
+            pos.Set(*(row.second), allocator);
+        val.AddMember("pos", pos, allocator);
 
-            res.PushBack(val, allocator);
-        }
+        res.PushBack(val, allocator);
     }
 
     return res;
