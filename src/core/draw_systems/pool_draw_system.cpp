@@ -65,25 +65,23 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::createMatchesForOdd
 }
 
 std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
-    mMatches.clear();
-    mPlayers = playerIds;
-
-    std::vector<std::unique_ptr<AddMatchAction>> actions;
     MatchId::Generator generator(seed);
 
     if (mPlayers.size() <= 1)
-        return actions;
+        return {};
 
     std::mt19937 random_eng(seed);
     shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
 
-    if (playerIds.size() % 2 == 0)
-        actions = createMatchesForEvenNumberOfPlayers(tournament, category, playerIds, generator);
-    else
-        actions = createMatchesForOddNumberOfPlayers(tournament, category, playerIds, generator);
+    auto actions = (playerIds.size() % 2 == 0)
+        ? createMatchesForEvenNumberOfPlayers(tournament, category, playerIds, generator)
+        : createMatchesForOddNumberOfPlayers(tournament, category, playerIds, generator);
 
+    mMatches.clear();
     for (const auto &action : actions)
         mMatches.push_back(action->getMatchId());
+
+    mPlayers = playerIds;
 
     return actions;
 }
