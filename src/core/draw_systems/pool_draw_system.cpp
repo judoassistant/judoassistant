@@ -22,7 +22,7 @@ std::string PoolDrawSystem::getName() const {
 std::vector<std::pair<PlayerId, PlayerId>> PoolDrawSystem::createMatchOrderForEvenNumber(const std::vector<PlayerId> &playerIds) {
     assert(playerIds.size() % 2 == 0);
     // Algorithm by Haselgrove and Leech, 1977, A tournament design problem
-    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
+    // Algorithm described in Suksompong, 2016, Scheduling Asynchronous Round-Robin Tournaments
 
     std::vector<PlayerId> permutedIds = playerIds;
     std::vector<std::pair<PlayerId, PlayerId>> matchOrder;
@@ -55,7 +55,6 @@ std::vector<std::pair<PlayerId, PlayerId>> PoolDrawSystem::createMatchOrderForOd
 
     std::vector<std::pair<PlayerId, PlayerId>> matchOrder;
     for (size_t round = 1; round <= numberOfRounds; ++round) {
-
         std::vector<std::pair<size_t, size_t>> matchSlots;
 
         { // Handle player 2k + 1
@@ -80,9 +79,9 @@ std::vector<std::pair<PlayerId, PlayerId>> PoolDrawSystem::createMatchOrderForOd
 
         std::sort(matchSlots.begin(), matchSlots.end());
         for (size_t i = 1; i < matchSlots.size(); i += 2) {
-          const size_t firstPlayer = matchSlots[i].second;
-          const size_t secondPlayer = matchSlots[i+1].second;
-          matchOrder.emplace_back(playerIds[firstPlayer], playerIds[secondPlayer]);
+          const size_t firstPlayerIndex = matchSlots[i].second;
+          const size_t secondPlayerIndex = matchSlots[i+1].second;
+          matchOrder.emplace_back(playerIds[firstPlayerIndex], playerIds[secondPlayerIndex]);
         }
     }
 
