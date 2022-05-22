@@ -256,13 +256,13 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         const int shidoWidth = shidoHeight * 3/4;
 
         const int whiteNameOffset = PADDING;
-        const int blueNameOffset = mWhiteRect.height() + mBlueRect.height() - PADDING - nameHeight;
+        const int blueNameOffset = mWhiteRect.height() + PADDING;
 
         const int whiteClubOffset = mWhiteRect.height() - PADDING - clubHeight;
-        const int blueClubOffset = mWhiteRect.height() + PADDING;
+        const int blueClubOffset = mWhiteRect.height() + mBlueRect.height() - PADDING - clubHeight;
 
         const int whiteScoreOffset = PADDING * 2 + nameHeight;
-        const int blueScoreOffset = mWhiteRect.height() + PADDING;
+        const int blueScoreOffset = mWhiteRect.height() + PADDING * 2 + nameHeight;
 
         const int whiteShidoOffset = whiteScoreOffset + (scoreHeight - shidoHeight)/2;
         const int blueShidoOffset = blueScoreOffset + (scoreHeight - shidoHeight)/2;
