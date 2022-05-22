@@ -23,6 +23,11 @@ public:
         ar(mMatches, mPlayers, mComposited);
     }
 
+protected:
+    std::unique_ptr<AddMatchAction> createMatch(const TournamentStore &tournament, const CategoryStore &category, PlayerId firstPlayer, PlayerId secondPlayer, MatchId::Generator &generator);
+    std::vector<std::pair<PlayerId, PlayerId>> createMatchOrderForEvenNumber(const std::vector<PlayerId> &playerIds);
+    std::vector<std::pair<PlayerId, PlayerId>> createMatchOrderForOddNumber(const std::vector<PlayerId> &playerIds);
+
 private:
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;
