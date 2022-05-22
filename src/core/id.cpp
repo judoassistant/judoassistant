@@ -1,4 +1,5 @@
 #include <chrono>
+#include <set>
 
 #include "core/id.hpp"
 #include "core/hash.hpp"
@@ -24,6 +25,24 @@ MatchId MatchId::generate(const CategoryStore &category) {
     return generate(category, *generator);
 }
 
+std::vector<MatchId> MatchId::generateMultiple(const CategoryStore &category, MatchId::Generator &generator, size_t count) {
+    std::set<MatchId> ids;
+    while (ids.size() < count) {
+        ids.insert(generate(category, generator));
+    }
+
+    return std::vector(ids.begin(), ids.end());
+}
+
+std::vector<MatchId> MatchId::generateMultiple(const CategoryStore &category, size_t count) {
+    std::set<MatchId> ids;
+    while (ids.size() < count) {
+        ids.insert(generate(category));
+    }
+
+    return std::vector(ids.begin(), ids.end());
+}
+
 PlayerId PlayerId::generate(const TournamentStore &tournament, PlayerId::Generator &generator) {
     PlayerId id;
     do {
@@ -41,6 +60,24 @@ PlayerId PlayerId::generate(const TournamentStore &tournament) {
     return generate(tournament, *generator);
 }
 
+std::vector<PlayerId> PlayerId::generateMultiple(const TournamentStore &tournament, const size_t count) {
+    std::set<PlayerId> ids;
+    while (ids.size() < count) {
+        ids.insert(generate(tournament));
+    }
+
+    return std::vector(ids.begin(), ids.end());
+}
+
+std::vector<PlayerId> PlayerId::generateMultiple(const TournamentStore &tournament, PlayerId::Generator &generator, const size_t count) {
+    std::set<PlayerId> ids;
+    while (ids.size() < count) {
+        ids.insert(generate(tournament, generator));
+    }
+
+    return std::vector(ids.begin(), ids.end());
+}
+
 CategoryId CategoryId::generate(const TournamentStore &tournament, CategoryId::Generator &generator) {
     CategoryId id;
     do {
@@ -56,6 +93,24 @@ CategoryId CategoryId::generate(const TournamentStore &tournament) {
         generator = std::make_unique<CategoryId::Generator>(getSeed());
 
     return generate(tournament, *generator);
+}
+
+std::vector<CategoryId> CategoryId::generateMultiple(const TournamentStore &tournament, const size_t count) {
+    std::set<CategoryId> ids;
+    while (ids.size() < count) {
+        ids.insert(generate(tournament));
+    }
+
+    return std::vector(ids.begin(), ids.end());
+}
+
+std::vector<CategoryId> CategoryId::generateMultiple(const TournamentStore &tournament, CategoryId::Generator &generator, const size_t count) {
+    std::set<CategoryId> ids;
+    while (ids.size() < count) {
+        ids.insert(generate(tournament, generator));
+    }
+
+    return std::vector(ids.begin(), ids.end());
 }
 
 ActionId ActionId::generate() {

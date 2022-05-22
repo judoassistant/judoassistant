@@ -2,10 +2,9 @@
 #include "core/stores/tournament_store.hpp"
 
 AddPlayersAction::AddPlayersAction(TournamentStore & tournament, const std::vector<PlayerFields> &fields)
-    : mFields(fields)
+    : mIds(PlayerId::generateMultiple(tournament, fields.size()))
+    , mFields(fields)
 {
-    for (size_t i = 0; i < fields.size(); ++i)
-        mIds.push_back(PlayerId::generate(tournament));
 }
 
 AddPlayersAction::AddPlayersAction(const std::vector<PlayerId> &ids, const std::vector<PlayerFields> &fields)

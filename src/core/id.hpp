@@ -89,6 +89,9 @@ public:
 
     static MatchId generate(const CategoryStore &category);
     static MatchId generate(const CategoryStore &category, MatchId::Generator &generator);
+
+    static std::vector<MatchId> generateMultiple(const CategoryStore &category, const size_t count);
+    static std::vector<MatchId> generateMultiple(const CategoryStore &category, MatchId::Generator &generator, const size_t count);
 };
 
 class CategoryId : public Id<CategoryId> {
@@ -99,6 +102,9 @@ public:
 
     static CategoryId generate(const TournamentStore &tournament);
     static CategoryId generate(const TournamentStore &tournament, CategoryId::Generator &generator);
+
+    static std::vector<CategoryId> generateMultiple(const TournamentStore &tournament, const size_t count);
+    static std::vector<CategoryId> generateMultiple(const TournamentStore &tournament, CategoryId::Generator &generator, const size_t count);
 };
 
 class PlayerId : public Id<PlayerId> {
@@ -109,6 +115,9 @@ public:
 
     static PlayerId generate(const TournamentStore &tournament);
     static PlayerId generate(const TournamentStore &tournament, PlayerId::Generator &generator);
+
+    static std::vector<PlayerId> generateMultiple(const TournamentStore &tournament, const size_t count);
+    static std::vector<PlayerId> generateMultiple(const TournamentStore &tournament, PlayerId::Generator &generator, const size_t count);
 };
 
 class PositionId : public Id<PositionId> {

@@ -40,15 +40,14 @@ std::unordered_map<std::string, CategoryId> AddPlayersWithCategoriesAction::crea
 }
 
 AddPlayersWithCategoriesAction::AddPlayersWithCategoriesAction(const TournamentStore &tournament, const std::vector<PlayerFields> &playerFields, const std::vector<std::optional<std::string>> &playerCategories)
-    : mPlayerFields(playerFields)
+    : mPlayerIds(PlayerId::generateMultiple(tournament, playerFields.size()))
+    , mPlayerFields(playerFields)
     , mSeed(getSeed())
 {
     const std::unordered_set<std::string> categoryNames = getUniqueCategoryNames(playerCategories);
     const std::unordered_map<std::string, CategoryId> categoryIds = createOrGetCategoryIds(categoryNames, tournament);
 
     for (size_t i = 0; i < playerFields.size(); ++i) {
-        mPlayerIds.push_back(PlayerId::generate(tournament));
-
         std::optional<std::string> playerCategoryName = playerCategories[i];
         mPlayerCategories.push_back(playerCategoryName ? std::make_optional(categoryIds.at(*playerCategoryName)) : std::nullopt);
     }
