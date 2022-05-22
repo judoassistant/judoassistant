@@ -42,15 +42,16 @@ void NationalScoreboardPainter::paintWinner(QPainter &painter, const QRect &rect
 }
 
 void NationalScoreboardPainter::paintIntroductionPlayer(QPainter &painter, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
-    const PlayerStore &player = (playerIndex == MatchStore::PlayerIndex::WHITE ? params.whitePlayer : params.bluePlayer);
+    const bool isWhitePlayer = playerIndex == MatchStore::PlayerIndex::WHITE;
+    const PlayerStore &player = (isWhitePlayer ? params.whitePlayer : params.bluePlayer);
 
     // Paint background
     painter.setPen(Qt::NoPen);
-    painter.setBrush(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_SCOREBOARD_WHITE : COLOR_SCOREBOARD_BLUE);
-    painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteRect : mBlueRect);
+    painter.setBrush(isWhitePlayer ? COLOR_SCOREBOARD_WHITE : COLOR_SCOREBOARD_BLUE);
+    painter.drawRect(isWhitePlayer ? mWhiteRect : mBlueRect);
 
     // Set pen color
-    painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_SCOREBOARD_BLACK : COLOR_SCOREBOARD_WHITE);
+    painter.setPen(isWhitePlayer ? COLOR_SCOREBOARD_BLACK : COLOR_SCOREBOARD_WHITE);
 
     // Calculate rectangles
     auto font = mFont;
@@ -60,20 +61,15 @@ void NationalScoreboardPainter::paintIntroductionPlayer(QPainter &painter, const
     font.setPixelSize(mIntroductionClubFontSize);
     painter.setFont(font);
 
-    if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.drawText(mIntroductionWhiteClubRect, Qt::AlignBottom | Qt::AlignLeft, clubText);
-    else
-        painter.drawText(mIntroductionBlueClubRect, Qt::AlignTop | Qt::AlignLeft, clubText);
+    const auto clubRect = (isWhitePlayer ? mIntroductionWhiteClubRect : mIntroductionBlueClubRect);
+    painter.drawText(clubRect, Qt::AlignBottom | Qt::AlignLeft, clubText);
 
     // Paint player name
     font.setPixelSize(mIntroductionNameFontSize);
     painter.setFont(font);
-    QString nameText = QString::fromStdString(player.getLastName()) + QString(", ") + QString::fromStdString(player.getFirstName());
-
-    if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.drawText(mIntroductionWhiteNameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
-    else
-        painter.drawText(mIntroductionBlueNameRect, Qt::AlignBottom | Qt::AlignLeft, nameText);
+    const QString nameText = QString::fromStdString(player.getLastName()) + QString(", ") + QString::fromStdString(player.getFirstName());
+    const auto nameRect = (isWhitePlayer ? mIntroductionWhiteNameRect : mIntroductionBlueNameRect);
+    painter.drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
 }
 
 void NationalScoreboardPainter::paintIntroductionLower(QPainter &painter, const ScoreboardPainterParams &params) {
@@ -98,21 +94,16 @@ void NationalScoreboardPainter::paintIntroductionLower(QPainter &painter, const 
 }
 
 void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const ScoreboardPainterParams &params, MatchStore::PlayerIndex playerIndex) {
-    const PlayerStore &player = (playerIndex == MatchStore::PlayerIndex::WHITE ? params.whitePlayer : params.bluePlayer);
+    const bool isWhitePlayer = playerIndex == MatchStore::PlayerIndex::WHITE;
+    const PlayerStore &player = (isWhitePlayer ? params.whitePlayer : params.bluePlayer);
 
     // Paint background
     painter.setPen(Qt::NoPen);
-    if (playerIndex == MatchStore::PlayerIndex::WHITE) {
-        painter.setBrush(COLOR_SCOREBOARD_WHITE);
-        painter.drawRect(mWhiteRect);
-    }
-    else {
-        painter.setBrush(COLOR_SCOREBOARD_BLUE);
-        painter.drawRect(mBlueRect);
-    }
+    painter.setBrush(isWhitePlayer ? COLOR_SCOREBOARD_WHITE : COLOR_SCOREBOARD_BLUE);
+    painter.drawRect(isWhitePlayer ? mWhiteRect : mBlueRect);
 
     // Set pen color
-    painter.setPen(playerIndex == MatchStore::PlayerIndex::WHITE ? COLOR_SCOREBOARD_BLACK : COLOR_SCOREBOARD_WHITE);
+    painter.setPen(isWhitePlayer ? COLOR_SCOREBOARD_BLACK : COLOR_SCOREBOARD_WHITE);
 
     // Calculate rectangles
     auto font = mFont;
@@ -122,27 +113,23 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
     font.setPixelSize(mNormalClubFontSize);
     painter.setFont(font);
 
-    if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.drawText(mNormalWhiteClubRect, Qt::AlignBottom | Qt::AlignLeft, clubText);
-    else
-        painter.drawText(mNormalBlueClubRect, Qt::AlignTop | Qt::AlignLeft, clubText);
+    const auto clubRect = (isWhitePlayer ? mNormalWhiteClubRect : mNormalBlueClubRect);
+    painter.drawText(clubRect, Qt::AlignBottom | Qt::AlignLeft, clubText);
 
     // Paint player name
     font.setPixelSize(mNormalNameFontSize);
     painter.setFont(font);
     QString nameText = QString::fromStdString(player.getLastName()) + QString(", ") + QString::fromStdString(player.getFirstName());
 
-    if (playerIndex == MatchStore::PlayerIndex::WHITE)
-        painter.drawText(mNormalWhiteNameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
-    else
-        painter.drawText(mNormalBlueNameRect, Qt::AlignBottom | Qt::AlignLeft, nameText);
+    const auto nameRect = (isWhitePlayer ? mNormalWhiteNameRect : mNormalBlueNameRect);
+    painter.drawText(nameRect, Qt::AlignTop | Qt::AlignLeft, nameText);
 
     // Score
     font.setPixelSize(mScoreFontSize);
     painter.setFont(font);
 
     const auto &score = params.match.getScore(playerIndex);
-    const auto &otherScore = params.match.getScore(playerIndex == MatchStore::PlayerIndex::WHITE ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
+    const auto &otherScore = params.match.getScore(isWhitePlayer ? MatchStore::PlayerIndex::BLUE : MatchStore::PlayerIndex::WHITE);
 
     QString scoreText;
     if (score.hansokuMake)
@@ -160,10 +147,8 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
     }
 
     if (!blinkScore) {
-        if (playerIndex == MatchStore::PlayerIndex::WHITE)
-            painter.drawText(mWhiteScoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
-        else
-            painter.drawText(mBlueScoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
+        const auto scoreRect = (isWhitePlayer ? mWhiteScoreRect : mBlueScoreRect);
+        painter.drawText(scoreRect, Qt::AlignBottom | Qt::AlignRight, scoreText);
     }
 
     // Penalties
@@ -171,16 +156,15 @@ void NationalScoreboardPainter::paintNormalPlayer(QPainter &painter, const Score
         painter.setPen(COLOR_SCOREBOARD_BLACK);
         painter.setBrush(COLOR_SCOREBOARD_HANSOKU);
 
-        painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteShidoRect : mBlueShidoRect);
+        painter.drawRect(isWhitePlayer ? mWhiteShidoRect : mBlueShidoRect);
     }
     else {
         painter.setPen(COLOR_SCOREBOARD_BLACK);
         painter.setBrush(COLOR_SCOREBOARD_SHIDO);
         if (score.shido > 0)
-            painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteShidoRect : mBlueShidoRect);
+            painter.drawRect(isWhitePlayer ? mWhiteShidoRect : mBlueShidoRect);
         if (score.shido > 1)
-            painter.drawRect(playerIndex == MatchStore::PlayerIndex::WHITE ? mWhiteSecondShidoRect : mBlueSecondShidoRect);
-
+            painter.drawRect(isWhitePlayer ? mWhiteSecondShidoRect : mBlueSecondShidoRect);
     }
 }
 
@@ -272,13 +256,13 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
         const int shidoWidth = shidoHeight * 3/4;
 
         const int whiteNameOffset = PADDING;
-        const int blueNameOffset = mWhiteRect.height() + mBlueRect.height() - PADDING - nameHeight;
+        const int blueNameOffset = mWhiteRect.height() + PADDING;
 
         const int whiteClubOffset = mWhiteRect.height() - PADDING - clubHeight;
-        const int blueClubOffset = mWhiteRect.height() + PADDING;
+        const int blueClubOffset = mWhiteRect.height() + mBlueRect.height() - PADDING - clubHeight;
 
         const int whiteScoreOffset = PADDING * 2 + nameHeight;
-        const int blueScoreOffset = mWhiteRect.height() + PADDING;
+        const int blueScoreOffset = mWhiteRect.height() + PADDING * 2 + nameHeight;
 
         const int whiteShidoOffset = whiteScoreOffset + (scoreHeight - shidoHeight)/2;
         const int blueShidoOffset = blueScoreOffset + (scoreHeight - shidoHeight)/2;
@@ -355,6 +339,5 @@ void NationalScoreboardPainter::resizeEvent(const QRect &rect) {
     mOsaekomiRect = QRect(mColumnThree, osaekomiOffset, rect.width() - mColumnThree - PADDING, osaekomiHeight);
     mWhiteOsaekomiRect = QRect(mColumnThree, osaekomiOffset, rect.width() - mColumnThree - PADDING, osaekomiHeight/2);
     mBlueOsaekomiRect = QRect(mColumnThree, osaekomiOffset + PADDING + osaekomiHeight/2, rect.width() - mColumnThree - PADDING, osaekomiHeight - osaekomiHeight/2 - PADDING);
-
 }
 
