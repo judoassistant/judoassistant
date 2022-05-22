@@ -23,6 +23,11 @@ public:
         ar(mMatches, mPlayers, mComposited);
     }
 
+protected:
+    std::vector<std::unique_ptr<AddMatchAction>> createMatchesForEvenNumberOfPlayers(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, MatchId::Generator &generator);
+    std::vector<std::unique_ptr<AddMatchAction>> createMatchesForOddNumberOfPlayers(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, MatchId::Generator &generator);
+    std::unique_ptr<AddMatchAction> createMatch(const TournamentStore &tournament, const CategoryStore &category, PlayerId firstPlayer, PlayerId secondPlayer, MatchId::Generator &generator);
+
 private:
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;

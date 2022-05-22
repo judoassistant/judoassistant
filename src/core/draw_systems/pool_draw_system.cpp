@@ -19,6 +19,51 @@ std::string PoolDrawSystem::getName() const {
     return "Pool";
 }
 
+std::unique_ptr<AddMatchAction> PoolDrawSystem::createMatch(const TournamentStore &tournament, const CategoryStore &category, const PlayerId firstPlayer, const PlayerId secondPlayer, MatchId::Generator &generator) {
+    const auto matchId = MatchId::generate(category, generator);
+    const auto matchTitle = mComposited ? "Elimination" : "Pool";
+
+    const bool isFirstPlayerBlue = tournament.getPlayer(firstPlayer).getBlueJudogiHint();
+    const PlayerId whitePlayer = isFirstPlayerBlue ? secondPlayer : firstPlayer;
+    const PlayerId bluePlayer = isFirstPlayerBlue ? firstPlayer : secondPlayer;
+
+    return std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, matchTitle, false, whitePlayer, bluePlayer);
+}
+
+std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::createMatchesForEvenNumberOfPlayers(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, MatchId::Generator &generator) {
+    // Algorithm by Haselgrove and Leech, 1977, A tournament design problem
+    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
+
+    std::vector<std::optional<PlayerId>> shiftedIds;
+    if (playerIds.size() % 2 != 0)
+        shiftedIds.push_back(std::nullopt);
+    for (size_t i = 0; i < playerIds.size(); ++i)
+        shiftedIds.emplace_back(playerIds[i]);
+
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
+    for (size_t round = 0; round < shiftedIds.size()-1; ++round) {
+        for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
+            size_t j = shiftedIds.size() - i - 1;
+            if (!shiftedIds[i] || !shiftedIds[j]) continue;
+
+            const PlayerId firstPlayer = shiftedIds[i].value();
+            const PlayerId secondPlayer = shiftedIds[j].value();
+            actions.push_back(createMatch(tournament, category, firstPlayer, secondPlayer, generator));
+        }
+
+        // shift ids
+        std::optional<PlayerId> temp = shiftedIds.back();
+        for (size_t i = 1; i < shiftedIds.size(); ++i)
+            std::swap(shiftedIds[i], temp);
+    }
+
+    return actions;
+}
+
+std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::createMatchesForOddNumberOfPlayers(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, MatchId::Generator &generator) {
+    return {}; // TODO: Implement
+}
+
 std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
     mMatches.clear();
     mPlayers = playerIds;
@@ -32,35 +77,13 @@ std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const 
     std::mt19937 random_eng(seed);
     shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
 
-    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
-    std::vector<std::optional<PlayerId>> shiftedIds;
-    if (mPlayers.size() % 2 != 0)
-        shiftedIds.push_back(std::nullopt);
-    for (size_t i = 0; i < mPlayers.size(); ++i)
-        shiftedIds.emplace_back(mPlayers[i]);
+    if (playerIds.size() % 2 == 0)
+        actions = createMatchesForEvenNumberOfPlayers(tournament, category, playerIds, generator);
+    else
+        actions = createMatchesForOddNumberOfPlayers(tournament, category, playerIds, generator);
 
-    for (size_t round = 0; round < shiftedIds.size()-1; ++round) {
-        for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
-            size_t j = shiftedIds.size() - i - 1;
-            if (!shiftedIds[i] || !shiftedIds[j]) continue;
-            std::string matchTitle = (mComposited ? "Elimination" : "Pool");
-            const auto matchId = MatchId::generate(category, generator);
-
-            PlayerId whitePlayer = shiftedIds[i].value();
-            PlayerId bluePlayer = shiftedIds[j].value();
-            if (tournament.getPlayer(whitePlayer).getBlueJudogiHint()) // Try to satisfy blue judogi hints
-                std::swap(whitePlayer, bluePlayer);
-
-            auto action = std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, matchTitle, false, whitePlayer, bluePlayer);
-            mMatches.push_back(action->getMatchId());
-            actions.push_back(std::move(action));
-        }
-
-        // shift ids
-        std::optional<PlayerId> temp = shiftedIds.back();
-        for (size_t i = 1; i < shiftedIds.size(); ++i)
-            std::swap(shiftedIds[i], temp);
-    }
+    for (const auto &action : actions)
+        mMatches.push_back(action->getMatchId());
 
     return actions;
 }
@@ -75,9 +98,6 @@ struct PoolPlayerRank {
     std::chrono::milliseconds durationSum;
     size_t ippons;
     size_t wazaris;
-    // size_t hansokuMakes;
-    // size_t shidos;
-    // PlayerWeight weight;
 
     bool operator<(const PoolPlayerRank &other) const {
         if (wonMatches != other.wonMatches)
@@ -89,11 +109,6 @@ struct PoolPlayerRank {
         if (durationSum != other.durationSum)
             return durationSum < other.durationSum;
         return playerId < other.playerId; // to ensure total ordering
-        // if (hansokuMakes != other.hansokuMakes)
-        //     return hansokuMakes < other.hansokuMakes;
-        // if (shidos != other.shidos)
-        //     return shidos < other.shidos;
-        // return weight < other.weight;
     }
 };
 
