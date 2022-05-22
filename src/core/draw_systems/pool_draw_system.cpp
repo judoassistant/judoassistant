@@ -19,6 +19,76 @@ std::string PoolDrawSystem::getName() const {
     return "Pool";
 }
 
+std::vector<std::pair<PlayerId, PlayerId>> PoolDrawSystem::createMatchOrderForEvenNumber(const std::vector<PlayerId> &playerIds) {
+    assert(playerIds.size() % 2 == 0);
+    // Algorithm by Haselgrove and Leech, 1977, A tournament design problem
+    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
+
+    std::vector<PlayerId> permutedIds = playerIds;
+    std::vector<std::pair<PlayerId, PlayerId>> matchOrder;
+
+    const auto numberOfRounds = playerIds.size() - 1;
+    for (size_t round = 0; round < numberOfRounds; ++round) {
+        for (size_t i = 0; i < permutedIds.size() / 2; ++i) {
+            size_t j = permutedIds.size() - i - 1;
+
+            const PlayerId firstPlayer = permutedIds[i];
+            const PlayerId secondPlayer = permutedIds[j];
+            matchOrder.emplace_back(firstPlayer, secondPlayer);
+        }
+
+        // permute ids
+        PlayerId temp = permutedIds.back();
+        for (size_t i = 1; i < permutedIds.size(); ++i)
+            std::swap(permutedIds[i], temp);
+    }
+
+    return matchOrder;
+}
+
+std::vector<std::pair<PlayerId, PlayerId>> PoolDrawSystem::createMatchOrderForOddNumber(const std::vector<PlayerId> &playerIds) {
+    // Algorithm by Suksompong, 2016, Scheduling Asynchronous Round-Robin Tournaments
+    assert(playerIds.size() % 2 == 1);
+
+    const auto k = playerIds.size() / 2;
+    const auto numberOfRounds = playerIds.size();
+
+    std::vector<std::pair<PlayerId, PlayerId>> matchOrder;
+    for (size_t round = 1; round <= numberOfRounds; ++round) {
+
+        std::vector<std::pair<size_t, size_t>> matchSlots;
+
+        { // Handle player 2k + 1
+            const size_t playerIndex = 2 * k + 1;
+            const size_t slotIndex = round / 2;
+            matchSlots.emplace_back(slotIndex % (k + 1), playerIndex - 1);
+        }
+
+        for (size_t i = 1; i <= k; ++i) { // Handle player 2i - 1
+            const size_t playerIndex = 2 * i - 1;
+            const size_t slotIndex = (round <= 2 * i)
+                ? i
+                : i + (round - 2 * i);
+            matchSlots.emplace_back(slotIndex % (k + 1), playerIndex - 1);
+        }
+
+        for (size_t i = 1; i <= k; ++i) { // Handle player 2i
+            const size_t playerIndex = 2 * i;
+            const size_t slotIndex = i + std::min(round, 2 * k + 3 - 2 * i) - 1;
+            matchSlots.emplace_back(slotIndex % (k + 1), playerIndex - 1);
+        }
+
+        std::sort(matchSlots.begin(), matchSlots.end());
+        for (size_t i = 1; i < matchSlots.size(); i += 2) {
+          const size_t firstPlayer = matchSlots[i].second;
+          const size_t secondPlayer = matchSlots[i+1].second;
+          matchOrder.emplace_back(playerIds[firstPlayer], playerIds[secondPlayer]);
+        }
+    }
+
+    return matchOrder;
+}
+
 std::unique_ptr<AddMatchAction> PoolDrawSystem::createMatch(const TournamentStore &tournament, const CategoryStore &category, const PlayerId firstPlayer, const PlayerId secondPlayer, MatchId::Generator &generator) {
     const auto matchId = MatchId::generate(category, generator);
     const auto matchTitle = mComposited ? "Elimination" : "Pool";
@@ -30,58 +100,31 @@ std::unique_ptr<AddMatchAction> PoolDrawSystem::createMatch(const TournamentStor
     return std::make_unique<AddMatchAction>(CombinedId(category.getId(), matchId), MatchType::ELIMINATION, matchTitle, false, whitePlayer, bluePlayer);
 }
 
-std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::createMatchesForEvenNumberOfPlayers(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, MatchId::Generator &generator) {
-    // Algorithm by Haselgrove and Leech, 1977, A tournament design problem
-    // Algorithm described at https://stackoverflow.com/questions/6648512/scheduling-algorithm-for-a-round-robin-tournament
-
-    std::vector<std::optional<PlayerId>> shiftedIds;
-    if (playerIds.size() % 2 != 0)
-        shiftedIds.push_back(std::nullopt);
-    for (size_t i = 0; i < playerIds.size(); ++i)
-        shiftedIds.emplace_back(playerIds[i]);
-
-    std::vector<std::unique_ptr<AddMatchAction>> actions;
-    for (size_t round = 0; round < shiftedIds.size()-1; ++round) {
-        for (size_t i = 0; i < shiftedIds.size()/2; ++i) {
-            size_t j = shiftedIds.size() - i - 1;
-            if (!shiftedIds[i] || !shiftedIds[j]) continue;
-
-            const PlayerId firstPlayer = shiftedIds[i].value();
-            const PlayerId secondPlayer = shiftedIds[j].value();
-            actions.push_back(createMatch(tournament, category, firstPlayer, secondPlayer, generator));
-        }
-
-        // shift ids
-        std::optional<PlayerId> temp = shiftedIds.back();
-        for (size_t i = 1; i < shiftedIds.size(); ++i)
-            std::swap(shiftedIds[i], temp);
-    }
-
-    return actions;
-}
-
-std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::createMatchesForOddNumberOfPlayers(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, MatchId::Generator &generator) {
-    return {}; // TODO: Implement
-}
-
 std::vector<std::unique_ptr<AddMatchAction>> PoolDrawSystem::initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) {
-    MatchId::Generator generator(seed);
-
+    // Assign player ids
+    mPlayers = playerIds;
     if (mPlayers.size() <= 1)
         return {};
+
 
     std::mt19937 random_eng(seed);
     shuffle(mPlayers.begin(), mPlayers.end(), random_eng);
 
-    auto actions = (playerIds.size() % 2 == 0)
-        ? createMatchesForEvenNumberOfPlayers(tournament, category, playerIds, generator)
-        : createMatchesForOddNumberOfPlayers(tournament, category, playerIds, generator);
+    // Get match order
+    std::vector<std::pair<PlayerId, PlayerId>> matchOrder = (mPlayers.size() % 2 == 0)
+        ? createMatchOrderForEvenNumber(mPlayers)
+        : createMatchOrderForOddNumber(mPlayers);
+
+    // Create matches
+    MatchId::Generator generator(seed);
 
     mMatches.clear();
-    for (const auto &action : actions)
+    std::vector<std::unique_ptr<AddMatchAction>> actions;
+    for (const auto &playerPair : matchOrder) {
+        auto action = createMatch(tournament, category, playerPair.first, playerPair.second, generator);
         mMatches.push_back(action->getMatchId());
-
-    mPlayers = playerIds;
+        actions.push_back(std::move(action));
+    }
 
     return actions;
 }
@@ -130,9 +173,6 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::ge
         rank.durationSum = std::chrono::milliseconds(0);
         rank.ippons = 0;
         rank.wazaris = 0;
-        // rank.hansokuMakes = 0;
-        // rank.shidos = 0;
-        // rank.weight = tournament.getPlayer(playerId).getWeight().value_or(PlayerWeight(0.0));
         ranks[playerId] = std::move(rank);
     }
 
@@ -153,14 +193,10 @@ std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::ge
         const MatchStore::Score & whiteScore = match.getWhiteScore();
         whiteRank.ippons += whiteScore.ippon;
         whiteRank.wazaris += whiteScore.wazari;
-        // whiteRank.shidos += whiteScore.shido;
-        // whiteRank.hansokuMakes += static_cast<size_t>(whiteScore.hansokuMake);
 
         const MatchStore::Score & blueScore = match.getBlueScore();
         blueRank.ippons += blueScore.ippon;
         blueRank.wazaris += blueScore.wazari;
-        // blueRank.shidos += blueScore.shido;
-        // blueRank.hansokuMakes += static_cast<size_t>(blueScore.hansokuMake);
     }
 
     std::vector<PoolPlayerRank> sortedRanks;
