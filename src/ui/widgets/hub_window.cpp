@@ -3,7 +3,6 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
@@ -102,8 +101,12 @@ void HubWindow::createTournamentMenu() {
     }
 
     {
-        // QMenu * submenu = menu->addMenu("Open Recent");
+        mRecentFilesMenu = menu->addMenu(tr("Open Recent.."));
+
+        populateRecentFilesMenu();
     }
+
+    menu->addSeparator();
 
     {
         QMenu *submenu = menu->addMenu(tr("Import.."));
@@ -297,16 +300,17 @@ void HubWindow::writeTournament() {
         statusBar()->showMessage(tr("Saved tournament to file"));
 }
 
-void HubWindow::readTournament() {
-    readTournament(mFileName);
-}
-
 void HubWindow::readTournament(const QString &fileName) {
     mFileName = fileName;
-    if (!mStoreManager.read(fileName))
+    if (!mStoreManager.read(fileName)) {
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
-    else
+    }
+    else {
         statusBar()->showMessage(tr("Opened tournament from file"));
+        addToRecentFiles(fileName);
+        clearRecentFilesMenu();
+        populateRecentFilesMenu();
+    }
 }
 
 void HubWindow::newTournament() {
@@ -428,5 +432,34 @@ void HubWindow::autosaveTimerHit() {
         QMessageBox::warning(this, tr("Unable to autosave"), tr("JudoAssistant was unable to auto-save to the opened tournament file."));
     else
         statusBar()->showMessage(tr("Auto-saved tournament to file"));
+}
+
+void HubWindow::clearRecentFilesMenu() {
+
+}
+
+void HubWindow::populateRecentFilesMenu() {
+    QAction *action = new QAction(tr("Foo.."), this);
+    action->setStatusTip(tr("Bar, file name"));
+    // connect(action, &QAction::triggered, this, &HubWindow::openImportPlayers);
+    mRecentFilesMenu->addAction(action);
+
+    const QSettings &settings = mStoreManager.getSettings();
+    const QStringList files = settings.value("recentFilesList").toStringList();
+    for (int i = 0; i < files.size(); ++i) {
+        log_debug().field("file", files[i].toStdString()).msg("Got file");
+    }
+}
+
+void HubWindow::addToRecentFiles(const QString &file) {
+    log_debug().field("file", file.toStdString()).msg("Adding to recent files");
+    QSettings &settings = mStoreManager.getSettings();
+    QStringList files = settings.value("recentFilesList").toStringList();
+
+    files.removeOne(file); // Remove if already exists
+    while (files.size() > 5)
+        files.pop_back();
+    files.push_front(file);
+    settings.setValue("recentFilesList", files);
 }
 
