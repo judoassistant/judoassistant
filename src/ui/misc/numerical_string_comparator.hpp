@@ -6,9 +6,9 @@
 #include "core/core.hpp"
 
 /*
- * Given two strings compare them in a way such that numbers in the string are
- * compared as numbers. For example the string "MA70" should
- * compare smaller than "MA100"
+ * Given two strings compare them such that sequential digits in the
+ * string are treated as a combined single number. For example, this results
+ * in the string "MA70" comparing smaller than "MA100"
  */
 class NumericalStringComparator {
 private:

@@ -2,23 +2,19 @@
 
 std::vector<std::pair<bool, QString>> NumericalStringComparator::split_string(const QString &str) const {
     std::vector<std::pair<bool, QString>> res;
-    QString current;
-    bool isNumber = false; // Set to false to suppress compiler uninitialized warnings
 
-    for (QChar a : str) {
-        if (!current.isEmpty()) {
-            if (a.isDigit() != isNumber) {
-                res.push_back(std::make_pair(isNumber, current));
-                current.clear();
+    for (int i = 0; i < str.size(); ++i) {
+        QString cur = str[i];
+
+        if (str[i].isDigit()) {
+            while (i+1 < str.size() && str[i+1].isDigit()) {
+                cur += str[++i];
             }
         }
 
-        isNumber = a.isDigit();
-        current.append(a);
+        res.emplace_back(str[i].isDigit(), cur);
     }
 
-    if (!current.isEmpty())
-        res.push_back(std::make_pair(isNumber, current));
 
     return res;
 }
