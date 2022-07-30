@@ -3,7 +3,6 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
@@ -18,6 +17,7 @@
 #include "core/version.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/constants/network.hpp"
+#include "ui/constants/settings.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/misc/dark_palette.hpp"
 #include "ui/widgets/categories_widget.hpp"
@@ -60,10 +60,10 @@ HubWindow::HubWindow() {
     connect(&mAutosaveTimer, &QTimer::timeout, this, &HubWindow::autosaveTimerHit);
 
     const QSettings& settings = mStoreManager.getSettings();
-    bool autosave = settings.value("saving/autosave", true).toBool();
+    bool autosave = settings.value(Constants::Settings::AUTOSAVE_ENABLED, true).toBool();
 
     if (autosave) {
-        mAutosaveFrequency = std::chrono::minutes(settings.value("saving/autosaveFrequency", 5).toInt());
+        mAutosaveFrequency = std::chrono::minutes(settings.value(Constants::Settings::AUTOSAVE_FREQUENCY, 5).toInt());
         mAutosaveTimer.start(*mAutosaveFrequency);
     }
 }
@@ -102,8 +102,11 @@ void HubWindow::createTournamentMenu() {
     }
 
     {
-        // QMenu * submenu = menu->addMenu("Open Recent");
+        mRecentFilesMenu = menu->addMenu(tr("Open Recent.."));
+        refreshRecentFilesMenu();
     }
+
+    menu->addSeparator();
 
     {
         QMenu *submenu = menu->addMenu(tr("Import.."));
@@ -288,25 +291,27 @@ void HubWindow::openReportIssue() {
 void HubWindow::writeTournament() {
     QSettings& settings = mStoreManager.getSettings();
     unsigned int backupAmount = 0;
-    if (settings.value("saving/backup", false).toBool())
-        backupAmount = settings.value("saving/backupAmount", 2).toInt();
+    if (settings.value(Constants::Settings::BACKUP_ENABLED, false).toBool())
+        backupAmount = settings.value(Constants::Settings::BACKUP_AMOUNT, 2).toInt();
 
-    if (!mStoreManager.write(mFileName, backupAmount))
+    if (!mStoreManager.write(mFileName, backupAmount)) {
         QMessageBox::warning(this, tr("Unable to write file"), tr("Unable to save to the selected tournament file."));
-    else
-        statusBar()->showMessage(tr("Saved tournament to file"));
-}
+        return;
+    }
 
-void HubWindow::readTournament() {
-    readTournament(mFileName);
+    addToRecentFiles(mFileName);
+    statusBar()->showMessage(tr("Saved tournament to file"));
 }
 
 void HubWindow::readTournament(const QString &fileName) {
     mFileName = fileName;
-    if (!mStoreManager.read(fileName))
+    if (!mStoreManager.read(fileName)) {
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
-    else
-        statusBar()->showMessage(tr("Opened tournament from file"));
+        return;
+    }
+
+    statusBar()->showMessage(tr("Opened tournament from file"));
+    addToRecentFiles(fileName);
 }
 
 void HubWindow::newTournament() {
@@ -399,14 +404,14 @@ void HubWindow::showJudoAssistantPreferences() {
 
     // Update autosave frequency if changed after closing dialog
     const QSettings& settings = mStoreManager.getSettings();
-    bool autosave = settings.value("saving/autosave", true).toBool();
+    bool autosave = settings.value(Constants::Settings::AUTOSAVE_ENABLED, true).toBool();
 
     std::optional<std::chrono::seconds> autosaveFrequency;
     if (autosave)
-        autosaveFrequency = std::chrono::minutes(settings.value("saving/autosaveFrequency", 5).toInt());
+        autosaveFrequency = std::chrono::minutes(settings.value(Constants::Settings::AUTOSAVE_FREQUENCY, 5).toInt());
 
     if (autosaveFrequency != mAutosaveFrequency) {
-        log_debug().field("freq", settings.value("saving/autosaveFrequency", 5).toInt()).msg("New frequency");
+        log_debug().field("freq", settings.value(Constants::Settings::AUTOSAVE_FREQUENCY, 5).toInt()).msg("New frequency");
         mAutosaveFrequency = autosaveFrequency;
         mAutosaveTimer.start(*mAutosaveFrequency);
     }
@@ -421,12 +426,56 @@ void HubWindow::autosaveTimerHit() {
 
     QSettings& settings = mStoreManager.getSettings();
     unsigned int backupAmount = 0;
-    if (settings.value("saving/backup", false).toBool())
-        backupAmount = settings.value("saving/backupAmount", 2).toInt();
+    if (settings.value(Constants::Settings::BACKUP_ENABLED, false).toBool())
+        backupAmount = settings.value(Constants::Settings::BACKUP_AMOUNT, 2).toInt();
 
     if (!mStoreManager.write(mFileName, backupAmount))
         QMessageBox::warning(this, tr("Unable to autosave"), tr("JudoAssistant was unable to auto-save to the opened tournament file."));
     else
         statusBar()->showMessage(tr("Auto-saved tournament to file"));
+}
+
+void HubWindow::createRecentFileAction(const QString &file) {
+    const QFileInfo fileInfo(file);
+
+    if (!fileInfo.exists())
+        return;
+
+    QAction *action = new QAction(this);
+    action->setText(fileInfo.fileName());
+    action->setStatusTip(tr("Open the tournament \"%1\"").arg(fileInfo.filePath()));
+
+    connect(action, &QAction::triggered, [=]() {
+        this->readTournament(fileInfo.filePath());
+    });
+
+    mRecentFilesMenu->addAction(action);
+}
+
+void HubWindow::refreshRecentFilesMenu() {
+    const QSettings &settings = mStoreManager.getSettings();
+    const auto files = settings.value(Constants::Settings::RECENT_FILES).toStringList();
+
+    mRecentFilesMenu->clear();
+    for (int i = 0; i < files.size(); ++i) {
+        createRecentFileAction(files[i]);
+    }
+
+    mRecentFilesMenu->setDisabled(mRecentFilesMenu->isEmpty());
+}
+
+void HubWindow::addToRecentFiles(const QString &file) {
+    static constexpr int MAX_SIZE = 5;
+
+    QSettings &settings = mStoreManager.getSettings();
+    QStringList files = settings.value(Constants::Settings::RECENT_FILES).toStringList();
+
+    files.removeOne(file); // Remove if already exists
+    while (files.size() >= MAX_SIZE)
+        files.pop_back();
+    files.push_front(file);
+    settings.setValue(Constants::Settings::RECENT_FILES, files);
+
+    refreshRecentFilesMenu();
 }
 

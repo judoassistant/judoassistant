@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QMenu>
 
 #include "core/core.hpp"
 #include "ui/store_managers/master_store_manager.hpp"
@@ -12,7 +13,6 @@ class HubWindow : public QMainWindow {
 public:
     HubWindow();
 
-    void readTournament();
     void readTournament(const QString &fileName);
     void startServer();
 
@@ -40,9 +40,15 @@ private:
     void createPreferencesMenu();
     void createHelpMenu();
 
+    void refreshRecentFilesMenu();
+    void addToRecentFiles(const QString &file);
+    void createRecentFileAction(const QString &file);
+
     void writeTournament();
     MasterStoreManager mStoreManager;
     QString mFileName;
+
+    QMenu *mRecentFilesMenu;
 
     QTimer mAutosaveTimer;
     std::optional<std::chrono::seconds> mAutosaveFrequency;
