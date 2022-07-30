@@ -38,8 +38,28 @@ int getYearsPassed(QDate from, QDate to) {
     return years - 1;
 }
 
+// Parse a number to an age. If the number if above 1900, it is interpreted as
+// the year of birth. Otherwise, it is interpreted as the age
+int numberStringToAge(const QString &str, bool *ok) {
+    int value = stringToInt(str, ok);
+
+    if (!*ok)
+        return value;
+
+    static constexpr int MIN_BIRTH_YEAR = 1900;
+    const bool isYearOfBirth = (value > MIN_BIRTH_YEAR);
+    if (isYearOfBirth) {
+        const auto dateOfBirth = QDate(value, 12, 31);
+        const QDate now = QDate::currentDate();
+        return getYearsPassed(dateOfBirth, now);
+    }
+
+    return value;
+}
+
+
 // Try to parse a string as a date and compute years since
-int dateStringToInt(const QString &str, bool *ok) {
+int dateStringToAge(const QString &str, bool *ok) {
     // Attempt to parse date
     const QDate date = stringToDate(str);
 
@@ -58,10 +78,10 @@ int dateStringToInt(const QString &str, bool *ok) {
 
 QPlayerAge QPlayerAge::fromHumanString(const QString &str) {
     bool ok;
-    int value = stringToInt(str, &ok);
+    int value = numberStringToAge(str, &ok);
 
     if (!ok)
-        value = dateStringToInt(str, &ok);
+        value = dateStringToAge(str, &ok);
 
     if(!ok || value < min() || value > max())
         throw std::invalid_argument(str.toStdString());
