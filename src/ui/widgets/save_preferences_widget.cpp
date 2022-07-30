@@ -2,6 +2,7 @@
 #include "ui/store_managers/master_store_manager.hpp"
 #include "ui/stores/qtournament_store.hpp"
 #include "ui/widgets/save_preferences_widget.hpp"
+#include "ui/constants/settings.hpp"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -18,7 +19,7 @@ SavePreferencesWidget::SavePreferencesWidget(MasterStoreManager &storeManager, Q
     QFormLayout *layout = new QFormLayout;
     const QSettings& settings = storeManager.getSettings();
 
-    bool autosave = settings.value("saving/autosave", true).toBool();
+    bool autosave = settings.value(Constants::Settings::AUTOSAVE_ENABLED, true).toBool();
     {
         auto *autosaveContent = new QCheckBox;
         autosaveContent->setChecked(autosave);
@@ -31,12 +32,12 @@ SavePreferencesWidget::SavePreferencesWidget(MasterStoreManager &storeManager, Q
         mAutosaveFrequencyContent->setMinimum(1);
         mAutosaveFrequencyContent->setMaximum(60);
         mAutosaveFrequencyContent->setSuffix("min");
-        mAutosaveFrequencyContent->setValue(settings.value("saving/autosaveFrequency", 5).toInt());
+        mAutosaveFrequencyContent->setValue(settings.value(Constants::Settings::AUTOSAVE_FREQUENCY, 5).toInt());
         layout->addRow(new QLabel(tr("Autosave Frequency")), mAutosaveFrequencyContent);
         connect(mAutosaveFrequencyContent, QOverload<int>::of(&QSpinBox::valueChanged), this, &SavePreferencesWidget::setAutosaveFrequency);
     }
 
-    bool backup = settings.value("saving/backup", false).toBool();
+    bool backup = settings.value(Constants::Settings::BACKUP_ENABLED, false).toBool();
     {
         auto *backupContent = new QCheckBox;
         backupContent->setChecked(backup);
@@ -48,7 +49,7 @@ SavePreferencesWidget::SavePreferencesWidget(MasterStoreManager &storeManager, Q
         mBackupAmountContent->setEnabled(backup);
         mBackupAmountContent->setMinimum(1);
         mBackupAmountContent->setMaximum(60);
-        mBackupAmountContent->setValue(settings.value("saving/backupAmount", 2).toInt());
+        mBackupAmountContent->setValue(settings.value(Constants::Settings::BACKUP_AMOUNT, 2).toInt());
         layout->addRow(new QLabel(tr("Number of saves to keep")), mBackupAmountContent);
         connect(mBackupAmountContent, QOverload<int>::of(&QSpinBox::valueChanged), this, &SavePreferencesWidget::setBackupAmount);
     }
@@ -59,25 +60,25 @@ SavePreferencesWidget::SavePreferencesWidget(MasterStoreManager &storeManager, Q
 
 void SavePreferencesWidget::setAutosave(bool value) {
     QSettings& settings = mStoreManager.getSettings();
-    settings.setValue("saving/autosave", value);
+    settings.setValue(Constants::Settings::AUTOSAVE_ENABLED, value);
 
     mAutosaveFrequencyContent->setEnabled(value);
 }
 
 void SavePreferencesWidget::setBackup(bool value) {
     QSettings& settings = mStoreManager.getSettings();
-    settings.setValue("saving/backup", value);
+    settings.setValue(Constants::Settings::BACKUP_ENABLED, value);
 
     mBackupAmountContent->setEnabled(value);
 }
 
 void SavePreferencesWidget::setAutosaveFrequency(int value) {
     QSettings& settings = mStoreManager.getSettings();
-    settings.setValue("saving/autosaveFrequency", value);
+    settings.setValue(Constants::Settings::AUTOSAVE_FREQUENCY, value);
 }
 
 void SavePreferencesWidget::setBackupAmount(int value) {
     QSettings& settings = mStoreManager.getSettings();
-    settings.setValue("saving/backupAmount", value);
+    settings.setValue(Constants::Settings::BACKUP_AMOUNT, value);
 }
 

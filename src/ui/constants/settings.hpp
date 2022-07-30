@@ -3,6 +3,12 @@
 #include <QString>
 
 namespace Constants {
-    static const QString RECENT_FILE_SETTINGS_NAME = "recentFilesList";
+    namespace Settings {
+        static const QString RECENT_FILES = "recentFilesList";
+        static const QString AUTOSAVE_ENABLED = "saving/autosave";
+        static const QString AUTOSAVE_FREQUENCY = "saving/autosaveFrequency";
+        static const QString BACKUP_ENABLED = "saving/backup";
+        static const QString BACKUP_AMOUNT = "saving/backupAmount";
+    }
 }
 
