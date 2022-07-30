@@ -17,6 +17,7 @@
 #include "core/version.hpp"
 #include "ui/constants/homepage.hpp"
 #include "ui/constants/network.hpp"
+#include "ui/constants/settings.hpp"
 #include "ui/import_helpers/csv_reader.hpp"
 #include "ui/misc/dark_palette.hpp"
 #include "ui/widgets/categories_widget.hpp"
@@ -103,7 +104,7 @@ void HubWindow::createTournamentMenu() {
     {
         mRecentFilesMenu = menu->addMenu(tr("Open Recent.."));
 
-        populateRecentFilesMenu();
+        refreshRecentFilesMenu();
     }
 
     menu->addSeparator();
@@ -294,10 +295,13 @@ void HubWindow::writeTournament() {
     if (settings.value("saving/backup", false).toBool())
         backupAmount = settings.value("saving/backupAmount", 2).toInt();
 
-    if (!mStoreManager.write(mFileName, backupAmount))
+    if (!mStoreManager.write(mFileName, backupAmount)) {
         QMessageBox::warning(this, tr("Unable to write file"), tr("Unable to save to the selected tournament file."));
-    else
-        statusBar()->showMessage(tr("Saved tournament to file"));
+        return;
+    }
+
+    addToRecentFiles(mFileName);
+    statusBar()->showMessage(tr("Saved tournament to file"));
 }
 
 void HubWindow::readTournament(const QString &fileName) {
@@ -308,8 +312,6 @@ void HubWindow::readTournament(const QString &fileName) {
     else {
         statusBar()->showMessage(tr("Opened tournament from file"));
         addToRecentFiles(fileName);
-        clearRecentFilesMenu();
-        populateRecentFilesMenu();
     }
 }
 
@@ -434,32 +436,48 @@ void HubWindow::autosaveTimerHit() {
         statusBar()->showMessage(tr("Auto-saved tournament to file"));
 }
 
-void HubWindow::clearRecentFilesMenu() {
 
+void HubWindow::createActionForFile(const QString &file) {
+    const QFileInfo fileInfo(file);
+
+    if (!fileInfo.exists())
+        return;
+
+    QAction *action = new QAction(this);
+    action->setText(fileInfo.fileName());
+    action->setStatusTip(tr("Open the tournament \"%1\"").arg(fileInfo.filePath()));
+
+    connect(action, &QAction::triggered, [=]() {
+        this->readTournament(fileInfo.filePath());
+    });
+
+    mRecentFilesMenu->addAction(action);
 }
 
-void HubWindow::populateRecentFilesMenu() {
-    QAction *action = new QAction(tr("Foo.."), this);
-    action->setStatusTip(tr("Bar, file name"));
-    // connect(action, &QAction::triggered, this, &HubWindow::openImportPlayers);
-    mRecentFilesMenu->addAction(action);
-
+void HubWindow::refreshRecentFilesMenu() {
     const QSettings &settings = mStoreManager.getSettings();
-    const QStringList files = settings.value("recentFilesList").toStringList();
+    const auto files = settings.value(Constants::RECENT_FILE_SETTINGS_NAME).toStringList();
+
+    mRecentFilesMenu->clear();
     for (int i = 0; i < files.size(); ++i) {
-        log_debug().field("file", files[i].toStdString()).msg("Got file");
+        createActionForFile(files[i]);
     }
+
+    mRecentFilesMenu->setDisabled(mRecentFilesMenu->isEmpty());
 }
 
 void HubWindow::addToRecentFiles(const QString &file) {
-    log_debug().field("file", file.toStdString()).msg("Adding to recent files");
+    static constexpr int MAX_SIZE = 5;
+
     QSettings &settings = mStoreManager.getSettings();
-    QStringList files = settings.value("recentFilesList").toStringList();
+    QStringList files = settings.value(Constants::RECENT_FILE_SETTINGS_NAME).toStringList();
 
     files.removeOne(file); // Remove if already exists
-    while (files.size() > 5)
+    while (files.size() >= MAX_SIZE)
         files.pop_back();
     files.push_front(file);
-    settings.setValue("recentFilesList", files);
+    settings.setValue(Constants::RECENT_FILE_SETTINGS_NAME, files);
+
+    refreshRecentFilesMenu();
 }
 

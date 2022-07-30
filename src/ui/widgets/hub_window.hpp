@@ -40,9 +40,9 @@ private:
     void createPreferencesMenu();
     void createHelpMenu();
 
-    void clearRecentFilesMenu();
-    void populateRecentFilesMenu();
+    void refreshRecentFilesMenu();
     void addToRecentFiles(const QString &file);
+    void createActionForFile(const QString &file);
 
     void writeTournament();
     MasterStoreManager mStoreManager;
