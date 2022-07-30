@@ -57,7 +57,6 @@ int numberStringToAge(const QString &str, bool *ok) {
     return value;
 }
 
-
 // Try to parse a string as a date and compute years since
 int dateStringToAge(const QString &str, bool *ok) {
     // Attempt to parse date
