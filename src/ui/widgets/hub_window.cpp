@@ -103,7 +103,6 @@ void HubWindow::createTournamentMenu() {
 
     {
         mRecentFilesMenu = menu->addMenu(tr("Open Recent.."));
-
         refreshRecentFilesMenu();
     }
 
@@ -308,11 +307,11 @@ void HubWindow::readTournament(const QString &fileName) {
     mFileName = fileName;
     if (!mStoreManager.read(fileName)) {
         QMessageBox::warning(this, tr("Unable to open file"), tr("The selected file could not be opened."));
+        return;
     }
-    else {
-        statusBar()->showMessage(tr("Opened tournament from file"));
-        addToRecentFiles(fileName);
-    }
+
+    statusBar()->showMessage(tr("Opened tournament from file"));
+    addToRecentFiles(fileName);
 }
 
 void HubWindow::newTournament() {
@@ -436,8 +435,7 @@ void HubWindow::autosaveTimerHit() {
         statusBar()->showMessage(tr("Auto-saved tournament to file"));
 }
 
-
-void HubWindow::createActionForFile(const QString &file) {
+void HubWindow::createRecentFileAction(const QString &file) {
     const QFileInfo fileInfo(file);
 
     if (!fileInfo.exists())
@@ -460,7 +458,7 @@ void HubWindow::refreshRecentFilesMenu() {
 
     mRecentFilesMenu->clear();
     for (int i = 0; i < files.size(); ++i) {
-        createActionForFile(files[i]);
+        createRecentFileAction(files[i]);
     }
 
     mRecentFilesMenu->setDisabled(mRecentFilesMenu->isEmpty());

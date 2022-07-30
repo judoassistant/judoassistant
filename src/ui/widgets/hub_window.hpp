@@ -42,7 +42,7 @@ private:
 
     void refreshRecentFilesMenu();
     void addToRecentFiles(const QString &file);
-    void createActionForFile(const QString &file);
+    void createRecentFileAction(const QString &file);
 
     void writeTournament();
     MasterStoreManager mStoreManager;
