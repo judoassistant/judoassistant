@@ -1,11 +1,11 @@
 #include <queue>
 
 #include "core/draw_systems/draw_system.hpp"
-#include "core/misc/merge_queue_element.hpp"
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
 #include "core/stores/tatami/concurrent_block_group.hpp"
+#include "core/stores/tatami/const_match_iterator.hpp"
 #include "core/stores/tournament_store.hpp"
 
 ConcurrentBlockGroup::ConcurrentBlockGroup()

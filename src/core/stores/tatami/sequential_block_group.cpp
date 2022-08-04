@@ -6,6 +6,7 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/match_store.hpp"
 #include "core/stores/tournament_store.hpp"
+#include "core/stores/tatami/const_match_iterator.hpp"
 
 SequentialBlockGroup::SequentialBlockGroup()
     : mExpectedDuration(std::chrono::milliseconds(0))

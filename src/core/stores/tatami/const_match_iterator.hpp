@@ -24,6 +24,7 @@ private:
     MatchType mCurrentType;
     size_t mCurrentBlock;
     size_t mCurrentMatch;
+
     friend class SequentialBlockGroup;
 };
 

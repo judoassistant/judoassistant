@@ -5,11 +5,11 @@
 #include "core/core.hpp"
 #include "core/id.hpp"
 #include "core/serialize.hpp"
-#include "core/stores/tatami/const_match_iterator.hpp"
 
 enum class MatchType;
 class TournamentStore;
 struct BlockLocation;
+class ConstMatchIterator;
 
 class SequentialBlockGroup {
 public:

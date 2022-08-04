@@ -15,7 +15,7 @@ ConstMatchIterator & ConstMatchIterator::operator++() {
 
 CombinedId ConstMatchIterator::operator*() {
     assert(mCurrentCategory != nullptr);
-    auto matchId = mCurrentCategory->getMatches()[mCurrentMatch]->getId();
+    const auto matchId = mCurrentCategory->getMatches()[mCurrentMatch]->getId();
     return CombinedId(mCurrentCategory->getId(), matchId);
 }
 
@@ -43,15 +43,15 @@ void ConstMatchIterator::loadMatch() {
             break;
 
         if (mCurrentCategory == nullptr) {
-            auto block = mGroup.at(mCurrentBlock);
+            const auto block = mGroup.at(mCurrentBlock);
             mCurrentCategory = &mTournament.getCategory(block.first);
             mCurrentType = block.second;
         }
 
-        if (mCurrentMatch == mCurrentCategory->getMatches().size()) {
+        if (mCurrentMatch == mCurrentCategory->getMatches().size() || mCurrentCategory->areMatchesHidden()) {
+            ++mCurrentBlock;
             mCurrentCategory = nullptr;
             mCurrentMatch = 0;
-            ++mCurrentBlock;
             continue;
         }
 
