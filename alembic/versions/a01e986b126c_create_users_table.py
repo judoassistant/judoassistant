@@ -22,7 +22,7 @@ def upgrade():
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('email', sa.String, nullable=False, unique=True),
         sa.Column('password_hash', sa.String(60), nullable=False),
-        sa.Column('token', sa.Binary(32)),
+        sa.Column('token', sa.LargeBinary(32)),
         sa.Column('token_expiration', sa.DateTime),
     )
 
