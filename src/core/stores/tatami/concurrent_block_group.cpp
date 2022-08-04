@@ -78,7 +78,7 @@ SequentialBlockGroup & ConcurrentBlockGroup::at(size_t index) {
     return mGroups.at(index);
 }
 
-std::vector<CombinedId> mergeMatchIterators(std::vector<SequentialBlockGroup::ConstMatchIterator> &matchIterators, std::vector<SequentialBlockGroup::ConstMatchIterator> &matchEndIterators) {
+std::vector<CombinedId> mergeMatchIterators(std::vector<ConstMatchIterator> &matchIterators, std::vector<ConstMatchIterator> &matchEndIterators) {
     std::queue<size_t> mergeQueue;
     for (size_t i = 0; i != matchIterators.size(); ++i) {
         mergeQueue.push(i);
@@ -110,8 +110,8 @@ void ConcurrentBlockGroup::recompute(const TournamentStore &tournament) {
     mFinishedMatches.clear();
     mExpectedDuration = std::chrono::seconds(0);
 
-    std::vector<SequentialBlockGroup::ConstMatchIterator> matchBeginIterators;
-    std::vector<SequentialBlockGroup::ConstMatchIterator> matchEndIterators;
+    std::vector<ConstMatchIterator> matchBeginIterators;
+    std::vector<ConstMatchIterator> matchEndIterators;
 
     for (size_t i = 0; i < groupCount(); ++i) {
         const SequentialBlockGroup & group = at(i);

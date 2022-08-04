@@ -42,11 +42,11 @@ size_t SequentialBlockGroup::getIndex(std::pair<CategoryId, MatchType> block) co
     return std::distance(mBlocks.begin(), it);
 }
 
-SequentialBlockGroup::ConstMatchIterator SequentialBlockGroup::matchesBegin(const TournamentStore &tournament) const {
+ConstMatchIterator SequentialBlockGroup::matchesBegin(const TournamentStore &tournament) const {
     return ConstMatchIterator(tournament, *this, 0, 0);
 }
 
-SequentialBlockGroup::ConstMatchIterator SequentialBlockGroup::matchesEnd(const TournamentStore &tournament) const {
+ConstMatchIterator SequentialBlockGroup::matchesEnd(const TournamentStore &tournament) const {
     return ConstMatchIterator(tournament, *this, mBlocks.size(), 0);
 }
 
@@ -59,70 +59,6 @@ void SequentialBlockGroup::recompute(const TournamentStore &tournament) {
 
         mExpectedDuration += category.expectedDuration(block.second);
     }
-}
-
-SequentialBlockGroup::ConstMatchIterator::ConstMatchIterator(const TournamentStore &tournament, const SequentialBlockGroup &group, size_t currentBlock, size_t currentMatch)
-    : mTournament(tournament)
-    , mGroup(group)
-    , mCurrentCategory(nullptr)
-    , mCurrentBlock(currentBlock)
-    , mCurrentMatch(currentMatch)
-{
-    loadMatch();
-}
-
-void SequentialBlockGroup::ConstMatchIterator::loadMatch() {
-    while (true) {
-        if (mCurrentBlock == mGroup.blockCount())
-            break;
-
-        if (mCurrentCategory == nullptr) {
-            auto block = mGroup.at(mCurrentBlock);
-            mCurrentCategory = &mTournament.getCategory(block.first);
-            mCurrentType = block.second;
-        }
-
-        if (mCurrentMatch == mCurrentCategory->getMatches().size()) {
-            mCurrentCategory = nullptr;
-            mCurrentMatch = 0;
-            ++mCurrentBlock;
-            continue;
-        }
-
-        const auto &match = *(mCurrentCategory->getMatches()[mCurrentMatch]);
-        if (match.isPermanentBye()) {
-            ++mCurrentMatch;
-            continue;
-        }
-
-        if (mCurrentType != match.getType()) {
-            ++mCurrentMatch;
-            continue;
-        }
-
-        break;
-    }
-}
-
-SequentialBlockGroup::ConstMatchIterator & SequentialBlockGroup::ConstMatchIterator::operator++() {
-    ++mCurrentMatch;
-    loadMatch();
-
-    return *this;
-}
-
-CombinedId SequentialBlockGroup::ConstMatchIterator::operator*() {
-    assert(mCurrentCategory != nullptr);
-    auto matchId = mCurrentCategory->getMatches()[mCurrentMatch]->getId();
-    return CombinedId(mCurrentCategory->getId(), matchId);
-}
-
-bool SequentialBlockGroup::ConstMatchIterator::operator!=(const SequentialBlockGroup::ConstMatchIterator &other) const {
-    return !(*this == other);
-}
-
-bool SequentialBlockGroup::ConstMatchIterator::operator==(const SequentialBlockGroup::ConstMatchIterator &other) const {
-    return mCurrentBlock == other.mCurrentBlock && mCurrentMatch == other.mCurrentMatch;
 }
 
 std::chrono::milliseconds SequentialBlockGroup::getExpectedDuration() const {
