@@ -362,7 +362,6 @@ void MatchesGraphicsManager::changeMatches(CategoryId categoryId, const std::vec
 }
 
 void MatchesGraphicsManager::changeTatamis(const std::vector<BlockLocation> &locations, const std::vector<std::pair<CategoryId, MatchType>> &blocks) {
-    log_debug().field("blocks", blocks).msg("Changing locations");
     const auto &tournament = mStoreManager.getTournament();
     const auto &tatamis = tournament.getTatamis();
     if (!tatamis.containsTatami(mLocation))
