@@ -161,15 +161,16 @@ void PoolDrawSystem::orderByWinsWithinGroup(const CategoryStore &category, Resul
     }
 
     // Rank by mutual won matches
-    sort(results.begin(), results.end(), [&](const auto &a, const auto &b) {
+    sort(results.begin() + begin, results.begin() + end, [&](const auto &a, const auto &b) {
         return wonMatchesByPlayerId[a.first] > wonMatchesByPlayerId[b.first];
     });
 
-    const size_t n = results.size();
-    results[0].second = begin+1;
-    for (size_t i = 1; i != n; ++i) {
+    results[begin].second = begin+1;
+    for (size_t i = begin+1; i != end; ++i) {
         const bool tiedWithPrevious = wonMatchesByPlayerId[results[i].first] == wonMatchesByPlayerId[results[i-1].first];
-        results[i].second = results[i-1].second.value() + (tiedWithPrevious ? 0 : 1);
+        results[i].second = tiedWithPrevious
+            ? results[i-1].second.value()
+            : i+1;
     }
 }
 
@@ -199,15 +200,13 @@ void PoolDrawSystem::orderByRemainingCriteria(const TournamentStore &tournament,
     std::unordered_map<PlayerId, unsigned int> ippons;
     std::unordered_map<PlayerId, unsigned int> wazaris;
     for (auto matchId : mMatches) {
-        const auto &match = category.getMatch(matchId);
-
+        const MatchStore &match = category.getMatch(matchId);
         const MatchStore::PlayerIndex winner = ruleset.getWinner(match).value();
         const PlayerId winningPlayerId = match.getPlayer(winner).value();
 
         winDuration[winningPlayerId] += match.getDuration();
 
         const auto &winnerScore = match.getScore(winner);
-
         if (winnerScore.ippon)
             ippons[winningPlayerId] += 1;
         else
@@ -254,8 +253,9 @@ DrawSystem::ResultList PoolDrawSystem::getResults(const TournamentStore &tournam
         return {};
 
     ResultList results;
-    for (auto playerId : mPlayers) {
-        results.emplace_back(playerId, 0);
+    for (size_t i = 0; i < mPlayers.size(); ++i) {
+        const auto playerId = mPlayers[i];
+        results.emplace_back(playerId, i+1);
     }
 
     // First order by number of won matches
