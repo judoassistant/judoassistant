@@ -242,8 +242,6 @@ void PoolDrawSystem::orderByRemainingCriteria(const TournamentStore &tournament,
     }
 }
 
-
-
 DrawSystem::ResultList PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     if (mPlayers.size() <= 1)
         return {};
@@ -280,7 +278,7 @@ DrawSystem::ResultList PoolDrawSystem::getResults(const TournamentStore &tournam
     {
         size_t i = 0;
         for (size_t j = 1; j <= results.size(); ++j) {
-            if (results[j].second == results[j-1].second)
+            if (j != results.size() && results[j].second == results[j-1].second)
                 continue;
 
             // There is a tie for indices [i:j)
