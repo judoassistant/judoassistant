@@ -22,7 +22,7 @@ void ChangePlayersWeightAction::redoImpl(TournamentStore & tournament) {
         player.setWeight(mValue);
     }
 
-    mChangedCategories = getAffectedCategories(tournament);
+    mChangedCategories = getCategoriesThatChange(tournament);
     for (const CategoryId categoryId : mChangedCategories) {
         const auto &category = tournament.getCategory(categoryId);
         const auto &drawSystem = category.getDrawSystem();
@@ -62,7 +62,7 @@ void ChangePlayersWeightAction::undoImpl(TournamentStore & tournament) {
     mOldValues.clear();
 }
 
-std::vector<CategoryId> ChangePlayersWeightAction::getAffectedCategories(TournamentStore &tournament) {
+std::vector<CategoryId> ChangePlayersWeightAction::getCategoriesThatChange(TournamentStore &tournament) {
     std::set<CategoryId> affectedCategories;
     for (const PlayerId playerId : mChangedPlayers) {
         const auto player = tournament.getPlayer(playerId);

@@ -21,7 +21,7 @@ public:
     }
 
 private:
-    std::vector<CategoryId> getAffectedCategories(TournamentStore & tournament);
+    std::vector<CategoryId> getCategoriesThatChange(TournamentStore & tournament);
 
     std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerWeight> mValue;
