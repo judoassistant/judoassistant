@@ -21,12 +21,16 @@ public:
     }
 
 private:
+    std::vector<CategoryId> getAffectedCategories(TournamentStore & tournament);
+
     std::vector<PlayerId> mPlayerIds;
     std::optional<PlayerWeight> mValue;
 
     // undo members
     std::vector<PlayerId> mChangedPlayers;
     std::vector<std::optional<PlayerWeight>> mOldValues;
+    std::stack<std::unique_ptr<Action>> mDrawActions;
+    std::vector<CategoryId> mChangedCategories;
 };
 
 CEREAL_REGISTER_TYPE(ChangePlayersWeightAction)
