@@ -14,6 +14,8 @@ class TournamentStore;
 
 class DrawSystem {
 public:
+    typedef std::vector<std::pair<PlayerId, std::optional<unsigned int>>> ResultList;
+
     virtual ~DrawSystem() {};
 
     virtual std::unique_ptr<DrawSystem> clone() const = 0;
@@ -23,7 +25,7 @@ public:
 
     virtual std::vector<std::unique_ptr<AddMatchAction>> initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) = 0;
     virtual std::vector<std::unique_ptr<Action>> updateCategory(const TournamentStore &tournament, const CategoryStore &category) const = 0;
-    virtual std::vector<std::pair<PlayerId, std::optional<unsigned int>>> getResults(const TournamentStore &tournament, const CategoryStore &category) const = 0;
+    virtual ResultList getResults(const TournamentStore &tournament, const CategoryStore &category) const = 0;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {}

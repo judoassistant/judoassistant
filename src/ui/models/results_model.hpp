@@ -7,6 +7,7 @@
 #include <QAbstractTableModel>
 
 #include "core/id.hpp"
+#include "core/draw_systems/draw_system.hpp"
 
 enum class MatchStatus;
 class StoreManager;
@@ -50,6 +51,6 @@ private:
 
     bool mResetting;
     std::unordered_map<PlayerId, size_t> mPlayers;
-    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> mResults;
+    DrawSystem::ResultList mResults;
 };
 

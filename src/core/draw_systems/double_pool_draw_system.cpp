@@ -177,7 +177,7 @@ std::vector<std::unique_ptr<Action>> DoublePoolDrawSystem::updateCategory(const 
     return actions;
 }
 
-std::vector<std::pair<PlayerId, std::optional<unsigned int>>> DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
+DrawSystem::ResultList DoublePoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
     std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
 
     if (mPlayers.size() < 4)
