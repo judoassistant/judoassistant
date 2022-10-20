@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "core/actions/add_match_action.hpp"
 #include "core/draw_systems/pool_draw_system.hpp"
 #include "core/rulesets/ruleset.hpp"
@@ -131,79 +133,164 @@ std::vector<std::unique_ptr<Action>> PoolDrawSystem::updateCategory(const Tourna
     return {};
 }
 
-struct PoolPlayerRank {
-    PlayerId playerId;
-    size_t wonMatches;
-    std::chrono::milliseconds durationSum;
-    size_t ippons;
-    size_t wazaris;
-
-    bool operator<(const PoolPlayerRank &other) const {
-        if (wonMatches != other.wonMatches)
-            return wonMatches > other.wonMatches;
-        if (ippons != other.ippons)
-            return ippons > other.ippons;
-        if (wazaris != other.wazaris)
-            return wazaris > other.wazaris;
-        if (durationSum != other.durationSum)
-            return durationSum < other.durationSum;
-        return playerId < other.playerId; // to ensure total ordering
-    }
-};
-
-std::vector<std::pair<PlayerId, std::optional<unsigned int>>> PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
-    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> results;
-
-    if (mPlayers.size() <= 1)
-        return results;
-
-    const auto &status = category.getStatus(MatchType::ELIMINATION);
-    if (!status.isFinished()) // elimination finished
-        return results;
+// Rank a list of player by the number of won matches. Only mutual matches (fought between players both in the list) are counted.
+void PoolDrawSystem::orderByWinsWithinGroup(const CategoryStore &category, ResultList &results, const size_t begin, const size_t end) const {
+    if (end - begin < 2)
+        return; // Nothing to do
 
     const Ruleset &ruleset = category.getRuleset();
 
-    std::unordered_map<PlayerId, PoolPlayerRank> ranks;
-    for (auto playerId : mPlayers) {
-        PoolPlayerRank rank;
-        rank.playerId = playerId;
-        rank.wonMatches = 0;
-        rank.durationSum = std::chrono::milliseconds(0);
-        rank.ippons = 0;
-        rank.wazaris = 0;
-        ranks[playerId] = std::move(rank);
+    std::unordered_set<PlayerId> playerIds;
+    for (size_t i = begin; i != end; ++i) {
+        playerIds.insert(results[i].first);
     }
 
+    // Find number of mutual won matches
+    std::unordered_map<PlayerId,unsigned int> wonMatchesByPlayerId;
     for (auto matchId : mMatches) {
         const auto &match = category.getMatch(matchId);
 
-        auto &whiteRank = ranks.at(match.getWhitePlayer().value());
-        auto &blueRank = ranks.at(match.getBluePlayer().value());
+        const bool isMutualMatch = playerIds.find(match.getWhitePlayer().value()) != playerIds.end()
+            && playerIds.find(match.getBluePlayer().value()) != playerIds.end();
+        if (!isMutualMatch)
+            continue;
 
-        auto winner = ruleset.getWinner(match);
-        if (winner == MatchStore::PlayerIndex::WHITE)
-            whiteRank.wonMatches += 1;
-        else if (winner == MatchStore::PlayerIndex::BLUE)
-            blueRank.wonMatches += 1;
-
-        whiteRank.durationSum += match.getDuration();
-        blueRank.durationSum += match.getDuration();
-        const MatchStore::Score & whiteScore = match.getWhiteScore();
-        whiteRank.ippons += whiteScore.ippon;
-        whiteRank.wazaris += whiteScore.wazari;
-
-        const MatchStore::Score & blueScore = match.getBlueScore();
-        blueRank.ippons += blueScore.ippon;
-        blueRank.wazaris += blueScore.wazari;
+        const MatchStore::PlayerIndex winnerIndex = ruleset.getWinner(match).value();
+        const PlayerId winningPlayer = match.getPlayer(winnerIndex).value();
+        wonMatchesByPlayerId[winningPlayer]++;
     }
 
-    std::vector<PoolPlayerRank> sortedRanks;
-    for (const auto &pair : ranks)
-        sortedRanks.push_back(pair.second);
-    std::sort(sortedRanks.begin(), sortedRanks.end());
+    // Rank by mutual won matches
+    sort(results.begin(), results.end(), [&](const auto &a, const auto &b) {
+        return wonMatchesByPlayerId[a.first] > wonMatchesByPlayerId[b.first];
+    });
 
-    for (unsigned int i = 0; i < sortedRanks.size(); ++i)
-        results.emplace_back(sortedRanks[i].playerId, i+1);
+    const size_t n = results.size();
+    results[0].second = begin+1;
+    for (size_t i = 1; i != n; ++i) {
+        const bool tiedWithPrevious = wonMatchesByPlayerId[results[i].first] == wonMatchesByPlayerId[results[i-1].first];
+        results[i].second = results[i-1].second.value() + (tiedWithPrevious ? 0 : 1);
+    }
+}
+
+void PoolDrawSystem::orderByRemainingCriteria(const TournamentStore &tournament, const CategoryStore &category, ResultList &results, size_t begin, size_t end) const {
+    if (end - begin < 2)
+        return; // Nothing to do
+
+    std::unordered_set<PlayerId> playerIds;
+    for (size_t i = begin; i != end; ++i) {
+        playerIds.insert(results[i].first);
+    }
+
+    bool allPlayersHaveWeight = true;
+    std::unordered_map<PlayerId, float> playerWeights;
+    for (const auto playerId : playerIds) {
+        const auto weight = tournament.getPlayer(playerId).getWeight();
+        if (!weight.has_value()) {
+            allPlayersHaveWeight = false;
+            break;
+        }
+
+        playerWeights[playerId] = weight.value().toFloat();
+    }
+
+    const Ruleset &ruleset = category.getRuleset();
+    std::unordered_map<PlayerId, std::chrono::milliseconds> winDuration;
+    std::unordered_map<PlayerId, unsigned int> ippons;
+    std::unordered_map<PlayerId, unsigned int> wazaris;
+    for (auto matchId : mMatches) {
+        const auto &match = category.getMatch(matchId);
+
+        const MatchStore::PlayerIndex winner = ruleset.getWinner(match).value();
+        const PlayerId winningPlayerId = match.getPlayer(winner).value();
+
+        winDuration[winningPlayerId] += match.getDuration();
+
+        const auto &winnerScore = match.getScore(winner);
+
+        if (winnerScore.ippon)
+            ippons[winningPlayerId] += 1;
+        else
+            wazaris[winningPlayerId] += 1;
+    }
+
+    const auto comp = [&](const auto &a, const auto &b) {
+        const PlayerId first = a.first;
+        const PlayerId second = b.first;
+        if (ippons[first] != ippons[second])
+            return ippons[first] > ippons[second];
+        if (wazaris[first] != wazaris[second])
+            return wazaris[first] > wazaris[second];
+        if (winDuration[first] != winDuration[second])
+            return winDuration[first] < winDuration[second];
+
+        if (allPlayersHaveWeight) {
+            // Only compare by weight if all players have weight registered
+            const auto playerWeightsEqual = std::fabs(playerWeights[first] - playerWeights[second]) < 0.005;
+            if (!playerWeightsEqual) {
+                return playerWeights[first] < playerWeights[second];
+            }
+        }
+
+        return first < second;
+    };
+
+    std::sort(results.begin() + begin, results.begin() + end, comp);
+
+    size_t rank = begin+1;
+    for (auto it = results.begin() + begin; it != results.begin() + end; ++it, ++rank) {
+        it->second = rank;
+    }
+}
+
+
+
+DrawSystem::ResultList PoolDrawSystem::getResults(const TournamentStore &tournament, const CategoryStore &category) const {
+    if (mPlayers.size() <= 1)
+        return {};
+
+    const auto &status = category.getStatus(MatchType::ELIMINATION);
+    if (!status.isFinished())
+        return {};
+
+    ResultList results;
+    for (auto playerId : mPlayers) {
+        results.emplace_back(playerId, 0);
+    }
+
+    // First order by number of won matches
+    orderByWinsWithinGroup(category, results, 0, results.size());
+
+    // Find ties and order by number of mutual won matches within each tied group
+    {
+        size_t i = 0;
+        for (size_t j = 1; j <= results.size(); ++j) {
+            if (j != results.size() && results[j].second == results[j-1].second)
+                continue;
+
+            // There is a tie for indices [i:j)
+            orderByWinsWithinGroup(category, results, i, j);
+
+            // Start new group
+            i = j;
+        }
+    }
+
+    // Find ties and order by remaining criteria
+    {
+        size_t i = 0;
+        for (size_t j = 1; j <= results.size(); ++j) {
+            if (results[j].second == results[j-1].second)
+                continue;
+
+            // There is a tie for indices [i:j)
+            orderByRemainingCriteria(tournament, category, results, i, j);
+
+            // Start new group
+            i = j;
+        }
+    }
+
     return results;
 }
 

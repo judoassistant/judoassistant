@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/draw_systems/draw_system.hpp"
+#include "core/rulesets/ruleset.hpp"
 #include "core/serialize.hpp"
 
 class PoolDrawSystem : public DrawSystem {
@@ -16,7 +17,8 @@ public:
 
     std::vector<std::unique_ptr<AddMatchAction>> initCategory(const TournamentStore &tournament, const CategoryStore &category, const std::vector<PlayerId> &playerIds, unsigned int seed) override;
     std::vector<std::unique_ptr<Action>> updateCategory(const TournamentStore &tournament, const CategoryStore &category) const override;
-    std::vector<std::pair<PlayerId, std::optional<unsigned int>>> getResults(const TournamentStore &tournament, const CategoryStore &category) const override;
+
+    ResultList getResults(const TournamentStore &tournament, const CategoryStore &category) const override;
 
     template<typename Archive>
     void serialize(Archive& ar, uint32_t const version) {
@@ -29,6 +31,9 @@ protected:
     std::vector<std::pair<PlayerId, PlayerId>> createMatchOrderForOddNumber(const std::vector<PlayerId> &playerIds);
 
 private:
+    void orderByWinsWithinGroup(const CategoryStore &category, ResultList &results, size_t begin, size_t end) const;
+    void orderByRemainingCriteria(const TournamentStore &tournament, const CategoryStore &category, ResultList &results, size_t begin, size_t end) const;
+
     std::vector<MatchId> mMatches;
     std::vector<PlayerId> mPlayers;
     bool mComposited;
