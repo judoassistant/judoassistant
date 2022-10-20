@@ -109,7 +109,7 @@ std::string SetCategoriesMatchesHiddenAction::getDescription() const {
 }
 
 bool SetCategoriesMatchesHiddenAction::doesRequireConfirmation(const TournamentStore &tournament) const {
-    if (mHidden)
+    if (!mHidden)
         return false;
 
     for (auto categoryId : mCategoryIds) {
