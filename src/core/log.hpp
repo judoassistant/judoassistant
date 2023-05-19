@@ -6,8 +6,12 @@
 #include <set>
 #include <iostream>
 #include <optional>
-// #include <QString>
 
+#include "logger.hpp"
+
+// Log defines an interface used for structured logging.
+//
+// Deprecated: Use Logger interface instead.
 class Log {
 public:
     Log(const std::string &prefix);
@@ -27,6 +31,13 @@ private:
     std::vector<std::pair<std::string,std::string>> mFields;
 };
 
+Log & log_info();
+Log & log_debug();
+Log & log_warning();
+Log & log_error();
+Log & log_fatal();
+
+// Various helpers for logging objects
 template<typename T>
 std::ostream &log_container(std::ostream &o, const T &container, const std::string &openBracket, const std::string &closeBracket, const std::string &seperator) {
     o << openBracket;
@@ -41,7 +52,6 @@ std::ostream &log_container(std::ostream &o, const T &container, const std::stri
     return o << closeBracket;
 
 }
-
 template<typename T>
 std::ostream &operator<<(std::ostream & o, const std::vector<T> & vec) {
     return log_container(o, vec, "[", "]", "; ");
@@ -68,12 +78,3 @@ template <typename A, typename B>
 std::ostream & operator<<(std::ostream & o, std::pair<A,B> pair) {
     return o << "(" << pair.first << "; " << pair.second << ")";
 }
-
-// std::ostream & operator<<(std::ostream & o, const QString &str);
-
-Log & log_info();
-Log & log_debug(); // TODO: make this a null sink in production builds and have support for file output
-Log & log_warning();
-Log & log_error();
-Log & log_fatal();
-

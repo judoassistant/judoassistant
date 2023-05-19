@@ -1,4 +1,7 @@
 #include "core/log.hpp"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 Log::Log(const std::string &prefix)
     : mPrefix(prefix)
@@ -48,8 +51,3 @@ Log & log_warning() {
     static Log instance("WARNING");
     return instance;
 }
-
-// std::ostream & operator<<(std::ostream & o, const QString &str) {
-//     return o << str.toStdString();
-// }
-

@@ -1,5 +1,6 @@
 core_sources += ['src/core/id.cpp']
 core_sources += ['src/core/log.cpp']
+core_sources += ['src/core/logger.cpp']
 core_sources += ['src/core/random.cpp']
 core_sources += ['src/core/version.cpp']
 core_sources += ['src/core/position_manager.cpp']
