@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "web/config.hpp"
+#include "web/config/config.hpp"
 #include "web/database.hpp"
 #include "web/loaded_tournament.hpp"
 #include "web/web_participant.hpp"

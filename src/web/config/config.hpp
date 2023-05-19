@@ -11,3 +11,4 @@ struct Config {
     boost::filesystem::path dataDirectory;
 };
 
+std::pair<Config, int> loadConfig(int argc, char *argv[]);
