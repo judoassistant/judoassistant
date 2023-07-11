@@ -37,12 +37,13 @@ ninja install -C build
 Dev Setup
 ---------
 The following commands are suggested for setting up a development environment
-on a unix system.
+on a unix system. In this case, we're using the directory `build-debug`,
+however, any other name can be used.
 ```bash
 cd <sourcecode_directory>
-meson build --prefix="$(pwd)/build" -Dweb=true
-ninja -C build
-ninja install -C build
+meson build-debug --prefix="$(pwd)/build-debug" -Dweb=true
+ninja -C build-debug
+ninja install -C build-debug
 ```
 After compilation and running the install command, the executables can be run
 from the `build` directory.
