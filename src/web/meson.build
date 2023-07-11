@@ -1,5 +1,6 @@
 subdir('applications')
 subdir('config')
+subdir('gateways')
 
 web_sources += ['src/web/database.cpp']
 web_sources += ['src/web/json_encoder.cpp']

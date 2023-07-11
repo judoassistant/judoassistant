@@ -10,7 +10,7 @@
 
 std::unique_ptr<WebServer> server;
 
-void handleInterrupt(int signal){ // TODO: Handle platform agnostically
+void handleInterrupt(int signal){
     server->quit();
 }
 
