@@ -5,13 +5,15 @@
 #include <functional>
 
 #include "web/config/config.hpp"
+#include "web/handlers/web_handler_session.hpp"
 #include "core/log.hpp"
+
 
 class WebHandler {
 public:
     WebHandler(boost::asio::io_context &context, Logger &logger, const Config &config);
     void async_listen();
-    void close();
+    void async_close();
 
 private:
     boost::asio::io_context &mContext;
@@ -20,4 +22,5 @@ private:
 
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
+    std::vector<std::unique_ptr<WebHandlerSession>> mSessions;
 };

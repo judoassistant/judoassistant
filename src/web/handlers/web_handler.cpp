@@ -1,6 +1,10 @@
+#include <boost/asio/bind_executor.hpp>
 #include <boost/beast.hpp>
-#include "web/handlers/web_handler.hpp"
+#include <memory>
+
 #include "core/logger.hpp"
+#include "web/handlers/web_handler.hpp"
+#include "web/handlers/web_handler_session.hpp"
 
 WebHandler::WebHandler(boost::asio::io_context &context, Logger &logger, const Config &config)
     : mContext(context)
@@ -18,19 +22,23 @@ void WebHandler::async_listen() {
             }
         }
         else {
-            auto connection = std::make_shared<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(std::move(socket));
-            connection->async_accept(boost::asio::bind_executor(mStrand, [this, connection](boost::beast::error_code ec) {
+            // We use a raw pointer due to difficulties passing smart pointers through asio
+            auto websocket = new boost::beast::websocket::stream<boost::asio::ip::tcp::socket>(std::move(socket));
+            const std::string address = socket.remote_endpoint().address().to_string();
+            websocket->async_accept(boost::asio::bind_executor(mStrand, [this, websocket, address](boost::beast::error_code ec) {
                 if (ec) {
                     if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor) {
-                        mLogger.warn("Unable to accept Websocket", LoggerField(ec));
+                        mLogger.warn("Unable to accept Websocket", LoggerField(ec), LoggerField("address", address));
                     }
                     return;
                 }
 
-                log_info().msg("Accepted websocket request");
-                // auto participant = std::make_shared<WebParticipant>(mContext, std::move(connection), *this, *mDatabase);
-                // participant->listen();
-                // mWebParticipants.insert(std::move(participant));
+                mLogger.info("Accepted websocket request", LoggerField("address", address));
+
+                auto connection_ptr = std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(websocket);
+                auto session = std::make_unique<WebHandlerSession>(mContext, std::move(connection_ptr), *this);
+                session->async_listen();
+                mSessions.push_back(std::move(session));
             }));
         }
 
@@ -39,6 +47,12 @@ void WebHandler::async_listen() {
     });
 }
 
-void WebHandler::close() {
+void WebHandler::async_close() {
     mAcceptor.close();
+
+    boost::asio::post(boost::asio::bind_executor(mStrand, [this]() {
+        for (auto &session : mSessions) {
+            session->async_close();
+        }
+    }));
 }

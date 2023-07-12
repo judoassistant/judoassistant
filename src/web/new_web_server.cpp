@@ -31,8 +31,8 @@ void NewWebServer::run() {
     }
 }
 
-void NewWebServer::close() {
-    mWebHandler.close();
+void NewWebServer::async_close() {
+    mWebHandler.async_close();
     mTCPHandler.close();
 }
 

@@ -17,7 +17,7 @@ public:
     void run();
 
     // quit gracefully shuts down the web server
-    void close();
+    void async_close();
 private:
     // work is called by each worker thread
     void work();
