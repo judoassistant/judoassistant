@@ -22,9 +22,9 @@ void WebHandler::async_listen() {
             }
         }
         else {
+            const std::string address = socket.remote_endpoint().address().to_string();
             // We use a raw pointer due to difficulties passing smart pointers through asio
             auto websocket = new boost::beast::websocket::stream<boost::asio::ip::tcp::socket>(std::move(socket));
-            const std::string address = socket.remote_endpoint().address().to_string();
             websocket->async_accept(boost::asio::bind_executor(mStrand, [this, websocket, address](boost::beast::error_code ec) {
                 if (ec) {
                     if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor) {
@@ -36,7 +36,7 @@ void WebHandler::async_listen() {
                 mLogger.info("Accepted websocket request", LoggerField("address", address));
 
                 auto connection_ptr = std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(websocket);
-                auto session = std::make_unique<WebHandlerSession>(mContext, std::move(connection_ptr), *this);
+                auto session = std::make_shared<WebHandlerSession>(mContext, mLogger, std::move(connection_ptr), *this);
                 session->async_listen();
                 mSessions.push_back(std::move(session));
             }));

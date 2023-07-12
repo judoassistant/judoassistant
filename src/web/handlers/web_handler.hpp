@@ -22,5 +22,5 @@ private:
 
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
-    std::vector<std::unique_ptr<WebHandlerSession>> mSessions;
+    std::vector<std::shared_ptr<WebHandlerSession>> mSessions;
 };
