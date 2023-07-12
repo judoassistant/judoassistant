@@ -7,7 +7,8 @@
 
 class TCPParticipantHandler {
 public:
-    TCPParticipantHandler(Logger &logger, boost::asio::io_context &context);
+    TCPParticipantHandler(boost::asio::io_context &context, Logger &logger);
+    void run();
 
 private:
     boost::asio::io_context &mContext;

@@ -1,6 +1,10 @@
-#include "web/handlers/tcp_participant_handler.hpp"
+#include "web/handlers/web_participant_handler.hpp"
 
-WebParticipantHandler::WebParticipantHandler(Logger &logger, boost::asio::io_context &context)
+WebParticipantHandler::WebParticipantHandler(boost::asio::io_context &context, Logger &logger)
     : mContext(context)
     , mLogger(logger)
 {}
+
+void WebParticipantHandler::run() {
+
+}

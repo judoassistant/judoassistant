@@ -4,11 +4,11 @@
 #include <string>
 
 struct Config {
+    Config(int argc, char *argv[]);
+
     unsigned int port;
     unsigned int webPort;
     unsigned int workers;
     std::string postgres;
     boost::filesystem::path dataDirectory;
 };
-
-std::pair<Config, int> loadConfig(int argc, char *argv[]);

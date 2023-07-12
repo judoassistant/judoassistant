@@ -7,7 +7,8 @@
 
 class WebParticipantHandler {
 public:
-    WebParticipantHandler(Logger &logger, boost::asio::io_context &context);
+    WebParticipantHandler(boost::asio::io_context &context, Logger &logger);
+    void run();
 
 private:
     boost::asio::io_context &mContext;

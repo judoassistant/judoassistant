@@ -1,33 +1,44 @@
+#include <exception>
 #include <signal.h>
 #include <chrono>
+#include <memory>
+#include <stdexcept>
 
 
-#include "core/core.hpp"
+#include "web/new_web_server.hpp"
 #include "core/log.hpp"
-#include "core/version.hpp"
-#include "web/config/config.hpp"
-#include "web/web_server.hpp"
 
-std::unique_ptr<WebServer> server;
+std::unique_ptr<NewWebServer> server;
+std::unique_ptr<Config> config;
 
 void handleInterrupt(int signal){
     server->quit();
 }
 
 int main(int argc, char *argv[]) {
-    signal(SIGINT,handleInterrupt);
-
+    // Initialize server
     try {
-        auto[configuration, code] = loadConfig(argc, argv);
-        if (code != 0) {
-            return code;
-        }
+        config = std::make_unique<Config>(argc, argv);
+        server = std::make_unique<NewWebServer>(*config);
+    }
+    catch(const std::invalid_argument &e) {
+        // Invalid config file. The constructors log these errors themselves.
+        return 1;
+    }
+    catch(const std::exception &e) {
+        Logger logger;
+        logger.error("Unable to initialize server", LoggerField(e));
+        return 1;
+    }
 
-        auto server = std::make_unique<WebServer>(std::move(configuration));
+    // Start server
+    try {
+        signal(SIGINT, handleInterrupt);
         server->run();
     }
     catch(const std::exception& e) {
-        log_error().field("what", e.what()).msg("Exception occured");
+        Logger logger;
+        logger.error("Caught server exception", LoggerField(e));
         return 1;
     }
 
