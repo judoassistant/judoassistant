@@ -6,8 +6,8 @@
 #include "web/config/config.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
 #include "web/gateways/storage_gateway.hpp"
-#include "web/handlers/tcp_participant_handler.hpp"
-#include "web/handlers/web_participant_handler.hpp"
+#include "web/handlers/tcp_handler.hpp"
+#include "web/handlers/web_handler.hpp"
 
 class NewWebServer {
 public:
@@ -17,7 +17,7 @@ public:
     void run();
 
     // quit gracefully shuts down the web server
-    void quit();
+    void close();
 private:
     // work is called by each worker thread
     void work();
@@ -27,8 +27,8 @@ private:
     boost::asio::io_context::strand mStrand;
     Logger mLogger;
     std::vector<std::thread> mThreads;
-    TCPParticipantHandler mTCPParticipantHandler;
-    WebParticipantHandler mWebParticipantHandler;
+    TCPHandler mTCPHandler;
+    WebHandler mWebHandler;
     MetaServiceGateway mMetaServiceGateway;
     StorageGateway mStorageGateway;
 };

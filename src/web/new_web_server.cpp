@@ -6,32 +6,36 @@ NewWebServer::NewWebServer(const Config &config)
     , mContext(config.workers)
     , mStrand(mContext)
     , mLogger()
-    , mTCPParticipantHandler(mContext, mLogger)
-    , mWebParticipantHandler(mContext, mLogger)
+    , mTCPHandler(mContext, mLogger)
+    , mWebHandler(mContext, mLogger, mConfig)
     , mMetaServiceGateway(mContext, mLogger)
     , mStorageGateway(mContext, mLogger)
 {}
 
 void NewWebServer::run() {
-    mWebParticipantHandler.listen();
-    mTCPParticipantHandler.listen();
+    // Call async listener methods
+    mWebHandler.async_listen();
+    mTCPHandler.async_listen();
 
+    // Start worker threads
     mLogger.info("Starting worker threads", LoggerField("workerCount", mConfig.workers));
     for (size_t i = 1; i < mConfig.workers; ++i) {
         mThreads.emplace_back(&NewWebServer::work, this);
     }
     work();
 
+    // Wait for threads to finish
     mLogger.info("Shutting down");
     for (auto &thread : mThreads) {
         thread.join();
     }
 }
 
-void NewWebServer::quit() {
-    // TODO: Implement
+void NewWebServer::close() {
+    mWebHandler.close();
+    mTCPHandler.close();
 }
 
 void NewWebServer::work() {
-    // mContext.run();
+    mContext.run();
 }

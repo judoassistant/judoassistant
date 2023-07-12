@@ -6,7 +6,7 @@
 struct Config {
     Config(int argc, char *argv[]);
 
-    unsigned int port;
+    unsigned int tcpPort;
     unsigned int webPort;
     unsigned int workers;
     std::string postgres;

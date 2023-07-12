@@ -12,7 +12,7 @@ std::unique_ptr<NewWebServer> server;
 std::unique_ptr<Config> config;
 
 void handleInterrupt(int signal){
-    server->quit();
+    server->close();
 }
 
 int main(int argc, char *argv[]) {

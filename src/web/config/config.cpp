@@ -26,7 +26,7 @@ Config::Config(int argc, char *argv[]) {
         // and in config file
         po::options_description config("Configuration Options");
         config.add_options()
-            ("tcp-port", po::value<unsigned int>(&this->port)->default_value(9000), "tcp server port")
+            ("tcp-port", po::value<unsigned int>(&this->tcpPort)->default_value(9000), "tcp server port")
             ("web-port", po::value<unsigned int>(&this->webPort)->default_value(9001), "web socket server port")
             ("workers", po::value<unsigned int>(&this->workers)->default_value(std::thread::hardware_concurrency()), "number of worker threads to launch")
             ("data-dir", po::value<boost::filesystem::path>(&this->dataDirectory)->default_value("tournaments"), "directory to store tournament data")

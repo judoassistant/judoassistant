@@ -5,10 +5,11 @@
 
 #include "core/log.hpp"
 
-class TCPParticipantHandler {
+class TCPHandler {
 public:
-    TCPParticipantHandler(boost::asio::io_context &context, Logger &logger);
-    void listen();
+    TCPHandler(boost::asio::io_context &context, Logger &logger);
+    void async_listen();
+    void close();
 
 private:
     boost::asio::io_context &mContext;
