@@ -5,6 +5,6 @@ WebParticipantHandler::WebParticipantHandler(boost::asio::io_context &context, L
     , mLogger(logger)
 {}
 
-void WebParticipantHandler::run() {
+void WebParticipantHandler::listen() {
 
 }

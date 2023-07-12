@@ -5,6 +5,6 @@ TCPParticipantHandler::TCPParticipantHandler(boost::asio::io_context &context, L
     , mLogger(logger)
 { }
 
-void TCPParticipantHandler::run() {
+void TCPParticipantHandler::listen() {
 
 }

@@ -18,6 +18,7 @@ public:
     // TODO: Implement variadic fields
     // TODO: Implement colors when logging to terminal
     void info(const std::string &msg);
+    void info(const std::string &msg, const LoggerField& field);
     void warn(const std::string &msg);
     void warn(const std::string &msg, const LoggerField& field);
     void error(const std::string &msg);

@@ -12,9 +12,16 @@
 class NewWebServer {
 public:
     NewWebServer(const Config &config);
+
+    // run launches the web server worker threads and componenets
     void run();
+
+    // quit gracefully shuts down the web server
     void quit();
 private:
+    // work is called by each worker thread
+    void work();
+
     const Config &mConfig;
     boost::asio::io_context mContext;
     boost::asio::io_context::strand mStrand;

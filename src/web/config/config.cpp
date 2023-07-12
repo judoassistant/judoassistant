@@ -19,17 +19,16 @@ Config::Config(int argc, char *argv[]) {
         generic.add_options()
             ("version,v", "print version string")
             ("help", "produce help message")
-            ("config,c", po::value<std::string>(&configFile)->default_value(defaultConfigPath), "name of a file of a configuration.")
+            ("config,c", po::value<std::string>(&configFile)->default_value(defaultConfigPath), "configuration file path")
             ;
 
         // Declare a group of options that will be allowed both on command line
         // and in config file
         po::options_description config("Configuration Options");
         config.add_options()
-            ("port", po::value<unsigned int>(&this->port)->default_value(9000), "tcp server port")
+            ("tcp-port", po::value<unsigned int>(&this->port)->default_value(9000), "tcp server port")
             ("web-port", po::value<unsigned int>(&this->webPort)->default_value(9001), "web socket server port")
-            ("postgres", po::value<std::string>(&this->postgres)->default_value(""), "postgres connection info")
-            ("workers", po::value<unsigned int>(&this->workers)->default_value(std::thread::hardware_concurrency()), "name of worker threads to launch")
+            ("workers", po::value<unsigned int>(&this->workers)->default_value(std::thread::hardware_concurrency()), "number of worker threads to launch")
             ("data-dir", po::value<boost::filesystem::path>(&this->dataDirectory)->default_value("tournaments"), "directory to store tournament data")
             ;
 
@@ -61,8 +60,7 @@ Config::Config(int argc, char *argv[]) {
             std::cerr << "Unable to open config file \"" << configFile << "\"" << std::endl;
             throw std::invalid_argument("unable to open config file");
         }
-        else {
-            store(parse_config_file(ifs, configFileOptions), vm);
-            notify(vm);
-        }
+
+        store(parse_config_file(ifs, configFileOptions), vm);
+        notify(vm);
 }

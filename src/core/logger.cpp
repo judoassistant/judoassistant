@@ -65,12 +65,16 @@ void Logger::info(const std::string &msg) {
     log_message(LogLevel::INFO, msg);
 }
 
+void Logger::info(const std::string &msg, const LoggerField& field) {
+    log_message(LogLevel::INFO, msg, field);
+}
+
 void Logger::warn(const std::string &msg) {
     log_message(LogLevel::WARN, msg);
 }
 
 void Logger::warn(const std::string &msg, const LoggerField& field) {
-    log_message(LogLevel::WARN, msg);
+    log_message(LogLevel::WARN, msg, field);
 }
 
 void Logger::error(const std::string &msg) {
@@ -78,5 +82,5 @@ void Logger::error(const std::string &msg) {
 }
 
 void Logger::error(const std::string &msg, const LoggerField &field) {
-    log_message(LogLevel::ERROR, msg);
+    log_message(LogLevel::ERROR, msg, field);
 }
