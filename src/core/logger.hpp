@@ -9,23 +9,34 @@
 #include <iostream>
 #include <optional>
 
-enum class LogLevel { INFO, WARN, ERROR };
+enum class LogLevel { INFO, WARNING, ERROR };
+std::string logLevelToString(LogLevel level);
+
 struct LoggerField;
 
 // Logger defines a logger instance.
 class Logger {
 public:
-    Logger();
+    template<typename... LoggerFields>
+    void info(const std::string &message, LoggerFields... field_args) {
+        std::vector<LoggerField> fields = {field_args...};
+        log_message(LogLevel::INFO, message, fields);
+    }
 
-    // TODO: Implement variadic fields
-    // TODO: Implement colors when logging to terminal
-    void info(const std::string &msg);
-    void info(const std::string &msg, const LoggerField& field);
-    void warn(const std::string &msg);
-    void warn(const std::string &msg, const LoggerField& field);
-    void error(const std::string &msg);
-    void error(const std::string &msg, const LoggerField& field);
-    void debug(const std::string &msg);
+    template<typename... LoggerFields>
+    void warn(const std::string &message, LoggerFields... field_args) {
+        std::vector<LoggerField> fields = {field_args...};
+        log_message(LogLevel::WARNING, message, fields);
+    }
+
+    template<typename... LoggerFields>
+    void error(const std::string &message, LoggerFields... field_args) {
+        std::vector<LoggerField> fields = {field_args...};
+        log_message(LogLevel::ERROR, message, fields);
+    }
+
+private:
+    void log_message(LogLevel level, const std::string &message, const std::vector<LoggerField> &fields);
 };
 
 struct LoggerField {
