@@ -9,7 +9,7 @@ NewWebServer::NewWebServer(const Config &config)
     , mMetaServiceGateway(mContext, mLogger)
     , mStorageGateway(mContext, mLogger)
     , mTournamentController(mContext, mLogger)
-    , mTCPHandler(mContext, mLogger)
+    , mTCPHandler(mContext, mLogger, mConfig, mTournamentController)
     , mWebHandler(mContext, mLogger, mConfig, mTournamentController)
 {}
 
@@ -34,7 +34,7 @@ void NewWebServer::run() {
 
 void NewWebServer::async_close() {
     mWebHandler.async_close();
-    mTCPHandler.close();
+    mTCPHandler.async_close();
 }
 
 void NewWebServer::work() {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/buffer.hpp>
 
 // Superclass for SSL and non-SSL sockets
 class NetworkSocket {

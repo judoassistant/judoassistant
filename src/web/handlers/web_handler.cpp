@@ -29,6 +29,8 @@ void WebHandler::async_listen() {
             // We use a raw pointer due to difficulties passing smart pointers through asio
             auto websocket = new boost::beast::websocket::stream<boost::asio::ip::tcp::socket>(std::move(socket));
             websocket->async_accept(boost::asio::bind_executor(mStrand, [this, websocket, address](boost::beast::error_code ec) {
+                auto websocket_ptr = std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(websocket);
+
                 if (ec) {
                     if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor) {
                         mLogger.warn("Unable to accept Websocket", LoggerField(ec), LoggerField("address", address));
@@ -37,9 +39,7 @@ void WebHandler::async_listen() {
                 }
 
                 mLogger.info("Accepted websocket request", LoggerField("address", address));
-
-                auto connection_ptr = std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(websocket);
-                auto session = std::make_shared<WebHandlerSession>(mContext, mLogger, std::move(connection_ptr), *this);
+                auto session = std::make_shared<WebHandlerSession>(mContext, mLogger, std::move(websocket_ptr), *this);
                 session->async_listen();
                 mSessions.push_back(std::move(session));
             }));
@@ -51,9 +51,9 @@ void WebHandler::async_listen() {
 }
 
 void WebHandler::async_close() {
-    mAcceptor.close();
-
     boost::asio::post(boost::asio::bind_executor(mStrand, [this]() {
+        mAcceptor.close();
+
         for (auto &session : mSessions) {
             session->async_close();
         }

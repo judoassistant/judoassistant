@@ -12,7 +12,6 @@
 #include "core/core.hpp"
 #include "ui/network/network_interface.hpp"
 
-class NetworkConnection;
 class NetworkMessage;
 class NetworkParticipant;
 

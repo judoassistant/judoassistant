@@ -4,9 +4,9 @@
 #include <boost/system/error_code.hpp>
 
 #include "core/core.hpp"
+#include "core/network/network_socket.hpp"
 
 class NetworkMessage;
-class NetworkSocket;
 
 class NetworkConnection : public std::enable_shared_from_this<NetworkConnection> {
 public:
