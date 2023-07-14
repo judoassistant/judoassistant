@@ -65,7 +65,7 @@ void Logger::logMessage(LogLevel level, const std::string &message, const std::v
     document.AddMember("level", levelValue, allocator);
 
     const auto now = std::chrono::system_clock::now();
-    const auto unixtime = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    const auto unixtime = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
     rapidjson::Value timeValue(std::to_string(unixtime).c_str(), allocator);
     document.AddMember("timestamp", timeValue, allocator);
 
