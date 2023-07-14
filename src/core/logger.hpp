@@ -20,23 +20,23 @@ public:
     template<typename... LoggerFields>
     void info(const std::string &message, LoggerFields... field_args) {
         std::vector<LoggerField> fields = {field_args...};
-        log_message(LogLevel::INFO, message, fields);
+        logMessage(LogLevel::INFO, message, fields);
     }
 
     template<typename... LoggerFields>
     void warn(const std::string &message, LoggerFields... field_args) {
         std::vector<LoggerField> fields = {field_args...};
-        log_message(LogLevel::WARNING, message, fields);
+        logMessage(LogLevel::WARNING, message, fields);
     }
 
     template<typename... LoggerFields>
     void error(const std::string &message, LoggerFields... field_args) {
         std::vector<LoggerField> fields = {field_args...};
-        log_message(LogLevel::ERROR, message, fields);
+        logMessage(LogLevel::ERROR, message, fields);
     }
 
 private:
-    void log_message(LogLevel level, const std::string &message, const std::vector<LoggerField> &fields);
+    void logMessage(LogLevel level, const std::string &message, const std::vector<LoggerField> &fields);
 };
 
 struct LoggerField {

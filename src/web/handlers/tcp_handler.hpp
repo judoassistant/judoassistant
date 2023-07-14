@@ -14,8 +14,8 @@ struct Config;
 class TCPHandler {
 public:
     TCPHandler(boost::asio::io_context &context, Logger &logger, const Config &config, TournamentController &tournamentController);
-    void async_listen();
-    void async_close();
+    void asyncListen();
+    void asyncClose();
 
 private:
     boost::asio::io_context &mContext;

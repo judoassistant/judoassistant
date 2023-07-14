@@ -10,8 +10,8 @@ std::string WebsocketJSONMapper::mapSyncClockCommandResponse(const std::chrono::
     document.SetObject();
     auto &allocator = document.GetAllocator();
 
-    rapidjson::Value command_type("clock", allocator);
-    document.AddMember("type", command_type, allocator);
+    rapidjson::Value commandType("clock", allocator);
+    document.AddMember("type", commandType, allocator);
     document.AddMember("clock", clock.count(), allocator);
 
     rapidjson::StringBuffer buffer;

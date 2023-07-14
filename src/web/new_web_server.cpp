@@ -15,8 +15,8 @@ NewWebServer::NewWebServer(const Config &config)
 
 void NewWebServer::run() {
     // Call async listener methods
-    mWebHandler.async_listen();
-    mTCPHandler.async_listen();
+    mWebHandler.asyncListen();
+    mTCPHandler.asyncListen();
 
     // Start worker threads
     mLogger.info("Starting worker threads", LoggerField("workerCount", mConfig.workers));
@@ -33,8 +33,8 @@ void NewWebServer::run() {
 }
 
 void NewWebServer::async_close() {
-    mWebHandler.async_close();
-    mTCPHandler.async_close();
+    mWebHandler.asyncClose();
+    mTCPHandler.asyncClose();
 }
 
 void NewWebServer::work() {

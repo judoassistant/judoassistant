@@ -14,9 +14,9 @@ class WebHandler;
 // created whenever a new Websocket connection is established.
 class WebHandlerSession : public std::enable_shared_from_this<WebHandlerSession> {
 public:
-    WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &web_handler);
-    void async_listen();
-    void async_close();
+    WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler);
+    void asyncListen();
+    void asyncClose();
 
 private:
     // close closes the current sessions and removes all references to the session from the handler and tournament.
@@ -29,7 +29,7 @@ private:
     // queueMessage writes all messages in the queue in order that they were pushed.
     void writeMessageQueue();
 
-    void syncClockCommand();
+    void handleClockCommand();
 
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;

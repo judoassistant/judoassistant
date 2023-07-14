@@ -15,21 +15,21 @@ enum class LogColor {
     YELLOW,
 };
 
-std::string colorize_string(const std::string &str, LogColor color) {
-    std::string colored_str;
+std::string colorizeString(const std::string &str, LogColor color) {
+    std::string coloredStr;
     if (color == LogColor::BLUE) {
-        colored_str += "\033[0;34m";
+        coloredStr += "\033[0;34m";
     }
     else if (color == LogColor::YELLOW) {
-        colored_str += "\033[1;33m";
+        coloredStr += "\033[1;33m";
     }
     else if (color == LogColor::RED) {
-        colored_str += "\033[0;31m";
+        coloredStr += "\033[0;31m";
     }
 
-    colored_str += str;
-    colored_str += "\033[0;0m";
-    return colored_str;
+    coloredStr += str;
+    coloredStr += "\033[0;0m";
+    return coloredStr;
 }
 
 std::string logLevelToString(LogLevel level) {
@@ -43,36 +43,36 @@ std::string logLevelToString(LogLevel level) {
 std::string logLevelToColoredString(LogLevel level) {
     const std::string str = "[" + logLevelToString(level) + "]";
     if (level == LogLevel::ERROR) {
-        return colorize_string(str, LogColor::RED);
+        return colorizeString(str, LogColor::RED);
     }
     if (level == LogLevel::WARNING) {
-        return colorize_string(str, LogColor::YELLOW);
+        return colorizeString(str, LogColor::YELLOW);
     }
-    return colorize_string(str, LogColor::BLUE);
+    return colorizeString(str, LogColor::BLUE);
 }
 
-void Logger::log_message(LogLevel level, const std::string &message, const std::vector<LoggerField> &fields) {
+void Logger::logMessage(LogLevel level, const std::string &message, const std::vector<LoggerField> &fields) {
     // Encode message to json
     rapidjson::Document document;
     auto &allocator = document.GetAllocator();
 
     document.SetObject();
 
-    auto message_value = rapidjson::Value(message.c_str(), allocator);
-    document.AddMember("message", message_value, allocator);
+    auto messageValue = rapidjson::Value(message.c_str(), allocator);
+    document.AddMember("message", messageValue, allocator);
 
-    rapidjson::Value level_value(logLevelToString(level).c_str(), allocator);
-    document.AddMember("level", level_value, allocator);
+    rapidjson::Value levelValue(logLevelToString(level).c_str(), allocator);
+    document.AddMember("level", levelValue, allocator);
 
     const auto now = std::chrono::system_clock::now();
     const auto unixtime = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-    rapidjson::Value time_value(std::to_string(unixtime).c_str(), allocator);
-    document.AddMember("timestamp", time_value, allocator);
+    rapidjson::Value timeValue(std::to_string(unixtime).c_str(), allocator);
+    document.AddMember("timestamp", timeValue, allocator);
 
     for (const auto &field : fields) {
-        rapidjson::Value field_key(field.key.c_str(), allocator);
-        rapidjson::Value field_value(field.value.c_str(), allocator);
-        document.AddMember(field_key, field_value, allocator);
+        rapidjson::Value fieldKey(field.key.c_str(), allocator);
+        rapidjson::Value fieldValue(field.value.c_str(), allocator);
+        document.AddMember(fieldKey, fieldValue, allocator);
     }
 
     rapidjson::StringBuffer buffer;
@@ -86,7 +86,7 @@ void Logger::log_message(LogLevel level, const std::string &message, const std::
         std::cout << std::put_time(std::localtime(&now_time_t), "%X") << " "
             << logLevelToColoredString(level) << ": "
             << message << " "
-            << colorize_string(buffer.GetString(), LogColor::BLUE)
+            << colorizeString(buffer.GetString(), LogColor::BLUE)
             << std::endl;
     #endif
 

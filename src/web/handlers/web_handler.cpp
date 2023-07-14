@@ -17,7 +17,7 @@ WebHandler::WebHandler(boost::asio::io_context &context, Logger &logger, const C
     , mAcceptor(mContext, mEndpoint)
 {}
 
-void WebHandler::async_listen() {
+void WebHandler::asyncListen() {
     mAcceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
         if (ec) {
             if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor) {
@@ -40,22 +40,22 @@ void WebHandler::async_listen() {
 
                 mLogger.info("Accepted websocket request", LoggerField("address", address));
                 auto session = std::make_shared<WebHandlerSession>(mContext, mLogger, std::move(websocket_ptr), *this);
-                session->async_listen();
+                session->asyncListen();
                 mSessions.push_back(std::move(session));
             }));
         }
 
         if (mAcceptor.is_open())
-            async_listen();
+            asyncListen();
     });
 }
 
-void WebHandler::async_close() {
+void WebHandler::asyncClose() {
     boost::asio::post(boost::asio::bind_executor(mStrand, [this]() {
         mAcceptor.close();
 
         for (auto &session : mSessions) {
-            session->async_close();
+            session->asyncClose();
         }
     }));
 }

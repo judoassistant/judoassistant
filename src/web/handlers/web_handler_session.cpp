@@ -9,18 +9,18 @@
 
 constexpr int MAX_COMMAND_LENGTH = 200;
 
-WebHandlerSession::WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &web_handler)
+WebHandlerSession::WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
     , mSocket(std::move(socket))
-    , mWebHandler(web_handler)
+    , mWebHandler(webHandler)
     , mIsClosed(false)
 {
     mSocket->text(true);
 }
 
-void WebHandlerSession::async_listen() {
+void WebHandlerSession::asyncListen() {
     auto self = shared_from_this();
     auto buffer = std::make_shared<boost::beast::multi_buffer>();
 
@@ -72,7 +72,7 @@ void WebHandlerSession::async_listen() {
                 return;
             }
 
-            syncClockCommand();
+            handleClockCommand();
         }
         else {
             mLogger.warn("Received invalid websocket message", LoggerField("websocketMessage", message));
@@ -80,11 +80,11 @@ void WebHandlerSession::async_listen() {
             return;
         }
 
-        async_listen();
+        asyncListen();
     }));
 }
 
-void WebHandlerSession::syncClockCommand() {
+void WebHandlerSession::handleClockCommand() {
     const auto unix_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     const auto resp = mMapper.mapSyncClockCommandResponse(unix_time);
     queueMessage(resp);
@@ -120,7 +120,7 @@ void WebHandlerSession::writeMessageQueue() {
     }));
 }
 
-void WebHandlerSession::async_close() {
+void WebHandlerSession::asyncClose() {
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self](){
         if (mIsClosed) {

@@ -13,10 +13,10 @@ class Logger;
 // main application.
 class TCPHandlerSession : public std::enable_shared_from_this<TCPHandlerSession> {
 public:
-    TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcp_handler, std::unique_ptr<NetworkConnection> connection);
+    TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, std::unique_ptr<NetworkConnection> connection);
 
-    void async_close();
-    void async_listen();
+    void asyncClose();
+    void asyncListen();
 
 private:
     boost::asio::io_context &mContext;

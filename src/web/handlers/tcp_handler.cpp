@@ -17,7 +17,7 @@ TCPHandler::TCPHandler(boost::asio::io_context &context, Logger &logger, const C
     , mAcceptor(mContext, mEndpoint)
 {}
 
-void TCPHandler::async_listen() {
+void TCPHandler::asyncListen() {
     mAcceptor.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
         if (ec) {
             if (ec.value() != boost::system::errc::operation_canceled && ec.value() != boost::system::errc::bad_file_descriptor)
@@ -37,24 +37,24 @@ void TCPHandler::async_listen() {
                 }
 
                 auto session = std::make_shared<TCPHandlerSession>(mContext, mLogger, *this, std::move(connection_ptr));
-                session->async_listen();
+                session->asyncListen();
                 mSessions.push_back(std::move(session));
             }));
         }
 
         if (mAcceptor.is_open()) {
-            async_listen();
+            asyncListen();
         }
     });
 
 }
 
-void TCPHandler::async_close() {
+void TCPHandler::asyncClose() {
     boost::asio::post(boost::asio::bind_executor(mStrand, [this]() {
         mAcceptor.close();
 
         for (auto &session : mSessions) {
-            session->async_close();
+            session->asyncClose();
         }
     }));
 }
