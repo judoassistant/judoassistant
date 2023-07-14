@@ -5,14 +5,16 @@
 #include "core/network/plain_socket.hpp"
 #include "web/config/config.hpp"
 #include "web/controllers/tournament_controller.hpp"
+#include "web/gateways/meta_service_gateway.hpp"
 #include "web/handlers/tcp_handler.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
 
-TCPHandler::TCPHandler(boost::asio::io_context &context, Logger &logger, const Config &config, TournamentController &tournamentController)
+TCPHandler::TCPHandler(boost::asio::io_context &context, Logger &logger, const Config &config, TournamentController &tournamentController, MetaServiceGateway &metaServiceGateway)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
     , mTournamentController(tournamentController)
+    , mMetaServiceGateway(metaServiceGateway)
     , mEndpoint(boost::asio::ip::tcp::v4(), config.tcpPort)
     , mAcceptor(mContext, mEndpoint)
 {}
@@ -36,7 +38,7 @@ void TCPHandler::asyncListen() {
                     return;
                 }
 
-                auto session = std::make_shared<TCPHandlerSession>(mContext, mLogger, *this, std::move(connection_ptr));
+                auto session = std::make_shared<TCPHandlerSession>(mContext, mLogger, *this, mMetaServiceGateway, mTournamentController, std::move(connection_ptr));
                 session->asyncListen();
                 mSessions.push_back(std::move(session));
             }));

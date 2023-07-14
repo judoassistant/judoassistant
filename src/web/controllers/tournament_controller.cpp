@@ -1,5 +1,6 @@
 #include <boost/asio/dispatch.hpp>
 
+#include "core/web/web_types.hpp"
 #include "web/controllers/tournament_controller.hpp"
 #include "core/logger.hpp"
 
@@ -21,5 +22,12 @@ void TournamentController::asyncGetTournament(const std::string &tournamentID, G
 
         // Return not found
         boost::asio::dispatch(mContext, std::bind(callback, nullptr));
+    });
+}
+
+void TournamentController::asyncAcquireTournament(const std::string &tournamentID, const int userID, AcquireTournamentCallback callback) {
+    boost::asio::dispatch(mStrand, [this, tournamentID, callback]() {
+        // TODO: Implement
+        boost::asio::dispatch(mContext, std::bind(callback, WebNameRegistrationResponse::OCCUPIED_OTHER_USER, nullptr));
     });
 }

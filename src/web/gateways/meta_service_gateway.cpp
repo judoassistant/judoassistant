@@ -2,7 +2,11 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/asio/connect.hpp>
+#include <boost/system/detail/errc.hpp>
+#include <boost/system/detail/error_code.hpp>
+#include <boost/system/errc.hpp>
 
+#include "core/web/web_types.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
 
 MetaServiceGateway::MetaServiceGateway(boost::asio::io_context &context, Logger &logger)
@@ -60,4 +64,10 @@ void MetaServiceGateway::ListTournaments(ListTournamentsCallback callback) {
     boost::asio::post(mContext, std::bind(callback, resp));
 
     // If we get here then the connection is closed gracefully
+}
+
+void MetaServiceGateway::asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback) {
+    // TODO: Implement
+    std::optional<int> userID = 1;
+    boost::asio::post(mContext, std::bind(callback, WebTokenRequestResponse::SUCCESSFUL, userID));
 }

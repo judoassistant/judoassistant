@@ -4,6 +4,7 @@
 #include <boost/asio/io_context.hpp>
 
 #include "core/log.hpp"
+#include "core/web/web_types.hpp"
 
 struct GetTournamentResponse {
     std::string tournament_owner;
@@ -24,7 +25,8 @@ public:
     // ListTournaments lists upcoming and past tournaments.
     void ListTournaments(ListTournamentsCallback callback);
 
-    // bool AuthenticateUser(const std::string &username, const std::string &password);
+    typedef std::function<void (WebTokenRequestResponse resp, std::optional<int> userID)> AuthenticateUserCallback;
+    void asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback);
 
     // void GetTournament(const std::string &tournament_name);
 

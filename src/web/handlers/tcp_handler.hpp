@@ -5,6 +5,7 @@
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+#include "web/gateways/meta_service_gateway.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
 
 class TournamentController;
@@ -13,7 +14,7 @@ struct Config;
 
 class TCPHandler {
 public:
-    TCPHandler(boost::asio::io_context &context, Logger &logger, const Config &config, TournamentController &tournamentController);
+    TCPHandler(boost::asio::io_context &context, Logger &logger, const Config &config, TournamentController &tournamentController, MetaServiceGateway &metaServiceGateway);
     void asyncListen();
     void asyncClose();
 
@@ -23,6 +24,7 @@ private:
 
     Logger &mLogger;
     TournamentController &mTournamentController;
+    MetaServiceGateway &mMetaServiceGateway;
 
     boost::asio::ip::tcp::endpoint mEndpoint;
     boost::asio::ip::tcp::acceptor mAcceptor;
