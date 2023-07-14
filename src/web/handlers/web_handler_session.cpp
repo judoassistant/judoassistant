@@ -91,7 +91,7 @@ void WebHandlerSession::handleClockCommand() {
 }
 
 void WebHandlerSession::queueMessage(const std::string &message) {
-    auto queueWasEmpty = mWriteQueue.empty();
+    const auto queueWasEmpty = mWriteQueue.empty();
     mWriteQueue.push(message);
 
     if (!queueWasEmpty) {

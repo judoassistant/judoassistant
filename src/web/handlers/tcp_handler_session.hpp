@@ -20,7 +20,6 @@ class Logger;
 class TCPHandlerSession : public std::enable_shared_from_this<TCPHandlerSession> {
 public:
     TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::unique_ptr<NetworkConnection> connection);
-
     void asyncClose();
     void asyncListen();
 
@@ -33,8 +32,15 @@ private:
         TOURNAMENT_LISTENING,
     };
 
+    // close closes the current sessions and removes all references to the session from the handler and tournament.
     void close();
+
+    // queueMessage pushes a message to the write queue. Once pushed, the
+    // messages will be picked up from the queue in the order they were pushed.
     void queueMessage(std::unique_ptr<NetworkMessage> message);
+
+    // queueMessage writes all messages in the queue in order that they were pushed.
+    void writeMessageQueue();
 
     void handleAuthentication();
     void handleTournamentRegistration();
@@ -54,6 +60,6 @@ private:
     State mState;
     bool mIsClosed;
     int mUserID;
-    std::queue<std::shared_ptr<NetworkMessage>> mWriteQueue;
+    std::queue<std::unique_ptr<NetworkMessage>> mWriteQueue;
     std::chrono::milliseconds mClockDiff;
 };

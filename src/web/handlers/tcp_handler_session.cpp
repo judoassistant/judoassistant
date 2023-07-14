@@ -286,9 +286,33 @@ void TCPHandlerSession::handleTournamentListen() {
 }
 
 void TCPHandlerSession::queueMessage(std::unique_ptr<NetworkMessage> message) {
+    const auto queueWasEmpty = mWriteQueue.empty();
+    mWriteQueue.push(std::move(message));
 
+    if (!queueWasEmpty) {
+        // The queue was non empty so a write was already in progress.
+        return;
+    }
+    writeMessageQueue();
 }
 
+void TCPHandlerSession::writeMessageQueue() {
+    auto self = shared_from_this();
+    mConnection->asyncWrite(*mWriteQueue.front(), [this, self](boost::system::error_code ec) {
+        if (mIsClosed) {
+            return;
+        }
+        if (ec) {
+            close();
+            return;
+        }
+
+        mWriteQueue.pop();
+        if (!mWriteQueue.empty()) {
+            writeMessageQueue();
+        }
+    });
+}
 
 void TCPHandlerSession::close() {
     mIsClosed = true;
