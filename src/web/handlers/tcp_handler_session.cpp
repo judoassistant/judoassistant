@@ -1,3 +1,4 @@
+#include "core/actions/action.hpp"
 #include "core/logger.hpp"
 #include "core/network/network_message.hpp"
 #include "core/web/web_types.hpp"
@@ -6,6 +7,7 @@
 #include "web/gateways/meta_service_gateway.hpp"
 #include "web/handlers/tcp_handler.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
+#include "web/web_tournament_store.hpp"
 #include <boost/asio/bind_executor.hpp>
 #include <boost/system/detail/error_code.hpp>
 #include <memory>
@@ -126,6 +128,7 @@ void TCPHandlerSession::handleTournamentRegistration() {
             // Transition state depending on outcome
             if (resp == WebNameRegistrationResponse::SUCCESSFUL) {
                 mState = State::TOURNAMENT_REGISTERED;
+                mTournamentSession = std::move(tournamentSession);
                 handleTournamentClockSync();
                 return;
             }
@@ -161,6 +164,7 @@ void TCPHandlerSession::handleTournamentClockSync() {
 
         std::chrono::milliseconds p1;
         if (!message->decodeClockSync(p1)) {
+            mLogger.warn("Received invalid CLOCK_SYNC request");
             close();
             return;
         }
@@ -188,49 +192,97 @@ void TCPHandlerSession::handleTournamentSync() {
             return;
         }
 
-        // auto wrapper = std::make_shared<MoveWrapper>();
-        // wrapper->tournament = std::make_unique<WebTournamentStore>();
+        SharedActionList actionList;
+        std::unique_ptr<WebTournamentStore> tournament;
+        if (!message->decodeSync(*tournament, actionList)) {
+            mLogger.warn("Received invalid SYNC request");
+            close();
+            return;
+        }
 
-        // if (!mReadMessage->decodeSync(*(wrapper->tournament), wrapper->actionList)) {
-        //     close();
-        //     return;
-        // }
+        mTournamentSession->asyncSyncTournament(std::move(tournament), std::move(actionList), mClockDiff, [this, self]() {
+            if (mIsClosed) {
+                return;
+            }
 
-        // // redo all the actions
-        // auto &tournament = *(wrapper->tournament);
-        // for (auto &p : wrapper->actionList) {
-        //     auto &action = *(p.second);
-        //     action.redo(tournament);
-        // }
-
-
-        //     mTournament = std::move(loadedTournament);
-        //     mTournament->sync(std::move(wrapper->tournament), std::move(wrapper->actionList), mClockDiff, boost::asio::bind_executor(mStrand, [this, self](bool success) {
-        //         if (mClosePosted)
-        //             return;
-
-        //         if (!success) {
-        //             close();
-        //             return;
-        //         }
-
-        //         mDatabase.asyncSetSynced(mWebName, boost::asio::bind_executor(mStrand, [this, self](bool success) {
-        //             if (mClosePosted)
-        //                 return;
-
-        //             if (!success)
-        //                 log_warning().field("webName", mWebName).msg("Failed marking tournament as synced");
-        //         }));
-
-        //         asyncTournamentListen();
-        //     }));
-        // }));
+            handleTournamentListen();
+        });
     }));
-
 }
 
 void TCPHandlerSession::handleTournamentListen() {
+    auto message = std::make_shared<NetworkMessage>();
+    auto self = shared_from_this();
+    mConnection->asyncRead(*message, boost::asio::bind_executor(mStrand, [this, self, message](boost::system::error_code ec) {
+        if (mIsClosed)
+            return;
+        if (ec) {
+            close();
+            return;
+        }
 
+        const auto type = message->getType();
+        if (type == NetworkMessage::Type::UNDO) {
+            ClientActionId actionId;
+            if (!message->decodeUndo(actionId)) {
+                mLogger.warn("Received invalid UNDO request");
+                close();
+                return;
+            }
+
+            mTournamentSession->asyncUndoAction(actionId, [this, self]() {
+                if (mIsClosed) {
+                    return;
+                }
+
+                handleTournamentListen();
+            });
+
+            return;
+        }
+        if (type == NetworkMessage::Type::ACTION) {
+            ClientActionId actionId;
+            std::shared_ptr<Action> action;
+            if (!message->decodeAction(actionId, action)) {
+                mLogger.warn("Received invalid ACTION request");
+                close();
+                return;
+            }
+
+            // TODO: Bind executors!!!!!
+            mTournamentSession->asyncDispatchAction(actionId, std::move(action),  [this, self]() {
+                if (mIsClosed) {
+                    return;
+                }
+
+                handleTournamentListen();
+            });
+
+            return;
+        }
+        if (type == NetworkMessage::Type::SYNC) {
+            auto tournament = std::make_unique<WebTournamentStore>();
+            SharedActionList actionList;
+
+            if (!message->decodeSync(*tournament, actionList)) {
+                mLogger.warn("Received invalid SYNC request");
+                close();
+                return;
+            }
+
+            mTournamentSession->asyncSyncTournament(std::move(tournament), std::move(actionList), mClockDiff, boost::asio::bind_executor(mStrand, [this, self]() {
+                if (mIsClosed)
+                    return;
+
+                handleTournamentListen();
+            }));
+
+            return;
+        }
+
+        mLogger.warn("Received unexpected TCP message type while listening tournament", LoggerField("messageType", (size_t) message->getType()));
+        return;
+    }));
 }
 
 void TCPHandlerSession::queueMessage(std::unique_ptr<NetworkMessage> message) {

@@ -8,6 +8,7 @@
 #include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
 #include "web/controllers/tournament_controller.hpp"
+#include "web/controllers/tournament_controller_session.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
 
 class TCPHandler;
@@ -48,6 +49,7 @@ private:
     MetaServiceGateway &mMetaServiceGateway;
     TournamentController &mTournamentController;
     std::unique_ptr<NetworkConnection> mConnection;
+    std::shared_ptr<TournamentControllerSession> mTournamentSession;
 
     State mState;
     bool mIsClosed;
