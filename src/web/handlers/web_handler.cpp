@@ -3,13 +3,16 @@
 #include <memory>
 
 #include "core/logger.hpp"
+#include "web/config/config.hpp"
+#include "web/controllers/tournament_controller.hpp"
 #include "web/handlers/web_handler.hpp"
 #include "web/handlers/web_handler_session.hpp"
 
-WebHandler::WebHandler(boost::asio::io_context &context, Logger &logger, const Config &config)
+WebHandler::WebHandler(boost::asio::io_context &context, Logger &logger, const Config &config, TournamentController &tournamentController)
     : mContext(context)
-    , mLogger(logger)
     , mStrand(mContext)
+    , mLogger(logger)
+    , mTournamentController(tournamentController)
     , mEndpoint(boost::asio::ip::tcp::v4(), config.webPort)
     , mAcceptor(mContext, mEndpoint)
 {}

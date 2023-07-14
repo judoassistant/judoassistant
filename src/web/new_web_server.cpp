@@ -6,10 +6,11 @@ NewWebServer::NewWebServer(const Config &config)
     , mContext(config.workers)
     , mStrand(mContext)
     , mLogger()
-    , mTCPHandler(mContext, mLogger)
-    , mWebHandler(mContext, mLogger, mConfig)
     , mMetaServiceGateway(mContext, mLogger)
     , mStorageGateway(mContext, mLogger)
+    , mTournamentController(mContext, mLogger)
+    , mTCPHandler(mContext, mLogger)
+    , mWebHandler(mContext, mLogger, mConfig, mTournamentController)
 {}
 
 void NewWebServer::run() {

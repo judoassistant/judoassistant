@@ -4,6 +4,7 @@
 #include <thread>
 
 #include "web/config/config.hpp"
+#include "web/controllers/tournament_controller.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
 #include "web/gateways/storage_gateway.hpp"
 #include "web/handlers/tcp_handler.hpp"
@@ -27,8 +28,12 @@ private:
     boost::asio::io_context::strand mStrand;
     Logger mLogger;
     std::vector<std::thread> mThreads;
-    TCPHandler mTCPHandler;
-    WebHandler mWebHandler;
+
     MetaServiceGateway mMetaServiceGateway;
     StorageGateway mStorageGateway;
+
+    TournamentController mTournamentController;
+
+    TCPHandler mTCPHandler;
+    WebHandler mWebHandler;
 };
