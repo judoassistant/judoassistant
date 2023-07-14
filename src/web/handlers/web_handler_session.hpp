@@ -5,6 +5,7 @@
 #include <boost/beast.hpp>
 #include <queue>
 
+#include "web/mappers/websocket_json_mapper.hpp"
 #include "core/logger.hpp"
 
 class WebHandler;
@@ -36,6 +37,7 @@ private:
     std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> mSocket;
     WebHandler &mWebHandler;
     bool mIsClosed;
+    WebsocketJSONMapper mMapper;
 
     std::queue<std::string> mWriteQueue;
 };

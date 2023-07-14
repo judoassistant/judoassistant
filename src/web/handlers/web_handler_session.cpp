@@ -85,11 +85,9 @@ void WebHandlerSession::async_listen() {
 }
 
 void WebHandlerSession::syncClockCommand() {
-    const auto t = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-
-    queueMessage("Hello World!");
-
-    // TODO: Write message
+    const auto unix_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    const auto resp = mMapper.mapSyncClockCommandResponse(unix_time);
+    queueMessage(resp);
 }
 
 void WebHandlerSession::queueMessage(const std::string &message) {
