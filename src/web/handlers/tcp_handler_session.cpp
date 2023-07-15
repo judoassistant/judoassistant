@@ -26,10 +26,6 @@ TCPHandlerSession::TCPHandlerSession(boost::asio::io_context &context, Logger &l
 {}
 
 
-void TCPHandlerSession::asyncClose() {
-
-}
-
 void TCPHandlerSession::asyncListen() {
     handleAuthentication();
 }
@@ -313,9 +309,19 @@ void TCPHandlerSession::writeMessageQueue() {
     }));
 }
 
+void TCPHandlerSession::asyncClose() {
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, self](){
+        if (mIsClosed) {
+            return;
+        }
+
+        close();
+    });
+}
+
 void TCPHandlerSession::close() {
     mIsClosed = true;
-    mConnection->closeSocket();
     mConnection.reset();
 
     // TODO: Remove from handler
