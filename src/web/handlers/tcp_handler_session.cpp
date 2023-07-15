@@ -111,7 +111,7 @@ void TCPHandlerSession::handleTournamentRegistration() {
             return;
         }
 
-        mTournamentController.asyncAcquireTournament(webName, mUserID, [this, self](WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession> tournamentSession) {
+        mTournamentController.asyncAcquireTournament(webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession> tournamentSession) {
             if (mIsClosed) {
                 return;
             }
@@ -134,7 +134,7 @@ void TCPHandlerSession::handleTournamentRegistration() {
             }
 
             handleTournamentRegistration();
-        });
+        }));
     }));
 }
 
@@ -200,13 +200,13 @@ void TCPHandlerSession::handleTournamentSync() {
             return;
         }
 
-        mTournamentSession->asyncSyncTournament(std::move(tournament), std::move(actionList), mClockDiff, [this, self]() {
+        mTournamentSession->asyncSyncTournament(std::move(tournament), std::move(actionList), mClockDiff, boost::asio::bind_executor(mStrand, [this, self]() {
             if (mIsClosed) {
                 return;
             }
 
             handleTournamentListen();
-        });
+        }));
     }));
 }
 
@@ -230,13 +230,13 @@ void TCPHandlerSession::handleTournamentListen() {
                 return;
             }
 
-            mTournamentSession->asyncUndoAction(actionId, [this, self]() {
+            mTournamentSession->asyncUndoAction(actionId, boost::asio::bind_executor(mStrand, [this, self]() {
                 if (mIsClosed) {
                     return;
                 }
 
                 handleTournamentListen();
-            });
+            }));
 
             return;
         }
@@ -249,14 +249,13 @@ void TCPHandlerSession::handleTournamentListen() {
                 return;
             }
 
-            // TODO: Bind executors!!!!!
-            mTournamentSession->asyncDispatchAction(actionId, std::move(action),  [this, self]() {
+            mTournamentSession->asyncDispatchAction(actionId, std::move(action),  boost::asio::bind_executor(mStrand, [this, self]() {
                 if (mIsClosed) {
                     return;
                 }
 
                 handleTournamentListen();
-            });
+            }));
 
             return;
         }
@@ -298,7 +297,7 @@ void TCPHandlerSession::queueMessage(std::unique_ptr<NetworkMessage> message) {
 
 void TCPHandlerSession::writeMessageQueue() {
     auto self = shared_from_this();
-    mConnection->asyncWrite(*mWriteQueue.front(), [this, self](boost::system::error_code ec) {
+    mConnection->asyncWrite(*mWriteQueue.front(), boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec) {
         if (mIsClosed) {
             return;
         }
@@ -311,7 +310,7 @@ void TCPHandlerSession::writeMessageQueue() {
         if (!mWriteQueue.empty()) {
             writeMessageQueue();
         }
-    });
+    }));
 }
 
 void TCPHandlerSession::close() {

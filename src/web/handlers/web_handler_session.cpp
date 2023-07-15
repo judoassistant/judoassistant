@@ -127,13 +127,13 @@ void WebHandlerSession::asyncClose() {
             return;
         }
 
-        mSocket->async_close(boost::beast::websocket::close_code::service_restart, [this, self](boost::system::error_code ec) {
+        mSocket->async_close(boost::beast::websocket::close_code::service_restart, boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec) {
             if (mIsClosed) {
                 return;
             }
 
             close();
-        });
+        }));
     });
 }
 
