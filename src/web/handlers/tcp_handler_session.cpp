@@ -1,5 +1,11 @@
+#include <boost/asio/bind_executor.hpp>
+#include <boost/system/detail/error_code.hpp>
+#include <memory>
+#include <optional>
+
 #include "core/actions/action.hpp"
 #include "core/logger.hpp"
+#include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
 #include "core/web/web_types.hpp"
 #include "web/controllers/tournament_controller.hpp"
@@ -8,10 +14,6 @@
 #include "web/handlers/tcp_handler.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
 #include "web/web_tournament_store.hpp"
-#include <boost/asio/bind_executor.hpp>
-#include <boost/system/detail/error_code.hpp>
-#include <memory>
-#include <optional>
 
 TCPHandlerSession::TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::unique_ptr<NetworkConnection> connection)
     : mContext(context)

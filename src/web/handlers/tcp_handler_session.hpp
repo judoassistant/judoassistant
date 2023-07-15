@@ -5,14 +5,14 @@
 #include <queue>
 #include <boost/asio/io_context_strand.hpp>
 
-#include "core/network/network_connection.hpp"
 #include "core/network/network_message.hpp"
 #include "web/controllers/tournament_controller.hpp"
-#include "web/controllers/tournament_controller_session.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
 
 class TCPHandler;
 class Logger;
+class TournamentControllerSession;
+class NetworkConnection;
 
 // TCPHandlerSession represents a stateful TCP socket session. Sessions are
 // created whenever a new TCP connection is established from the JudoAssistant
