@@ -13,10 +13,10 @@ public:
     TournamentController(boost::asio::io_context &context, Logger &logger);
 
     typedef std::function<void (std::shared_ptr<TournamentControllerSession>)> GetTournamentCallback;
-    // asyncGetTournament returns a tournament session. If the tournament is
+    // asyncSubscribeTournament returns a tournament session. If the tournament is
     // already loaded, then the existing session will be returned.  Otherwise,
     // it will be read from storage.
-    void asyncGetTournament(const std::string &tournamentID, GetTournamentCallback);
+    void asyncSubscribeTournament(std::shared_ptr<WebHandlerSession> webSession, const std::string &tournamentID, GetTournamentCallback);
 
     typedef std::function<void (WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession>)> AcquireTournamentCallback;
     // asyncAcquireTournament acquires ownership of a tournament session. if the
@@ -24,7 +24,7 @@ public:
     // and any TCP participant will be kicked. If not, then an empty session
     // will be returned. An error is returned if the tournament is not owned by
     // the given userID.
-    void asyncAcquireTournament(const std::string &tournamentID, int userID, AcquireTournamentCallback);
+    void asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &tournamentID, int userID, AcquireTournamentCallback callback);
 
     struct ListTournamentsResponse {};
     typedef std::function<void (ListTournamentsResponse)> ListTournamentsCallback;

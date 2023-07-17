@@ -1,4 +1,5 @@
 #include "web/controllers/tournament_controller_session.hpp"
+#include "web/handlers/tcp_handler_session.hpp"
 #include "core/constants/actions.hpp"
 #include "core/id.hpp"
 #include "core/logger.hpp"
@@ -166,4 +167,16 @@ void TournamentControllerSession::queueSyncMessages() {
 
 void TournamentControllerSession::queueChangeMessages() {
 
+}
+
+void TournamentControllerSession::asyncUpsertTCPSession(std::shared_ptr<TCPHandlerSession> tcpSession, UpsertTCPSessionCallback callback) {
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, self, tcpSession, callback](){
+        if (mTCPSession) {
+            mTCPSession->asyncClose();
+        }
+
+        mTCPSession = std::move(tcpSession);
+        boost::asio::post(mContext, callback);
+    });
 }

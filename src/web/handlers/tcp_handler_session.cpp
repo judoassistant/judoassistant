@@ -109,7 +109,7 @@ void TCPHandlerSession::handleTournamentRegistration() {
             return;
         }
 
-        mTournamentController.asyncAcquireTournament(webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession> tournamentSession) {
+        mTournamentController.asyncAcquireTournament(self, webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession> tournamentSession) {
             if (mIsClosed) {
                 return;
             }

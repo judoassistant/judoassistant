@@ -29,7 +29,8 @@ public:
     typedef std::function<void ()> UndoActionCallback;
     void asyncUndoAction(ClientActionId actionID, UndoActionCallback callback);
 
-    void asyncUpsertTCPSession(std::shared_ptr<TCPHandlerSession> tcpSession);
+    typedef std::function<void ()> UpsertTCPSessionCallback;
+    void asyncUpsertTCPSession(std::shared_ptr<TCPHandlerSession> tcpSession, UpsertTCPSessionCallback callback);
 
     void asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback);
     void asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback);
