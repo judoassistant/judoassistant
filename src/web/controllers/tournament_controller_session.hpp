@@ -32,8 +32,11 @@ public:
     typedef std::function<void ()> UpsertTCPSessionCallback;
     void asyncUpsertTCPSession(std::shared_ptr<TCPHandlerSession> tcpSession, UpsertTCPSessionCallback callback);
 
-    void asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback);
-    void asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback);
+    typedef std::function<void ()> AddWebSessionCallback;
+    void asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, AddWebSessionCallback callback);
+
+    typedef std::function<void ()> EraseWebSessionCallback;
+    void asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, EraseWebSessionCallback callback);
 
     typedef std::function<void (boost::system::error_code)> SubscribeCategoryCallback;
     void asyncSubscribeCategory(std::shared_ptr<WebHandlerSession> webSession, CategoryId categoryID, SubscribeCategoryCallback callback);

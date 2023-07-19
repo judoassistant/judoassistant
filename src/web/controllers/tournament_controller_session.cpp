@@ -106,7 +106,7 @@ void TournamentControllerSession::asyncUndoAction(ClientActionId actionID, UndoA
 }
 
 
-void TournamentControllerSession::asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback) {
+void TournamentControllerSession::asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, AddWebSessionCallback callback) {
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, webSession, callback]() {
         webSession->notifyTournamentSync(*mTournament, std::nullopt, std::nullopt, std::nullopt, mClockDiff);
@@ -115,12 +115,12 @@ void TournamentControllerSession::asyncAddWebSession(std::shared_ptr<WebHandlerS
     });
 }
 
-void TournamentControllerSession::asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback) {
+void TournamentControllerSession::asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, EraseWebSessionCallback callback) {
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, webSession]() {
+    boost::asio::post(mStrand, [this, self, webSession, callback]() {
         mWebSessions.erase(webSession);
         clearSubscriptions(webSession);
-        // TODO: Handle callback
+        boost::asio::post(mContext, callback);
     });
 }
 
