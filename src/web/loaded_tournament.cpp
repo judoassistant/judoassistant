@@ -416,7 +416,7 @@ void LoadedTournament::deliverChanges() {
         if (tatamiIt != mTatamiSubscriptions.end())
             tatami = tatamiIt->second;
 
-        if (!encoder.hasTournamentChanges(*mTournament, category, player, tatami))
+        if (!mTournament->isChanged(category, player, tatami))
             continue;
 
         auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, tatami, mClockDiff);

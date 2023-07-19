@@ -3,13 +3,20 @@
 #include "core/stores/tournament_store.hpp"
 #include "web/web_tatami_model.hpp"
 
+// WebTournamentStore extends the TournamentStore by tracking which entities has
+// changed. This allows for efficient serialization of changes.
 class WebTournamentStore : public TournamentStore {
 public:
     WebTournamentStore();
 
     void clearChanges();
 
+    // TODO: Make private
     bool tournamentChanged() const;
+
+    // isChanged returns true if the list of players or categories has changed or if any of the given entities have changed.
+    bool isChanged(std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiId) const;
+
     const std::unordered_set<PlayerId>& getChangedPlayers() const;
     const std::unordered_set<PlayerId>& getAddedPlayers() const;
     const std::unordered_set<PlayerId>& getErasedPlayers() const;
@@ -22,6 +29,10 @@ public:
     const std::unordered_set<CategoryId>& getCategoryResultsResets() const;
 
     const std::unordered_set<CombinedId>& getChangedMatches() const;
+
+    void flushWebTatamiModels();
+    const WebTatamiModel& getWebTatamiModel(size_t index) const;
+    const std::vector<WebTatamiModel>& getWebTatamiModels() const;
 
     // Parent methods to override
     void changeTournament() override;
@@ -59,11 +70,6 @@ public:
     void eraseMatchesFromPlayer(PlayerId playerId, const std::vector<CombinedId> &matchIds) override;
 
     void resetCategoryResults(const std::vector<CategoryId> &categoryId) override;
-
-
-    void flushWebTatamiModels();
-    const WebTatamiModel& getWebTatamiModel(size_t index) const;
-    const std::vector<WebTatamiModel>& getWebTatamiModels() const;
 
 private:
     bool mTournamentChanged;

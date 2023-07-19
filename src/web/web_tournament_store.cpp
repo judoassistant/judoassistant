@@ -2,6 +2,7 @@
 #include "core/rulesets/ruleset.hpp"
 #include "core/stores/category_store.hpp"
 #include "core/stores/match_store.hpp"
+#include "core/stores/player_store.hpp"
 #include "web/web_tournament_store.hpp"
 
 WebTournamentStore::WebTournamentStore()
@@ -26,6 +27,79 @@ void WebTournamentStore::clearChanges() {
 
     for (auto &model : mTatamiModels)
         model.clearChanges();
+}
+
+bool WebTournamentStore::isChanged(std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex) const {
+    // Check tournament
+    if (mTournamentChanged)
+        return true;
+
+    for (const auto &tatamiModel : getWebTatamiModels()) {
+        if (tatamiModel.matchesChanged())
+            return true;
+    }
+
+    // Check players
+    if (!getChangedPlayers().empty())
+        return true;
+    if (!getAddedPlayers().empty())
+        return true;
+    if (!getErasedPlayers().empty())
+        return true;
+
+    // Check categories
+    if (!getChangedCategories().empty())
+        return true;
+    if (!getAddedCategories().empty())
+        return true;
+    if (!getErasedCategories().empty())
+        return true;
+
+    // Check category
+    if (categoryId.has_value() && containsCategory(*categoryId)) {
+        if (getCategoryMatchResets().find(*categoryId) != getCategoryMatchResets().end())
+            return true;
+        if (getCategoryResultsResets().find(*categoryId) != getCategoryResultsResets().end())
+            return true;
+
+        for (const auto &match : getCategory(*categoryId).getMatches()) {
+            const auto &combinedId = match->getCombinedId();
+            if (getChangedMatches().find(combinedId) != getChangedMatches().end())
+                return true;
+        }
+    }
+
+    // Check player
+    if (playerId.has_value() && containsPlayer(*playerId)) {
+        if (getPlayerMatchResets().find(*playerId) != getPlayerMatchResets().end())
+            return true;
+
+        const auto &player = getPlayer(*playerId);
+        for (const auto &combinedId : player.getMatches()) {
+            if (getChangedMatches().find(combinedId) != getChangedMatches().end())
+                return true;
+        }
+    }
+
+    // Check tatami
+    if (tatamiIndex.has_value() && *tatamiIndex < getTatamis().tatamiCount()) {
+        if (getWebTatamiModel(*tatamiIndex).changed())
+            return true;
+    }
+
+    // Check tatami matches
+    auto tatamiCount = getTatamis().tatamiCount();
+    for (size_t i = 0; i < tatamiCount; ++i) {
+        const auto &model = getWebTatamiModel(i);
+        if (!model.getInsertedMatches().empty())
+            return true;
+        for (auto combinedId : model.getMatches()) {
+            if (getChangedMatches().find(combinedId) != getChangedMatches().end())
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void WebTournamentStore::changeTournament() {
