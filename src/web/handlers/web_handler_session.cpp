@@ -86,7 +86,7 @@ void WebHandlerSession::asyncListen() {
 
 void WebHandlerSession::handleClockCommand() {
     const auto unix_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    const auto resp = mMapper.mapSyncClockCommandResponse(unix_time);
+    const auto resp = mMapper.mapClockMessage(unix_time);
     queueMessage(resp);
 }
 
