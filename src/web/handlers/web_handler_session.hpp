@@ -35,7 +35,10 @@ private:
 
     // queueMessage pushes a message to the write queue. Once pushed, the
     // messages will be picked up from the queue in the order they were pushed.
+    // The caller must have lock on mStrand.
     void queueMessage(const std::string &message);
+
+    void asyncQueueMessage(const std::string &message);
 
     // queueMessage writes all messages in the queue in order that they were pushed.
     void writeMessageQueue();

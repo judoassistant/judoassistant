@@ -12,8 +12,18 @@ class WebsocketJSONMapper {
 public:
     std::string mapClockMessage(std::chrono::milliseconds clock);
     std::string mapChangeMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff);
-
     std::string mapSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff);
+
+    std::string mapSubscribeTournamentFailMessage();
+
+    std::string mapSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff);
+    std::string mapSubscribeCategoryFailMessage();
+
+    std::string mapSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff);
+    std::string mapSubscribePlayerFailMessage();
+
+    std::string mapSubscribeTatamiMessage(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff);
+    std::string mapSubscribeTatamiFailMessage();
 
 private:
     rapidjson::Value mapTournamentMeta(const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);

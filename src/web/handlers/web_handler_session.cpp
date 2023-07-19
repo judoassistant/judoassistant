@@ -152,47 +152,68 @@ void WebHandlerSession::handleClockCommand() {
 
 void WebHandlerSession::handleSubscribeTournamentCommand(const std::string &tournamentID) {
     if (mTournament) {
-        // Ignore if already subscribed to a tournament
+        // Fail if already subscribed to a tournament
+        queueMessage(mMapper.mapSubscribeTournamentFailMessage());
         return;
     }
 
     auto self = shared_from_this();
     mTournamentController.asyncSubscribeTournament(self, tournamentID, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession){
-        if (ec.value() == boost::system::errc::no_such_file_or_directory) {
-            // TODO: Map not found
-        }
         if (ec) {
-            // TOOD: Map server error
+            queueMessage(mMapper.mapSubscribeTournamentFailMessage());
         }
+
+        // Success. The controller will send a notification with the tournament information.
     });
 }
 
 void WebHandlerSession::handleSubscribeCategoryCommand(CategoryId categoryID) {
     if (!mTournament) {
-        // TODO: Return error
+        queueMessage(mMapper.mapSubscribeCategoryFailMessage());
     }
 
     auto self = shared_from_this();
     mTournament->asyncSubscribeCategory(self, categoryID, [this, self](boost::system::error_code ec) {
-        if (ec.value() == boost::system::errc::no_such_file_or_directory) {
-            // TODO: Map not found
-        }
         if (ec) {
-            // TOOD: Map server error
+            queueMessage(mMapper.mapSubscribeCategoryFailMessage());
         }
+
+        // Success. The controller will send a notification with the category information.
     });
 }
 
 void WebHandlerSession::handleSubscribePlayerCommand(PlayerId playerID) {
+    if (!mTournament) {
+        queueMessage(mMapper.mapSubscribePlayerFailMessage());
+    }
 
+    auto self = shared_from_this();
+    mTournament->asyncSubscribePlayer(self, playerID, [this, self](boost::system::error_code ec) {
+        if (ec) {
+            queueMessage(mMapper.mapSubscribePlayerFailMessage());
+        }
+
+        // Success. The controller will send a notification with the player information.
+    });
 }
 
 void WebHandlerSession::handleSubscribeTatamiCommand(unsigned int tatamiIndex) {
+    if (!mTournament) {
+        queueMessage(mMapper.mapSubscribeTatamiFailMessage());
+    }
 
+    auto self = shared_from_this();
+    mTournament->asyncSubscribePlayer(self, tatamiIndex, [this, self](boost::system::error_code ec) {
+        if (ec) {
+            queueMessage(mMapper.mapSubscribeTatamiFailMessage());
+        }
+
+        // Success. The controller will send a notification with the tatami information.
+    });
 }
 
 void WebHandlerSession::handleListTournamentsCommand() {
-
+    // TODO: Implement
 }
 
 void WebHandlerSession::queueMessage(const std::string &message) {
@@ -204,6 +225,17 @@ void WebHandlerSession::queueMessage(const std::string &message) {
         return;
     }
     writeMessageQueue();
+}
+
+void WebHandlerSession::asyncQueueMessage(const std::string &message) {
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, self, message]() {
+        if (mIsClosed) {
+            return;
+        }
+
+        queueMessage(message);
+    });
 }
 
 void WebHandlerSession::writeMessageQueue() {
@@ -250,36 +282,25 @@ void WebHandlerSession::close() {
 
 void WebHandlerSession::notifyTournamentChange(const WebTournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
     const auto message = mMapper.mapChangeMessage(tournament, categoryId, playerId, tatamiIndex, clockDiff);
-    auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, message]() {
-        if (mIsClosed) {
-            return;
-        }
-
-        queueMessage(message);
-    });
+    asyncQueueMessage(message);
 }
 
 void WebHandlerSession::notifyTournamentSync(const WebTournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
     const auto message = mMapper.mapSyncMessage(tournament, categoryId, playerId, tatamiIndex, clockDiff);
-    auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, message]() {
-        if (mIsClosed) {
-            return;
-        }
-
-        queueMessage(message);
-    });
+    asyncQueueMessage(message);
 }
 
 void WebHandlerSession::notifyCategorySubscription(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
-
+    const auto message = mMapper.mapSubscribeCategoryMessage(tournament, category, clockDiff);
+    asyncQueueMessage(message);
 }
 
 void WebHandlerSession::notifyPlayerSubscription(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff) {
-
+    const auto message = mMapper.mapSubscribePlayerMessage(tournament, player, clockDiff);
+    asyncQueueMessage(message);
 }
 
-void WebHandlerSession::notifyTatamiSubscription(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff) {
-
+void WebHandlerSession::notifyTatamiSubscription(const WebTournamentStore &tournament, size_t tatamiIndex, std::chrono::milliseconds clockDiff) {
+    const auto message = mMapper.mapSubscribeTatamiMessage(tournament, tatamiIndex, clockDiff);
+    asyncQueueMessage(message);
 }

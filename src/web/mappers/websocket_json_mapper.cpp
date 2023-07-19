@@ -263,6 +263,57 @@ std::string WebsocketJSONMapper::mapSyncMessage(const WebTournamentStore &tourna
     return documentToString(document);
 }
 
+std::string WebsocketJSONMapper::mapSubscribeTournamentFailMessage() {
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("tournamentSubscriptionFail", allocator), allocator);
+    return documentToString(document);
+}
+
+std::string WebsocketJSONMapper::mapSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
+    return "";
+    // TODO: Implement
+}
+
+std::string WebsocketJSONMapper::mapSubscribeCategoryFailMessage() {
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("categorySubscriptionFail", allocator), allocator);
+    return documentToString(document);
+}
+
+std::string WebsocketJSONMapper::mapSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff) {
+    return "";
+    // TODO: Implement
+}
+
+std::string WebsocketJSONMapper::mapSubscribePlayerFailMessage() {
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("playerSubscriptionFail", allocator), allocator);
+    return documentToString(document);
+}
+
+std::string WebsocketJSONMapper::mapSubscribeTatamiMessage(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff) {
+    return "";
+    // TODO: Implement
+}
+
+std::string WebsocketJSONMapper::mapSubscribeTatamiFailMessage() {
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("tatamiSubscriptionFail", allocator), allocator);
+    return documentToString(document);
+}
+
 rapidjson::Value WebsocketJSONMapper::mapTournamentMeta(const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator) {
     rapidjson::Value res;
     res.SetObject();
