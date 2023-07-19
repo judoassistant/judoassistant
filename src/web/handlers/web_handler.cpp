@@ -39,7 +39,7 @@ void WebHandler::asyncListen() {
                 }
 
                 mLogger.info("Accepted websocket request", LoggerField("address", address));
-                auto session = std::make_shared<WebHandlerSession>(mContext, mLogger, std::move(websocket_ptr), *this);
+                auto session = std::make_shared<WebHandlerSession>(mContext, mLogger, std::move(websocket_ptr), *this, mTournamentController);
                 session->asyncListen();
                 mSessions.push_back(std::move(session));
             }));

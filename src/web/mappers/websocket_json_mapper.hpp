@@ -12,6 +12,7 @@ class WebsocketJSONMapper {
 public:
     std::string mapClockMessage(std::chrono::milliseconds clock);
     std::string mapChangeMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff);
+
     std::string mapSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff);
 
 private:

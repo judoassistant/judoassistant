@@ -1,17 +1,17 @@
 #pragma once
 
+#include <boost/system/detail/error_code.hpp>
 #include <memory>
 #include <unordered_set>
 #include <unordered_map>
 #include <boost/asio/io_context_strand.hpp>
 
 #include "core/actions/action.hpp"
-#include "web/handlers/web_handler.hpp"
-#include "web/handlers/web_handler_session.hpp"
 #include "web/web_tournament_store.hpp"
 
 class Logger;
 class TCPHandlerSession;
+class WebHandlerSession;
 
 // WebHandlerSession represents a stateful tournament session. Tournament
 // sessions are created by the controller whenever tournaments are read or
@@ -35,13 +35,13 @@ public:
     void asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback);
     void asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback);
 
-    typedef std::function<void ()> SubscribeCategoryCallback;
+    typedef std::function<void (boost::system::error_code)> SubscribeCategoryCallback;
     void asyncSubscribeCategory(std::shared_ptr<WebHandlerSession> webSession, CategoryId categoryID, SubscribeCategoryCallback callback);
 
-    typedef std::function<void ()> SubscribePlayerCallback;
+    typedef std::function<void (boost::system::error_code)> SubscribePlayerCallback;
     void asyncSubscribePlayer(std::shared_ptr<WebHandlerSession> webSession, PlayerId playerID, SubscribePlayerCallback callback);
 
-    typedef std::function<void ()> SubscribeTatamiCallback;
+    typedef std::function<void (boost::system::error_code)> SubscribeTatamiCallback;
     void asyncSubscribeTatami(std::shared_ptr<WebHandlerSession> webSession, unsigned int tatamiIndex, SubscribeTatamiCallback callback);
 
 private:

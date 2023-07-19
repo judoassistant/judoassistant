@@ -7,6 +7,8 @@
 #include <queue>
 
 #include "core/id.hpp"
+#include "web/controllers/tournament_controller.hpp"
+#include "web/controllers/tournament_controller_session.hpp"
 #include "web/mappers/websocket_json_mapper.hpp"
 #include "core/logger.hpp"
 
@@ -16,12 +18,16 @@ class WebHandler;
 // created whenever a new Websocket connection is established.
 class WebHandlerSession : public std::enable_shared_from_this<WebHandlerSession> {
 public:
-    WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler);
+    WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler, TournamentController &tournamentController);
     void asyncListen();
     void asyncClose();
 
-    void asyncQueueChangeMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff);
-    void asyncQueueSyncMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff);
+    // Notifications from the controller layer
+    void notifyTournamentChange(const WebTournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff);
+    void notifyTournamentSync(const WebTournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff);
+    void notifyCategorySubscription(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff);
+    void notifyPlayerSubscription(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff);
+    void notifyTatamiSubscription(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff);
 
 private:
     // close closes the current sessions and removes all references to the session from the handler and tournament.
@@ -35,14 +41,21 @@ private:
     void writeMessageQueue();
 
     void handleClockCommand();
+    void handleSubscribeTournamentCommand(const std::string &tournamentID);
+    void handleSubscribeCategoryCommand();
+    void handleSubscribePlayerCommand();
+    void handleSubscribeTatamiCommand();
+    void handleListTournamentsCommand();
 
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Logger &mLogger;
     std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> mSocket;
     WebHandler &mWebHandler;
-    bool mIsClosed;
     WebsocketJSONMapper mMapper;
+    TournamentController &mTournamentController;
 
+    bool mIsClosed;
     std::queue<std::string> mWriteQueue;
+    std::shared_ptr<TournamentControllerSession> mTournament;
 };

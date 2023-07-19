@@ -1,5 +1,9 @@
+#include <boost/asio/post.hpp>
+#include <boost/system/detail/errc.hpp>
+
 #include "web/controllers/tournament_controller_session.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
+#include "web/handlers/web_handler_session.hpp"
 #include "core/constants/actions.hpp"
 #include "core/id.hpp"
 #include "core/logger.hpp"
@@ -104,9 +108,10 @@ void TournamentControllerSession::asyncUndoAction(ClientActionId actionID, UndoA
 
 void TournamentControllerSession::asyncAddWebSession(std::shared_ptr<WebHandlerSession> webSession, DispatchActionCallback callback) {
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, webSession]() {
-        mWebSessions.insert(webSession);
-        // TODO: Handle callback
+    boost::asio::post(mStrand, [this, self, webSession, callback]() {
+        webSession->notifyTournamentSync(*mTournament, std::nullopt, std::nullopt, std::nullopt, mClockDiff);
+        mWebSessions.insert(std::move(webSession));
+        boost::asio::post(mContext, callback);
     });
 }
 
@@ -127,37 +132,43 @@ void TournamentControllerSession::clearSubscriptions(std::shared_ptr<WebHandlerS
 
 void TournamentControllerSession::asyncSubscribeCategory(std::shared_ptr<WebHandlerSession> webSession, CategoryId categoryID, SubscribeCategoryCallback callback) {
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, webSession, categoryID](){
+    boost::asio::post(mStrand, [this, self, webSession, categoryID, callback](){
         clearSubscriptions(webSession);
+        auto errCode = boost::system::errc::no_such_file_or_directory;
         if (mTournament->containsCategory(categoryID)) {
             mCategorySubscriptions[webSession] = categoryID;
-            // TODO: Handle callback
-            return;
+            webSession->notifyCategorySubscription(*mTournament, mTournament->getCategory(categoryID), mClockDiff);
+            errCode = boost::system::errc::success;
         }
+        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(errCode)));
     });
 }
 
 void TournamentControllerSession::asyncSubscribePlayer(std::shared_ptr<WebHandlerSession> webSession, PlayerId playerID, SubscribePlayerCallback callback) {
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, webSession, playerID](){
+    boost::asio::post(mStrand, [this, self, webSession, playerID, callback](){
         clearSubscriptions(webSession);
+        auto errCode = boost::system::errc::no_such_file_or_directory;
         if (mTournament->containsPlayer(playerID)) {
             mPlayerSubscriptions[webSession] = playerID;
-            // TODO: Handle callback
-            return;
+            webSession->notifyPlayerSubscription(*mTournament, mTournament->getPlayer(playerID), mClockDiff);
+            errCode = boost::system::errc::success;
         }
+        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(errCode)));
     });
 }
 
 void TournamentControllerSession::asyncSubscribeTatami(std::shared_ptr<WebHandlerSession> webSession, unsigned int tatamiIndex, SubscribeTatamiCallback callback) {
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, webSession, tatamiIndex](){
+    boost::asio::post(mStrand, [this, self, webSession, tatamiIndex, callback](){
         clearSubscriptions(webSession);
+        auto errCode = boost::system::errc::no_such_file_or_directory;
         if (tatamiIndex < mTournament->getTatamis().tatamiCount()) {
             mTatamiSubscriptions[webSession] = tatamiIndex;
-            // TODO: Handle callback
-            return;
+            webSession->notifyTatamiSubscription(*mTournament, tatamiIndex, mClockDiff);
+            errCode = boost::system::errc::success;
         }
+        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(errCode)));
     });
 }
 
@@ -176,7 +187,7 @@ void TournamentControllerSession::queueSyncMessages() {
             tatamiIndex = tatamiIt->second;
         }
 
-        webSession->asyncQueueSyncMessage(*mTournament, categoryId, playerId, tatamiIndex, mClockDiff);
+        webSession->notifyTournamentSync(*mTournament, categoryId, playerId, tatamiIndex, mClockDiff);
     }
 }
 
@@ -199,7 +210,7 @@ void TournamentControllerSession::queueChangeMessages() {
             continue;
         }
 
-        webSession->asyncQueueChangeMessage(*mTournament, categoryId, playerId, tatamiIndex, mClockDiff);
+        webSession->notifyTournamentChange(*mTournament, categoryId, playerId, tatamiIndex, mClockDiff);
     }
 
     // TODO: Sync to meta service?

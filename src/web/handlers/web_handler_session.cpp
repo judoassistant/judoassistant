@@ -1,20 +1,24 @@
+#include "web/controllers/tournament_controller_session.hpp"
 #include "web/handlers/web_handler.hpp"
 #include "web/handlers/web_handler_session.hpp"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/asio/bind_executor.hpp>
 #include <boost/beast/core/buffers_to_string.hpp>
+#include <boost/system/detail/errc.hpp>
+#include <boost/system/detail/error_code.hpp>
 #include <memory>
 #include <stdexcept>
 
 constexpr int MAX_COMMAND_LENGTH = 200;
 
-WebHandlerSession::WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler)
+WebHandlerSession::WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler, TournamentController &tournamentController)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
     , mSocket(std::move(socket))
     , mWebHandler(webHandler)
+    , mTournamentController(tournamentController)
     , mIsClosed(false)
 {
     mSocket->text(true);
@@ -54,18 +58,21 @@ void WebHandlerSession::asyncListen() {
         mLogger.info("Received websocket message", LoggerField("websocketMessage", message));
         const auto command = parts[0];
         if (command == "subscribeTournament") {
-            // TODO: Subscribe tournament
-        }
-        else if (command == "subscribeCategory") {
-            // TODO: Subscribe tournament
-        }
-        else if (command == "subscribePlayer") {
-            // TODO: Subscribe tournament
-        }
-        else if (command == "listTournaments") {
-            // TODO: Subscribe tournament
-        }
-        else if (command == "clock") {
+            if (parts.size() != 2) {
+                mLogger.warn("Received invalid number of arguments", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+
+            // TODO: Limit valid tournament names
+            handleSubscribeTournamentCommand(parts[1]);
+        } else if (command == "subscribeCategory") {
+            handleSubscribeCategoryCommand();
+        } else if (command == "subscribePlayer") {
+            handleSubscribePlayerCommand();
+        } else if (command == "listTournaments") {
+            handleListTournamentsCommand();
+        } else if (command == "clock") {
             if (parts.size() != 1) {
                 mLogger.warn("Received invalid number of arguments", LoggerField("websocketMessage", message));
                 close();
@@ -73,8 +80,7 @@ void WebHandlerSession::asyncListen() {
             }
 
             handleClockCommand();
-        }
-        else {
+        } else {
             mLogger.warn("Received invalid websocket message", LoggerField("websocketMessage", message));
             close();
             return;
@@ -88,6 +94,36 @@ void WebHandlerSession::handleClockCommand() {
     const auto unix_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     const auto resp = mMapper.mapClockMessage(unix_time);
     queueMessage(resp);
+}
+
+void WebHandlerSession::handleSubscribeTournamentCommand(const std::string &tournamentID) {
+    auto self = shared_from_this();
+    if (mTournament) {
+        // Ignore if already subscribed to a tournament
+        return;
+    }
+
+    mTournamentController.asyncSubscribeTournament(self, tournamentID, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession){
+        if (ec.value() == boost::system::errc::no_such_file_or_directory) {
+            // TODO: Map not found
+        }
+    });
+}
+
+void WebHandlerSession::handleSubscribeCategoryCommand() {
+
+}
+
+void WebHandlerSession::handleSubscribePlayerCommand() {
+
+}
+
+void WebHandlerSession::handleSubscribeTatamiCommand() {
+
+}
+
+void WebHandlerSession::handleListTournamentsCommand() {
+
 }
 
 void WebHandlerSession::queueMessage(const std::string &message) {
@@ -143,10 +179,38 @@ void WebHandlerSession::close() {
     // TODO: Remove from handler
 }
 
-void WebHandlerSession::asyncQueueChangeMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
-    // auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, tatami, mClockDiff);
+void WebHandlerSession::notifyTournamentChange(const WebTournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
+    const auto message = mMapper.mapChangeMessage(tournament, categoryId, playerId, tatamiIndex, clockDiff);
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, self, message]() {
+        if (mIsClosed) {
+            return;
+        }
+
+        queueMessage(message);
+    });
 }
 
-void WebHandlerSession::asyncQueueSyncMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
-    // auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, tatami, mClockDiff);
+void WebHandlerSession::notifyTournamentSync(const WebTournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
+    const auto message = mMapper.mapSyncMessage(tournament, categoryId, playerId, tatamiIndex, clockDiff);
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, self, message]() {
+        if (mIsClosed) {
+            return;
+        }
+
+        queueMessage(message);
+    });
+}
+
+void WebHandlerSession::notifyCategorySubscription(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
+
+}
+
+void WebHandlerSession::notifyPlayerSubscription(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff) {
+
+}
+
+void WebHandlerSession::notifyTatamiSubscription(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff) {
+
 }
