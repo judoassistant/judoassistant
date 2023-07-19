@@ -3,7 +3,6 @@
 #include "core/constants/actions.hpp"
 #include "core/id.hpp"
 #include "core/logger.hpp"
-#include <openssl/params.h>
 
 TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger)
     : mContext(context)
@@ -62,7 +61,8 @@ void TournamentControllerSession::asyncDispatchAction(ClientActionId actionID, s
 void TournamentControllerSession::asyncUndoAction(ClientActionId actionID, UndoActionCallback callback) {
     auto self = shared_from_this();
     boost::asio::post([this, self, actionID, callback] {
-        // TODO: Catch exceptionbbb
+        // TODO: Catch exceptions
+
         // Verify that the action exists
         {
             const auto it = mActionIds.find(actionID);
@@ -162,11 +162,47 @@ void TournamentControllerSession::asyncSubscribeTatami(std::shared_ptr<WebHandle
 }
 
 void TournamentControllerSession::queueSyncMessages() {
+    for (auto &webSession : mWebSessions) {
+        std::optional<CategoryId> categoryId;
+        if (const auto categoryIt = mCategorySubscriptions.find(webSession); categoryIt != mCategorySubscriptions.end()) {
+            categoryId = categoryIt->second;
+        }
+        std::optional<PlayerId> playerId;
+        if (const auto playerIt = mPlayerSubscriptions.find(webSession); playerIt != mPlayerSubscriptions.end()) {
+            playerId = playerIt->second;
+        }
+        std::optional<unsigned int> tatamiIndex;
+        if (auto tatamiIt = mTatamiSubscriptions.find(webSession); tatamiIt != mTatamiSubscriptions.end()) {
+            tatamiIndex = tatamiIt->second;
+        }
 
+        webSession->asyncQueueSyncMessage(*mTournament, categoryId, playerId, tatamiIndex, mClockDiff);
+    }
 }
 
 void TournamentControllerSession::queueChangeMessages() {
+    for (auto &webSession : mWebSessions) {
+        std::optional<CategoryId> categoryId;
+        if (const auto categoryIt = mCategorySubscriptions.find(webSession); categoryIt != mCategorySubscriptions.end()) {
+            categoryId = categoryIt->second;
+        }
+        std::optional<PlayerId> playerId;
+        if (const auto playerIt = mPlayerSubscriptions.find(webSession); playerIt != mPlayerSubscriptions.end()) {
+            playerId = playerIt->second;
+        }
+        std::optional<unsigned int> tatamiIndex;
+        if (auto tatamiIt = mTatamiSubscriptions.find(webSession); tatamiIt != mTatamiSubscriptions.end()) {
+            tatamiIndex = tatamiIt->second;
+        }
 
+        if (!mTournament->isChanged(categoryId, playerId, tatamiIndex)) {
+            continue;
+        }
+
+        webSession->asyncQueueChangeMessage(*mTournament, categoryId, playerId, tatamiIndex, mClockDiff);
+    }
+
+    // TODO: Sync to meta service?
 }
 
 void TournamentControllerSession::asyncUpsertTCPSession(std::shared_ptr<TCPHandlerSession> tcpSession, UpsertTCPSessionCallback callback) {

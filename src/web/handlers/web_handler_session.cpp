@@ -142,3 +142,11 @@ void WebHandlerSession::close() {
     mSocket.reset();
     // TODO: Remove from handler
 }
+
+void WebHandlerSession::asyncQueueChangeMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
+    // auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, tatami, mClockDiff);
+}
+
+void WebHandlerSession::asyncQueueSyncMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff) {
+    // auto buffer = encoder.encodeTournamentChangesMessage(*mTournament, category, player, tatami, mClockDiff);
+}

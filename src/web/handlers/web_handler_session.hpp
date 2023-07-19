@@ -3,8 +3,10 @@
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/beast.hpp>
+#include <chrono>
 #include <queue>
 
+#include "core/id.hpp"
 #include "web/mappers/websocket_json_mapper.hpp"
 #include "core/logger.hpp"
 
@@ -17,6 +19,9 @@ public:
     WebHandlerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> socket, WebHandler &webHandler);
     void asyncListen();
     void asyncClose();
+
+    void asyncQueueChangeMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff);
+    void asyncQueueSyncMessage(const TournamentStore &tournament, std::optional<CategoryId> categoryId, std::optional<PlayerId> playerId, std::optional<unsigned int> tatamiIndex, std::chrono::milliseconds clockDiff);
 
 private:
     // close closes the current sessions and removes all references to the session from the handler and tournament.
