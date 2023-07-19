@@ -25,6 +25,25 @@ WebHandlerSession::WebHandlerSession(boost::asio::io_context &context, Logger &l
     mSocket->text(true);
 }
 
+bool hasIllegalCharacters(const std::string &message) {
+    for (const char c : message) {
+        if ('a' <= c && c <= 'z')
+            continue;
+        if ('A' <= c && c <= 'Z')
+            continue;
+        if ('0' <= c && c <= '9')
+            continue;
+        if (c == '-')
+            continue;
+        if (c == ' ')
+            continue;
+
+        return true;
+    }
+
+    return false;
+};
+
 void WebHandlerSession::asyncListen() {
     auto self = shared_from_this();
     auto buffer = std::make_shared<boost::beast::multi_buffer>();
@@ -44,6 +63,11 @@ void WebHandlerSession::asyncListen() {
         if (message.size() > MAX_COMMAND_LENGTH) {
             const auto message_substr = message.substr(0, MAX_COMMAND_LENGTH) + "...";
             mLogger.warn("Received too long websocket message", LoggerField("websocketMessage", message_substr));
+            close();
+            return;
+        }
+        if (hasIllegalCharacters(message)) {
+            mLogger.warn("Received websocket message with illegal characters", LoggerField("websocketMessage", message));
             close();
             return;
         }
