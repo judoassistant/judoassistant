@@ -42,9 +42,9 @@ private:
 
     void handleClockCommand();
     void handleSubscribeTournamentCommand(const std::string &tournamentID);
-    void handleSubscribeCategoryCommand();
-    void handleSubscribePlayerCommand();
-    void handleSubscribeTatamiCommand();
+    void handleSubscribeCategoryCommand(CategoryId categoryID);
+    void handleSubscribePlayerCommand(PlayerId playerID);
+    void handleSubscribeTatamiCommand(unsigned int tatamiIndex);
     void handleListTournamentsCommand();
 
     boost::asio::io_context &mContext;

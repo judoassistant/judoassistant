@@ -1,3 +1,4 @@
+#include "core/id.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
 #include "web/handlers/web_handler.hpp"
 #include "web/handlers/web_handler_session.hpp"
@@ -67,10 +68,63 @@ void WebHandlerSession::asyncListen() {
             // TODO: Limit valid tournament names
             handleSubscribeTournamentCommand(parts[1]);
         } else if (command == "subscribeCategory") {
-            handleSubscribeCategoryCommand();
+            if (parts.size() != 2) {
+                mLogger.warn("Received invalid number of arguments", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+            CategoryId categoryID;
+            try {
+                categoryID = CategoryId(parts[1]);
+            }
+            catch (const std::exception &e) {
+                mLogger.warn("Received invalid categoryID argument", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+
+            handleSubscribeCategoryCommand(categoryID);
         } else if (command == "subscribePlayer") {
-            handleSubscribePlayerCommand();
+            if (parts.size() != 2) {
+                mLogger.warn("Received invalid number of arguments", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+            PlayerId playerID;
+            try {
+                playerID = PlayerId(parts[1]);
+            }
+            catch (const std::exception &e) {
+                mLogger.warn("Received invalid playerID argument", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+
+            handleSubscribePlayerCommand(playerID);
+        } else if (command == "subscribeTatami") {
+            if (parts.size() != 2) {
+                mLogger.warn("Received invalid number of arguments", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+
+            unsigned int tatamiIndex;
+            try {
+                tatamiIndex = std::stoul(parts[1]);
+            }
+            catch (const std::exception &e) {
+                mLogger.warn("Received invalid tatamiIndex argument", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+            handleSubscribeTatamiCommand(tatamiIndex);
         } else if (command == "listTournaments") {
+            if (parts.size() != 1) {
+                mLogger.warn("Received invalid number of arguments", LoggerField("websocketMessage", message));
+                close();
+                return;
+            }
+
             handleListTournamentsCommand();
         } else if (command == "clock") {
             if (parts.size() != 1) {
@@ -97,28 +151,43 @@ void WebHandlerSession::handleClockCommand() {
 }
 
 void WebHandlerSession::handleSubscribeTournamentCommand(const std::string &tournamentID) {
-    auto self = shared_from_this();
     if (mTournament) {
         // Ignore if already subscribed to a tournament
         return;
     }
 
+    auto self = shared_from_this();
     mTournamentController.asyncSubscribeTournament(self, tournamentID, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession){
         if (ec.value() == boost::system::errc::no_such_file_or_directory) {
             // TODO: Map not found
         }
+        if (ec) {
+            // TOOD: Map server error
+        }
     });
 }
 
-void WebHandlerSession::handleSubscribeCategoryCommand() {
+void WebHandlerSession::handleSubscribeCategoryCommand(CategoryId categoryID) {
+    if (!mTournament) {
+        // TODO: Return error
+    }
+
+    auto self = shared_from_this();
+    mTournament->asyncSubscribeCategory(self, categoryID, [this, self](boost::system::error_code ec) {
+        if (ec.value() == boost::system::errc::no_such_file_or_directory) {
+            // TODO: Map not found
+        }
+        if (ec) {
+            // TOOD: Map server error
+        }
+    });
+}
+
+void WebHandlerSession::handleSubscribePlayerCommand(PlayerId playerID) {
 
 }
 
-void WebHandlerSession::handleSubscribePlayerCommand() {
-
-}
-
-void WebHandlerSession::handleSubscribeTatamiCommand() {
+void WebHandlerSession::handleSubscribeTatamiCommand(unsigned int tatamiIndex) {
 
 }
 
