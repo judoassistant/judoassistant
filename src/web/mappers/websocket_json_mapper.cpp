@@ -273,8 +273,19 @@ std::string WebsocketJSONMapper::mapSubscribeTournamentFailMessage() {
 }
 
 std::string WebsocketJSONMapper::mapSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
-    return "";
-    // TODO: Implement
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("categorySubscription", allocator), allocator);
+    document.AddMember("subscribedCategory", mapCategoryFull(tournament, category, allocator), allocator);
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+    for (const auto &match : category.getMatches())
+        matches.PushBack(mapMatch(category, *match, clockDiff, allocator), allocator);
+    document.AddMember("matches", matches, allocator);
+
+    return documentToString(document);
 }
 
 std::string WebsocketJSONMapper::mapSubscribeCategoryFailMessage() {
@@ -287,8 +298,22 @@ std::string WebsocketJSONMapper::mapSubscribeCategoryFailMessage() {
 }
 
 std::string WebsocketJSONMapper::mapSubscribePlayerMessage(const WebTournamentStore &tournament, const PlayerStore &player, std::chrono::milliseconds clockDiff) {
-    return "";
-    // TODO: Implement
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("playerSubscription", allocator), allocator);
+    document.AddMember("subscribedPlayer", mapPlayerFull(player, allocator), allocator);
+
+    rapidjson::Value matches(rapidjson::kArrayType);
+    for (auto combinedId : player.getMatches()) {
+        const auto &category = tournament.getCategory(combinedId.getCategoryId());
+        const auto &match = category.getMatch(combinedId.getMatchId());
+        matches.PushBack(mapMatch(category, match, clockDiff, allocator), allocator);
+    }
+    document.AddMember("matches", matches, allocator);
+
+    return documentToString(document);
 }
 
 std::string WebsocketJSONMapper::mapSubscribePlayerFailMessage() {
@@ -301,8 +326,14 @@ std::string WebsocketJSONMapper::mapSubscribePlayerFailMessage() {
 }
 
 std::string WebsocketJSONMapper::mapSubscribeTatamiMessage(const WebTournamentStore &tournament, size_t index, std::chrono::milliseconds clockDiff) {
-    return "";
-    // TODO: Implement
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("tatamiSubscription", allocator), allocator);
+    document.AddMember("subscribedTatami", mapTatamiFull(index, tournament, allocator), allocator);
+
+    return documentToString(document);
 }
 
 std::string WebsocketJSONMapper::mapSubscribeTatamiFailMessage() {
