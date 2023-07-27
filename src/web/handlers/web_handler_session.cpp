@@ -185,15 +185,18 @@ void WebHandlerSession::handleSubscribeTournamentCommand(const std::string &tour
     mTournamentController.asyncSubscribeTournament(self, tournamentID, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession){
         if (ec) {
             queueMessage(mMapper.mapSubscribeTournamentFailMessage());
+            return;
         }
 
         // Success. The controller will send a notification with the tournament information.
+        mTournament = std::move(tournamentSession);
     });
 }
 
 void WebHandlerSession::handleSubscribeCategoryCommand(CategoryId categoryID) {
     if (!mTournament) {
         queueMessage(mMapper.mapSubscribeCategoryFailMessage());
+        return;
     }
 
     auto self = shared_from_this();

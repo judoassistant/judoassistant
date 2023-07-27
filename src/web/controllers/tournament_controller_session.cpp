@@ -15,8 +15,8 @@ TournamentControllerSession::TournamentControllerSession(boost::asio::io_context
 {}
 
 void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback) {
-    // TODO: Capture unique ptrs using move constructors.
-    auto tournamentPtr = tournament.release();
+    // TODO: Capture unique ptrs using moveconstructors.
+     auto tournamentPtr = tournament.release();
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, tournamentPtr, actionList, clockDiff]() {
         mTournament = std::unique_ptr<WebTournamentStore>(tournamentPtr);

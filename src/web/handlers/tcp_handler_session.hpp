@@ -19,7 +19,7 @@ class NetworkConnection;
 // main application.
 class TCPHandlerSession : public std::enable_shared_from_this<TCPHandlerSession> {
 public:
-    TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::unique_ptr<NetworkConnection> connection);
+    TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::shared_ptr<NetworkConnection> connection);
     void asyncClose();
     void asyncListen();
 
@@ -54,7 +54,7 @@ private:
     TCPHandler &mTCPHandler;
     MetaServiceGateway &mMetaServiceGateway;
     TournamentController &mTournamentController;
-    std::unique_ptr<NetworkConnection> mConnection;
+    std::shared_ptr<NetworkConnection> mConnection;
     std::shared_ptr<TournamentControllerSession> mTournamentSession;
 
     State mState;

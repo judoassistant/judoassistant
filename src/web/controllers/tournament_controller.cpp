@@ -25,6 +25,7 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
             tournamentSession->asyncAddWebSession(webSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
                 boost::asio::dispatch(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), tournamentSession));
             }));
+            return;
         }
 
         // TODO: Read from storage gateway
@@ -41,7 +42,7 @@ void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSess
         if (it != mTournamentSessions.end()) {
             tournamentSession = it->second;
         } else {
-            tournamentSession = std::make_shared<TournamentControllerSession>(mContext, mLogger);
+            tournamentSession = mTournamentSessions[tournamentID] = std::make_shared<TournamentControllerSession>(mContext, mLogger);
         }
 
         // TODO: Check meta-service user information

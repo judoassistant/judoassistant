@@ -27,18 +27,16 @@ void TCPHandler::asyncListen() {
         }
         else {
             const std::string address = socket.remote_endpoint().address().to_string();
-
-            // We use a raw pointer due to difficulties passing smart pointers through asio
-            auto connection = new NetworkConnection(std::make_unique<PlainSocket>(mContext, std::move(socket)));
+            auto connection = std::make_shared<NetworkConnection>(std::make_unique<PlainSocket>(mContext, std::move(socket)));
             connection->asyncAccept(boost::asio::bind_executor(mStrand, [this, connection, address](boost::system::error_code ec) {
-                auto connection_ptr = std::unique_ptr<NetworkConnection>(connection);
 
                 if (ec) {
                     mLogger.warn("Unable to accept Judoassistant connection", LoggerField(ec), LoggerField("address", address));
                     return;
                 }
 
-                auto session = std::make_shared<TCPHandlerSession>(mContext, mLogger, *this, mMetaServiceGateway, mTournamentController, std::move(connection_ptr));
+                mLogger.info("Accepted TCP socket request", LoggerField("address", address));
+                auto session = std::make_shared<TCPHandlerSession>(mContext, mLogger, *this, mMetaServiceGateway, mTournamentController, std::move(connection));
                 session->asyncListen();
                 mSessions.push_back(std::move(session));
             }));

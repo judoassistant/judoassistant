@@ -15,7 +15,7 @@
 #include "web/handlers/tcp_handler_session.hpp"
 #include "web/web_tournament_store.hpp"
 
-TCPHandlerSession::TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::unique_ptr<NetworkConnection> connection)
+TCPHandlerSession::TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::shared_ptr<NetworkConnection> connection)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
@@ -67,7 +67,11 @@ void TCPHandlerSession::handleAuthentication() {
 
             // Deliver response
             auto message = std::make_unique<NetworkMessage>();
-            message->encodeRequestWebTokenResponse(resp, std::nullopt);
+            WebToken token; // TODO: Remove token
+            for (size_t i = 0; i < 32; ++i) {
+                token[i] = 0;
+            }
+            message->encodeRequestWebTokenResponse(resp, token);
             queueMessage(std::move(message));
 
             // Transition state depending on outcome
@@ -191,7 +195,7 @@ void TCPHandlerSession::handleTournamentSync() {
         }
 
         SharedActionList actionList;
-        std::unique_ptr<WebTournamentStore> tournament;
+        auto tournament = std::make_unique<WebTournamentStore>();
         if (!message->decodeSync(*tournament, actionList)) {
             mLogger.warn("Received invalid SYNC request");
             close();
