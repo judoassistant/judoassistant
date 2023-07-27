@@ -1,7 +1,9 @@
 #include <boost/asio/post.hpp>
 #include <boost/system/detail/errc.hpp>
+#include <chrono>
 
 #include "web/controllers/tournament_controller_session.hpp"
+#include "web/gateways/storage_gateway.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
 #include "web/handlers/web_handler_session.hpp"
 #include "core/constants/actions.hpp"
@@ -12,6 +14,14 @@ TournamentControllerSession::TournamentControllerSession(boost::asio::io_context
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+{}
+
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
+    : mContext(context)
+    , mStrand(mContext)
+    , mLogger(logger)
+    , mTournament(std::move(tournamentStore))
+    , mClockDiff(clockDiff)
 {}
 
 void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback) {

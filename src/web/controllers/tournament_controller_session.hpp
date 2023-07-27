@@ -1,10 +1,11 @@
 #pragma once
 
-#include <boost/system/detail/error_code.hpp>
-#include <memory>
-#include <unordered_set>
-#include <unordered_map>
 #include <boost/asio/io_context_strand.hpp>
+#include <boost/system/detail/error_code.hpp>
+#include <chrono>
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "core/actions/action.hpp"
 #include "web/web_tournament_store.hpp"
@@ -19,6 +20,7 @@ class WebHandlerSession;
 class TournamentControllerSession : public std::enable_shared_from_this<TournamentControllerSession>{
 public:
     TournamentControllerSession(boost::asio::io_context &context, Logger &logger);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
 
     typedef std::function<void ()> SyncTournamentCallback;
     void asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback);

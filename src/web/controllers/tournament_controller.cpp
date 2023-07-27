@@ -9,6 +9,7 @@
 #include "web/controllers/tournament_controller.hpp"
 #include "core/logger.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
+#include "web/web_tournament_store.hpp"
 
 TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway)
     : mContext(context)
@@ -30,7 +31,16 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
         }
 
         // Check storage
-        // mStorageGateway.
+        mStorageGateway.asyncGetTournament(tournamentID, [this, webSession, callback](boost::system::error_code ec, WebTournamentStore *tournamentPtr, std::chrono::milliseconds clockDiff) {
+            if (ec) {
+                // TODO: Kick
+            }
+            auto tournamentSession = std::make_shared<TournamentControllerSession>(mContext, mLogger, std::unique_ptr<WebTournamentStore>(tournamentPtr), clockDiff);
+            tournamentSession->asyncAddWebSession(webSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
+                boost::asio::dispatch(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), tournamentSession));
+            }));
+            return;
+        });
 
         // Return not found
         boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory), nullptr));
