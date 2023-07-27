@@ -21,7 +21,7 @@ public:
 
     typedef std::function<void (boost::system::error_code)> UpsertTournamentCallback;
     // UpsertTournament upserts a tournament to storage.
-    void asyncUpsertTournament(const std::string tournamentID, UpsertTournamentCallback callback);
+    void asyncUpsertTournament(const std::string tournamentID, WebTournamentStore &tournament, UpsertTournamentCallback callback);
 
 private:
     boost::asio::io_context &mContext;

@@ -9,6 +9,7 @@
 #include <fstream>
 #include <zstd.h>
 
+#include "core/constants/compression.hpp"
 #include "core/serializables.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
 #include "web/gateways/storage_gateway.hpp"
@@ -100,8 +101,78 @@ void StorageGateway::asyncGetTournament(const std::string tournamentID, GetTourn
     });
 }
 
-void StorageGateway::asyncUpsertTournament(const std::string tournamentID, UpsertTournamentCallback callback) {
-    boost::asio::post(mStrand, [this, callback]() {
+void StorageGateway::asyncUpsertTournament(const std::string tournamentID, WebTournamentStore &tournament, UpsertTournamentCallback callback) {
+    // Serialize tournament
+    std::chrono::milliseconds clockDiff;
+    std::shared_ptr<std::string> decompressed;
+    try {
+        std::ostringstream stream;
+        cereal::PortableBinaryOutputArchive archive(stream);
+        archive(clockDiff, tournament);
+        decompressed = std::make_shared<std::string>(stream.str());
+    }
+    catch(const std::exception &e) {
+        mLogger.error("Unable to serialize tournament file");
+        const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
+        boost::asio::post(mContext, std::bind(callback, ec));
+        return;
+    }
+
+    // Write and compress in separate strand
+    boost::asio::post(mStrand, [this, tournamentID, clockDiff, decompressed, callback]() {
+        // Compress bytes
+        const size_t decompressedSize = decompressed->size();
+        const size_t compressBound = ZSTD_compressBound(decompressedSize);
+
+        auto compressed = std::make_unique<char[]>(compressBound);
+        const size_t compressedSize = ZSTD_compress(compressed.get(), compressBound, static_cast<void*>(compressed.get()), decompressedSize, COMPRESSION_LEVEL);
+
+        if (ZSTD_isError(compressedSize)) {
+            mLogger.error("Unable to compress tournament file");
+            const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
+            boost::asio::post(mContext, std::bind(callback, ec));
+            return;
+        }
+
+        // Serialize file header
+        std::string header;
+        try {
+            std::ostringstream stream;
+            cereal::PortableBinaryOutputArchive archive(stream);
+            archive(compressedSize, decompressedSize);
+            header = stream.str();
+        }
+        catch(const std::exception &e) {
+            mLogger.error("Unable to serialize file header");
+            const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
+            boost::asio::post(mContext, std::bind(callback, ec));
+            return;
+        }
+
+        assert(header.size() == FILE_HEADER_SIZE);
+
+        // Write file
+        const boost::filesystem::path filePath = mConfig.dataDirectory / tournamentID;
+        std::ofstream file(filePath.string(), std::ios::out | std::ios::binary | std::ios::trunc);
+        if (!file.is_open()) {
+            mLogger.error("Unable to open tournament file for writing");
+            const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
+            boost::asio::post(mContext, std::bind(callback, ec));
+            return;
+        }
+
+        try {
+            file.write(header.data(), header.size());
+            file.write(compressed.get(), static_cast<size_t>(compressedSize));
+            file.close();
+        }
+        catch(const std::exception &e) {
+            mLogger.error("Unable to write tournament to file", LoggerField(e));
+            const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
+            boost::asio::post(mContext, std::bind(callback, ec));
+            return;
+        }
+
         const auto ec = boost::system::errc::make_error_code(boost::system::errc::success);
         boost::asio::post(mContext, std::bind(callback, ec));
     });
