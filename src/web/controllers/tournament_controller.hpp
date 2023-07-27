@@ -5,12 +5,13 @@
 
 #include "core/web/web_types.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
+#include "web/gateways/storage_gateway.hpp"
 
 class Logger;
 
 class TournamentController {
 public:
-    TournamentController(boost::asio::io_context &context, Logger &logger);
+    TournamentController(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway);
 
     typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentControllerSession>)> SubscribeTournamentCallback;
     // asyncSubscribeTournament returns a tournament session. If the tournament is
@@ -35,6 +36,7 @@ private:
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Logger &mLogger;
+    StorageGateway &mStorageGateway;
 
     std::unordered_map<std::string, std::shared_ptr<TournamentControllerSession>> mTournamentSessions;
 };

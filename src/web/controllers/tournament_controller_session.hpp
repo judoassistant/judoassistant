@@ -65,6 +65,6 @@ private:
 
     std::unique_ptr<WebTournamentStore> mTournament;
     SharedActionList mActionList;
-    std::unordered_set<ClientActionId> mActionIds; // TODO: Is this used anywhere?
+    std::unordered_set<ClientActionId> mActionIds;
     std::chrono::milliseconds mClockDiff;
 };

@@ -8,7 +8,7 @@ NewWebServer::NewWebServer(const Config &config)
     , mLogger()
     , mMetaServiceGateway(mContext, mLogger)
     , mStorageGateway(mContext, mLogger)
-    , mTournamentController(mContext, mLogger)
+    , mTournamentController(mContext, mLogger, mStorageGateway)
     , mTCPHandler(mContext, mLogger, mConfig, mTournamentController, mMetaServiceGateway)
     , mWebHandler(mContext, mLogger, mConfig, mTournamentController)
 {}

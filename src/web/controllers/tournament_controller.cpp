@@ -10,10 +10,11 @@
 #include "core/logger.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
 
-TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger)
+TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+    , mStorageGateway(storageGateway)
 {}
 
 void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSession> webSession, const std::string &tournamentID, SubscribeTournamentCallback callback) {
@@ -28,7 +29,8 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
             return;
         }
 
-        // TODO: Read from storage gateway
+        // Check storage
+        // mStorageGateway.
 
         // Return not found
         boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory), nullptr));
