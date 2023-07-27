@@ -16,11 +16,11 @@ public:
 
     typedef std::function<void (boost::system::error_code, WebTournamentStore*, std::chrono::milliseconds)> GetTournamentCallback;
 
-    // GetTournament returns an existing tournaments from storage.
+    // asyncGetTournament returns an existing tournaments from storage.
     void asyncGetTournament(const std::string tournamentID, GetTournamentCallback callback);
 
     typedef std::function<void (boost::system::error_code)> UpsertTournamentCallback;
-    // UpsertTournament upserts a tournament to storage.
+    // asyncUpsertTournament upserts a tournament to storage.
     void asyncUpsertTournament(const std::string tournamentID, WebTournamentStore &tournament, UpsertTournamentCallback callback);
 
 private:

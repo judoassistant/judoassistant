@@ -1,5 +1,6 @@
 #include <boost/asio/post.hpp>
 #include <boost/system/detail/errc.hpp>
+#include <boost/system/detail/error_code.hpp>
 #include <chrono>
 
 #include "web/controllers/tournament_controller_session.hpp"
@@ -10,21 +11,26 @@
 #include "core/id.hpp"
 #include "core/logger.hpp"
 
-TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway)
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
     , mStorageGateway(storageGateway)
+    , mTournamentID(tournamentID)
 {}
 
-TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
     , mStorageGateway(storageGateway)
+    , mTournamentID(tournamentID)
     , mTournament(std::move(tournamentStore))
     , mClockDiff(clockDiff)
-{}
+{
+    mTournament->flushWebTatamiModels();
+    mTournament->clearChanges();
+}
 
 void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback) {
     // TODO: Capture unique ptrs using moveconstructors.
@@ -42,8 +48,15 @@ void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournam
         }
 
         mTournament->flushWebTatamiModels();
-        queueSyncMessages();
         mTournament->clearChanges();
+        queueSyncMessages();
+
+        mStorageGateway.asyncUpsertTournament(mTournamentID, *mTournament, [self, this](boost::system::error_code ec) {
+            if (ec) {
+                // Fail-open when unable to upsert to storage
+                mLogger.warn("Unable to upsert tournament to storage", LoggerField("tournamentID", mTournamentID), LoggerField("errorCode", ec));
+            }
+        });
 
         boost::asio::post(mContext, callback);
     });

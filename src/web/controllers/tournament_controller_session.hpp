@@ -20,8 +20,8 @@ class WebHandlerSession;
 // written by handler sessions.
 class TournamentControllerSession : public std::enable_shared_from_this<TournamentControllerSession>{
 public:
-    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway);
-    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
 
     typedef std::function<void ()> SyncTournamentCallback;
     void asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback);
@@ -67,6 +67,7 @@ private:
     std::unordered_map<std::shared_ptr<WebHandlerSession>, CategoryId> mCategorySubscriptions;
     std::unordered_map<std::shared_ptr<WebHandlerSession>, unsigned int> mTatamiSubscriptions;
 
+    std::string mTournamentID;
     std::unique_ptr<WebTournamentStore> mTournament;
     SharedActionList mActionList;
     std::unordered_set<ClientActionId> mActionIds;

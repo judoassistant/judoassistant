@@ -27,12 +27,10 @@ StorageGateway::StorageGateway(boost::asio::io_context &context, Logger &logger,
 // GetTournament returns an existing tournaments from storage.
 void StorageGateway::asyncGetTournament(const std::string tournamentID, GetTournamentCallback callback) {
     boost::asio::post(mStrand, [this, callback, tournamentID]() {
-        mLogger.info("Loading tournament");
-
         const boost::filesystem::path filePath = mConfig.dataDirectory / tournamentID;
         std::ifstream file(filePath.string(), std::ios::in | std::ios::binary);
         if (!file.is_open()) {
-            mLogger.info("Tournament not found");
+            mLogger.info("Tournament not found in storage");
             // Tournament not found
             const auto ec = boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory);
             boost::asio::post(mContext, std::bind(callback, ec, nullptr, std::chrono::milliseconds(0)));
@@ -51,7 +49,7 @@ void StorageGateway::asyncGetTournament(const std::string tournamentID, GetTourn
             archive(compressedSize, uncompressedSize);
         }
         catch (const std::exception &e) {
-            mLogger.info("Unable to read tournament file header", LoggerField(e));
+            mLogger.error("Unable to read tournament file header", LoggerField("tournamentID", tournamentID), LoggerField(e));
             const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
             boost::asio::post(mContext, std::bind(callback, ec, nullptr, std::chrono::milliseconds(0)));
             return;
@@ -64,7 +62,7 @@ void StorageGateway::asyncGetTournament(const std::string tournamentID, GetTourn
             file.close();
         }
         catch (const std::exception &e) {
-            mLogger.info("Unable to read tournament file body", LoggerField(e));
+            mLogger.error("Unable to read tournament file body", LoggerField("tournamentID", tournamentID), LoggerField(e));
             const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
             boost::asio::post(mContext, std::bind(callback, ec, nullptr, std::chrono::milliseconds(0)));
             return;
@@ -75,7 +73,7 @@ void StorageGateway::asyncGetTournament(const std::string tournamentID, GetTourn
         decompressed.resize(uncompressedSize);
         const size_t returnCode = ZSTD_decompress(decompressed.data(), uncompressedSize, compressed.get(), compressedSize);
         if (ZSTD_isError(returnCode)) {
-            mLogger.info("Unable to decompress tournament file", LoggerField("returnCode", returnCode));
+            mLogger.error("Unable to decompress tournament file", LoggerField("tournamentID", tournamentID), LoggerField("returnCode", returnCode));
             const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
             boost::asio::post(mContext, std::bind(callback, ec, nullptr, std::chrono::milliseconds(0)));
             return;
@@ -90,12 +88,13 @@ void StorageGateway::asyncGetTournament(const std::string tournamentID, GetTourn
             archive(clockDiff, *tournament);
         }
         catch(const std::exception &e) {
-            mLogger.info("Unable to deserialize tournament file contents", LoggerField(e));
+            mLogger.error("Unable to deserialize tournament file contents", LoggerField("tournamentID", tournamentID), LoggerField(e));
             const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
             boost::asio::post(mContext, std::bind(callback, ec, nullptr, std::chrono::milliseconds(0)));
             return;
         }
 
+        mLogger.info("Read tournament from storage");
         const auto ec = boost::system::errc::make_error_code(boost::system::errc::success);
         boost::asio::post(mContext, std::bind(callback, ec, tournament.release(), clockDiff));
     });
@@ -119,13 +118,13 @@ void StorageGateway::asyncUpsertTournament(const std::string tournamentID, WebTo
     }
 
     // Write and compress in separate strand
-    boost::asio::post(mStrand, [this, tournamentID, clockDiff, decompressed, callback]() {
+    boost::asio::post(mStrand, [this, tournamentID, decompressed, callback]() {
         // Compress bytes
         const size_t decompressedSize = decompressed->size();
         const size_t compressBound = ZSTD_compressBound(decompressedSize);
 
         auto compressed = std::make_unique<char[]>(compressBound);
-        const size_t compressedSize = ZSTD_compress(compressed.get(), compressBound, static_cast<void*>(compressed.get()), decompressedSize, COMPRESSION_LEVEL);
+        const size_t compressedSize = ZSTD_compress(compressed.get(), compressBound, decompressed->data(), decompressedSize, COMPRESSION_LEVEL);
 
         if (ZSTD_isError(compressedSize)) {
             mLogger.error("Unable to compress tournament file");
@@ -167,12 +166,13 @@ void StorageGateway::asyncUpsertTournament(const std::string tournamentID, WebTo
             file.close();
         }
         catch(const std::exception &e) {
-            mLogger.error("Unable to write tournament to file", LoggerField(e));
+            mLogger.error("Unable to write tournament to file", LoggerField("tournamentID", tournamentID), LoggerField(e));
             const auto ec = boost::system::errc::make_error_code(boost::system::errc::io_error);
             boost::asio::post(mContext, std::bind(callback, ec));
             return;
         }
 
+        mLogger.info("Upserted tournament to storage", LoggerField("tournamentID", tournamentID));
         const auto ec = boost::system::errc::make_error_code(boost::system::errc::success);
         boost::asio::post(mContext, std::bind(callback, ec));
     });
