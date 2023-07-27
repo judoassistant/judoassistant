@@ -38,7 +38,7 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
                 boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory), nullptr));
                 return;
             }
-            auto tournamentSession = std::make_shared<TournamentControllerSession>(mContext, mLogger, std::unique_ptr<WebTournamentStore>(tournamentPtr), clockDiff);
+            auto tournamentSession = std::make_shared<TournamentControllerSession>(mContext, mLogger, mStorageGateway, std::unique_ptr<WebTournamentStore>(tournamentPtr), clockDiff);
             tournamentSession->asyncAddWebSession(webSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
                 boost::asio::dispatch(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), tournamentSession));
             }));
@@ -54,7 +54,7 @@ void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSess
         if (it != mTournamentSessions.end()) {
             tournamentSession = it->second;
         } else {
-            tournamentSession = mTournamentSessions[tournamentID] = std::make_shared<TournamentControllerSession>(mContext, mLogger);
+            tournamentSession = mTournamentSessions[tournamentID] = std::make_shared<TournamentControllerSession>(mContext, mLogger, mStorageGateway);
         }
 
         // TODO: Check meta-service user information

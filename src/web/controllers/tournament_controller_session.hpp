@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "core/actions/action.hpp"
+#include "web/gateways/storage_gateway.hpp"
 #include "web/web_tournament_store.hpp"
 
 class Logger;
@@ -19,8 +20,8 @@ class WebHandlerSession;
 // written by handler sessions.
 class TournamentControllerSession : public std::enable_shared_from_this<TournamentControllerSession>{
 public:
-    TournamentControllerSession(boost::asio::io_context &context, Logger &logger);
-    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
 
     typedef std::function<void ()> SyncTournamentCallback;
     void asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback);
@@ -57,6 +58,7 @@ private:
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Logger &mLogger;
+    StorageGateway &mStorageGateway;
 
     std::unordered_set<std::shared_ptr<WebHandlerSession>> mWebSessions;
     std::shared_ptr<TCPHandlerSession> mTCPSession;

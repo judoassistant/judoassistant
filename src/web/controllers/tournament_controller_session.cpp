@@ -10,16 +10,18 @@
 #include "core/id.hpp"
 #include "core/logger.hpp"
 
-TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger)
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+    , mStorageGateway(storageGateway)
 {}
 
-TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+    , mStorageGateway(storageGateway)
     , mTournament(std::move(tournamentStore))
     , mClockDiff(clockDiff)
 {}
@@ -28,19 +30,22 @@ void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournam
     // TODO: Capture unique ptrs using moveconstructors.
     auto tournamentPtr = tournament.release();
     auto self = shared_from_this();
-    boost::asio::post(mStrand, [this, self, tournamentPtr, actionList, clockDiff]() {
+    boost::asio::post(mStrand, [this, self, tournamentPtr, actionList, clockDiff, callback]() {
         mTournament = std::unique_ptr<WebTournamentStore>(tournamentPtr);
         mActionList = std::move(actionList);
         mClockDiff = clockDiff;
-
-        mTournament->flushWebTatamiModels();
-        queueSyncMessages();
 
         // Apply all the actions to the tournament
         for (auto &p : actionList) {
             auto &action = *(p.second);
             action.redo(*mTournament);
         }
+
+        mTournament->flushWebTatamiModels();
+        queueSyncMessages();
+        mTournament->clearChanges();
+
+        boost::asio::post(mContext, callback);
     });
 }
 
