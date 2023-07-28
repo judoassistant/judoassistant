@@ -4,8 +4,8 @@
 #include <string>
 #include <rapidjson/document.h>
 
+#include "web/models/tournament_meta.hpp"
 #include "web/web_tournament_store.hpp"
-
 #include "core/stores/match_store.hpp"
 
 class WebsocketJSONMapper {
@@ -15,6 +15,9 @@ public:
     std::string mapSyncMessage(const WebTournamentStore &tournament, std::optional<CategoryId> subscribedCategory, std::optional<PlayerId> subscribedPlayer, std::optional<unsigned int> subscribedTatami, std::chrono::milliseconds clockDiff);
 
     std::string mapSubscribeTournamentFailMessage();
+
+    std::string mapListTournamentsMessage(const std::vector<TournamentMeta> &pastTournaments, const std::vector<TournamentMeta> &upcomingTournaments);
+    std::string mapListTournamentsFailMessage();
 
     std::string mapSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff);
     std::string mapSubscribeCategoryFailMessage();

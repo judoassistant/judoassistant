@@ -9,61 +9,63 @@
 #include "core/web/web_types.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
 
-MetaServiceGateway::MetaServiceGateway(boost::asio::io_context &context, Logger &logger)
+MetaServiceGateway::MetaServiceGateway(boost::asio::io_context &context, Logger &logger, const Config &config)
     : mContext(context)
     , mLogger(logger)
+    , mConfig(config)
 {}
 
-void MetaServiceGateway::ListTournaments(ListTournamentsCallback callback) {
+void MetaServiceGateway::asyncListUpcomingTournaments(ListTournamentsCallback callback) {
     // TODO: Implement
-    // // Check command line arguments.
-    // std::string host;
-    // std::string port;
-    // std::string target;
 
-    // // These objects perform our I/O
-    // boost::asio::ip::tcp::resolver resolver(mContext);
-    // const auto results = resolver.resolve(host, port);
+    auto tournaments = std::make_shared<std::vector<TournamentMeta>>();
+    boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournaments)));
+    // boost::asio::post(mContext, [this, callback]() {
+    //     // Resolve host and setup TCP connection
+    //     boost::asio::ip::tcp::resolver resolver(mContext);
+    //     const auto resolverResult = resolver.resolve(mConfig.metaServiceHost, std::to_string(mConfig.metaServicePort));
+    //     boost::beast::tcp_stream stream(mContext);
+    //     stream.connect(resolverResult);
 
-    // // Make the connection on the IP address we get from a lookup
-    // boost::beast::tcp_stream stream(mContext);
-    // stream.connect(results);
+    //     // Set up an HTTP GET request message
+    //     boost::beast::http::request<boost::beast::http::string_body> req{boost::beast::http::verb::get, target, 11};
+    //     req.set(boost::beast::http::field::host, mConfig.metaServiceHost);
+    //     req.set(boost::beast::http::field::user_agent, "judoassistant-web");
 
-    // // Set up an HTTP GET request message
-    // boost::beast::http::request<boost::beast::http::string_body> req{boost::beast::http::verb::get, target, 11};
-    // req.set(boost::beast::http::field::host, host);
-    // req.set(boost::beast::http::field::user_agent, "foo");
+    //     // Send the HTTP request to the remote host
+    //     boost::beast::http::write(stream, req);
 
-    // // Send the HTTP request to the remote host
-    // boost::beast::http::write(stream, req);
+    //     // This buffer is used for reading and must be persisted
+    //     boost::beast::flat_buffer buffer;
 
-    // // This buffer is used for reading and must be persisted
-    // boost::beast::flat_buffer buffer;
+    //     // Declare a container to hold the response
+    //     boost::beast::http::response<boost::beast::http::dynamic_body> res;
 
-    // // Declare a container to hold the response
-    // boost::beast::http::response<boost::beast::http::dynamic_body> res;
+    //     // Receive the HTTP response
+    //     boost::beast::http::read(stream, buffer, res);
 
-    // // Receive the HTTP response
-    // boost::beast::http::read(stream, buffer, res);
+    //     // Write the message to standard out
+    //     std::cout << res << std::endl;
 
-    // // Write the message to standard out
-    // std::cout << res << std::endl;
+    //     // Gracefully close the socket
+    //     boost::beast::error_code ec;
+    //     stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 
-    // // Gracefully close the socket
-    // boost::beast::error_code ec;
-    // stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-
-    // // not_connected happens sometimes
-    // // so don't bother reporting it.
-    // //
-    // if(ec && ec != boost::beast::errc::not_connected)
-    //     throw boost::beast::system_error{ec};
+    //     // not_connected happens sometimes
+    //     // so don't bother reporting it.
+    //     //
+    //     if(ec && ec != boost::beast::errc::not_connected)
+    //         throw boost::beast::system_error{ec};
 
 
-    ListTournamentsResponse resp;
-    boost::asio::post(mContext, std::bind(callback, resp));
+    //     boost::asio::post(mContext, callback);
+    // });
+}
 
-    // If we get here then the connection is closed gracefully
+void MetaServiceGateway::asyncListPastTournaments(ListTournamentsCallback callback) {
+    // TODO: Implement
+    auto tournaments = std::make_shared<std::vector<TournamentMeta>>();
+    boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournaments)));
 }
 
 void MetaServiceGateway::asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback) {

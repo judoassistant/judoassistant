@@ -40,22 +40,22 @@ void WebServer::run() {
         return;
     }
 
-    // Launch database
-    mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
+    // // Launch database
+    // mDatabase = std::make_unique<Database>(mContext, mConfig.postgres);
 
-    // Launch worker threads
-    log_info().field("threadCount", mConfig.workers).msg("Launching worker threads");
-    for (size_t i = 0; i < mConfig.workers; ++i) {
-        mThreads.emplace_back(&WebServer::work, this);
-    }
+    // // Launch worker threads
+    // log_info().field("threadCount", mConfig.workers).msg("Launching worker threads");
+    // for (size_t i = 0; i < mConfig.workers; ++i) {
+    //     mThreads.emplace_back(&WebServer::work, this);
+    // }
 
-    // log_info().msg("Waiting for clients");
-    // mDatabase->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
+    // // log_info().msg("Waiting for clients");
+    // // mDatabase->asyncRegisterUser("svendcsvendsen@gmail.com", "password", [this](UserRegistrationResponse response, const WebToken &token) {});
 
-    work();
+    // work();
 
-    for (std::thread &thread : mThreads)
-        thread.join();
+    // for (std::thread &thread : mThreads)
+    //     thread.join();
 }
 
 void WebServer::saveTournaments() {

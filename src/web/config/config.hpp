@@ -9,6 +9,9 @@ struct Config {
     unsigned int tcpPort;
     unsigned int webPort;
     unsigned int workers;
-    std::string postgres;
+
+    std::string metaServiceHost;
+    unsigned int metaServicePort;
+
     boost::filesystem::path dataDirectory;
 };

@@ -5,17 +5,18 @@
 #include <boost/system/detail/error_code.hpp>
 #include <boost/system/errc.hpp>
 
+#include "core/logger.hpp"
 #include "core/web/web_types.hpp"
 #include "web/controllers/tournament_controller.hpp"
-#include "core/logger.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
 #include "web/web_tournament_store.hpp"
 
-TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway)
+TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, MetaServiceGateway &metaServiceGateway)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
     , mStorageGateway(storageGateway)
+    , mMetaServiceGateway(metaServiceGateway)
 {}
 
 void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSession> webSession, const std::string &tournamentID, SubscribeTournamentCallback callback) {
@@ -62,4 +63,30 @@ void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSess
             boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL, tournamentSession));
         }));
     });
+}
+
+void TournamentController::asyncListTournaments(ListTournamentsCallback callback) {
+    mMetaServiceGateway.asyncListPastTournaments([this, callback](boost::system::error_code ec, std::shared_ptr<std::vector<TournamentMeta>> pastTournaments) {
+        if (ec) {
+            boost::asio::post(mContext, std::bind(callback, ec, nullptr, nullptr));
+            return;
+        }
+
+        mMetaServiceGateway.asyncListUpcomingTournaments([this, callback, pastTournaments](boost::system::error_code ec, std::shared_ptr<std::vector<TournamentMeta>> upcomingTournaments) {
+            if (ec) {
+                boost::asio::post(mContext, std::bind(callback, ec, nullptr, nullptr));
+                return;
+            }
+
+            boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(pastTournaments), std::move(upcomingTournaments)));
+        });
+    });
+}
+
+void TournamentController::asyncClose() {
+    boost::asio::post(boost::asio::bind_executor(mStrand, [this]() {
+        for (auto &p : mTournamentSessions) {
+            p.second->asyncClose();
+        }
+    }));
 }

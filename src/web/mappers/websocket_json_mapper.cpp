@@ -272,6 +272,16 @@ std::string WebsocketJSONMapper::mapSubscribeTournamentFailMessage() {
     return documentToString(document);
 }
 
+std::string WebsocketJSONMapper::mapListTournamentsMessage(const std::vector<TournamentMeta> &pastTournaments, const std::vector<TournamentMeta> &upcomingTournaments) {
+    // TODO: Implement
+    return "";
+}
+
+std::string WebsocketJSONMapper::mapListTournamentsFailMessage() {
+    // TODO: Implement
+    return "";
+}
+
 std::string WebsocketJSONMapper::mapSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {
     rapidjson::Document document;
     auto &allocator = document.GetAllocator();

@@ -5,13 +5,15 @@
 
 #include "core/web/web_types.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
+#include "web/gateways/meta_service_gateway.hpp"
 #include "web/gateways/storage_gateway.hpp"
+#include "web/models/tournament_meta.hpp"
 
 class Logger;
 
 class TournamentController {
 public:
-    TournamentController(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway);
+    TournamentController(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, MetaServiceGateway &metaServiceGateway);
 
     typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentControllerSession>)> SubscribeTournamentCallback;
     // asyncSubscribeTournament returns a tournament session. If the tournament is
@@ -27,16 +29,17 @@ public:
     // the given userID.
     void asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &tournamentID, int userID, AcquireTournamentCallback callback);
 
-    struct ListTournamentsResponse {};
-    typedef std::function<void (ListTournamentsResponse)> ListTournamentsCallback;
+    // TODO: Use std::shared_pointer<std::vector<..>>
+    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::vector<TournamentMeta>>, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
     // asyncListTournaments lists upcoming and past tournaments.
-    void asyncListTournaments();
+    void asyncListTournaments(ListTournamentsCallback callback);
 
 private:
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Logger &mLogger;
     StorageGateway &mStorageGateway;
+    MetaServiceGateway &mMetaServiceGateway;
 
     std::unordered_map<std::string, std::shared_ptr<TournamentControllerSession>> mTournamentSessions;
 };

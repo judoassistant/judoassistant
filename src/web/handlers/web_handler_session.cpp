@@ -203,6 +203,7 @@ void WebHandlerSession::handleSubscribeCategoryCommand(CategoryId categoryID) {
     mTournament->asyncSubscribeCategory(self, categoryID, [this, self](boost::system::error_code ec) {
         if (ec) {
             queueMessage(mMapper.mapSubscribeCategoryFailMessage());
+            return;
         }
 
         // Success. The controller will send a notification with the category information.
@@ -218,6 +219,7 @@ void WebHandlerSession::handleSubscribePlayerCommand(PlayerId playerID) {
     mTournament->asyncSubscribePlayer(self, playerID, [this, self](boost::system::error_code ec) {
         if (ec) {
             queueMessage(mMapper.mapSubscribePlayerFailMessage());
+            return;
         }
 
         // Success. The controller will send a notification with the player information.
@@ -233,6 +235,7 @@ void WebHandlerSession::handleSubscribeTatamiCommand(unsigned int tatamiIndex) {
     mTournament->asyncSubscribePlayer(self, tatamiIndex, [this, self](boost::system::error_code ec) {
         if (ec) {
             queueMessage(mMapper.mapSubscribeTatamiFailMessage());
+            return;
         }
 
         // Success. The controller will send a notification with the tatami information.
@@ -240,7 +243,15 @@ void WebHandlerSession::handleSubscribeTatamiCommand(unsigned int tatamiIndex) {
 }
 
 void WebHandlerSession::handleListTournamentsCommand() {
-    // TODO: Implement
+    auto self = shared_from_this();
+    mTournamentController.asyncListTournaments([this, self](boost::system::error_code ec, std::shared_ptr<std::vector<TournamentMeta>> pastTournaments, std::shared_ptr<std::vector<TournamentMeta>> upcomingTournaments){
+        if (ec) {
+            queueMessage(mMapper.mapListTournamentsFailMessage());
+            return;
+        }
+
+        queueMessage(mMapper.mapListTournamentsMessage(*pastTournaments, *upcomingTournaments));
+    });
 }
 
 void WebHandlerSession::queueMessage(const std::string &message) {
