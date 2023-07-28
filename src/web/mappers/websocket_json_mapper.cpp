@@ -273,13 +273,40 @@ std::string WebsocketJSONMapper::mapSubscribeTournamentFailMessage() {
 }
 
 std::string WebsocketJSONMapper::mapListTournamentsMessage(const std::vector<TournamentMeta> &pastTournaments, const std::vector<TournamentMeta> &upcomingTournaments) {
-    // TODO: Implement
-    return "";
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("tournamentListing", allocator), allocator);
+    document.AddMember("pastTournaments", mapTournamentMetaList(upcomingTournaments, allocator), allocator);
+    document.AddMember("upcomingTournaments", mapTournamentMetaList(upcomingTournaments, allocator), allocator);
+
+    return documentToString(document);
+}
+
+rapidjson::Value WebsocketJSONMapper::mapTournamentMetaList(const std::vector<TournamentMeta> &tournaments, rapidjson::Document::AllocatorType &allocator) {
+    rapidjson::Value tournamentsArray(rapidjson::kArrayType);
+    for (const auto &tournament : tournaments) {
+        rapidjson::Value tournamentValue;
+        tournamentValue.SetObject();
+
+        tournamentValue.AddMember("name", mapString(tournament.name, allocator), allocator);
+        tournamentValue.AddMember("webName", mapString(tournament.id, allocator), allocator);
+        tournamentValue.AddMember("location", mapString(tournament.location, allocator), allocator);
+        tournamentValue.AddMember("date", mapString(tournament.date, allocator), allocator);
+        tournamentsArray.PushBack(std::move(tournamentValue), allocator);
+    }
+
+    return tournamentsArray;
 }
 
 std::string WebsocketJSONMapper::mapListTournamentsFailMessage() {
-    // TODO: Implement
-    return "";
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("type", mapString("tournamentListingFail", allocator), allocator);
+    return documentToString(document);
 }
 
 std::string WebsocketJSONMapper::mapSubscribeCategoryMessage(const WebTournamentStore &tournament, const CategoryStore &category, std::chrono::milliseconds clockDiff) {

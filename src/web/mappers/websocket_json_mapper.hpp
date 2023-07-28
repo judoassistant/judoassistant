@@ -42,6 +42,8 @@ private:
     rapidjson::Value mapTatamiFull(size_t index, const WebTournamentStore &tournament, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value mapTatamiMeta(size_t index, const WebTatamiModel &model, rapidjson::Document::AllocatorType &allocator);
 
+    rapidjson::Value mapTournamentMetaList(const std::vector<TournamentMeta> &tournaments, rapidjson::Document::AllocatorType &allocator);
+
     // Mapper helpers for primitives
     rapidjson::Value mapBlockStatus(const CategoryStore &category, MatchType matchType, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value mapCombinedId(const CombinedId &id, rapidjson::Document::AllocatorType &allocator);
