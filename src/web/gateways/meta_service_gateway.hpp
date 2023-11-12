@@ -24,8 +24,6 @@ public:
     MetaServiceGateway(boost::asio::io_context &context, Logger &logger, const Config &config);
 
     typedef std::function<void (boost::system::error_code, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
-
-    // asyncListTournaments lists upcoming and past tournaments.
     void asyncListUpcomingTournaments(ListTournamentsCallback callback);
     void asyncListPastTournaments(ListTournamentsCallback callback);
 
@@ -35,6 +33,9 @@ public:
     // void GetTournament(const std::string &tournament_name);
 
 private:
+    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::string>)> AsyncGetRequestCallback;
+    void asyncGetRequest(const std::string &path, AsyncGetRequestCallback callback);
+
     boost::asio::io_context &mContext;
     Logger &mLogger;
     MetaServiceGatewayMapper mMapper;
