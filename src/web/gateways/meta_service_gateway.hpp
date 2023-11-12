@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/system/detail/error_code.hpp>
 #include <functional>
 
@@ -8,6 +9,7 @@
 #include "core/web/web_types.hpp"
 #include "web/config/config.hpp"
 #include "web/models/tournament_meta.hpp"
+#include "web/gateways/meta_service_gateway_mapper.hpp"
 
 struct GetTournamentResponse {
     std::string tournament_owner;
@@ -35,5 +37,7 @@ public:
 private:
     boost::asio::io_context &mContext;
     Logger &mLogger;
+    MetaServiceGatewayMapper mMapper;
     const Config &mConfig;
+    boost::asio::ip::tcp::resolver mResolver;
 };

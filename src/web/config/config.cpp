@@ -28,6 +28,8 @@ Config::Config(int argc, char *argv[]) {
         config.add_options()
             ("tcp-port", po::value<unsigned int>(&this->tcpPort)->default_value(9000), "tcp server port")
             ("web-port", po::value<unsigned int>(&this->webPort)->default_value(9001), "web socket server port")
+            ("meta-service-port", po::value<unsigned int>(&this->metaServicePort)->default_value(8080), "meta service server port")
+            ("meta-service-host", po::value<std::string>(&this->metaServiceHost), "meta service server host")
             ("workers", po::value<unsigned int>(&this->workers)->default_value(std::thread::hardware_concurrency()), "number of worker threads to launch")
             ("data-dir", po::value<boost::filesystem::path>(&this->dataDirectory)->default_value("tournaments"), "directory to store tournament data")
             ;
