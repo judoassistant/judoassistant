@@ -11,13 +11,6 @@
 #include "web/models/tournament_meta.hpp"
 #include "web/gateways/meta_service_gateway_mapper.hpp"
 
-struct GetTournamentResponse {
-    std::string tournament_owner;
-    std::string tournament_name;
-    std::string tournament_location;
-    std::string tournament_date;
-};
-
 // MetaServiceGateway wraps the judoassistant-meta service endpoints.
 class MetaServiceGateway {
 public:
@@ -27,14 +20,16 @@ public:
     void asyncListUpcomingTournaments(ListTournamentsCallback callback);
     void asyncListPastTournaments(ListTournamentsCallback callback);
 
-    typedef std::function<void (WebTokenRequestResponse resp, std::optional<int> userID)> AuthenticateUserCallback;
+    typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentMeta>)> GetTournamentCallback;
+    void asyncGetTournament(const std::string &shortName, GetTournamentCallback callback);
+
+    typedef std::function<void (boost::system::error_code, std::shared_ptr<UserMeta>)> AuthenticateUserCallback;
     void asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback);
 
-    // void GetTournament(const std::string &tournament_name);
-
 private:
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::string>)> AsyncGetRequestCallback;
-    void asyncGetRequest(const std::string &path, AsyncGetRequestCallback callback);
+    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::string>)> HTTPRequestCallback;
+    void asyncGetRequest(const std::string &path, HTTPRequestCallback callback);
+    void asyncPostRequest(const std::string &path, const std::string &body, HTTPRequestCallback callback);
 
     boost::asio::io_context &mContext;
     Logger &mLogger;
