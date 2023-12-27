@@ -56,4 +56,6 @@ private:
     rapidjson::Value mapPlayerIndex(const MatchStore::PlayerIndex playerIndex, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value mapString(const std::string &str, rapidjson::Document::AllocatorType &allocator);
     rapidjson::Value mapTime(const std::chrono::milliseconds &time, std::chrono::milliseconds clockDiff, rapidjson::Document::AllocatorType &allocator);
+
+    std::string documentToString(const rapidjson::Document &document);
 };

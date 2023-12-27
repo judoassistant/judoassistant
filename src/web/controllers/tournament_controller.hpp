@@ -21,7 +21,7 @@ public:
     // it will be read from storage.
     void asyncSubscribeTournament(std::shared_ptr<WebHandlerSession> webSession, const std::string &tournamentID, SubscribeTournamentCallback);
 
-    typedef std::function<void (WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession>)> AcquireTournamentCallback;
+    typedef std::function<void (boost::system::error_code ec, std::shared_ptr<TournamentControllerSession>)> AcquireTournamentCallback;
     // asyncAcquireTournament acquires ownership of a tournament session. if the
     // tournament is already loaded, then the existing session will be returned
     // and any TCP participant will be kicked. If not, then an empty session
@@ -33,6 +33,8 @@ public:
     typedef std::function<void (boost::system::error_code, std::shared_ptr<std::vector<TournamentMeta>>, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
     // asyncListTournaments lists upcoming and past tournaments.
     void asyncListTournaments(ListTournamentsCallback callback);
+
+    void asyncClose();
 
 private:
     boost::asio::io_context &mContext;

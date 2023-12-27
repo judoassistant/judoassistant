@@ -48,20 +48,36 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
     });
 }
 
-void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &tournamentID, int userID, AcquireTournamentCallback callback) {
-    boost::asio::dispatch(mStrand, [this, tournamentID, tcpSession, callback]() {
-        auto it = mTournamentSessions.find(tournamentID);
-        std::shared_ptr<TournamentControllerSession> tournamentSession;
-        if (it != mTournamentSessions.end()) {
-            tournamentSession = it->second;
-        } else {
-            tournamentSession = mTournamentSessions[tournamentID] = std::make_shared<TournamentControllerSession>(mContext, mLogger, mStorageGateway, tournamentID);
-        }
+void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &shortName, int userID, AcquireTournamentCallback callback) {
+    boost::asio::dispatch(mStrand, [this, shortName, userID, tcpSession, callback]() {
+        mMetaServiceGateway.asyncGetTournament(shortName, [this, shortName, userID, tcpSession, callback](boost::system::error_code ec, std::shared_ptr<TournamentMeta> tournament) {
+            if (ec && ec.value() != boost::system::errc::no_such_file_or_directory) {
+                boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+                return;
+            }
 
-        // TODO: Check meta-service user information
-        tournamentSession->asyncUpsertTCPSession(tcpSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
-            boost::asio::post(mContext, std::bind(callback, WebNameRegistrationResponse::SUCCESSFUL, tournamentSession));
-        }));
+            if (ec.value() != boost::system::errc::no_such_file_or_directory) {
+                if (tournament->owner != userID) {
+                    // Tournament already exists and is owned by another user
+                    boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::permission_denied), nullptr));
+                    return;
+                }
+            }
+
+            // TODO: Upsert tournament afterwards
+
+            auto it = mTournamentSessions.find(shortName);
+            std::shared_ptr<TournamentControllerSession> tournamentSession;
+            if (it != mTournamentSessions.end()) {
+                tournamentSession = it->second;
+            } else {
+                tournamentSession = mTournamentSessions[shortName] = std::make_shared<TournamentControllerSession>(mContext, mLogger, mConfig, mStorageGateway, shortName);
+            }
+
+            tournamentSession->asyncUpsertTCPSession(tcpSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
+                boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), tournamentSession));
+            }));
+        });
     });
 }
 
@@ -86,6 +102,7 @@ void TournamentController::asyncListTournaments(ListTournamentsCallback callback
 void TournamentController::asyncClose() {
     boost::asio::post(boost::asio::bind_executor(mStrand, [this]() {
         for (auto &p : mTournamentSessions) {
+            // TODO: What if a session is removed?
             p.second->asyncClose();
         }
     }));

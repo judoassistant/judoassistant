@@ -56,14 +56,15 @@ void TCPHandlerSession::handleAuthentication() {
             return;
         }
 
-        mMetaServiceGateway.asyncAuthenticateUser(email, password, boost::asio::bind_executor(mStrand, [this, self] (WebTokenRequestResponse resp, std::optional<int> userID) {
+        mMetaServiceGateway.asyncAuthenticateUser(email, password, boost::asio::bind_executor(mStrand, [this, self] (boost::system::error_code ec, std::shared_ptr<UserMeta> user) {
             if (mIsClosed) {
                 return;
             }
-            if (resp == WebTokenRequestResponse::SERVER_ERROR) {
+            if (ec && ec.value() != boost::system::errc::permission_denied) {
                 close();
                 return;
             }
+
 
             // Deliver response
             auto message = std::make_unique<NetworkMessage>();
@@ -71,17 +72,19 @@ void TCPHandlerSession::handleAuthentication() {
             for (size_t i = 0; i < 32; ++i) {
                 token[i] = 0;
             }
-            message->encodeRequestWebTokenResponse(resp, token);
+            bool permissionDenied = ec.failed();
+            auto webTokenResponse = permissionDenied ? WebTokenRequestResponse::SUCCESSFUL : WebTokenRequestResponse::INCORRECT_CREDENTIALS;
+            message->encodeRequestWebTokenResponse(webTokenResponse, token);
             queueMessage(std::move(message));
 
             // Transition state depending on outcome
-            if (resp != WebTokenRequestResponse::SUCCESSFUL) {
+            if (permissionDenied) {
                 handleAuthentication();
                 return;
             }
 
             mState = State::AUTHENTICATED;
-            mUserID = userID.value();
+            mUserID = user->id;
             handleTournamentRegistration();
         }));
     }));
@@ -113,22 +116,23 @@ void TCPHandlerSession::handleTournamentRegistration() {
             return;
         }
 
-        mTournamentController.asyncAcquireTournament(self, webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](WebNameRegistrationResponse resp, std::shared_ptr<TournamentControllerSession> tournamentSession) {
+        mTournamentController.asyncAcquireTournament(self, webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession) {
             if (mIsClosed) {
                 return;
             }
-            if (resp == WebNameRegistrationResponse::SERVER_ERROR) {
+            if (ec && ec.value() != boost::system::errc::permission_denied) {
                 close();
                 return;
             }
 
             // Deliver response
             auto message = std::make_unique<NetworkMessage>();
-            message->encodeRegisterWebNameResponse(resp);
+            bool permissionDenied = ec.failed();
+            message->encodeRegisterWebNameResponse(permissionDenied ? WebNameRegistrationResponse::OCCUPIED_OTHER_USER : WebNameRegistrationResponse::SUCCESSFUL);
             queueMessage(std::move(message));
 
             // Transition state depending on outcome
-            if (resp == WebNameRegistrationResponse::SUCCESSFUL) {
+            if (!permissionDenied) {
                 mState = State::TOURNAMENT_REGISTERED;
                 mTournamentSession = std::move(tournamentSession);
                 handleTournamentClockSync();

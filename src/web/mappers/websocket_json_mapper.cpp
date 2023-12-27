@@ -8,7 +8,7 @@
 #include "core/stores/player_store.hpp"
 #include "web/mappers/websocket_json_mapper.hpp"
 
-std::string documentToString(const rapidjson::Document &document) {
+std::string WebsocketJSONMapper::documentToString(const rapidjson::Document &document) {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     document.Accept(writer);
@@ -291,7 +291,7 @@ rapidjson::Value WebsocketJSONMapper::mapTournamentMetaList(const std::vector<To
         tournamentValue.SetObject();
 
         tournamentValue.AddMember("name", mapString(tournament.name, allocator), allocator);
-        tournamentValue.AddMember("webName", mapString(tournament.id, allocator), allocator);
+        tournamentValue.AddMember("webName", mapString(tournament.shortName, allocator), allocator);
         tournamentValue.AddMember("location", mapString(tournament.location, allocator), allocator);
         tournamentValue.AddMember("date", mapString(tournament.date, allocator), allocator);
         tournamentsArray.PushBack(std::move(tournamentValue), allocator);
