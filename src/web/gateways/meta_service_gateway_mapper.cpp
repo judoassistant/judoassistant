@@ -41,11 +41,23 @@ std::vector<TournamentMeta> MetaServiceGatewayMapper::mapTournamentListResponse(
     return mappedTournaments;
 }
 
-TournamentMeta MetaServiceGatewayMapper::mapTournamentGetResponse(const std::string &body) {
+TournamentMeta MetaServiceGatewayMapper::mapTournamentResponse(const std::string &body) {
     rapidjson::Document document;
     document.Parse(body.c_str());
 
     return mapTournamentValue(document);
+}
+
+std::string MetaServiceGatewayMapper::mapTournamentCreateRequest(const TournamentMeta &tournament) {
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("shortName", mapString(tournament.shortName, allocator), allocator);
+    document.AddMember("name", mapString(tournament.name, allocator), allocator);
+    document.AddMember("location", mapString(tournament.location, allocator), allocator);
+    document.AddMember("date", mapString(tournament.date, allocator), allocator);
+    return documentToString(document);
 }
 
 std::string MetaServiceGatewayMapper::mapUserAuthenticateRequest(const std::string &email, const std::string &password) {

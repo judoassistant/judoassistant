@@ -23,6 +23,9 @@ public:
     typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentMeta>)> GetTournamentCallback;
     void asyncGetTournament(const std::string &shortName, GetTournamentCallback callback);
 
+    typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentMeta>)> CreateTournamentCallback;
+    void asyncCreateTournament(const TournamentMeta &tournament, CreateTournamentCallback callback);
+
     typedef std::function<void (boost::system::error_code, std::shared_ptr<UserMeta>)> AuthenticateUserCallback;
     void asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback);
 

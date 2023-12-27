@@ -7,6 +7,7 @@
 
 #include "core/web/web_types.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
+#include "web/models/tournament_meta.hpp"
 #include "web/models/user_meta.hpp"
 
 MetaServiceGateway::MetaServiceGateway(boost::asio::io_context &context, Logger &logger, const Config &config)
@@ -52,7 +53,21 @@ void MetaServiceGateway::asyncGetTournament(const std::string &shortName, GetTou
             return;
         }
 
-        auto tournament = mMapper.mapTournamentGetResponse(*body);
+        auto tournament = mMapper.mapTournamentResponse(*body);
+        auto tournamentPtr = std::make_shared<TournamentMeta>(tournament);
+        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournamentPtr)));
+    });
+}
+
+void MetaServiceGateway::asyncCreateTournament(const TournamentMeta &tournament,  CreateTournamentCallback callback) {
+    const auto body = mMapper.mapTournamentCreateRequest(tournament);
+    asyncPostRequest("/users/authenticate", body, [this, callback](boost::system::error_code ec, std::shared_ptr<std::string> body){
+        if (ec) {
+            boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+            return;
+        }
+
+        auto tournament = mMapper.mapTournamentResponse(*body);
         auto tournamentPtr = std::make_shared<TournamentMeta>(tournament);
         boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournamentPtr)));
     });
