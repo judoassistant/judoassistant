@@ -39,6 +39,7 @@ private:
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Logger &mLogger;
+    const Config &mConfig;
     StorageGateway &mStorageGateway;
     MetaServiceGateway &mMetaServiceGateway;
 

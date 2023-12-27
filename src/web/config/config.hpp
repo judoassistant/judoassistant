@@ -14,4 +14,5 @@ struct Config {
     unsigned int metaServicePort;
 
     boost::filesystem::path dataDirectory;
+    unsigned int saveFrequency;
 };

@@ -32,6 +32,7 @@ Config::Config(int argc, char *argv[]) {
             ("meta-service-host", po::value<std::string>(&this->metaServiceHost), "meta service server host")
             ("workers", po::value<unsigned int>(&this->workers)->default_value(std::thread::hardware_concurrency()), "number of worker threads to launch")
             ("data-dir", po::value<boost::filesystem::path>(&this->dataDirectory)->default_value("tournaments"), "directory to store tournament data")
+            ("save-frequency", po::value<unsigned int>(&this->saveFrequency)->default_value(90), "frequency of saving tournament to disk in seconds")
             ;
 
         po::options_description description;

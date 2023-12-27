@@ -15,6 +15,7 @@ TournamentController::TournamentController(boost::asio::io_context &context, Log
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+    , mConfig(config)
     , mStorageGateway(storageGateway)
     , mMetaServiceGateway(metaServiceGateway)
 {}
@@ -34,12 +35,10 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
         // Check storage
         mStorageGateway.asyncGetTournament(tournamentID, [this, webSession, tournamentID, callback](std::optional<Error> error, WebTournamentStore *tournamentPtr, std::chrono::milliseconds clockDiff) {
             if (error) {
-                // TODO: Check error code
-                // Return not found
                 boost::asio::post(mContext, std::bind(callback, error, nullptr));
                 return;
             }
-            auto tournamentSession = std::make_shared<TournamentControllerSession>(mContext, mLogger, mStorageGateway, tournamentID, std::unique_ptr<WebTournamentStore>(tournamentPtr), clockDiff);
+            auto tournamentSession = std::make_shared<TournamentControllerSession>(mContext, mLogger, mConfig, mStorageGateway, tournamentID, std::unique_ptr<WebTournamentStore>(tournamentPtr), clockDiff);
             tournamentSession->asyncAddWebSession(webSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
                 boost::asio::dispatch(mContext, std::bind(callback, std::nullopt, tournamentSession));
             }));

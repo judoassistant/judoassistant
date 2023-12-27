@@ -1,4 +1,6 @@
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <boost/system/detail/errc.hpp>
 #include <boost/system/detail/error_code.hpp>
 #include <chrono>
@@ -11,22 +13,26 @@
 #include "core/id.hpp"
 #include "core/logger.hpp"
 
-TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID)
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, const std::string &tournamentID)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+    , mConfig(config)
     , mStorageGateway(storageGateway)
     , mTournamentID(tournamentID)
+    , mIsDirty(false)
 {}
 
-TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
+TournamentControllerSession::TournamentControllerSession(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, const std::string &tournamentID, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff)
     : mContext(context)
     , mStrand(mContext)
     , mLogger(logger)
+    , mConfig(config)
     , mStorageGateway(storageGateway)
     , mTournamentID(tournamentID)
     , mTournament(std::move(tournamentStore))
     , mClockDiff(clockDiff)
+    , mIsDirty(false)
 {
     mTournament->flushWebTatamiModels();
     mTournament->clearChanges();
@@ -40,6 +46,7 @@ void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournam
         mTournament = std::unique_ptr<WebTournamentStore>(tournamentPtr);
         mActionList = std::move(actionList);
         mClockDiff = clockDiff;
+        mIsDirty = true;
 
         // Apply all the actions to the tournament
         for (auto &p : actionList) {
@@ -51,15 +58,42 @@ void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournam
         mTournament->clearChanges();
         queueSyncMessages();
 
-        mStorageGateway.asyncUpsertTournament(mTournamentID, *mTournament, [self, this](std::optional<Error> error) {
-            if (error) {
-                // Fail-open when unable to upsert to storage
-                mLogger.warn("Unable to upsert tournament to storage", LoggerField("tournamentID", mTournamentID), LoggerField("error", error));
-            }
-        });
+        // Sync to storage and reset timer for periodic storage syncing
+        asyncUpsertToStorage();
 
         boost::asio::post(mContext, callback);
     });
+}
+
+void TournamentControllerSession::asyncUpsertToStorage() {
+    auto self = shared_from_this();
+    mStorageGateway.asyncUpsertTournament(mTournamentID, *mTournament, boost::asio::bind_executor(mStrand, [self, this](std::optional<Error> error) {
+        if (error) {
+            // Fail-open when unable to upsert to storage
+            mLogger.warn("Unable to upsert tournament to storage", LoggerField("tournamentID", mTournamentID), LoggerField("error", error));
+            return;
+        }
+
+        mIsDirty = false;
+    }));
+
+    // TODO: Implement
+
+    // if (mStorageUpsertTimer) {
+    //     mStorageUpsertTimer->expires_from_now(boost::posix_time::seconds(mConfig.saveFrequency));
+    // } else {
+    //     mStorageUpsertTimer = std::make_unique<boost::asio::deadline_timer>(mContext, boost::posix_time::seconds(mConfig.saveFrequency));
+    // }
+
+
+    // auto self = shared_from_this();
+    // mStorageUpsertTimer->async_wait(boost::asio::bind_executor(mStrand, [this, self](const boost::system::error_code &ec) {
+    //     if (ec)  {
+    //         mLogger.warn("Unable to wait for timer", LoggerField(ec));
+    //     }
+
+    //     asyncUpsertToStorage();
+    // }));
 }
 
 void TournamentControllerSession::asyncDispatchAction(ClientActionId actionID, std::shared_ptr<Action> action, DispatchActionCallback callback) {
@@ -76,6 +110,7 @@ void TournamentControllerSession::asyncDispatchAction(ClientActionId actionID, s
 
         mActionList.emplace_back(actionID, std::move(action));
         mActionIds.insert(actionID);
+        mIsDirty = true;
 
         if (mActionList.size() > MAX_ACTION_STACK_SIZE) {
             mActionIds.erase(mActionList.front().first);
@@ -95,7 +130,7 @@ void TournamentControllerSession::asyncUndoAction(ClientActionId actionID, UndoA
     boost::asio::post([this, self, actionID, callback] {
         // TODO: Catch exceptions
 
-        // Verify that the action exists
+        // Erase from action ids set
         {
             const auto it = mActionIds.find(actionID);
             if (it != mActionIds.end()) {
@@ -104,6 +139,7 @@ void TournamentControllerSession::asyncUndoAction(ClientActionId actionID, UndoA
                 return;
             }
             mActionIds.erase(it);
+            mIsDirty = true;
         }
 
         // Rollback the stack by undoing actions until the action is found
@@ -259,5 +295,25 @@ void TournamentControllerSession::asyncUpsertTCPSession(std::shared_ptr<TCPHandl
 
         mTCPSession = std::move(tcpSession);
         boost::asio::post(mContext, callback);
+    });
+}
+
+void TournamentControllerSession::asyncClose() {
+    // TODO: Close TCP session
+    auto self = shared_from_this();
+    boost::asio::post(mStrand, [this, self]() {
+        if (mStorageUpsertTimer) {
+            mStorageUpsertTimer->cancel();
+            // TODO: Implement upsert to storage if dirty
+            // if (mIsDirty) {
+            //     mLogger.info("Upserting tournament to storage on close");
+            //     mStorageGateway.asyncUpsertTournament(mTournamentID, *mTournament, [this, self](boost::system::error_code ec) {
+            //         if (ec) {
+            //             // Fail-open when unable to upsert to storage
+            //             mLogger.warn("Unable to upsert tournament to storage on close", LoggerField("tournamentID", mTournamentID), LoggerField("errorCode", ec));
+            //         }
+            //     });
+            // }
+        }
     });
 }

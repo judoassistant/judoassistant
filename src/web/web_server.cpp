@@ -35,6 +35,7 @@ void WebServer::run() {
 void WebServer::async_close() {
     mWebHandler.asyncClose();
     mTCPHandler.asyncClose();
+    mTournamentController.asyncClose();
 }
 
 void WebServer::work() {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/io_context_strand.hpp>
 #include <boost/system/detail/error_code.hpp>
 #include <chrono>
@@ -20,8 +21,10 @@ class WebHandlerSession;
 // written by handler sessions.
 class TournamentControllerSession : public std::enable_shared_from_this<TournamentControllerSession>{
 public:
-    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID);
-    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, StorageGateway &storageGateway, const std::string &tournamentID, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, const std::string &tournamentID);
+    TournamentControllerSession(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, const std::string &tournamentID, std::unique_ptr<WebTournamentStore> tournamentStore, std::chrono::milliseconds clockDiff);
+
+    void asyncClose();
 
     typedef std::function<void ()> SyncTournamentCallback;
     void asyncSyncTournament(std::unique_ptr<WebTournamentStore> tournament, SharedActionList actionList, std::chrono::milliseconds clockDiff, SyncTournamentCallback callback);
@@ -55,9 +58,14 @@ private:
     void queueChangeMessages();
     void clearSubscriptions(std::shared_ptr<WebHandlerSession> webSession);
 
+
+    // triggerUpsertToStorage upserts the tournament to storage and schedules periodic upserts using a timer.
+    void asyncUpsertToStorage();
+
     boost::asio::io_context &mContext;
     boost::asio::io_context::strand mStrand;
     Logger &mLogger;
+    const Config &mConfig;
     StorageGateway &mStorageGateway;
 
     std::unordered_set<std::shared_ptr<WebHandlerSession>> mWebSessions;
@@ -72,4 +80,6 @@ private:
     SharedActionList mActionList;
     std::unordered_set<ClientActionId> mActionIds;
     std::chrono::milliseconds mClockDiff;
+    bool mIsDirty; // mIsDirty denotes whether the tournament has changes since it was last upserted to storage
+    std::unique_ptr<boost::asio::deadline_timer> mStorageUpsertTimer; // storageUpsertTimer triggers periodic tournament upserts to storage
 };

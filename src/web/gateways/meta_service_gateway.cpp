@@ -45,7 +45,6 @@ void MetaServiceGateway::asyncListPastTournaments(ListTournamentsCallback callba
 }
 
 void MetaServiceGateway::asyncGetTournament(const std::string &shortName, GetTournamentCallback callback) {
-    // TODO: Handle not found errors
     const auto url = std::string("/tournaments/") + shortName;
     asyncGetRequest(url, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
         if (error) {
