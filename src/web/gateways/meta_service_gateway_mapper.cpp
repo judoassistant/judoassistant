@@ -48,7 +48,16 @@ TournamentMeta MetaServiceGatewayMapper::mapTournamentResponse(const std::string
     return mapTournamentValue(document);
 }
 
-std::string MetaServiceGatewayMapper::mapTournamentCreateRequest(const TournamentMeta &tournament) {
+std::string MetaServiceGatewayMapper::mapTournamentCreateRequest(const std::string &shortName) {
+    rapidjson::Document document;
+    auto &allocator = document.GetAllocator();
+
+    document.SetObject();
+    document.AddMember("shortName", mapString(shortName, allocator), allocator);
+    return documentToString(document);
+}
+
+std::string MetaServiceGatewayMapper::mapTournamentUpdateRequest(const TournamentMeta &tournament) {
     rapidjson::Document document;
     auto &allocator = document.GetAllocator();
 

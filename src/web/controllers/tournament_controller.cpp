@@ -9,6 +9,7 @@
 #include "core/web/web_types.hpp"
 #include "web/controllers/tournament_controller.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
+#include "web/models/tournament_meta.hpp"
 #include "web/web_tournament_store.hpp"
 
 TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, MetaServiceGateway &metaServiceGateway)
@@ -55,12 +56,22 @@ void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSess
                 return;
             }
 
-            if (!error && tournament->owner != userID) {
+            if (error) {
+                // Tournament not found
+                mMetaServiceGateway.asyncCreateTournament(shortName, [this, shortName, userID, tcpSession, callback](std::optional<Error> error, std::shared_ptr<TournamentMeta> tournament) {
+
+                });
+                return;
+            }
+
+            // Tournament exists
+            if (tournament->owner != userID) {
                 // Tournament already exists and is owned by another user
                 auto error = std::make_optional<Error>(ErrorCode::Unauthorized, "tournament is owner by another user");
                 boost::asio::post(mContext, std::bind(callback, error, nullptr));
                 return;
             }
+
 
             // TODO: Upsert tournament afterwards
 

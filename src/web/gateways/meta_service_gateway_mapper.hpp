@@ -13,7 +13,8 @@ class MetaServiceGatewayMapper {
 public:
     std::vector<TournamentMeta> mapTournamentListResponse(const std::string &body);
     TournamentMeta mapTournamentResponse(const std::string &body);
-    std::string mapTournamentCreateRequest(const TournamentMeta &tournament);
+    std::string mapTournamentCreateRequest(const std::string &shortName);
+    std::string mapTournamentUpdateRequest(const TournamentMeta &tournament);
     std::string mapUserAuthenticateRequest(const std::string &email, const std::string &password);
     UserMeta mapUserAuthenticateResponse(const std::string &body);
 

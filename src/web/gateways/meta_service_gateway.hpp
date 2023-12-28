@@ -2,6 +2,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/http/verb.hpp>
 #include <functional>
 
 #include "core/log.hpp"
@@ -24,15 +25,18 @@ public:
     void asyncGetTournament(const std::string &shortName, GetTournamentCallback callback);
 
     typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentMeta>)> CreateTournamentCallback;
-    void asyncCreateTournament(const TournamentMeta &tournament, CreateTournamentCallback callback);
+    void asyncCreateTournament(const std::string &shortName, CreateTournamentCallback callback);
+
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentMeta>)> UpdateTournamentCallback;
+    void asyncUpdateTournament(const TournamentMeta &tournament, UpdateTournamentCallback callback);
 
     typedef std::function<void (std::optional<Error>, std::shared_ptr<UserMeta>)> AuthenticateUserCallback;
     void asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback);
 
 private:
     typedef std::function<void (std::optional<Error>, std::shared_ptr<std::string>)> HTTPRequestCallback;
-    void asyncGetRequest(const std::string &path, HTTPRequestCallback callback);
-    void asyncPostRequest(const std::string &path, const std::string &body, HTTPRequestCallback callback);
+    void asyncRequest(const std::string &path, boost::beast::http::verb verb, HTTPRequestCallback callback);
+    void asyncRequestWithBody(const std::string &path, boost::beast::http::verb verb, const std::string &body, HTTPRequestCallback callback);
 
     boost::asio::io_context &mContext;
     Logger &mLogger;

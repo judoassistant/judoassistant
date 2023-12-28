@@ -19,7 +19,7 @@ MetaServiceGateway::MetaServiceGateway(boost::asio::io_context &context, Logger 
 {}
 
 void MetaServiceGateway::asyncListUpcomingTournaments(ListTournamentsCallback callback) {
-    asyncGetRequest("/tournaments/upcoming", [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+    asyncRequest("/tournaments/upcoming", boost::beast::http::verb::get, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
         if (error) {
             boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
@@ -32,7 +32,7 @@ void MetaServiceGateway::asyncListUpcomingTournaments(ListTournamentsCallback ca
 }
 
 void MetaServiceGateway::asyncListPastTournaments(ListTournamentsCallback callback) {
-    asyncGetRequest("/tournaments/past", [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+    asyncRequest("/tournaments/past", boost::beast::http::verb::get, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
         if (error) {
             boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
@@ -46,7 +46,7 @@ void MetaServiceGateway::asyncListPastTournaments(ListTournamentsCallback callba
 
 void MetaServiceGateway::asyncGetTournament(const std::string &shortName, GetTournamentCallback callback) {
     const auto url = std::string("/tournaments/") + shortName;
-    asyncGetRequest(url, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+    asyncRequest(url, boost::beast::http::verb::get, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
         if (error) {
             boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
@@ -58,9 +58,25 @@ void MetaServiceGateway::asyncGetTournament(const std::string &shortName, GetTou
     });
 }
 
-void MetaServiceGateway::asyncCreateTournament(const TournamentMeta &tournament,  CreateTournamentCallback callback) {
-    const auto body = mMapper.mapTournamentCreateRequest(tournament);
-    asyncPostRequest("/users/authenticate", body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+void MetaServiceGateway::asyncCreateTournament(const std::string &shortName,  CreateTournamentCallback callback) {
+    const auto body = mMapper.mapTournamentCreateRequest(shortName);
+    const auto url = "/tournaments";
+    asyncRequestWithBody(url, boost::beast::http::verb::post, body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, error, nullptr));
+            return;
+        }
+
+        auto tournament = mMapper.mapTournamentResponse(*body);
+        auto tournamentPtr = std::make_shared<TournamentMeta>(tournament);
+        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(tournamentPtr)));
+    });
+}
+
+void MetaServiceGateway::asyncUpdateTournament(const TournamentMeta &tournament,  CreateTournamentCallback callback) {
+    const auto body = mMapper.mapTournamentUpdateRequest(tournament);
+    const auto url = std::string("/tournaments/") + tournament.shortName;
+    asyncRequestWithBody(url, boost::beast::http::verb::put, body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
         if (error) {
             boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
@@ -74,7 +90,7 @@ void MetaServiceGateway::asyncCreateTournament(const TournamentMeta &tournament,
 
 void MetaServiceGateway::asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback) {
     const auto body = mMapper.mapUserAuthenticateRequest(email, password);
-    asyncPostRequest("/users/authenticate", body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+    asyncRequestWithBody("/users/authenticate", boost::beast::http::verb::post, body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
         if (error) {
             boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
@@ -87,9 +103,9 @@ void MetaServiceGateway::asyncAuthenticateUser(const std::string &email, const s
 }
 
 
-void MetaServiceGateway::asyncGetRequest(const std::string &path, HTTPRequestCallback callback) {
+void MetaServiceGateway::asyncRequest(const std::string &path, boost::beast::http::verb verb, HTTPRequestCallback callback) {
     auto request = std::make_shared<boost::beast::http::request<boost::beast::http::string_body>>(
-        boost::beast::http::request<boost::beast::http::string_body>{boost::beast::http::verb::get, path, 11}
+        boost::beast::http::request<boost::beast::http::string_body>{verb, path, 11}
     );
     request->set(boost::beast::http::field::host, mConfig.metaServiceHost);
     request->set(boost::beast::http::field::user_agent, "judoassistant-web");
@@ -144,9 +160,9 @@ void MetaServiceGateway::asyncGetRequest(const std::string &path, HTTPRequestCal
     });
 }
 
-void MetaServiceGateway::asyncPostRequest(const std::string &path, const std::string &body, const HTTPRequestCallback callback) {
+void MetaServiceGateway::asyncRequestWithBody(const std::string &path, boost::beast::http::verb verb, const std::string &body, const HTTPRequestCallback callback) {
     auto request = std::make_shared<boost::beast::http::request<boost::beast::http::string_body>>(
-        boost::beast::http::request<boost::beast::http::string_body>{boost::beast::http::verb::post, path, 11}
+        boost::beast::http::request<boost::beast::http::string_body>{verb, path, 11}
     );
     request->set(boost::beast::http::field::host, mConfig.metaServiceHost);
     request->set(boost::beast::http::field::user_agent, "judoassistant-web");
