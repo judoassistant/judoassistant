@@ -6,6 +6,7 @@ subdir('handlers')
 subdir('mappers')
 
 web_sources += ['src/web/database.cpp']
+web_sources += ['src/web/error.cpp']
 web_sources += ['src/web/json_encoder.cpp']
 web_sources += ['src/web/loaded_tournament.cpp']
 web_sources += ['src/web/tcp_participant.cpp']
