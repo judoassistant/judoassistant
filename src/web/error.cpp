@@ -25,31 +25,31 @@ std::optional<Error> Error::wrapBoostSystemError(boost::system::error_code ec, c
     return std::make_optional<Error>(mapBoostSystemError(ec), message);
 }
 
-ErrorCode mapHTTPStatus(boost::beast::http::status status) {
+ErrorCode mapHTTPStatus(unsigned int status) {
     switch (status) {
-    case boost::beast::http::status::bad_request:
+    case int(boost::beast::http::status::bad_request):
         return ErrorCode::BadRequest;
-    case boost::beast::http::status::conflict:
+    case int(boost::beast::http::status::conflict):
         return ErrorCode::Conflict;
-    case boost::beast::http::status::unauthorized:
+    case int(boost::beast::http::status::unauthorized):
         return ErrorCode::Unauthorized;
-    case boost::beast::http::status::forbidden:
+    case int(boost::beast::http::status::forbidden):
         return ErrorCode::Forbidden;
-    case boost::beast::http::status::not_found:
+    case int(boost::beast::http::status::not_found):
         return ErrorCode::NotFound;
-    case boost::beast::http::status::internal_server_error:
+    case int(boost::beast::http::status::internal_server_error):
         return ErrorCode::Internal;
-    case boost::beast::http::status::not_implemented:
+    case int(boost::beast::http::status::not_implemented):
         return ErrorCode::NotImplemented;
-    case boost::beast::http::status::service_unavailable:
+    case int(boost::beast::http::status::service_unavailable):
         return ErrorCode::Unavailable;
     default:
         return ErrorCode::Unavailable;
     }
 }
 
-std::optional<Error> Error::wrapHTTPStatus(boost::beast::http::status status, const std::string &message) {
-    if (status == boost::beast::http::status::ok) {
+std::optional<Error> Error::wrapHTTPStatus(unsigned int status, const std::string &message) {
+    if (status == int(boost::beast::http::status::ok)) {
         return std::nullopt;
     }
 

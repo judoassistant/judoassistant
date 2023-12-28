@@ -127,8 +127,9 @@ void MetaServiceGateway::asyncGetRequest(const std::string &path, HTTPRequestCal
                             return;
                         }
 
+                        auto error = Error::wrapHTTPStatus(response->result_int(), "unable to execute get request");
                         auto body = std::make_shared<std::string>(response->body());
-                        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(body)));
+                        boost::asio::post(mContext, std::bind(callback, error, std::move(body)));
 
                         // Gracefully close the socket
                         stream->socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
@@ -186,10 +187,9 @@ void MetaServiceGateway::asyncPostRequest(const std::string &path, const std::st
                             return;
                         }
 
-                        // TODO: Verify error codes
-
+                        auto error = Error::wrapHTTPStatus(response->result_int(), "unable to execute post request");
                         auto body = std::make_shared<std::string>(response->body());
-                        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(body)));
+                        boost::asio::post(mContext, std::bind(callback, error, std::move(body)));
 
                         // Gracefully close the socket
                         stream->socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);

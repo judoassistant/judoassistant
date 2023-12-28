@@ -24,7 +24,7 @@ struct Error {
 
     static Error wrapError(Error &other, const std::string &message);
     static std::optional<Error> wrapBoostSystemError(boost::system::error_code ec, const std::string &message);
-    static std::optional<Error> wrapHTTPStatus(boost::beast::http::status status, const std::string &message);
+    static std::optional<Error> wrapHTTPStatus(unsigned int status, const std::string &message);
 
     ErrorCode code;
     std::string message;
