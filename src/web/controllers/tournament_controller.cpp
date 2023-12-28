@@ -10,6 +10,7 @@
 #include "web/controllers/tournament_controller.hpp"
 #include "web/controllers/tournament_controller_session.hpp"
 #include "web/models/tournament_meta.hpp"
+#include "web/models/user_meta.hpp"
 #include "web/web_tournament_store.hpp"
 
 TournamentController::TournamentController(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, MetaServiceGateway &metaServiceGateway)
@@ -48,32 +49,44 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
     });
 }
 
-void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &shortName, int userID, AcquireTournamentCallback callback) {
-    boost::asio::dispatch(mStrand, [this, shortName, userID, tcpSession, callback]() {
-        mMetaServiceGateway.asyncGetTournament(shortName, [this, shortName, userID, tcpSession, callback](std::optional<Error> error, std::shared_ptr<TournamentMeta> tournament) {
+void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &shortName, const UserMeta &user, const UserCredentials &userCredentials, AcquireTournamentCallback callback) {
+    boost::asio::dispatch(mStrand, [this, shortName, user, userCredentials, tcpSession, callback]() {
+        mMetaServiceGateway.asyncGetTournament(shortName, [this, shortName, user, userCredentials, tcpSession, callback](std::optional<Error> error, std::shared_ptr<TournamentMeta> tournament) {
             if (error && error->code != ErrorCode::NotFound) {
                 boost::asio::post(mContext, std::bind(callback, error, nullptr));
                 return;
             }
 
             if (error) {
-                // Tournament not found
-                mMetaServiceGateway.asyncCreateTournament(shortName, [this, shortName, userID, tcpSession, callback](std::optional<Error> error, std::shared_ptr<TournamentMeta> tournament) {
+                // Tournament does not exist. Create it first.
+                mMetaServiceGateway.asyncCreateTournament(shortName, userCredentials, [this, shortName, user, tcpSession, callback](std::optional<Error> error, std::shared_ptr<TournamentMeta> tournament) {
+                    if (error) {
+                        boost::asio::post(mContext, std::bind(callback, error, nullptr));
+                    }
 
+                    // TODO: Remove the duplication in this function
+                    auto it = mTournamentSessions.find(shortName);
+                    std::shared_ptr<TournamentControllerSession> tournamentSession;
+                    if (it != mTournamentSessions.end()) {
+                        tournamentSession = it->second;
+                    } else {
+                        tournamentSession = mTournamentSessions[shortName] = std::make_shared<TournamentControllerSession>(mContext, mLogger, mConfig, mStorageGateway, shortName);
+                    }
+
+                    tournamentSession->asyncUpsertTCPSession(tcpSession, boost::asio::bind_executor(mStrand, [this, callback, tournamentSession]() {
+                        boost::asio::post(mContext, std::bind(callback, std::nullopt, tournamentSession));
+                    }));
                 });
                 return;
             }
 
-            // Tournament exists
-            if (tournament->owner != userID) {
+            // Tournament exists. Verify the owner matches
+            if (tournament->owner != user.id) {
                 // Tournament already exists and is owned by another user
                 auto error = std::make_optional<Error>(ErrorCode::Unauthorized, "tournament is owner by another user");
                 boost::asio::post(mContext, std::bind(callback, error, nullptr));
                 return;
             }
-
-
-            // TODO: Upsert tournament afterwards
 
             auto it = mTournamentSessions.find(shortName);
             std::shared_ptr<TournamentControllerSession> tournamentSession;

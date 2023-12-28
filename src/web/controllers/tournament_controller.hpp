@@ -8,6 +8,7 @@
 #include "web/gateways/meta_service_gateway.hpp"
 #include "web/gateways/storage_gateway.hpp"
 #include "web/models/tournament_meta.hpp"
+#include "web/models/user_meta.hpp"
 
 class Logger;
 
@@ -27,7 +28,7 @@ public:
     // and any TCP participant will be kicked. If not, then an empty session
     // will be returned. An error is returned if the tournament is not owned by
     // the given userID.
-    void asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &tournamentID, int userID, AcquireTournamentCallback callback);
+    void asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &tournamentID, const UserMeta &user, const UserCredentials &userCredentials, AcquireTournamentCallback callback);
 
     typedef std::function<void (std::optional<Error>, std::shared_ptr<std::vector<TournamentMeta>>, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
     // asyncListTournaments lists upcoming and past tournaments.

@@ -2,7 +2,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/beast/http/verb.hpp>
+#include <boost/beast/http.hpp>
 #include <functional>
 
 #include "core/log.hpp"
@@ -11,6 +11,7 @@
 #include "web/models/tournament_meta.hpp"
 #include "web/gateways/meta_service_gateway_mapper.hpp"
 #include "web/error.hpp"
+#include "web/models/user_meta.hpp"
 
 // MetaServiceGateway wraps the judoassistant-meta service endpoints.
 class MetaServiceGateway {
@@ -25,18 +26,18 @@ public:
     void asyncGetTournament(const std::string &shortName, GetTournamentCallback callback);
 
     typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentMeta>)> CreateTournamentCallback;
-    void asyncCreateTournament(const std::string &shortName, CreateTournamentCallback callback);
+    void asyncCreateTournament(const std::string &shortName, const UserCredentials &user, CreateTournamentCallback callback);
 
     typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentMeta>)> UpdateTournamentCallback;
-    void asyncUpdateTournament(const TournamentMeta &tournament, UpdateTournamentCallback callback);
+    void asyncUpdateTournament(const TournamentMeta &tournament, const UserCredentials &user, UpdateTournamentCallback callback);
 
     typedef std::function<void (std::optional<Error>, std::shared_ptr<UserMeta>)> AuthenticateUserCallback;
-    void asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback);
+    void asyncAuthenticateUser(const UserCredentials &user, AuthenticateUserCallback callback);
 
 private:
     typedef std::function<void (std::optional<Error>, std::shared_ptr<std::string>)> HTTPRequestCallback;
-    void asyncRequest(const std::string &path, boost::beast::http::verb verb, HTTPRequestCallback callback);
-    void asyncRequestWithBody(const std::string &path, boost::beast::http::verb verb, const std::string &body, HTTPRequestCallback callback);
+    void asyncPerformRequest(std::shared_ptr<boost::beast::http::request<boost::beast::http::string_body>> request, HTTPRequestCallback callback);
+    std::shared_ptr<boost::beast::http::request<boost::beast::http::string_body>> buildRequest(const std::string &path, boost::beast::http::verb verb, const std::optional<std::string> &body, const std::optional<UserCredentials> &user);
 
     boost::asio::io_context &mContext;
     Logger &mLogger;

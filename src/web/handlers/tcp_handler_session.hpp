@@ -8,6 +8,7 @@
 #include "core/network/network_message.hpp"
 #include "web/controllers/tournament_controller.hpp"
 #include "web/gateways/meta_service_gateway.hpp"
+#include "web/models/user_meta.hpp"
 
 class TCPHandler;
 class Logger;
@@ -59,7 +60,8 @@ private:
 
     State mState;
     bool mIsClosed;
-    int mUserID;
+    UserMeta mUser;
+    UserCredentials mUserCredentials;
     std::queue<std::unique_ptr<NetworkMessage>> mWriteQueue;
     std::chrono::milliseconds mClockDiff;
 };

@@ -7,3 +7,8 @@ struct UserMeta {
     std::string email;
     bool isAdmin;
 };
+
+struct UserCredentials {
+    std::string email;
+    std::string password;
+};

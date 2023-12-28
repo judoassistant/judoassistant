@@ -1,5 +1,7 @@
 #include "web/web_server.hpp"
 #include "web/config/config.hpp"
+#include "web/models/tournament_meta.hpp"
+#include "web/models/user_meta.hpp"
 
 WebServer::WebServer(const Config &config)
     : mConfig(config)

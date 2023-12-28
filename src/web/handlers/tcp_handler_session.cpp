@@ -14,6 +14,7 @@
 #include "web/gateways/meta_service_gateway.hpp"
 #include "web/handlers/tcp_handler.hpp"
 #include "web/handlers/tcp_handler_session.hpp"
+#include "web/models/user_meta.hpp"
 #include "web/web_tournament_store.hpp"
 
 TCPHandlerSession::TCPHandlerSession(boost::asio::io_context &context, Logger &logger, TCPHandler &tcpHandler, MetaServiceGateway &metaServiceGateway, TournamentController &tournamentController, std::shared_ptr<NetworkConnection> connection)
@@ -50,14 +51,14 @@ void TCPHandlerSession::handleAuthentication() {
             return;
         }
 
-        std::string email, password;
-        if (!message->decodeRequestWebToken(email , password)) {
+        UserCredentials userCredentials;
+        if (!message->decodeRequestWebToken(userCredentials.email, userCredentials.password)) {
             mLogger.warn("Received invalid REQUEST_WEB_TOKEN request");
             close();
             return;
         }
 
-        mMetaServiceGateway.asyncAuthenticateUser(email, password, boost::asio::bind_executor(mStrand, [this, self] (std::optional<Error> error, std::shared_ptr<UserMeta> user) {
+        mMetaServiceGateway.asyncAuthenticateUser(userCredentials, boost::asio::bind_executor(mStrand, [this, self, userCredentials] (std::optional<Error> error, std::shared_ptr<UserMeta> user) {
             if (mIsClosed) {
                 return;
             }
@@ -85,7 +86,8 @@ void TCPHandlerSession::handleAuthentication() {
             }
 
             mState = State::AUTHENTICATED;
-            mUserID = user->id;
+            mUserCredentials = userCredentials;
+            mUser = *user;
             handleTournamentRegistration();
         }));
     }));
@@ -117,7 +119,7 @@ void TCPHandlerSession::handleTournamentRegistration() {
             return;
         }
 
-        mTournamentController.asyncAcquireTournament(self, webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](std::optional<Error> error, std::shared_ptr<TournamentControllerSession> tournamentSession) {
+        mTournamentController.asyncAcquireTournament(self, webName, mUser, mUserCredentials, boost::asio::bind_executor(mStrand, [this, self](std::optional<Error> error, std::shared_ptr<TournamentControllerSession> tournamentSession) {
             if (mIsClosed) {
                 return;
             }
