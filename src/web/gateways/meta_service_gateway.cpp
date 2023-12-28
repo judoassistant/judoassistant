@@ -19,71 +19,71 @@ MetaServiceGateway::MetaServiceGateway(boost::asio::io_context &context, Logger 
 {}
 
 void MetaServiceGateway::asyncListUpcomingTournaments(ListTournamentsCallback callback) {
-    asyncGetRequest("/tournaments/upcoming", [this, callback](boost::system::error_code ec, std::shared_ptr<std::string> body){
-        if (ec) {
-            boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+    asyncGetRequest("/tournaments/upcoming", [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
         }
 
         auto tournaments = mMapper.mapTournamentListResponse(*body);
         auto tournamentsPtr = std::make_shared<std::vector<TournamentMeta>>(std::move(tournaments));
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournamentsPtr)));
+        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(tournamentsPtr)));
     });
 }
 
 void MetaServiceGateway::asyncListPastTournaments(ListTournamentsCallback callback) {
-    asyncGetRequest("/tournaments/past", [this, callback](boost::system::error_code ec, std::shared_ptr<std::string> body){
-        if (ec) {
-            boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+    asyncGetRequest("/tournaments/past", [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
         }
 
         auto tournaments = mMapper.mapTournamentListResponse(*body);
         auto tournamentsPtr = std::make_shared<std::vector<TournamentMeta>>(std::move(tournaments));
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournamentsPtr)));
+        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(tournamentsPtr)));
     });
 }
 
 void MetaServiceGateway::asyncGetTournament(const std::string &shortName, GetTournamentCallback callback) {
     // TODO: Handle not found errors
     const auto url = std::string("/tournaments/") + shortName;
-    asyncGetRequest(url, [this, callback](boost::system::error_code ec, std::shared_ptr<std::string> body){
-        if (ec) {
-            boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+    asyncGetRequest(url, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
         }
 
         auto tournament = mMapper.mapTournamentResponse(*body);
         auto tournamentPtr = std::make_shared<TournamentMeta>(tournament);
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournamentPtr)));
+        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(tournamentPtr)));
     });
 }
 
 void MetaServiceGateway::asyncCreateTournament(const TournamentMeta &tournament,  CreateTournamentCallback callback) {
     const auto body = mMapper.mapTournamentCreateRequest(tournament);
-    asyncPostRequest("/users/authenticate", body, [this, callback](boost::system::error_code ec, std::shared_ptr<std::string> body){
-        if (ec) {
-            boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+    asyncPostRequest("/users/authenticate", body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
         }
 
         auto tournament = mMapper.mapTournamentResponse(*body);
         auto tournamentPtr = std::make_shared<TournamentMeta>(tournament);
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(tournamentPtr)));
+        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(tournamentPtr)));
     });
 }
 
 void MetaServiceGateway::asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback) {
     const auto body = mMapper.mapUserAuthenticateRequest(email, password);
-    asyncPostRequest("/users/authenticate", body, [this, callback](boost::system::error_code ec, std::shared_ptr<std::string> body){
-        if (ec) {
-            boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+    asyncPostRequest("/users/authenticate", body, [this, callback](std::optional<Error> error, std::shared_ptr<std::string> body){
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, error, nullptr));
             return;
         }
 
         auto user = mMapper.mapUserAuthenticateResponse(*body);
         auto userPtr = std::make_shared<UserMeta>(user);
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(userPtr)));
+        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(userPtr)));
     });
 }
 
@@ -99,8 +99,7 @@ void MetaServiceGateway::asyncGetRequest(const std::string &path, HTTPRequestCal
         // Resolve host
         mResolver.async_resolve(mConfig.metaServiceHost, std::to_string(mConfig.metaServicePort), [this, callback, request](boost::system::error_code ec, boost::asio::ip::tcp::resolver::results_type results) {
             if (ec) {
-                mLogger.error("Unable to resolve meta service hostname", LoggerField(ec));
-                boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to resolve meta service hostname"), nullptr));
                 return;
             }
 
@@ -109,15 +108,13 @@ void MetaServiceGateway::asyncGetRequest(const std::string &path, HTTPRequestCal
             stream->expires_after(std::chrono::seconds(30));
             stream->async_connect(results, [this, callback, stream, request](boost::system::error_code ec, boost::asio::ip::tcp::resolver::endpoint_type /* endpointType */) {
                 if (ec) {
-                    mLogger.error("Unable to connect to meta service", LoggerField(ec));
-                    boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                    boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to connect to meta service"), nullptr));
                     return;
                 }
 
                 boost::beast::http::async_write(*stream, *request, [this, callback, stream, request](boost::system::error_code ec, std::size_t /* bytesTransferred */) {
                     if (ec) {
-                        mLogger.error("Unable to write to meta service", LoggerField(ec));
-                        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                        boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to write to meta service"), nullptr));
                         return;
                     }
 
@@ -126,13 +123,12 @@ void MetaServiceGateway::asyncGetRequest(const std::string &path, HTTPRequestCal
                     auto response = std::make_shared<boost::beast::http::response<boost::beast::http::string_body>>();
                     boost::beast::http::async_read(*stream, *buffer, *response, [this, callback, stream, response](boost::system::error_code ec, std::size_t /* bytesTransferred */) {
                         if (ec) {
-                            mLogger.error("Unable to read from meta service", LoggerField(ec));
-                            boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                            boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to read from meta service"), nullptr));
                             return;
                         }
 
                         auto body = std::make_shared<std::string>(response->body());
-                        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(body)));
+                        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(body)));
 
                         // Gracefully close the socket
                         stream->socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
@@ -162,8 +158,7 @@ void MetaServiceGateway::asyncPostRequest(const std::string &path, const std::st
         // Resolve host
         mResolver.async_resolve(mConfig.metaServiceHost, std::to_string(mConfig.metaServicePort), [this, callback, request](boost::system::error_code ec, boost::asio::ip::tcp::resolver::results_type results) {
             if (ec) {
-                mLogger.error("Unable to resolve meta service hostname", LoggerField(ec));
-                boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to resolve meta service hostname"), nullptr));
                 return;
             }
 
@@ -172,15 +167,13 @@ void MetaServiceGateway::asyncPostRequest(const std::string &path, const std::st
             stream->expires_after(std::chrono::seconds(30));
             stream->async_connect(results, [this, callback, stream, request](boost::system::error_code ec, boost::asio::ip::tcp::resolver::endpoint_type /* endpointType */) {
                 if (ec) {
-                    mLogger.error("Unable to connect to meta service", LoggerField(ec));
-                    boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                    boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to connect to meta service"), nullptr));
                     return;
                 }
 
                 boost::beast::http::async_write(*stream, *request, [this, callback, stream, request](boost::system::error_code ec, std::size_t /* bytesTransferred */) {
                     if (ec) {
-                        mLogger.error("Unable to write to meta service", LoggerField(ec));
-                        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                        boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to write to meta service"), nullptr));
                         return;
                     }
 
@@ -189,15 +182,14 @@ void MetaServiceGateway::asyncPostRequest(const std::string &path, const std::st
                     auto response = std::make_shared<boost::beast::http::response<boost::beast::http::string_body>>();
                     boost::beast::http::async_read(*stream, *buffer, *response, [this, callback, stream, response](boost::system::error_code ec, std::size_t /* bytesTransferred */) {
                         if (ec) {
-                            mLogger.error("Unable to read from meta service", LoggerField(ec));
-                            boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
+                            boost::asio::post(mContext, std::bind(callback, Error::wrapBoostSystemError(ec, "unable to read from meta service"), nullptr));
                             return;
                         }
 
                         // TODO: Verify error codes
 
                         auto body = std::make_shared<std::string>(response->body());
-                        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::success), std::move(body)));
+                        boost::asio::post(mContext, std::bind(callback, std::nullopt, std::move(body)));
 
                         // Gracefully close the socket
                         stream->socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);

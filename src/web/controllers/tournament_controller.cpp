@@ -50,13 +50,13 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
 
 void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &shortName, int userID, AcquireTournamentCallback callback) {
     boost::asio::dispatch(mStrand, [this, shortName, userID, tcpSession, callback]() {
-        mMetaServiceGateway.asyncGetTournament(shortName, [this, shortName, userID, tcpSession, callback](boost::system::error_code ec, std::shared_ptr<TournamentMeta> tournament) {
-            if (ec && ec.value() != boost::system::errc::no_such_file_or_directory) {
-                boost::asio::post(mContext, std::bind(callback, ec, nullptr));
+        mMetaServiceGateway.asyncGetTournament(shortName, [this, shortName, userID, tcpSession, callback](std::optional<Error> error, std::shared_ptr<TournamentMeta> tournament) {
+            if (error && error->code != ErrorCode::NotFound) {
+                boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr));
                 return;
             }
 
-            if (ec.value() != boost::system::errc::no_such_file_or_directory) {
+            if (!error) {
                 if (tournament->owner != userID) {
                     // Tournament already exists and is owned by another user
                     boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::permission_denied), nullptr));
@@ -82,15 +82,15 @@ void TournamentController::asyncAcquireTournament(std::shared_ptr<TCPHandlerSess
 }
 
 void TournamentController::asyncListTournaments(ListTournamentsCallback callback) {
-    mMetaServiceGateway.asyncListPastTournaments([this, callback](boost::system::error_code ec, std::shared_ptr<std::vector<TournamentMeta>> pastTournaments) {
-        if (ec) {
-            boost::asio::post(mContext, std::bind(callback, ec, nullptr, nullptr));
+    mMetaServiceGateway.asyncListPastTournaments([this, callback](std::optional<Error> error, std::shared_ptr<std::vector<TournamentMeta>> pastTournaments) {
+        if (error) {
+            boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr, nullptr));
             return;
         }
 
-        mMetaServiceGateway.asyncListUpcomingTournaments([this, callback, pastTournaments](boost::system::error_code ec, std::shared_ptr<std::vector<TournamentMeta>> upcomingTournaments) {
-            if (ec) {
-                boost::asio::post(mContext, std::bind(callback, ec, nullptr, nullptr));
+        mMetaServiceGateway.asyncListUpcomingTournaments([this, callback, pastTournaments](std::optional<Error> error, std::shared_ptr<std::vector<TournamentMeta>> upcomingTournaments) {
+            if (error) {
+                boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::network_down), nullptr, nullptr));
                 return;
             }
 

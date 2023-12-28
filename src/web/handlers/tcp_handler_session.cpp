@@ -56,11 +56,11 @@ void TCPHandlerSession::handleAuthentication() {
             return;
         }
 
-        mMetaServiceGateway.asyncAuthenticateUser(email, password, boost::asio::bind_executor(mStrand, [this, self] (boost::system::error_code ec, std::shared_ptr<UserMeta> user) {
+        mMetaServiceGateway.asyncAuthenticateUser(email, password, boost::asio::bind_executor(mStrand, [this, self] (std::optional<Error> error, std::shared_ptr<UserMeta> user) {
             if (mIsClosed) {
                 return;
             }
-            if (ec && ec.value() != boost::system::errc::permission_denied) {
+            if (error && error->code != ErrorCode::Unauthorized) {
                 close();
                 return;
             }
@@ -72,7 +72,7 @@ void TCPHandlerSession::handleAuthentication() {
             for (size_t i = 0; i < 32; ++i) {
                 token[i] = 0;
             }
-            bool permissionDenied = ec.failed();
+            bool permissionDenied = error && error->code == ErrorCode::Unauthorized;
             auto webTokenResponse = permissionDenied ? WebTokenRequestResponse::SUCCESSFUL : WebTokenRequestResponse::INCORRECT_CREDENTIALS;
             message->encodeRequestWebTokenResponse(webTokenResponse, token);
             queueMessage(std::move(message));

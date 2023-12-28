@@ -2,7 +2,6 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/system/detail/error_code.hpp>
 #include <functional>
 
 #include "core/log.hpp"
@@ -10,27 +9,28 @@
 #include "web/config/config.hpp"
 #include "web/models/tournament_meta.hpp"
 #include "web/gateways/meta_service_gateway_mapper.hpp"
+#include "web/error.hpp"
 
 // MetaServiceGateway wraps the judoassistant-meta service endpoints.
 class MetaServiceGateway {
 public:
     MetaServiceGateway(boost::asio::io_context &context, Logger &logger, const Config &config);
 
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
+    typedef std::function<void (std::optional<Error> error, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
     void asyncListUpcomingTournaments(ListTournamentsCallback callback);
     void asyncListPastTournaments(ListTournamentsCallback callback);
 
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentMeta>)> GetTournamentCallback;
+    typedef std::function<void (std::optional<Error> error, std::shared_ptr<TournamentMeta>)> GetTournamentCallback;
     void asyncGetTournament(const std::string &shortName, GetTournamentCallback callback);
 
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentMeta>)> CreateTournamentCallback;
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentMeta>)> CreateTournamentCallback;
     void asyncCreateTournament(const TournamentMeta &tournament, CreateTournamentCallback callback);
 
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<UserMeta>)> AuthenticateUserCallback;
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<UserMeta>)> AuthenticateUserCallback;
     void asyncAuthenticateUser(const std::string &email, const std::string &password, AuthenticateUserCallback callback);
 
 private:
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::string>)> HTTPRequestCallback;
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<std::string>)> HTTPRequestCallback;
     void asyncGetRequest(const std::string &path, HTTPRequestCallback callback);
     void asyncPostRequest(const std::string &path, const std::string &body, HTTPRequestCallback callback);
 
