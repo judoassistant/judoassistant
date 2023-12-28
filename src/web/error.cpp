@@ -55,3 +55,7 @@ std::optional<Error> Error::wrapHTTPStatus(boost::beast::http::status status, co
 
     return std::make_optional<Error>(mapHTTPStatus(status), message);
 }
+
+std::ostream& operator<<(std::ostream &o, const Error &error) {
+    return o << "Status " << int(error.code) << ": " << error.message;
+}

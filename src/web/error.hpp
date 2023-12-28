@@ -29,3 +29,6 @@ struct Error {
     ErrorCode code;
     std::string message;
 };
+
+
+std::ostream& operator<<(std::ostream &o, const Error &error);

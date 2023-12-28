@@ -32,8 +32,8 @@ void TournamentController::asyncSubscribeTournament(std::shared_ptr<WebHandlerSe
         }
 
         // Check storage
-        mStorageGateway.asyncGetTournament(tournamentID, [this, webSession, tournamentID, callback](boost::system::error_code ec, WebTournamentStore *tournamentPtr, std::chrono::milliseconds clockDiff) {
-            if (ec) {
+        mStorageGateway.asyncGetTournament(tournamentID, [this, webSession, tournamentID, callback](std::optional<Error> error, WebTournamentStore *tournamentPtr, std::chrono::milliseconds clockDiff) {
+            if (error) {
                 // TODO: Check error code
                 // Return not found
                 boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(boost::system::errc::no_such_file_or_directory), nullptr));

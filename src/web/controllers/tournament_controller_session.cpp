@@ -51,10 +51,10 @@ void TournamentControllerSession::asyncSyncTournament(std::unique_ptr<WebTournam
         mTournament->clearChanges();
         queueSyncMessages();
 
-        mStorageGateway.asyncUpsertTournament(mTournamentID, *mTournament, [self, this](boost::system::error_code ec) {
-            if (ec) {
+        mStorageGateway.asyncUpsertTournament(mTournamentID, *mTournament, [self, this](std::optional<Error> error) {
+            if (error) {
                 // Fail-open when unable to upsert to storage
-                mLogger.warn("Unable to upsert tournament to storage", LoggerField("tournamentID", mTournamentID), LoggerField("errorCode", ec));
+                mLogger.warn("Unable to upsert tournament to storage", LoggerField("tournamentID", mTournamentID), LoggerField("error", error));
             }
         });
 
