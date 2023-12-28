@@ -5,10 +5,10 @@
 #include <stdexcept>
 
 
-#include "web/new_web_server.hpp"
+#include "web/web_server.hpp"
 #include "core/log.hpp"
 
-std::unique_ptr<NewWebServer> server;
+std::unique_ptr<WebServer> server;
 std::unique_ptr<Config> config;
 
 void handleInterrupt(int signal){
@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     // Initialize server
     try {
         config = std::make_unique<Config>(argc, argv);
-        server = std::make_unique<NewWebServer>(*config);
+        server = std::make_unique<WebServer>(*config);
     }
     catch(const std::invalid_argument &e) {
         // Invalid config file. The constructors log these errors themselves.

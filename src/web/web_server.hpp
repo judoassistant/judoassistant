@@ -1,65 +1,39 @@
 #pragma once
 
 #include <boost/asio/io_context_strand.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
 #include <thread>
-#include <vector>
 
-#include "core/core.hpp"
 #include "web/config/config.hpp"
-#include "web/database.hpp"
-#include "web/loaded_tournament.hpp"
-#include "web/web_participant.hpp"
-#include "web/tcp_participant.hpp"
+#include "web/controllers/tournament_controller.hpp"
+#include "web/gateways/meta_service_gateway.hpp"
+#include "web/gateways/storage_gateway.hpp"
+#include "web/handlers/tcp_handler.hpp"
+#include "web/handlers/web_handler.hpp"
 
 class WebServer {
 public:
     WebServer(const Config &config);
 
+    // run launches the web server worker threads and componenets
     void run();
-    void quit();
 
-    // Acquires ownership of a tournament. This is meant for overwritting tournament data
-    typedef std::function<void (std::shared_ptr<LoadedTournament>)> AcquireTournamentCallback;
-    void acquireTournament(const std::string &webName, AcquireTournamentCallback callback);
-
-    // Gets a tournament. If it already exists it will be loaded.
-    typedef std::function<void (std::shared_ptr<LoadedTournament>)> GetTournamentCallback;
-    void getTournament(const std::string &webName, GetTournamentCallback callback);
-
-    typedef std::function<void (bool)> SaveTournamentCallback;
-    void saveTournament(std::shared_ptr<LoadedTournament> tournament, SaveTournamentCallback);
-
-    typedef std::function<void ()> LeaveCallback;
-    void leave(std::shared_ptr<TCPParticipant> participant, LeaveCallback callback);
-    void leave(std::shared_ptr<WebParticipant> participant, LeaveCallback callback);
-
+    // quit gracefully shuts down the web server
+    void async_close();
 private:
+    // work is called by each worker thread
     void work();
-    void tcpAccept();
-    void assignWebName(std::shared_ptr<TCPParticipant> participant, std::string webName);
 
-    void webAccept();
-
-    void saveTournaments(); // Used as callback when shutting down
-    void closeWebParticipants(); // Used as callback when shutting down
-
-    Config mConfig;
+    const Config &mConfig;
     boost::asio::io_context mContext;
     boost::asio::io_context::strand mStrand;
-
-    boost::asio::ip::tcp::endpoint mTCPEndpoint;
-    boost::asio::ip::tcp::acceptor mTCPAcceptor;
-
-    boost::asio::ip::tcp::endpoint mWebEndpoint;
-    boost::asio::ip::tcp::acceptor mWebAcceptor;
-
-    std::unordered_set<std::shared_ptr<TCPParticipant>> mParticipants;
-    std::unordered_set<std::shared_ptr<WebParticipant>> mWebParticipants;
-    std::unordered_map<std::string, std::shared_ptr<LoadedTournament>> mLoadedTournaments;
-
+    Logger mLogger;
     std::vector<std::thread> mThreads;
-    std::unique_ptr<Database> mDatabase;
-};
 
+    MetaServiceGateway mMetaServiceGateway;
+    StorageGateway mStorageGateway;
+
+    TournamentController mTournamentController;
+
+    TCPHandler mTCPHandler;
+    WebHandler mWebHandler;
+};
