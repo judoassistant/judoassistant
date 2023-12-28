@@ -162,13 +162,15 @@ void TournamentControllerSession::asyncSubscribeCategory(std::shared_ptr<WebHand
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, webSession, categoryID, callback](){
         clearSubscriptions(webSession);
-        auto errCode = boost::system::errc::no_such_file_or_directory;
-        if (mTournament->containsCategory(categoryID)) {
-            mCategorySubscriptions[webSession] = categoryID;
-            webSession->notifyCategorySubscription(*mTournament, mTournament->getCategory(categoryID), mClockDiff);
-            errCode = boost::system::errc::success;
+        if (!mTournament->containsCategory(categoryID)) {
+            auto error = std::make_optional<Error>(ErrorCode::NotFound, "category does not exist");
+            boost::asio::post(mContext, std::bind(callback, error));
+            return;
         }
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(errCode)));
+
+        mCategorySubscriptions[webSession] = categoryID;
+        webSession->notifyCategorySubscription(*mTournament, mTournament->getCategory(categoryID), mClockDiff);
+        boost::asio::post(mContext, std::bind(callback, std::nullopt));
     });
 }
 
@@ -176,13 +178,15 @@ void TournamentControllerSession::asyncSubscribePlayer(std::shared_ptr<WebHandle
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, webSession, playerID, callback](){
         clearSubscriptions(webSession);
-        auto errCode = boost::system::errc::no_such_file_or_directory;
-        if (mTournament->containsPlayer(playerID)) {
-            mPlayerSubscriptions[webSession] = playerID;
-            webSession->notifyPlayerSubscription(*mTournament, mTournament->getPlayer(playerID), mClockDiff);
-            errCode = boost::system::errc::success;
+        if (!mTournament->containsPlayer(playerID)) {
+            auto error = std::make_optional<Error>(ErrorCode::NotFound, "player does not exist");
+            boost::asio::post(mContext, std::bind(callback, error));
+            return;
         }
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(errCode)));
+
+        mPlayerSubscriptions[webSession] = playerID;
+        webSession->notifyPlayerSubscription(*mTournament, mTournament->getPlayer(playerID), mClockDiff);
+        boost::asio::post(mContext, std::bind(callback, std::nullopt));
     });
 }
 
@@ -190,13 +194,15 @@ void TournamentControllerSession::asyncSubscribeTatami(std::shared_ptr<WebHandle
     auto self = shared_from_this();
     boost::asio::post(mStrand, [this, self, webSession, tatamiIndex, callback](){
         clearSubscriptions(webSession);
-        auto errCode = boost::system::errc::no_such_file_or_directory;
-        if (tatamiIndex < mTournament->getTatamis().tatamiCount()) {
-            mTatamiSubscriptions[webSession] = tatamiIndex;
-            webSession->notifyTatamiSubscription(*mTournament, tatamiIndex, mClockDiff);
-            errCode = boost::system::errc::success;
+        if (tatamiIndex >= mTournament->getTatamis().tatamiCount()) {
+            auto error = std::make_optional<Error>(ErrorCode::NotFound, "tatami does not exist");
+            boost::asio::post(mContext, std::bind(callback, error));
+            return;
         }
-        boost::asio::post(mContext, std::bind(callback, boost::system::errc::make_error_code(errCode)));
+
+        mTatamiSubscriptions[webSession] = tatamiIndex;
+        webSession->notifyTatamiSubscription(*mTournament, tatamiIndex, mClockDiff);
+        boost::asio::post(mContext, std::bind(callback, std::nullopt));
     });
 }
 

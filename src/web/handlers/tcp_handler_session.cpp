@@ -116,18 +116,18 @@ void TCPHandlerSession::handleTournamentRegistration() {
             return;
         }
 
-        mTournamentController.asyncAcquireTournament(self, webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession) {
+        mTournamentController.asyncAcquireTournament(self, webName, mUserID, boost::asio::bind_executor(mStrand, [this, self](std::optional<Error> error, std::shared_ptr<TournamentControllerSession> tournamentSession) {
             if (mIsClosed) {
                 return;
             }
-            if (ec && ec.value() != boost::system::errc::permission_denied) {
+            if (error && error->code != ErrorCode::Unauthorized) {
                 close();
                 return;
             }
 
             // Deliver response
             auto message = std::make_unique<NetworkMessage>();
-            bool permissionDenied = ec.failed();
+            bool permissionDenied = error && error->code == ErrorCode::Unauthorized;
             message->encodeRegisterWebNameResponse(permissionDenied ? WebNameRegistrationResponse::OCCUPIED_OTHER_USER : WebNameRegistrationResponse::SUCCESSFUL);
             queueMessage(std::move(message));
 

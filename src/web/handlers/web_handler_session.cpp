@@ -182,8 +182,8 @@ void WebHandlerSession::handleSubscribeTournamentCommand(const std::string &tour
     }
 
     auto self = shared_from_this();
-    mTournamentController.asyncSubscribeTournament(self, tournamentID, [this, self](boost::system::error_code ec, std::shared_ptr<TournamentControllerSession> tournamentSession){
-        if (ec) {
+    mTournamentController.asyncSubscribeTournament(self, tournamentID, [this, self](std::optional<Error> error, std::shared_ptr<TournamentControllerSession> tournamentSession){
+        if (error) {
             queueMessage(mMapper.mapSubscribeTournamentFailMessage());
             return;
         }
@@ -200,8 +200,8 @@ void WebHandlerSession::handleSubscribeCategoryCommand(CategoryId categoryID) {
     }
 
     auto self = shared_from_this();
-    mTournament->asyncSubscribeCategory(self, categoryID, [this, self](boost::system::error_code ec) {
-        if (ec) {
+    mTournament->asyncSubscribeCategory(self, categoryID, [this, self](std::optional<Error> error) {
+        if (error) {
             queueMessage(mMapper.mapSubscribeCategoryFailMessage());
             return;
         }
@@ -216,8 +216,8 @@ void WebHandlerSession::handleSubscribePlayerCommand(PlayerId playerID) {
     }
 
     auto self = shared_from_this();
-    mTournament->asyncSubscribePlayer(self, playerID, [this, self](boost::system::error_code ec) {
-        if (ec) {
+    mTournament->asyncSubscribePlayer(self, playerID, [this, self](std::optional<Error> error) {
+        if (error) {
             queueMessage(mMapper.mapSubscribePlayerFailMessage());
             return;
         }
@@ -232,8 +232,8 @@ void WebHandlerSession::handleSubscribeTatamiCommand(unsigned int tatamiIndex) {
     }
 
     auto self = shared_from_this();
-    mTournament->asyncSubscribePlayer(self, tatamiIndex, [this, self](boost::system::error_code ec) {
-        if (ec) {
+    mTournament->asyncSubscribePlayer(self, tatamiIndex, [this, self](std::optional<Error> error) {
+        if (error) {
             queueMessage(mMapper.mapSubscribeTatamiFailMessage());
             return;
         }
@@ -244,8 +244,8 @@ void WebHandlerSession::handleSubscribeTatamiCommand(unsigned int tatamiIndex) {
 
 void WebHandlerSession::handleListTournamentsCommand() {
     auto self = shared_from_this();
-    mTournamentController.asyncListTournaments([this, self](boost::system::error_code ec, std::shared_ptr<std::vector<TournamentMeta>> pastTournaments, std::shared_ptr<std::vector<TournamentMeta>> upcomingTournaments){
-        if (ec) {
+    mTournamentController.asyncListTournaments([this, self](std::optional<Error> error, std::shared_ptr<std::vector<TournamentMeta>> pastTournaments, std::shared_ptr<std::vector<TournamentMeta>> upcomingTournaments){
+        if (error) {
             queueMessage(mMapper.mapListTournamentsFailMessage());
             return;
         }

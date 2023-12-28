@@ -41,13 +41,13 @@ public:
     typedef std::function<void ()> EraseWebSessionCallback;
     void asyncEraseWebSession(std::shared_ptr<WebHandlerSession> webSession, EraseWebSessionCallback callback);
 
-    typedef std::function<void (boost::system::error_code)> SubscribeCategoryCallback;
+    typedef std::function<void (std::optional<Error>)> SubscribeCategoryCallback;
     void asyncSubscribeCategory(std::shared_ptr<WebHandlerSession> webSession, CategoryId categoryID, SubscribeCategoryCallback callback);
 
-    typedef std::function<void (boost::system::error_code)> SubscribePlayerCallback;
+    typedef std::function<void (std::optional<Error>)> SubscribePlayerCallback;
     void asyncSubscribePlayer(std::shared_ptr<WebHandlerSession> webSession, PlayerId playerID, SubscribePlayerCallback callback);
 
-    typedef std::function<void (boost::system::error_code)> SubscribeTatamiCallback;
+    typedef std::function<void (std::optional<Error>)> SubscribeTatamiCallback;
     void asyncSubscribeTatami(std::shared_ptr<WebHandlerSession> webSession, unsigned int tatamiIndex, SubscribeTatamiCallback callback);
 
 private:

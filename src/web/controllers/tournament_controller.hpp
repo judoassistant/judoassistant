@@ -15,13 +15,13 @@ class TournamentController {
 public:
     TournamentController(boost::asio::io_context &context, Logger &logger, const Config &config, StorageGateway &storageGateway, MetaServiceGateway &metaServiceGateway);
 
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<TournamentControllerSession>)> SubscribeTournamentCallback;
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentControllerSession>)> SubscribeTournamentCallback;
     // asyncSubscribeTournament returns a tournament session. If the tournament is
     // already loaded, then the existing session will be returned.  Otherwise,
     // it will be read from storage.
     void asyncSubscribeTournament(std::shared_ptr<WebHandlerSession> webSession, const std::string &tournamentID, SubscribeTournamentCallback);
 
-    typedef std::function<void (boost::system::error_code ec, std::shared_ptr<TournamentControllerSession>)> AcquireTournamentCallback;
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<TournamentControllerSession>)> AcquireTournamentCallback;
     // asyncAcquireTournament acquires ownership of a tournament session. if the
     // tournament is already loaded, then the existing session will be returned
     // and any TCP participant will be kicked. If not, then an empty session
@@ -29,8 +29,7 @@ public:
     // the given userID.
     void asyncAcquireTournament(std::shared_ptr<TCPHandlerSession> tcpSession, const std::string &tournamentID, int userID, AcquireTournamentCallback callback);
 
-    // TODO: Use std::shared_pointer<std::vector<..>>
-    typedef std::function<void (boost::system::error_code, std::shared_ptr<std::vector<TournamentMeta>>, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
+    typedef std::function<void (std::optional<Error>, std::shared_ptr<std::vector<TournamentMeta>>, std::shared_ptr<std::vector<TournamentMeta>>)> ListTournamentsCallback;
     // asyncListTournaments lists upcoming and past tournaments.
     void asyncListTournaments(ListTournamentsCallback callback);
 
